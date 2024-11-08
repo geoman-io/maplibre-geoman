@@ -1,6 +1,6 @@
 <p align="center">  
   <a href="https://geoman.io">  
-    <img width="130" alt="Geoman Logo" src="https://geoman-static.onrender.com/assets/logo_white_bg.svg" />  
+    <img width="130" alt="Geoman Logo" src="https://assets.geoman.io/assets/logo_white_bg.svg" />  
   </a>  
 </p>  
 <h1 align="center">  
