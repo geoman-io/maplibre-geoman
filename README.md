@@ -34,7 +34,7 @@ If you have support questions or want to report issues, please [create an issue]
 
 ## Demo
 
-Check out the full power of Leaflet-Geoman Pro on [geoman.io/demo/maplibre](https://geoman.io/demo/maplibre)
+Check out the full power of Maplibre-Geoman Pro on [geoman.io/demo/maplibre](https://geoman.io/demo/maplibre)
 
 Or watch a demo video on [YouTube](https://youtu.be/VX7A_rb2Pis)
 
