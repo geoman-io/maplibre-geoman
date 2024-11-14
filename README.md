@@ -1,6 +1,6 @@
 <p align="center">  
   <a href="https://geoman.io">  
-    <img width="130" alt="Geoman Logo" src="https://assets.geoman.io/assets/logo_white_bg.svg" />  
+    <img width="130" alt="Geoman Logo" src="https://geoman-static.onrender.com/assets/logo_white_bg.svg" />  
   </a>  
 </p>  
 <h1 align="center">  
@@ -28,24 +28,45 @@
 
 Visit [geoman.io/docs/maplibre](https://www.geoman.io/docs/maplibre) to get started.
 
+## Issues
+
+If you have support questions or want to report issues, please [create an issue](https://github.com/geoman-io/maplibre-geoman/issues) in this repository. Use this repository for issues related to both the free and pro versions of Maplibre-Geoman.
+
 ## Demo
 
 Check out the full power of Leaflet-Geoman Pro on [geoman.io/demo/maplibre](https://geoman.io/demo/maplibre)
 
 Or watch a demo video on [YouTube](https://youtu.be/VX7A_rb2Pis)
 
+## Installation
 
-## Usage
-
-### Installation
+### Free Version
 
 ```shell
 # install free version
 npm install @geoman-io/maplibre-geoman-free
+```
 
+### Pro Version
+
+Add the following content to .npmrc in your project root
+
+```shell
+#.npmrc
+@geoman-io:registry=https://npm.geoman.io/
+//npm.geoman.io/:_authToken="<YOUR LICENSE KEY>"
+```
+
+Replace `<YOUR LICENSE KEY>` with your license key.
+
+```shell
 # install pro version
 npm install @geoman-io/maplibre-geoman-pro
 ```
+
+Don't have a license key yet? [Purchase one here](https://geoman.io/pricing).
+
+## Usage
 
 ### Expected HTML Structure
 ```html
