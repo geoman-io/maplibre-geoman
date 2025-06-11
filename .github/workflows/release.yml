@@ -126,14 +126,12 @@ jobs:
 
       - name: Build and package
         run: just pack
-
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: |
-            pub/${{ env.FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
-            pub/LICENSE
+            pub/*
           retention-days: 7
 
   # Create GitHub release
@@ -185,14 +183,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-artifacts
-          path: pub/
+          path: ./
 
       - name: Publish to NPM
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cd pub
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
             npm publish --tag beta --provenance --access public
           else
