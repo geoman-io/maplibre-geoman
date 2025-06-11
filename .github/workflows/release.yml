@@ -98,7 +98,6 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     needs: validate
-    environment: release
 
     steps:
       - name: Checkout code
