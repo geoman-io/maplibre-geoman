@@ -17,6 +17,7 @@ jobs:
   build:
     name: release job
     runs-on: ubuntu-latest
+    environment: release
 
     steps:
       - uses: actions/checkout@v4
