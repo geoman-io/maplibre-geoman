@@ -92,7 +92,7 @@ jobs:
   # Test job with Playwright
   test:
     name: Test Suite
-    runs-on: ubuntu-latest
+    runs-on: large-test-runner
     timeout-minutes: 60
     needs: [quick-checks]
 
