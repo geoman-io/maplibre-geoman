@@ -76,16 +76,11 @@ jobs:
         if: steps.cache-dist.outputs.cache-hit != 'true'
         run: npm run build
 
-      - name: Build project (Mapbox)
-        if: steps.cache-dist.outputs.cache-hit != 'true'
-        run: npm run build:mapbox
-
       - name: Verify build artifacts
         run: |
           test -f dist/maplibre-geoman.es.js
           test -f dist/maplibre-geoman.umd.js
           test -f dist/maplibre-geoman.d.ts
-          ls -la dist/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
