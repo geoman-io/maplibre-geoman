@@ -130,7 +130,7 @@ jobs:
         with:
           name: release-artifacts
           path: |
-            pub/*
+            pub/
           retention-days: 7
 
   # Create GitHub release
@@ -182,7 +182,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-artifacts
-          path: ./
+          path: ./pub
+
+      - name: Remove npm package tarball
+        run: rm -f pub/${{ env.FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
 
       - name: Publish to NPM
         shell: bash
@@ -190,7 +193,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
-            npm publish --tag beta --provenance --access public
+            cd pub && npm publish --tag beta --provenance --access public
           else
-            npm publish --provenance --access public
+            cd pub && npm publish --provenance --access public
           fi
