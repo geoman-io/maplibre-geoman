@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  FILE_NAME_PREFIX: geoman-io-maplibre-geoman
+  FILE_NAME_PREFIX: geoman-io-maplibre-geoman-free
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 jobs:
