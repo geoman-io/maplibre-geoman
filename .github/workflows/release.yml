@@ -72,4 +72,4 @@ jobs:
 
           # Set auth token
           npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-          npm publish
+          just publish
