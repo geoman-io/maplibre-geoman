@@ -29,6 +29,7 @@ export default defineConfig(() => {
       svgLoader({ defaultImport: 'raw' }),
     ],
     build: {
+      sourcemap: true,
       lib: {
         entry: 'src/main.ts',
         name: 'Geoman',
