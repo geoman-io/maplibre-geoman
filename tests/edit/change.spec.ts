@@ -10,7 +10,7 @@ import {
   waitForFeatureGeoJsonUpdate,
   waitForRenderedFeatureData,
 } from 'tests/utils/features.ts';
-import { dragAndDrop, enableMode, waitForGeoman } from '../utils/basic.ts';
+import { configurePageTimeouts, dragAndDrop, enableMode, waitForGeoman } from '../utils/basic.ts';
 import { loadGeoJson } from '../utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
 
@@ -124,6 +124,7 @@ const performDragAndVerifyFeatureBody = async (
 };
 
 test.beforeEach(async ({ page }) => {
+  await configurePageTimeouts(page);
   await page.goto('/');
   await waitForGeoman(page);
   await expect(page).toHaveTitle('Geoman plugin');

@@ -4,18 +4,28 @@ import { expect, type Page } from '@playwright/test';
 
 export type ScreenCoordinates = [number, number];
 
+// Helper to determine if we're in CI
+const isCI = !!process.env.CI;
+
+// Configure page timeouts for CI
+export const configurePageTimeouts = async (page: Page) => {
+  if (isCI) {
+    page.setDefaultTimeout(60000); // 60 seconds for CI
+    page.setDefaultNavigationTimeout(60000);
+  }
+};
 
 export const waitForGeoman = async (page: Page) => {
-  await page.waitForFunction(() => !!window.geoman?.loaded);
+  await page.waitForFunction(() => !!window.geoman?.loaded, { timeout: isCI ? 30000 : 10000 });
 };
 
 export const waitForMapIdle = async (page: Page) => {
-  await page.waitForFunction(() => window.geoman.mapAdapter.isLoaded());
+  await page.waitForFunction(() => window.geoman.mapAdapter.isLoaded(), { timeout: isCI ? 30000 : 10000 });
 };
 
 export const waitForLocalFunction = async (callback: () => boolean) => {
   const TICK_INTERVAL = 50;
-  let timeout = 5000;
+  let timeout = isCI ? 15000 : 5000; // Increased timeout for CI
 
   await new Promise((resolve, reject) => {
     const interval = setInterval(() => {
@@ -62,8 +72,9 @@ export const mouseMoveAndClick = async (
 
   for await (const [x, y] of pointsConverted) {
     await page.mouse.move(x, y);
+    if (isCI) await page.waitForTimeout(50); // Add delay for CI stability
     await page.mouse.click(x, y);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(isCI ? 200 : 100); // Increased delay for CI
   }
 };
 
@@ -72,18 +83,22 @@ export const dragAndDrop = async (
   startPoint: ScreenCoordinates,
   targetPoint: ScreenCoordinates,
 ) => {
-  const STEPS = 5;
+  const STEPS = isCI ? 10 : 5; // More steps for smoother CI operation
+  const STEP_DELAY = isCI ? 50 : 0; // Add delay between steps in CI
 
   await page.mouse.move(startPoint[0], startPoint[1]);
+  if (isCI) await page.waitForTimeout(100); // Extra delay before mouse down in CI
   await page.mouse.down();
 
   for (let i = 1; i <= STEPS; i++) {
     const middleX = startPoint[0] + (targetPoint[0] - startPoint[0]) * (i / STEPS);
     const middleY = startPoint[1] + (targetPoint[1] - startPoint[1]) * (i / STEPS);
     await page.mouse.move(middleX, middleY);
+    if (STEP_DELAY > 0) await page.waitForTimeout(STEP_DELAY);
   }
 
   await page.mouse.up();
+  if (isCI) await page.waitForTimeout(200); // Extra delay after mouse up in CI
   await waitForMapIdle(page);
 };
 

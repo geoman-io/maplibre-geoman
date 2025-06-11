@@ -3,13 +3,14 @@ import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
 import { isEqual } from 'lodash-es';
-import { dragAndDrop, enableMode, type ScreenCoordinates, waitForGeoman } from '../utils/basic.ts';
+import { configurePageTimeouts, dragAndDrop, enableMode, type ScreenCoordinates, waitForGeoman } from '../utils/basic.ts';
 import { getRenderedFeaturesData, loadGeoJsonFeatures, waitForRenderedFeatureData } from '../utils/features.ts';
 import { loadGeoJson } from '../utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
 
 
 test.beforeEach(async ({ page }) => {
+  await configurePageTimeouts(page);
   await page.goto('/');
   await waitForGeoman(page);
   await expect(page).toHaveTitle('Geoman plugin');

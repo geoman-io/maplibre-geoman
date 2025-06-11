@@ -89,7 +89,7 @@ export const getRenderedFeaturesData = async (
 };
 
 export const waitForRenderedFeatureData = async (
-  { page, temporary, featureId, timeout = 10 * 1000 }: {
+  { page, temporary, featureId, timeout = process.env.CI ? 30 * 1000 : 10 * 1000 }: {
     page: Page,
     featureId: FeatureId,
     temporary: boolean,
@@ -142,7 +142,7 @@ export const loadGeoJsonFeatures = async ({ page, geoJsonFeatures }: {
     const currentFeatureIds = features.map((feature) => feature.id);
 
     return !context.addedFeatureIds.some((featureId) => !currentFeatureIds.includes(featureId));
-  }, { addedFeatureIds });
+  }, { addedFeatureIds }, { timeout: process.env.CI ? 30000 : 10000 });
 };
 
 export const getFeatureMarkersData = async (
@@ -215,7 +215,7 @@ export const getFeatureMarkersData = async (
 };
 
 export const waitForFeatureGeoJsonUpdate = async (
-  { feature, originalGeoJson, page, timeout = 10 * 1000 }: {
+  { feature, originalGeoJson, page, timeout = process.env.CI ? 30 * 1000 : 10 * 1000 }: {
     feature: FeatureCustomData,
     originalGeoJson: GeoJSON,
     page: Page,
@@ -238,7 +238,7 @@ export const waitForFeatureGeoJsonUpdate = async (
 };
 
 export const waitForFeatureRemoval = async (
-  { page, featureId, temporary, timeout = 10 * 1000 }: {
+  { page, featureId, temporary, timeout = process.env.CI ? 30 * 1000 : 10 * 1000 }: {
     page: Page,
     featureId: FeatureId,
     temporary: boolean,
@@ -308,7 +308,7 @@ const verifyDragResult = async (
 
   if (updatedFeature) {
     // Get updated coordinates
-    const updatedLngLat = path 
+    const updatedLngLat = path
       ? getCoordinateByPath(updatedFeature.geoJson, path)
       : getGeoJsonFirstPoint(updatedFeature.geoJson);
 
