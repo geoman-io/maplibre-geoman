@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:," />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geoman plugin</title>
+</head>
+<body>
+  <div id="test-controls" style="
+    position: absolute;
+    z-index: 1000;
+    margin: 15px;
+    right: 0;
+    ">
+    <button id="b01">Add controls</button>
+    <button id="b02">Remove controls</button>
+    <button id="b03">Geofencing test</button>
+    <button id="b04">Get GeoJSON</button>
+    <button id="b05">On/Off</button>
+  </div>
+  <div id="dev-map"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="/src/dev/index.ts"></script>
+</body>
+</html>

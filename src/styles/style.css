@@ -1,0 +1,65 @@
+/* Measurements */
+.gm-measurements {
+  font-family: monospace;
+  opacity: 85%;
+  min-width: 230px;
+}
+
+
+.titled-values .line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.2rem;
+  border-bottom: 1px dotted lightgray;
+  line-height: 1.2;
+}
+
+.titled-values .section-title {
+  text-align: center;
+}
+
+.titled-values .line .title {
+  width: 50px;
+  margin: 0;
+  flex: 1 3 auto;
+  white-space: nowrap;
+}
+
+.titled-values .line .value {
+  width: 50px;
+  margin: 0;
+  flex: 3 1 auto;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.mb-10px {
+  margin-bottom: 10px;
+}
+
+/* Feature toggler */
+.feature-toggler {
+  display: flex;
+  align-items: center;
+}
+
+.feature-toggler button {
+  cursor: pointer;
+  padding: 0.3rem;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  border-radius: 0.25rem;
+  color: #fff;
+  background-color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.feature-toggler button:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Markers */
+.marker-wrapper {
+  cursor: pointer;
+}
