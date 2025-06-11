@@ -1,0 +1,60 @@
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "first"
+      time: "00:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "madsschou"
+    assignees:
+      - "madsschou"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      # Group major updates separately
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "version-update:semver-major"
+      # Group minor and patch updates for dev dependencies
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "@typescript-eslint/*"
+          - "eslint*"
+          - "vite*"
+          - "typescript"
+          - "playwright"
+          - "@playwright/*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+      # Group Turf.js packages together
+      turf:
+        patterns:
+          - "@turf/*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "madsschou"
+    assignees:
+      - "madsschou"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

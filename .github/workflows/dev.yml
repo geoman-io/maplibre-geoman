@@ -1,0 +1,243 @@
+name: Development
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - "feat/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "dev/**"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # Skip CI on draft PRs unless specifically requested
+  check-skip:
+    name: Check if CI should run
+    runs-on: ubuntu-latest
+    outputs:
+      should-skip: ${{ steps.skip.outputs.should-skip }}
+    steps:
+      - name: Check conditions
+        id: skip
+        run: |
+          if [[ "${{ github.event.pull_request.draft }}" == "true" &&
+                "${{ contains(github.event.pull_request.labels.*.name, 'ci:force') }}" == "false" ]]; then
+            echo "should-skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-skip=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Quick validation for faster feedback
+  validate:
+    name: Quick Validation
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should-skip == 'false'
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run ts
+
+      - name: ESLint check
+        run: npm run lint
+
+  # Build both variants for feature testing
+  build:
+    name: Build Development
+    runs-on: ubuntu-latest
+    needs: [check-skip, validate]
+    if: needs.check-skip.outputs.should-skip == 'false'
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        variant: [maplibre, mapbox]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ${{ matrix.variant }}
+        run: |
+          if [[ "${{ matrix.variant }}" == "maplibre" ]]; then
+            npm run build
+          else
+            npm run build:mapbox
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.variant }}-${{ github.sha }}
+          path: dist/
+          retention-days: 3
+
+  # Basic smoke tests for development
+  smoke-test:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [check-skip, validate]
+    if: needs.check-skip.outputs.should-skip == 'false'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run smoke tests
+        run: npx playwright test --project=chromium --grep="@smoke"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: smoke-test-results
+          path: playwright-report/
+          retention-days: 3
+
+  # Performance check for significant changes
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    needs: [check-skip, build]
+    if: needs.check-skip.outputs.should-skip == 'false' && contains(github.event.pull_request.labels.*.name, 'performance')
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-maplibre-${{ github.sha }}
+          path: dist/
+
+      - name: Bundle size check
+        run: |
+          echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          for file in dist/*.js; do
+            size=$(du -h "$file" | cut -f1)
+            echo "| $(basename "$file") | $size |" >> $GITHUB_STEP_SUMMARY
+          done
+
+  # Comment on PR with build status
+  pr-comment:
+    name: PR Comment
+    runs-on: ubuntu-latest
+    needs: [validate, build, smoke-test]
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: Create PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo, number } = context.issue;
+
+            let status = '✅ All checks passed';
+            if ('${{ needs.validate.result }}' !== 'success' ||
+                '${{ needs.build.result }}' !== 'success' ||
+                '${{ needs.smoke-test.result }}' !== 'success') {
+              status = '❌ Some checks failed';
+            }
+
+            const body = `## Development Build Status
+
+            ${status}
+
+            ### Results:
+            - **Validation**: ${{ needs.validate.result }}
+            - **Build**: ${{ needs.build.result }}
+            - **Smoke Tests**: ${{ needs.smoke-test.result }}
+
+            ### Artifacts:
+            - Build artifacts are available for 3 days
+            - MapLibre and Mapbox variants built successfully
+
+            ---
+            *This comment is automatically updated on each push*`;
+
+            // Look for existing comment
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: number,
+            });
+
+            const existingComment = comments.data.find(
+              comment => comment.user.login === 'github-actions[bot]' &&
+                         comment.body.includes('Development Build Status')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: number,
+                body
+              });
+            }
