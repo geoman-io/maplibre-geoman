@@ -1,0 +1,10 @@
+// some free svg icon sources:
+//
+// https://ionicons.com/
+// https://css.gg/app
+// https://icons.getbootstrap.com/
+// https://akveo.github.io/eva-icons/#/
+// https://heroicons.com/
+// https://remixicon.com/
+
+// svg optimizator: https://jakearchibald.github.io/svgomg/
