@@ -185,7 +185,7 @@ export class FeatureData {
     });
   }
 
-  updateGeoJsonProperties(properties: ShapeGeoJsonProperties) {
+  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
     if (!this.isFeatureAvailable()) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
