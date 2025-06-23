@@ -14,6 +14,7 @@ export type ShapeGeoJsonProperties = {
   [FEATURE_ID_PROPERTY]?: FeatureId,
   center?: LngLat,
   text?: string,
+  [key: string]: unknown,
 };
 export type FeatureDataParameters = {
   gm: Geoman,
