@@ -71,7 +71,8 @@
     "dompurify": "^3.2.4",
     "geojson-path-finder": "^2.0.2",
     "lodash-es": "^4.17.21",
-    "loglevel": "^1.9.2"
+    "loglevel": "^1.9.2",
+    "type-fest": "^4.37.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.7",
@@ -97,7 +98,6 @@
     "svelte-preprocess": "^6.0.3",
     "ts-autofix": "^1.0.0",
     "tsc-alias": "^1.8.11",
-    "type-fest": "^4.37.0",
     "typescript": "^5.8.2",
     "vite": "^6.3.5",
     "vite-svg-loader": "^5.1.0"
