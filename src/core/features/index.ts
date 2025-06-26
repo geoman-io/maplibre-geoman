@@ -4,6 +4,7 @@ import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
 import type {
   AnyEvent,
+  FeatureGMProperties,
   FeatureId,
   FeatureShape,
   FeatureSourceName,
@@ -43,6 +44,7 @@ export const SOURCES = {
 } as const;
 
 export const FEATURE_ID_PROPERTY = '_gmid' as const;
+export const GM_FEATURE_KEY = '_gm' as const;
 
 export class Features {
   gm: Geoman;
@@ -302,7 +304,12 @@ export class Features {
       queryCoordinates: point,
       sourceNames,
     });
-    return features.length ? features[0] : null;
+
+    const feature = features[0];
+    if (!feature || feature.editDisabled) {
+      return null;
+    }
+    return feature
   }
 
   getFeaturesByGeoJsonBounds({ geoJson, sourceNames }: {
@@ -359,6 +366,11 @@ export class Features {
       source,
       geoJsonShapeFeature: cloneDeep(shapeGeoJson),
     });
+
+    const gmFeature = shapeGeoJson.properties[GM_FEATURE_KEY] as FeatureGMProperties | undefined;
+    if (gmFeature?.disableEdit === true) {
+      featureData.gmProperties.disableEdit = true;
+    }
 
     this.add(featureData);
     if (!featureData.temporary && !imported) {

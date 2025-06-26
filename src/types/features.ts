@@ -24,6 +24,10 @@ export type FeatureDataParameters = {
   geoJsonShapeFeature: GeoJsonShapeFeature,
 };
 
+export type FeatureGMProperties = {
+  disableEdit: boolean;
+}
+
 export type FeatureOrder = number | null;
 export type FeatureSourceName = typeof SOURCES[keyof typeof SOURCES];
 export type SourcesStorage = { [key in FeatureSourceName]: BaseSource | null };
