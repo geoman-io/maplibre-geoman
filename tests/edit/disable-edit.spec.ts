@@ -67,9 +67,9 @@ test('Feature with disableEdit has correct editDisabled property', async ({ page
   const result = await page.evaluate(() => {
     const geoman = window.geoman;
     
-    const disabledFeatureData = geoman.features.get(geoman.features.defaultSourceName, '1');
-    const editableFeatureData = geoman.features.get(geoman.features.defaultSourceName, '2');
-    
+    const disabledFeatureData = geoman.features.get(geoman.features.defaultSourceName, 1);
+    const editableFeatureData = geoman.features.get(geoman.features.defaultSourceName, 2);
+
     if (!disabledFeatureData || !editableFeatureData) {
       return { error: 'Features not found' };
     }
@@ -78,7 +78,8 @@ test('Feature with disableEdit has correct editDisabled property', async ({ page
       disabledEditDisabled: disabledFeatureData.editDisabled,
       editableEditDisabled: editableFeatureData.editDisabled,
       disabledGmProperties: disabledFeatureData.gmProperties,
-      editableGmProperties: editableFeatureData.gmProperties
+      editableGmProperties: editableFeatureData.gmProperties,
+      disabledFeature: disabledFeatureData
     };
   });
 
@@ -94,8 +95,8 @@ test('Feature with disableEdit does not show edit markers', async ({ page }) => 
   // Check that edit markers are not added for the disabled feature
   const markersCount = await page.evaluate(() => {
     const geoman = window.geoman;
-    const disabledFeature = geoman.features.get(geoman.features.defaultSourceName, '1');
-    const editableFeature = geoman.features.get(geoman.features.defaultSourceName, '2');
+    const disabledFeature = geoman.features.get(geoman.features.defaultSourceName, 1);
+    const editableFeature = geoman.features.get(geoman.features.defaultSourceName, 2);
     
     return {
       disabledFeatureMarkers: disabledFeature ? disabledFeature.markers.size : 0,
