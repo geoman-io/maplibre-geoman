@@ -70,8 +70,10 @@ export class MaplibreAdapter
   }
 
   async loadImage({ id, image }: { id: string, image: string }) {
-    const loadedImage = await this.mapInstance.loadImage(image);
-    this.mapInstance.addImage(id, loadedImage.data);
+    if (!this.mapInstance.hasImage(id)) {
+      const loadedImage = await this.mapInstance.loadImage(image);
+      this.mapInstance.addImage(id, loadedImage.data);
+    }
   }
 
   getBounds(): [LngLat, LngLat] {
