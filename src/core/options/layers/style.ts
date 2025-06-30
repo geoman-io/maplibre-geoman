@@ -36,6 +36,11 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
     [SOURCES.temporary]: getLineStyles(sourceStyles[SOURCES.temporary]),
     [SOURCES.standby]: getLineStyles(sourceStyles[SOURCES.standby]),
   },
+  marker: {
+    [SOURCES.temporary]: getMarkerStyles(),
+    [SOURCES.main]: getMarkerStyles(),
+    [SOURCES.standby]: getMarkerStyles(),
+  },
   text_marker: {
     [SOURCES.main]: getTextMarkerStyles(),
     [SOURCES.temporary]: getTextMarkerStyles(),
@@ -50,11 +55,6 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
     [SOURCES.main]: getControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
     [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]),
-  },
-  marker: {
-    [SOURCES.temporary]: getMarkerStyles(),
-    [SOURCES.main]: getMarkerStyles(),
-    [SOURCES.standby]: getMarkerStyles(),
   },
   edge_marker: {
     [SOURCES.main]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.main]),
