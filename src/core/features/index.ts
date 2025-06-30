@@ -37,9 +37,9 @@ import log from 'loglevel';
 
 
 export const SOURCES = {
+  standby: `${gmPrefix}_standby`,
   main: `${gmPrefix}_main`,
   temporary: `${gmPrefix}_temporary`,
-  standby: `${gmPrefix}_standby`,
 } as const;
 
 export const FEATURE_ID_PROPERTY = '_gmid' as const;
@@ -554,23 +554,23 @@ export class Features {
   createLayers(): Array<BaseLayer> {
     const layers: Array<BaseLayer> = [];
 
-    typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
-      typedKeys(this.gm.options.layerStyles[shapeName]).forEach((sourceName) => {
-        const styles = this.gm.options.layerStyles[shapeName][sourceName];
-        styles.forEach((partialStyle) => {
-          const layer = this.createGenericLayer({
-            layerId: `${sourceName}-${shapeName}-${partialStyle.type}-layer`,
-            partialStyle,
-            shape: shapeName,
-            sourceName,
+    typedValues(SOURCES).forEach((sourceName) => {
+      typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
+          const styles = this.gm.options.layerStyles[shapeName][sourceName];
+          styles.forEach((partialStyle) => {
+            const layer = this.createGenericLayer({
+              layerId: `${sourceName}-${shapeName}-${partialStyle.type}-layer`,
+              partialStyle,
+              shape: shapeName,
+              sourceName,
+            });
+  
+            if (layer) {
+              layers.push(layer);
+            }
           });
-
-          if (layer) {
-            layers.push(layer);
-          }
-        });
       });
-    });
+    })
 
     return layers;
   }
