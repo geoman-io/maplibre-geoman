@@ -41,12 +41,16 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   createSource(
     { geoJson, sourceId }: { sourceId: string, geoJson: GeoJSON },
   ): ml.GeoJSONSource {
-    this.mapInstance.addSource(sourceId, {
-      type: 'geojson',
-      data: geoJson,
-      promoteId: FEATURE_ID_PROPERTY,
-    });
-    return this.mapInstance.getSource(sourceId) as ml.GeoJSONSource || null;
+    let source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource | undefined;
+    if (!source) {
+      this.mapInstance.addSource(sourceId, {
+        type: 'geojson',
+        data: geoJson,
+        promoteId: FEATURE_ID_PROPERTY,
+      });
+      source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource
+    }
+    return source ?? null;
   }
 
   getGeoJson() {
