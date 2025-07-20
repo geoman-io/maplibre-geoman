@@ -7,12 +7,18 @@ import {
 } from '@/main.ts';
 import type { Feature, GeoJSON } from 'geojson';
 import ml from 'maplibre-gl';
+import { mergeGeoJsonDiff } from './helper.ts';
 
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
   mapInstance: ml.Map;
   sourceInstance: ml.GeoJSONSource | null;
+
+  pendingUpdateStorage: GeoJsonDiffStorage | null = null;
+  mlSourceDiff: ml.GeoJSONSourceDiff | null = null
+  updateTimeout: null | number = null;
+
 
   constructor({ gm, geoJson, sourceId }: {
     gm: Geoman,
@@ -41,12 +47,16 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   createSource(
     { geoJson, sourceId }: { sourceId: string, geoJson: GeoJSON },
   ): ml.GeoJSONSource {
-    this.mapInstance.addSource(sourceId, {
-      type: 'geojson',
-      data: geoJson,
-      promoteId: FEATURE_ID_PROPERTY,
-    });
-    return this.mapInstance.getSource(sourceId) as ml.GeoJSONSource || null;
+    let source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource | undefined;
+    if (!source) {
+      this.mapInstance.addSource(sourceId, {
+        type: 'geojson',
+        data: geoJson,
+        promoteId: FEATURE_ID_PROPERTY,
+      });
+      source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource
+    }
+    return source ?? null;
   }
 
   getGeoJson() {
@@ -63,13 +73,27 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     return this.sourceInstance.setData(geoJson);
   }
 
-  updateData(updateStorage: GeoJsonDiffStorage) {
+  updateData = (updateStorage?: GeoJsonDiffStorage) => {
     if (!this.isInstanceAvailable()) {
       return;
     }
 
-    const mlDiff = this.convertGeoJsonDiffToMlDiff(updateStorage);
-    this.sourceInstance.updateData(mlDiff);
+    const fullUpdateStorage = mergeGeoJsonDiff(this.pendingUpdateStorage, updateStorage ?? null)
+
+    if (this.updateTimeout) {
+      window.clearTimeout(this.updateTimeout)
+      this.updateTimeout = null;
+    }
+
+    if (this.sourceInstance._pendingLoads === 0) {
+      this.pendingUpdateStorage = null;
+      const mlDiff = this.convertGeoJsonDiffToMlDiff(fullUpdateStorage);
+
+      this.sourceInstance.updateData(mlDiff);
+    } else {
+      this.pendingUpdateStorage = fullUpdateStorage;
+      this.updateTimeout = window.setTimeout(this.updateData, 15)
+    }
   }
 
   convertGeoJsonDiffToMlDiff(
