@@ -12,6 +12,7 @@ import type {
   GMEditFeatureRemovedEvent,
   GMEditFeatureUpdatedEvent,
   GMEvent,
+  LngLat,
   MarkerData,
   NonEmptyArray,
   PointerEventName,
@@ -20,7 +21,6 @@ import { BaseAction } from '@/modes/base-action.ts';
 import { shapeNames } from '@/modes/draw/base.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
-
 
 export const editModes = [
   'drag',
@@ -103,8 +103,17 @@ export abstract class BaseEdit extends BaseAction {
       return false;
     }
 
-    if (featureData.shape === 'circle' && featureGeoJson.properties.center) {
-      featureData.setShapeProperty('center', featureGeoJson.properties.center);
+    const properties = featureGeoJson.properties;
+
+    // when moving the feature, shape properties are saved in properties
+    if (featureData.shape === 'circle' && properties.center) {
+      featureData.setShapeProperty('center', properties.center);
+    }
+    if (featureData.shape === 'ellipse' && properties._gm_shape_center) {
+      featureData.setShapeProperty('center', properties._gm_shape_center as LngLat);
+      featureData.setShapeProperty('xSemiAxis', properties._gm_shape_xSemiAxis as number);
+      featureData.setShapeProperty('ySemiAxis', properties._gm_shape_ySemiAxis as number);
+      featureData.setShapeProperty('angle', properties._gm_shape_angle as number);
     }
 
     featureData.updateGeoJsonGeometry(featureGeoJson.geometry);

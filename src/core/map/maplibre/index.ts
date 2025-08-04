@@ -69,7 +69,7 @@ export class MaplibreAdapter
     this.mapInstance.removeControl(control);
   }
 
-  async loadImage({ id, image }: { id: string, image: string }) {
+  async loadImage({ id, image }: { id: string; image: string }) {
     const loadedImage = await this.mapInstance.loadImage(image);
     this.mapInstance.addImage(id, loadedImage.data);
   }
@@ -194,6 +194,10 @@ export class MaplibreAdapter
 
   getLayer(layerId: string): BaseLayer<MaplibreAnyLayer> {
     return new MaplibreLayer({ gm: this.gm, layerId });
+  }
+
+  getZoom(): number {
+    return this.mapInstance.getZoom();
   }
 
   removeLayer(layerId: string) {

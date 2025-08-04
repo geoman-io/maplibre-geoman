@@ -58,6 +58,12 @@ export const moveFeatureData = (featureData: FeatureData, lngLatDiff: LngLatDiff
   featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
 };
 
+export const exportShapeProperties = (featureData: FeatureData) => {
+  return Object.fromEntries(
+    Object.entries(featureData.getShapeProperties()).filter(([, value]) => value !== null).map(([key, value]) => ([`_gm_shape_${key}`, value]))
+  )
+}
+
 export const getAllFeatureCoordinates = (featureData: FeatureData): Array<Position> => {
   const shapeGeoJson = featureData.getGeoJson() as GeoJSON;
   return getAllGeoJsonCoordinates(shapeGeoJson);
