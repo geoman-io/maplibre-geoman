@@ -19,6 +19,11 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
     ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
   },
+  ellipse: {
+    [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
+    [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
+    [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]),
+  },
   rectangle: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),

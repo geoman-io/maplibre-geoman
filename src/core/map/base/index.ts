@@ -83,6 +83,8 @@ export abstract class BaseMapAdapter<
 
   abstract getLayer(layerId: string): BaseLayer<TLayer> | null;
 
+  abstract getZoom(): number;
+
   abstract removeLayer(layerId: string): void;
 
   abstract eachLayer(callback: (layer: BaseLayer<TLayer>) => void): void;

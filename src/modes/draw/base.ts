@@ -18,6 +18,7 @@ import log from 'loglevel';
 export const shapeNames = [
   // shapes
   'marker',
+  'ellipse',
   'circle',
   'circle_marker',
   'text_marker',
@@ -45,11 +46,11 @@ export abstract class BaseDraw extends BaseAction {
 
   saveFeature() {
     if (this.featureData) {
-      const featureGeoJson = this.featureData.getGeoJson();
+      const featureGeoJson = this.featureData.getGeoJson(true);
       this.removeTmpFeature();
       this.gm.features.createFeature({
         sourceName: SOURCES.main,
-        shapeGeoJson: featureGeoJson,
+        shapeGeoJson: featureGeoJson
       });
     } else {
       log.error('BaseDraw.saveFeature: no featureData to save');
