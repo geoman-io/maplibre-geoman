@@ -16,6 +16,18 @@ export type ShapeGeoJsonProperties = {
   text?: string,
   [key: string]: unknown,
 };
+
+export type EllipseGeoJsonProperties = {
+  shape: "ellipse",
+  [FEATURE_ID_PROPERTY]?: FeatureId,
+  _gm_shape_center: LngLat,
+  _gm_shape_xSemiAxis: number,
+  _gm_shape_ySemiAxis: number,
+  _gm_shape_angle: number,
+
+  [key: string]: unknown,
+}
+
 export type FeatureDataParameters = {
   gm: Geoman,
   id: FeatureId,
@@ -43,6 +55,9 @@ export type ForEachFeatureDataCallbackFn = (
 export type FeatureOrders = Record<FeatureSourceName, FeatureOrder>;
 export type FeatureShapeProperties = {
   center: LngLat | null,
+  xSemiAxis?: number,
+  ySemiAxis?: number,
+  angle?: number
 };
 
 export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';

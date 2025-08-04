@@ -13,6 +13,9 @@ import type {
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
 import turfCircle from '@turf/circle';
+import turfEllipse from '@/turf/ellipse.ts';
+import turfBearing from '@turf/bearing';
+
 import { distance as turfDistance } from '@turf/distance';
 import { coordEach as turfCoordEach } from '@turf/meta';
 import { multiPolygonToLine, singlePolygonToLine } from '@turf/polygon-to-line';
@@ -613,6 +616,91 @@ export const getGeoJsonCircle = ({ center, radius, steps = 80 }: {
 
   return circleGeoJson;
 };
+
+export const getEllipseParameters = ({
+  center,
+  xSemiAxisLngLat,
+  rimLngLat,
+  zoom = 10,
+}: {
+  center: LngLat;
+  xSemiAxisLngLat: LngLat;
+  rimLngLat?: LngLat;
+  zoom?: number;
+}) => {
+  let xSemiAxis = turfDistance(center, xSemiAxisLngLat, { units: 'meters' });
+  if (xSemiAxis === 0) {
+    xSemiAxis = zoom > 10 ? 1 : 10;
+  }
+
+  const cwAngle = turfBearing(center, xSemiAxisLngLat) - 90;
+
+  const defaultYSemiAxis = zoom > 10 ? 1 : 10;
+
+  let ySemiAxis = defaultYSemiAxis;
+
+  if (rimLngLat) {
+    const ccwAngle = -cwAngle;
+    const ccwAngleRad = (ccwAngle * Math.PI) / 180;
+    const ccwRimAngle = -(turfBearing(center, rimLngLat) - 90);
+    const ccwRimAngleRad = (ccwRimAngle * Math.PI) / 180;
+
+    const dRim = turfDistance(center, rimLngLat, { units: 'meters' });
+
+    const px = dRim * Math.cos(ccwRimAngleRad);
+    const py = dRim * Math.sin(ccwRimAngleRad);
+
+    const pxReproj = px * Math.cos(ccwAngleRad) + py * Math.sin(ccwAngleRad);
+    const pyReproj = px * -Math.sin(ccwAngleRad) + py * Math.cos(ccwAngleRad);
+
+    const xPart = (pxReproj * pxReproj) / (xSemiAxis * xSemiAxis);
+    ySemiAxis = Math.abs(pyReproj) / Math.sqrt(1 - xPart);
+
+    // if xPart === 1
+    if (isNaN(ySemiAxis) || ySemiAxis === 0) {
+      ySemiAxis = defaultYSemiAxis;
+    }
+  }
+
+  return {
+    xSemiAxis,
+    ySemiAxis,
+    angle: cwAngle,
+  };
+};
+
+export const getGeoJsonEllipse = ({
+  center,
+  xSemiAxis,
+  ySemiAxis,
+  angle,
+  steps = 80,
+}: {
+  center: LngLat;
+  xSemiAxis: number;
+  ySemiAxis?: number;
+  angle: number;
+  steps?: number;
+}) => {
+  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis ?? 0, {
+    steps,
+    angle,
+    units: 'meters',
+    properties: {
+      shape: 'ellipse',
+      _gm_shape_center: center,
+      _gm_shape_xSemiAxis: xSemiAxis,
+      _gm_shape_ySemiAxis: ySemiAxis,
+      _gm_shape_angle: angle,
+    },
+  });
+
+  // remove link between first and last coordinates
+  ellipseGeoJson.geometry.coordinates[0][0] = [...ellipseGeoJson.geometry.coordinates[0][0]];
+
+  return ellipseGeoJson as GeoJsonShapeFeature;
+};
+
 
 export const getCoordinateByPath = (
   geoJson: GeoJSON,

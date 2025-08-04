@@ -1,6 +1,7 @@
 import change from '@/assets/images/controls/change.svg';
 import circleMarker from '@/assets/images/controls/circle-marker.svg';
 import circle from '@/assets/images/controls/circle.svg';
+import ellipse from '@/assets/images/controls/ellipse.svg';
 import drag from '@/assets/images/controls/drag.svg';
 import line from '@/assets/images/controls/line.svg';
 
@@ -40,6 +41,7 @@ type ControlIcons = Record<ModeOptionName, string | null>;
 export const controlIcons: ControlIcons = {
   marker,
   circle,
+  ellipse,
   circle_marker: circleMarker,
   text_marker: textMarker,
   line,
