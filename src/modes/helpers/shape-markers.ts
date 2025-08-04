@@ -252,7 +252,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   addMarkers() {
     this.gm.features.forEach((featureData) => {
-      if (!featureData || !this.allowedShapes.includes(featureData.shape)) {
+      if (!featureData || !this.allowedShapes.includes(featureData.shape) || featureData.editDisabled) {
         return;
       }
 
