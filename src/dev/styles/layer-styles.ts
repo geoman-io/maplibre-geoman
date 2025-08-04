@@ -10,6 +10,12 @@ export const layerStyles: PartialDeep<GmOptionsData['layerStyles']> = {
         'line-opacity': 0.9,
         'line-width': 3,
       },
-    }],
+    }, {
+      type: 'fill',
+      paint: {
+        'fill-opacity': 1,
+      },
+    },
+    ],
   },
 };

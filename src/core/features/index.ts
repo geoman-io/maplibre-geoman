@@ -37,9 +37,10 @@ import log from 'loglevel';
 
 
 export const SOURCES = {
+  // order matters here, layers order will be aligned according to these items
+  standby: `${gmPrefix}_standby`,
   main: `${gmPrefix}_main`,
   temporary: `${gmPrefix}_temporary`,
-  standby: `${gmPrefix}_standby`,
 } as const;
 
 export const FEATURE_ID_PROPERTY = '_gmid' as const;
@@ -554,12 +555,12 @@ export class Features {
   createLayers(): Array<BaseLayer> {
     const layers: Array<BaseLayer> = [];
 
-    typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
-      typedKeys(this.gm.options.layerStyles[shapeName]).forEach((sourceName) => {
+    typedValues(SOURCES).forEach((sourceName) => {
+      typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
         styles.forEach((partialStyle) => {
           const layer = this.createGenericLayer({
-            layerId: `${sourceName}-${shapeName}-${partialStyle.type}-layer`,
+            layerId: `${sourceName}-${shapeName}__${partialStyle.type}-layer`,
             partialStyle,
             shape: shapeName,
             sourceName,

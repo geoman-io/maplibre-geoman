@@ -6,6 +6,7 @@ import {
   loadStressTestFeatureCollection,
 } from '@/dev/fixtures/shapes.ts';
 import mapLibreStyle from '@/dev/maplibre-style.ts';
+import { layerStyles } from '@/dev/styles/layer-styles.ts';
 import { type GeoJsonImportFeature, Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -19,7 +20,7 @@ const gmOptions: PartialDeep<GmOptionsData> = {
   settings: {
     controlsPosition: 'top-left',
   },
-  // layerStyles,
+  layerStyles: layerStyles,
   controls: {
     edit: {
       drag: {
