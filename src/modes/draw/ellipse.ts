@@ -130,7 +130,6 @@ export class DrawEllipse extends BaseCircle {
         center: this.circleCenterLngLat,
         xSemiAxisLngLat: this.xSemiAxisLngLat,
         rimLngLat: lngLat,
-        zoom: this.gm.mapAdapter.getZoom(),
       });
 
       this.featureData.setShapeProperty('center', this.circleCenterLngLat);
@@ -165,7 +164,6 @@ export class DrawEllipse extends BaseCircle {
       center,
       xSemiAxisLngLat,
       rimLngLat,
-      zoom: this.gm.mapAdapter.getZoom(),
     });
 
     return getGeoJsonEllipse({ center, xSemiAxis, ySemiAxis, angle });
