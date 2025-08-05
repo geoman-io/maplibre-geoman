@@ -107,6 +107,10 @@ export class DrawEllipse extends BaseCircle {
       : this.getEllipseGeoJson(this.circleCenterLngLat, eventLngLat);
     this.featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
 
+    this.featureData.updateGeoJsonProperties({
+      shape: featureGeoJson.properties.shape
+    })
+
     const markerData = this.getControlMarkerData();
     if (markerData) {
       this.fireUpdateEvent(this.featureData, markerData);
@@ -137,7 +141,12 @@ export class DrawEllipse extends BaseCircle {
       console.log({ center: this.circleCenterLngLat, xSemiAxis, ySemiAxis, angle });
 
       if (this.isFeatureGeoJsonValid()) {
-        this.saveFeature();
+        // Note for Reviewers, I'm not using saveFeature() method to
+        // because in this way the shapeParameters are already assigned.
+        // I did not understand the point of deleting and then recreating
+        // an identical featureData.
+        this.featureData.changeSource({sourceName: "gm_main", atomic: true})
+        this.featureData = null;
       } else {
         this.removeTmpFeature();
       }
@@ -161,23 +170,6 @@ export class DrawEllipse extends BaseCircle {
       zoom: this.gm.mapAdapter.getZoom(),
     });
 
-    const ellipseGeoJson = getGeoJsonEllipse({ center, xSemiAxis, ySemiAxis, angle });
-
-    return {
-      ...ellipseGeoJson,
-      properties: {
-        shape: this.shape,
-        _gm_shape_center: center,
-        _gm_shape_xSemiAxis: xSemiAxis,
-        _gm_shape_ySemiAxis: ySemiAxis,
-        _gm_shape_angle: angle,
-      },
-      geoman: {
-        center,
-        xSemiAxis,
-        ySemiAxis,
-        angle,
-      },
-    };
+    return getGeoJsonEllipse({ center, xSemiAxis, ySemiAxis, angle });
   }
 }

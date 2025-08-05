@@ -46,11 +46,11 @@ export abstract class BaseDraw extends BaseAction {
 
   saveFeature() {
     if (this.featureData) {
-      const featureGeoJson = this.featureData.getGeoJson(true);
+      const featureGeoJson = this.featureData.getGeoJson();
       this.removeTmpFeature();
       this.gm.features.createFeature({
         sourceName: SOURCES.main,
-        shapeGeoJson: featureGeoJson
+        shapeGeoJson: featureGeoJson,
       });
     } else {
       log.error('BaseDraw.saveFeature: no featureData to save');

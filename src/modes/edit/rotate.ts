@@ -78,7 +78,7 @@ export class EditRotate extends BaseDrag {
 
       const isUpdated = this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
 
-      if (isUpdated) {
+      if (isUpdated && this.convertFeaturesTypes.includes(featureData.shape)) {
         featureData.convertToPolygon(); // if possible
       }
     } else {
@@ -87,7 +87,7 @@ export class EditRotate extends BaseDrag {
   }
 
   rotateEllipse(event: GMEditMarkerMoveEvent) {
-    const {featureData, lngLatStart, lngLatEnd} = event;
+    const { featureData } = event;
 
     if (featureData.shape !== 'ellipse') {
       log.error('EditRotate.rotateEllipse: invalid shape type', featureData);

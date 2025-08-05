@@ -25,7 +25,7 @@ import centroid from '@turf/centroid';
 import log from 'loglevel';
 
 
-export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
+export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'ellipse', 'rectangle'];
 
 export class FeatureData {
   gm: Geoman;
@@ -250,6 +250,9 @@ export class FeatureData {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
       this.shapeProperties.center = null;
+      delete this.shapeProperties.angle;
+      delete this.shapeProperties.xSemiAxis;
+      delete this.shapeProperties.ySemiAxis;
       return true;
     }
 
