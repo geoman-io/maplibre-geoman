@@ -138,8 +138,6 @@ export class DrawEllipse extends BaseCircle {
       this.featureData.setShapeProperty('ySemiAxis', ySemiAxis);
       this.featureData.setShapeProperty('angle', angle);
 
-      console.log({ center: this.circleCenterLngLat, xSemiAxis, ySemiAxis, angle });
-
       if (this.isFeatureGeoJsonValid()) {
         // Note for Reviewers, I'm not using saveFeature() method to
         // because in this way the shapeParameters are already assigned.

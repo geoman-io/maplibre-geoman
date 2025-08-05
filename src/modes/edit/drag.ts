@@ -23,19 +23,16 @@ export class EditDrag extends BaseDrag {
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
-      console.log('marker_move from drag');
       if (!this.previousLngLat) {
         this.previousLngLat = event.lngLatStart;
       }
       this.moveFeature(event.featureData, event.lngLatEnd);
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      console.log('marker_captured from drag');
       this.isDragging = true;
       event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {
-      console.log('marker_released from drag');
       this.previousLngLat = null;
       this.isDragging = false;
       event.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
