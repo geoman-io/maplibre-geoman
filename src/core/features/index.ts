@@ -558,7 +558,7 @@ export class Features {
   createLayers(): Array<BaseLayer> {
     const layers: Array<BaseLayer> = [];
 
-    typedValues(SOURCES).forEach((sourceName) => {
+    typedKeys(this.sources).forEach((sourceName) => {
       typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
         styles.forEach((partialStyle) => {
