@@ -4,6 +4,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@mapLib/*": [
+        "src/core/map/maplibre/*"
       ]
     },
     "declaration": true,
