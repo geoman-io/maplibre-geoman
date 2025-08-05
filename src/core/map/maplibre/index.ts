@@ -196,10 +196,6 @@ export class MaplibreAdapter
     return new MaplibreLayer({ gm: this.gm, layerId });
   }
 
-  getZoom(): number {
-    return this.mapInstance.getZoom();
-  }
-
   removeLayer(layerId: string) {
     const layer = this.getLayer(layerId);
     if (layer) {
