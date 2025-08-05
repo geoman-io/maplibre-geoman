@@ -143,6 +143,7 @@ export class DrawEllipse extends BaseCircle {
         // I did not understand the point of deleting and then recreating
         // an identical featureData.
         this.featureData.changeSource({sourceName: "gm_main", atomic: true})
+        this.gm.features.fireFeatureCreatedEvent(this.featureData)
         this.featureData = null;
       } else {
         this.removeTmpFeature();
