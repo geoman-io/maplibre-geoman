@@ -622,16 +622,14 @@ export const getEllipseParameters = ({
   center,
   xSemiAxisLngLat,
   rimLngLat,
-  zoom = 10,
 }: {
   center: LngLat;
   xSemiAxisLngLat: LngLat;
   rimLngLat?: LngLat;
-  zoom?: number;
 }) => {
   let xSemiAxis = turfDistance(center, xSemiAxisLngLat, { units: 'meters' });
   if (xSemiAxis === 0) {
-    xSemiAxis = zoom > 10 ? 1 : 10;
+    xSemiAxis = 1;
   }
 
   const cwAngle = turfBearing(center, xSemiAxisLngLat) - 90;
