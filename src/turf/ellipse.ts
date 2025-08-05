@@ -151,5 +151,6 @@ export default function ellipse(
       }).geometry.coordinates,
     );
   }
+
   return polygon([coords], properties);
 }

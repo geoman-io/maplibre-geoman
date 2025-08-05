@@ -33,6 +33,7 @@ import type {
 } from 'geojson';
 import { get, isEqual } from 'lodash-es';
 import log from 'loglevel';
+import { lineString } from '@turf/helpers';
 
 
 export const isEqualPosition = (
@@ -635,9 +636,7 @@ export const getEllipseParameters = ({
 
   const cwAngle = turfBearing(center, xSemiAxisLngLat) - 90;
 
-  const defaultYSemiAxis = zoom > 10 ? 1 : 10;
-
-  let ySemiAxis = defaultYSemiAxis;
+  let ySemiAxis = 0;
 
   if (rimLngLat) {
     const ccwAngle = -cwAngle;
@@ -657,8 +656,8 @@ export const getEllipseParameters = ({
     ySemiAxis = Math.abs(pyReproj) / Math.sqrt(1 - xPart);
 
     // if xPart === 1
-    if (isNaN(ySemiAxis) || ySemiAxis === 0) {
-      ySemiAxis = defaultYSemiAxis;
+    if (isNaN(ySemiAxis)) {
+      ySemiAxis = 0;
     }
   }
 
@@ -683,20 +682,36 @@ export const getGeoJsonEllipse = ({
   ySemiAxis?: number;
   angle: number;
   properties?: GeoJsonProperties;
-}) => {
-  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis ?? 0, {
+}): GeoJsonShapeFeature => {
+  const options = {
     steps: ellipseSteps,
     angle,
     units: 'meters',
-    properties: {
-      shape: 'ellipse',
-      _gm_shape_center: center,
-      _gm_shape_xSemiAxis: xSemiAxis,
-      _gm_shape_ySemiAxis: ySemiAxis,
-      _gm_shape_angle: angle,
-      ...properties
-    },
-  });
+  } as const;
+
+  if (ySemiAxis === undefined || ySemiAxis === 0) {
+    const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
+    return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
+      shape: 'line'
+    })
+  }
+
+  const ellipseGeoJson = turfEllipse(
+    center,
+    xSemiAxis,
+    ySemiAxis,
+    {
+      ...options,
+      properties: {
+        shape: 'ellipse',
+        _gm_shape_center: center,
+        _gm_shape_xSemiAxis: xSemiAxis,
+        _gm_shape_ySemiAxis: ySemiAxis,
+        _gm_shape_angle: angle,
+        ...properties
+      }
+    }
+  );
 
   // remove link between first and last coordinates
   ellipseGeoJson.geometry.coordinates[0][0] = [...ellipseGeoJson.geometry.coordinates[0][0]];
