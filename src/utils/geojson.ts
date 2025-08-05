@@ -669,21 +669,23 @@ export const getEllipseParameters = ({
   };
 };
 
+export const ellipseSteps = 80;
+
 export const getGeoJsonEllipse = ({
   center,
   xSemiAxis,
   ySemiAxis,
   angle,
-  steps = 80,
+  properties = {}
 }: {
   center: LngLat;
   xSemiAxis: number;
   ySemiAxis?: number;
   angle: number;
-  steps?: number;
+  properties?: GeoJsonProperties;
 }) => {
   const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis ?? 0, {
-    steps,
+    steps: ellipseSteps,
     angle,
     units: 'meters',
     properties: {
@@ -692,6 +694,7 @@ export const getGeoJsonEllipse = ({
       _gm_shape_xSemiAxis: xSemiAxis,
       _gm_shape_ySemiAxis: ySemiAxis,
       _gm_shape_angle: angle,
+      ...properties
     },
   });
 
