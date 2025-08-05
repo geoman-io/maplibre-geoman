@@ -33,7 +33,7 @@ export class EditCut extends BaseEdit {
     this.gm,
     { snappingMarkers: 'first', targetShape: 'polygon' },
   );
-  cutShapesAllowed: Array<FeatureShape> = ['circle', 'line', 'rectangle', 'polygon'];
+  cutShapesAllowed: Array<FeatureShape> = ['ellipse', 'circle', 'line', 'rectangle', 'polygon'];
   eventHandlers = {
     [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
