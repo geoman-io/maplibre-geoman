@@ -209,14 +209,14 @@ export abstract class BaseDrag extends BaseEdit {
 
     const newCenterCoords: LngLat = [oldCenter[0] + lngLatDiff.lng, oldCenter[1] + lngLatDiff.lat];
 
-    const circlePolygon = getGeoJsonEllipse({
+    const ellipsePolygon = getGeoJsonEllipse({
       center: newCenterCoords,
       xSemiAxis,
       ySemiAxis,
       angle,
     });
 
-    return circlePolygon;
+    return ellipsePolygon;
   }
 
   moveCircle(
