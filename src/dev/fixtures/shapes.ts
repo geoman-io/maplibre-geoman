@@ -4,7 +4,7 @@ import log from 'loglevel';
 
 
 export const loadStressTestFeatureCollection = (geoman: Geoman, step: number, size: number) => {
-  const targetSource = geoman.features.sources.gm_standby;
+  const targetSource = geoman.features.sources.gm_main;
   if (!targetSource) {
     log.error('Target source is not available');
     return;

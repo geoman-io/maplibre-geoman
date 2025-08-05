@@ -38,7 +38,7 @@ import log from 'loglevel';
 
 export const SOURCES = {
   // order matters here, layers order will be aligned according to these items
-  standby: `${gmPrefix}_standby`,
+  // standby: `${gmPrefix}_standby`, // used in pro version only
   main: `${gmPrefix}_main`,
   temporary: `${gmPrefix}_temporary`,
 } as const;
@@ -437,7 +437,10 @@ export class Features {
     } = { allowedShapes: undefined },
   ): GeoJsonShapeFeatureCollection {
     return this.asGeoJsonFeatureCollection({
-      sourceNames: [SOURCES.main, SOURCES.standby],
+      sourceNames: [
+        SOURCES.main,
+        // SOURCES.standby, // used in pro version only
+      ],
       shapeTypes: allowedShapes ? allowedShapes : [...shapeNames],
     });
   }

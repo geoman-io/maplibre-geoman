@@ -23,7 +23,10 @@ export class ZoomToFeaturesHelper extends BaseHelper {
 
   fitMapToFeatures() {
     const featureCollection = this.gm.features.asGeoJsonFeatureCollection({
-      sourceNames: [SOURCES.main, SOURCES.standby],
+      sourceNames: [
+        SOURCES.main,
+        // SOURCES.standby, // used in pro version only
+      ],
     });
     const bboxArray = bbox(featureCollection) as [number, number, number, number];
     const bounds: [LngLat, LngLat] = [
