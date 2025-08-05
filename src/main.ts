@@ -142,9 +142,17 @@ export class Geoman {
     await this.addControls();
   }
 
-  destroy() {
+  destroy(removeLayers = true) {
     this.removeControls();
     this.events.bus.detachAllEvents();
+
+    if (removeLayers) {
+      for (const source of Object.values(this.features.sources)) {
+        if (source) {
+          source.remove({ removeLayers });
+        }
+      }
+    }
 
     if ('gm' in this.mapAdapter.mapInstance) {
       delete this.mapAdapter.mapInstance.gm;
