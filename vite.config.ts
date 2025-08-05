@@ -22,7 +22,7 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-        '@mapLib': path.resolve(__dirname, './src/core/map/maplibre')
+        '@mapLib': path.resolve(__dirname, `./src/core/map/${baseMap}`)
       },
     },
     plugins: [
