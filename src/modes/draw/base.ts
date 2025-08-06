@@ -17,6 +17,7 @@ import log from 'loglevel';
 export const shapeNames = [
   // shapes
   'marker',
+  'ellipse',
   'circle',
   'circle_marker',
   'text_marker',

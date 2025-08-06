@@ -35,6 +35,12 @@ export const defaultOptions: GmOptionsData = {
         uiEnabled: true,
         active: false,
       },
+      ellipse: {
+        title: 'Ellipse',
+        icon: controlIcons.ellipse,
+        uiEnabled: true,
+        active: false,
+      },
       line: {
         title: 'Line',
         icon: controlIcons.line,

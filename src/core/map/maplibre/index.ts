@@ -69,7 +69,7 @@ export class MaplibreAdapter
     this.mapInstance.removeControl(control);
   }
 
-  async loadImage({ id, image }: { id: string, image: string }) {
+  async loadImage({ id, image }: { id: string; image: string }) {
     const loadedImage = await this.mapInstance.loadImage(image);
     this.mapInstance.addImage(id, loadedImage.data);
   }

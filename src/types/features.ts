@@ -10,12 +10,29 @@ import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
 export type FeatureId = number | string;
 
 export type ShapeGeoJsonProperties = {
-  shape: FeatureShape,
+  shape: Exclude<FeatureShape, "ellipse">,
   [FEATURE_ID_PROPERTY]?: FeatureId,
   center?: LngLat,
   text?: string,
   [key: string]: unknown,
-};
+} | EllipseGeoJsonProperties;
+
+export type EllipseGeoJsonInternalProperties = {
+  _gm_shape_center: LngLat,
+  _gm_shape_xSemiAxis: number,
+  _gm_shape_ySemiAxis: number,
+  _gm_shape_angle: number,
+}
+
+export interface EllipseProperties {
+  shape: "ellipse",
+  [key: string]: unknown,
+}
+
+export type EllipseGeoJsonProperties = EllipseProperties & Partial<EllipseGeoJsonInternalProperties> & {
+  [FEATURE_ID_PROPERTY]?: FeatureId,
+}
+
 export type FeatureDataParameters = {
   gm: Geoman,
   id: FeatureId,
@@ -43,6 +60,9 @@ export type ForEachFeatureDataCallbackFn = (
 export type FeatureOrders = Record<FeatureSourceName, FeatureOrder>;
 export type FeatureShapeProperties = {
   center: LngLat | null,
+  xSemiAxis?: number,
+  ySemiAxis?: number,
+  angle?: number
 };
 
 export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';
