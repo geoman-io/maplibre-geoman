@@ -12,7 +12,6 @@ import type {
   GMEditFeatureRemovedEvent,
   GMEditFeatureUpdatedEvent,
   GMEvent,
-  LngLat,
   MarkerData,
   NonEmptyArray,
   PointerEventName,
@@ -106,14 +105,14 @@ export abstract class BaseEdit extends BaseAction {
     const properties = featureGeoJson.properties;
 
     // when moving the feature, shape properties are saved in properties
-    if (featureData.shape === 'circle' && properties.center) {
+    if (properties.shape === 'circle' && properties.center) {
       featureData.setShapeProperty('center', properties.center);
     }
-    if (featureData.shape === 'ellipse' && properties._gm_shape_center) {
-      featureData.setShapeProperty('center', properties._gm_shape_center as LngLat);
-      featureData.setShapeProperty('xSemiAxis', properties._gm_shape_xSemiAxis as number);
-      featureData.setShapeProperty('ySemiAxis', properties._gm_shape_ySemiAxis as number);
-      featureData.setShapeProperty('angle', properties._gm_shape_angle as number);
+    if (properties.shape === 'ellipse' && properties._gm_shape_center) {
+      featureData.setShapeProperty('center', properties._gm_shape_center);
+      featureData.setShapeProperty('xSemiAxis', properties._gm_shape_xSemiAxis);
+      featureData.setShapeProperty('ySemiAxis', properties._gm_shape_ySemiAxis);
+      featureData.setShapeProperty('angle', properties._gm_shape_angle);
     }
 
     featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
