@@ -1,6 +1,6 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import svgLoader from 'vite-svg-loader';
 
 
@@ -12,23 +12,11 @@ export type Options = {
   GmVersion: typeof OPTIONS['gmVersion'][number];
 };
 
-const getCmdOptionValue = (optionName: string): string | null => {
-  const optionArgument = process.argv.find((arg) => arg.startsWith(`--${optionName}=`));
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
 
-  if (optionArgument) {
-    const regexp = new RegExp(`--${optionName}=(\\w*)`);
-    const match = optionArgument.match(regexp);
-
-    if (match) {
-      return match[1];
-    }
-  }
-  return null;
-};
-
-export default defineConfig(() => {
   const baseMap = 'maplibre';
-  const gmVersion = getCmdOptionValue('gm_version') as Options['GmVersion'] | null;
+  const gmVersion = (env.VITE_GEOMAN_VERSION as Options['GmVersion']) || null;
 
   return {
     define: {

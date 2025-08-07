@@ -1,11 +1,18 @@
 import { typedKeys } from '@/utils/typing.ts';
 import { debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
+import type { Options } from '../../vite.config.ts';
 
-export const IS_FREE = __GEOMAN_VERSION__ === 'pro';
 
-export const IS_PRO = __GEOMAN_VERSION__ === 'pro';
+let geomanVersion: Options['GmVersion'] | null;
 
+try {
+  geomanVersion = __GEOMAN_VERSION__;
+} catch {
+  geomanVersion = (process.env.VITE_GEOMAN_VERSION as Options['GmVersion']) || null;
+}
+
+export const IS_PRO = geomanVersion === 'pro';
 
 export function augmentIfPro<T>(value: readonly T[]): readonly T[];
 export function augmentIfPro<T extends Record<PropertyKey, unknown>>(value: T): Partial<T>;

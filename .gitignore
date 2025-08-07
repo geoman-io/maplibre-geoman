@@ -15,7 +15,7 @@ llm-prompt.txt
 pub
 
 # env
-.env
+#.env
 
 # Editor directories and files
 .vscode/*
