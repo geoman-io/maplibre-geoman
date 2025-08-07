@@ -34,11 +34,12 @@ import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature, FeatureCollection, GeoJSON, Geometry, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
+import { IS_PRO } from '@/utils/behavior.ts';
 
 
-export const SOURCES = {
+export const SOURCES: { [key: string]: string } = {
   // order matters here, layers order will be aligned according to these items
-  // standby: `${gmPrefix}_standby`, // used in pro version only
+  ...(IS_PRO && { standby: `${gmPrefix}_standby` }), // available only in the pro version
   main: `${gmPrefix}_main`,
   temporary: `${gmPrefix}_temporary`,
 } as const;
@@ -439,7 +440,7 @@ export class Features {
     return this.asGeoJsonFeatureCollection({
       sourceNames: [
         SOURCES.main,
-        // SOURCES.standby, // used in pro version only
+        ...(IS_PRO ? [SOURCES.standby] : []),
       ],
       shapeTypes: allowedShapes ? allowedShapes : [...shapeNames],
     });

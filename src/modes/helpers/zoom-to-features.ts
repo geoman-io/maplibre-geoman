@@ -3,6 +3,7 @@ import type { HelperModeName, LngLat } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import bbox from '@turf/bbox';
 import log from 'loglevel';
+import { IS_PRO } from '@/utils/behavior.ts';
 
 
 export class ZoomToFeaturesHelper extends BaseHelper {
@@ -25,7 +26,7 @@ export class ZoomToFeaturesHelper extends BaseHelper {
     const featureCollection = this.gm.features.asGeoJsonFeatureCollection({
       sourceNames: [
         SOURCES.main,
-        // SOURCES.standby, // used in pro version only
+        ...(IS_PRO ? [SOURCES.standby] : []),
       ],
     });
     const bboxArray = bbox(featureCollection) as [number, number, number, number];

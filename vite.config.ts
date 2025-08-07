@@ -12,10 +12,28 @@ export type Options = {
   GmVersion: typeof OPTIONS['gmVersion'][number];
 };
 
+const getCmdOptionValue = (optionName: string): string | null => {
+  const optionArgument = process.argv.find((arg) => arg.startsWith(`--${optionName}=`));
+
+  if (optionArgument) {
+    const regexp = new RegExp(`--${optionName}=(\\w*)`);
+    const match = optionArgument.match(regexp);
+
+    if (match) {
+      return match[1];
+    }
+  }
+  return null;
+};
+
 export default defineConfig(() => {
   const baseMap = 'maplibre';
+  const gmVersion = getCmdOptionValue('gm_version') as Options['GmVersion'] | null;
 
   return {
+    define: {
+      __GEOMAN_VERSION__: JSON.stringify(gmVersion),
+    },
     server: {
       port: 3100,
     },

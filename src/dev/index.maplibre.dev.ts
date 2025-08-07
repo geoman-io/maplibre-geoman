@@ -188,6 +188,8 @@ onOffButtonElement?.addEventListener('click', async () => {
     window.geoman = geoman;
     window.customData ??= { eventResults: {} };
     window.customData.map = geoman.mapAdapter.mapInstance as MapInstanceWithGeoman;
+
+    log.debug('geoman version:', __GEOMAN_VERSION__);
   }
 });
 

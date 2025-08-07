@@ -9,70 +9,72 @@ import { getSnapGuideStyles } from '@/core/options/layers/shapes/snap-guides.ts'
 import { getTextMarkerStyles } from '@/core/options/layers/shapes/text-marker.ts';
 import { sourceStyles } from '@/core/options/layers/variables.ts';
 import type { FeatureShape, LayerStyle } from '@/main.ts';
+import { IS_PRO } from '@/utils/behavior.ts';
+
 
 const styles: { [key in FeatureShape]: LayerStyle } = {
   // order matters here, layers order will be aligned according to these items
   polygon: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
   },
   rectangle: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
   },
   circle: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
   },
   circle_marker: {
     [SOURCES.main]: getCircleMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getCircleMarkerStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getCircleMarkerStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getCircleMarkerStyles(sourceStyles[SOURCES.standby]) }),
   },
   line: {
     [SOURCES.main]: getLineStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getLineStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getLineStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getLineStyles(sourceStyles[SOURCES.standby]) }),
   },
   marker: {
     [SOURCES.temporary]: getMarkerStyles(),
     [SOURCES.main]: getMarkerStyles(),
-    // [SOURCES.standby]: getMarkerStyles(),
+    ...(IS_PRO && { [SOURCES.standby]: getMarkerStyles() }),
   },
   text_marker: {
     [SOURCES.main]: getTextMarkerStyles(),
     [SOURCES.temporary]: getTextMarkerStyles(),
-    // [SOURCES.standby]: getTextMarkerStyles(),
+    ...(IS_PRO && { [SOURCES.standby]: getTextMarkerStyles() }),
   },
   dom_marker: {
     // not a geojson source, layers aren't required
     [SOURCES.main]: [],
     [SOURCES.temporary]: [],
-    // [SOURCES.standby]: [],
+    ...(IS_PRO && { [SOURCES.standby]: [] }),
   },
   center_marker: {
     [SOURCES.main]: getControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
   },
   vertex_marker: {
     [SOURCES.main]: getControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
   },
   edge_marker: {
     [SOURCES.main]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
   },
   snap_guide: {
     // todo: check which sources can't display snap guides (and other shapes) and remove layers
     [SOURCES.main]: getSnapGuideStyles(),
     [SOURCES.temporary]: getSnapGuideStyles(),
-    // [SOURCES.standby]: getSnapGuideStyles(),
+    ...(IS_PRO && { [SOURCES.standby]: getSnapGuideStyles() }),
   },
 };
 

@@ -2,6 +2,19 @@ import { typedKeys } from '@/utils/typing.ts';
 import { debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
 
+export const IS_FREE = __GEOMAN_VERSION__ === 'pro';
+
+export const IS_PRO = __GEOMAN_VERSION__ === 'pro';
+
+
+export function augmentIfPro<T>(value: readonly T[]): readonly T[];
+export function augmentIfPro<T extends Record<PropertyKey, unknown>>(value: T): Partial<T>;
+export function augmentIfPro(value: unknown) {
+  if (!IS_PRO) {
+    return Array.isArray(value) ? [] : {};
+  }
+  return value;
+}
 
 export const isTouchScreen = () => {
   if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
