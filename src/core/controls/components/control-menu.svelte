@@ -18,13 +18,15 @@
 </script>
 
 {#if actionInstance}
-  {#each actionInstance.options as item}
+  {#each Object.entries(actionInstance.options) as [key, item] (key)}
     <ActionOption
+      name={key}
       actionInstance={actionInstance}
       actionOption={item} />
   {/each}
-  {#each actionInstance.actions as item}
+  {#each Object.entries(actionInstance.actions) as [key, item] (key)}
     <SubAction
+      name={key}
       actionInstance={actionInstance}
       subAction={item} />
   {/each}
