@@ -26,8 +26,8 @@ export abstract class BaseAction {
   gm: Geoman;
   abstract actionType: ActionType;
   abstract mode: ModeName;
-  options: ActionOptions = [];
-  actions: SubActions = [];
+  options: ActionOptions = {};
+  actions: SubActions = {};
   flags = {
     featureCreateAllowed: true,
     featureUpdateAllowed: true,
@@ -66,12 +66,12 @@ export abstract class BaseAction {
   }
 
   getOptionValue(name: string) {
-    const option = this.options.find((item) => item.name === name);
+    const option = this.options[name];
     if (!option) {
       throw new Error(`Option ${name} not found`);
     }
 
-    if (option.type === 'toggle') {
+    if (['toggle', 'hidden'].includes(option.type)) {
       return option.value;
     } else if (option.type === 'select') {
       return option.value.value;
@@ -81,7 +81,7 @@ export abstract class BaseAction {
   }
 
   applyOptionValue(name: string, value: boolean | string | number) {
-    const option = this.options.find((item) => item.name === name);
+    const option = this.options[name];
     if (!option) {
       log.error('Option not found', name, value);
       return;
@@ -94,6 +94,8 @@ export abstract class BaseAction {
       if (choiceItemValue) {
         option.value = choiceItemValue;
       }
+    } else if (option.type === 'hidden') {
+      option.value = value;
     } else {
       log.error('Can\'t apply option value', name, value, option);
     }

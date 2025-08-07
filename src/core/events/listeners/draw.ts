@@ -2,6 +2,7 @@ import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
 import type { ActionInstanceKey, Geoman, GMDrawEvent, GMEvent, MapEventHandlers } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
+import { createDrawInstance } from '@/modes/draw/index.ts';
 import { isGmDrawEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
 
@@ -36,7 +37,7 @@ export class DrawEventListener extends BaseEventListener {
   }
 
   start(actionInstanceKey: ActionInstanceKey, payload: GMDrawEvent) {
-    const actionInstance = this.gm.createDrawInstance(payload.mode);
+    const actionInstance = createDrawInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
     }

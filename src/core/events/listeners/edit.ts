@@ -2,6 +2,7 @@ import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
 import type { ActionInstanceKey, Geoman, GMEditEvent, GMEvent, MapEventHandlers } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
+import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
 
@@ -39,7 +40,7 @@ export class EditEventListener extends BaseEventListener {
       return;
     }
 
-    const actionInstance = this.gm.createEditInstance(payload.mode);
+    const actionInstance = createEditInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
     }

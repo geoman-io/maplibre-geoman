@@ -1,16 +1,18 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type { BaseDomMarker } from '@/core/map/base/marker.ts';
 import { drawModes, extraDrawModes, shapeNames } from '@/modes/draw/base.ts';
+import { createDrawInstance } from '@/modes/draw/index.ts';
 import { editModes } from '@/modes/edit/base.ts';
+import { createEditInstance } from '@/modes/edit/index.ts';
 import { helperModes } from '@/modes/helpers/base.ts';
+import { createHelperInstance } from '@/modes/helpers/index.ts';
 import type { ModeName } from '@/types/controls.ts';
 import type { PositionData } from '@/types/geojson.ts';
 import type { ActionType } from '@/types/options.ts';
-import type { Geoman } from '@/main.ts';
 
 export type ActionInstanceKey = `${ActionType}__${ModeName}`;
 export type ActionInstance = ReturnType<
-  Geoman['createDrawInstance'] | Geoman['createEditInstance'] | Geoman['createHelperInstance']
+  typeof createDrawInstance | typeof createEditInstance | typeof createHelperInstance
 >;
 
 export type ShapeName = typeof shapeNames[number];
@@ -27,7 +29,6 @@ export type ChoiceItem = {
 export type SelectActionOption = {
   type: 'select',
   label: string,
-  name: string,
   value: ChoiceItem,
   choices: Array<ChoiceItem>,
 };
@@ -35,19 +36,22 @@ export type SelectActionOption = {
 export type ToggleActionOption = {
   type: 'toggle',
   label: string,
-  name: string,
   value: boolean,
+};
+
+export type HiddenActionOption = {
+  type: 'hidden',
+  value: string | boolean | number | undefined,
 };
 
 export type SubAction = {
   label: string,
-  name: string,
   method: () => void,
 };
 
-export type ActionOption = SelectActionOption | ToggleActionOption;
-export type ActionOptions = Array<ActionOption>;
-export type SubActions = Array<SubAction>;
+export type ActionOption = SelectActionOption | ToggleActionOption | HiddenActionOption;
+export type ActionOptions = { [key: string]: ActionOption };
+export type SubActions = { [key: string]: SubAction };
 
 
 export type MarkerId = string;

@@ -3,7 +3,8 @@
   import log from 'loglevel';
   import { onMount } from 'svelte';
 
-  const { actionInstance, actionOption }: {
+  const { name, actionInstance, actionOption }: {
+    name: string,
     actionInstance: ActionInstance | null,
     actionOption: ActionOption | null,
   } = $props();
@@ -34,16 +35,16 @@
       selectedValue = target.value;
     }
 
-    actionInstance.applyOptionValue(actionOption.name, selectedValue);
+    actionInstance.applyOptionValue(name, selectedValue);
   };
 </script>
 
 {#if actionOption}
   <div class="action-option">
     {#if actionOption.type === 'select'}
-      <label for={actionOption.name}>{actionOption.label}</label>
+      <label for={name}>{actionOption.label}</label>
       <select
-        id={actionOption.name}
+        id={name}
         bind:value={selectedValue}
         onchange={handleOptionChange}>
         {#each actionOption.choices as choiceItem}
@@ -51,16 +52,14 @@
         {/each}
       </select>
     {:else if actionOption.type === 'toggle' && typeof selectedValue === 'boolean'}
-      <label for={actionOption.name}>
+      <label for={name}>
         <input
           type="checkbox"
-          id={String(actionOption.name)}
+          id={String(name)}
           bind:checked={selectedValue}
           onchange={handleOptionChange} />
         {actionOption.label}
       </label>
-    {:else}
-      <span>Unknown type</span>
     {/if}
   </div>
 {/if}
@@ -79,6 +78,10 @@
 
     select, input[type="checkbox"] {
       cursor: pointer;
+    }
+
+    &:empty {
+      display: none;
     }
   }
 </style>

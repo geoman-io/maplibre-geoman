@@ -217,33 +217,6 @@ export class Geoman {
     ];
   }
 
-  createDrawInstance(shape: DrawModeName) {
-    if (this.drawClassMap[shape]) {
-      return new this.drawClassMap[shape](this);
-    }
-
-    log.error(`Draw "${shape}" is not available`);
-    return null;
-  }
-
-  createEditInstance(mode: EditModeName) {
-    if (this.editClassMap[mode]) {
-      return new this.editClassMap[mode](this);
-    }
-
-    log.error(`Edit "${mode}" is not available`);
-    return null;
-  }
-
-  createHelperInstance(mode: HelperModeName) {
-    if (this.helperClassMap[mode]) {
-      return new this.helperClassMap[mode](this);
-    }
-
-    log.error(`Helper "${mode}" is not available`);
-    return null;
-  }
-
   setGlobalEventsListener(callback: EventForwarder['globalEventsListener'] = null) {
     this.events.bus.forwarder.globalEventsListener = callback;
   }

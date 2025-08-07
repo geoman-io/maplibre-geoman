@@ -2,6 +2,7 @@ import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
 import type { ActionInstanceKey, Geoman, GMEvent, GMHelperModeEvent, MapEventHandlers } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
+import { createHelperInstance } from '@/modes/helpers/index.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
 
@@ -36,7 +37,7 @@ export class HelperEventListener extends BaseEventListener {
   }
 
   start(actionInstanceKey: ActionInstanceKey, payload: GMHelperModeEvent) {
-    const actionInstance = this.gm.createHelperInstance(payload.mode);
+    const actionInstance = createHelperInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
     }

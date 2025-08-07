@@ -5,6 +5,7 @@ import { EditCut } from '@/modes/edit/cut.ts';
 import { EditDelete } from '@/modes/edit/delete.ts';
 import { EditDrag } from '@/modes/edit/drag.ts';
 import { EditRotate } from '@/modes/edit/rotate.ts';
+import log from 'loglevel';
 
 
 type EditClassConstructor = new (gm: Geoman) => BaseEdit;
@@ -26,3 +27,12 @@ export const editClassMap: EditClassMap = {
   lasso: null,
   delete: EditDelete,
 } as const;
+
+export const createEditInstance = (gm: Geoman, mode: EditModeName) => {
+  if (editClassMap[mode]) {
+    return new editClassMap[mode](gm);
+  }
+
+  log.error(`Edit "${mode}" is not available`);
+  return null;
+};
