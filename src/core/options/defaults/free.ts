@@ -7,7 +7,7 @@ export const defaultOptions: GmOptionsData = {
   settings: {
     throttlingDelay: 10,
     controlsPosition: 'top-left',
-    controlsEnabledByDefault: true,
+    controlsUiEnabledByDefault: true,
   },
   layerStyles: defaultLayerStyles,
   controls: {

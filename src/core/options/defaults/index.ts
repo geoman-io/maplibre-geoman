@@ -8,7 +8,7 @@ export const trackDefaultUiEnabledState = (options: GmOptionsData) => {
   const EXCLUDED_ACTIONS: ReadonlyArray<ModeName> = [
     'shape_markers',
   ];
-  const defaultUiEnabled = options.settings.controlsEnabledByDefault;
+  const defaultUiEnabled = options.settings.controlsUiEnabledByDefault;
 
   forEachDeep(options, (_, path) => {
     const modeName = path.at(2) as ModeName;

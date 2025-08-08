@@ -40,8 +40,8 @@ export class GmOptions {
   getMergedOptions(options: PartialDeep<GmOptionsData> = {}): GmOptionsData {
     const defaultOptions = getDefaultOptions();
 
-    if (typeof options.settings?.controlsEnabledByDefault === 'boolean') {
-      defaultOptions.settings.controlsEnabledByDefault = options.settings.controlsEnabledByDefault;
+    if (typeof options.settings?.controlsUiEnabledByDefault === 'boolean') {
+      defaultOptions.settings.controlsUiEnabledByDefault = options.settings.controlsUiEnabledByDefault;
     }
 
     trackDefaultUiEnabledState(defaultOptions);
