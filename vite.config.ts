@@ -55,9 +55,10 @@ export default defineConfig(({ mode }) => {
           },
           assetFileNames: (chunkInfo): string => {
             if (chunkInfo.name && chunkInfo.name.endsWith('.css')) {
-              return `${baseMap}-geoman.css`;
+              // return `${baseMap}-geoman.css`;
+              return `${baseMap}-geoman.[ext]`;
             }
-            return 'assets/[name].[extname]';
+            return 'assets/[name].[ext]';
           },
         },
       },

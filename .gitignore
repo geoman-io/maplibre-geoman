@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 llm-prompt.txt
+llm-prompt.pdf
 pub
 
 # env
