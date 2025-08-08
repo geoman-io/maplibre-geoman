@@ -19,9 +19,9 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 2,
+  retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : 2,
+  workers: process.env.CI ? 1 : 5,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { open: 'never' }], // never launch a browser to show the report
@@ -36,7 +36,7 @@ export default defineConfig({
     /* Navigation timeout - increased for CI */
     navigationTimeout: process.env.CI ? 60000 : 30000,
     /* Action timeout - increased for CI */
-    actionTimeout: process.env.CI ? 30000 : 10000,
+    actionTimeout: process.env.CI ? 30000 : 20000,
   },
 
   /* Configure projects for major browsers */

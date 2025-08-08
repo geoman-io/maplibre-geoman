@@ -14,7 +14,7 @@ test.describe('Drag Events', () => {
   });
 
   test('should fire gm:dragstart, gm:drag, and gm:dragend events during drag operation', async ({ page }) => {
-    const dX = -20;
+    const dX = -30;
     const dY = 0;
 
     await enableMode(page, 'edit', 'drag');
