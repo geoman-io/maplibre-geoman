@@ -1,5 +1,5 @@
 import { gmPrefix } from '@/core/events/listeners/base.ts';
-import { getDefaultOptions } from '@/core/options/defaults/index.ts';
+import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/defaults/index.ts';
 import type {
   ActionType,
   ControlOptions,
@@ -38,8 +38,16 @@ export class GmOptions {
   }
 
   getMergedOptions(options: PartialDeep<GmOptionsData> = {}): GmOptionsData {
+    const defaultOptions = getDefaultOptions();
+
+    if (typeof options.settings?.controlsEnabledByDefault === 'boolean') {
+      defaultOptions.settings.controlsEnabledByDefault = options.settings.controlsEnabledByDefault;
+    }
+
+    trackDefaultUiEnabledState(defaultOptions);
+
     return mergeWith(
-      getDefaultOptions(),
+      defaultOptions,
       options,
       mergeByTypeCustomizer,
     );

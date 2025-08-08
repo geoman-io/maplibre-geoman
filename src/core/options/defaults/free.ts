@@ -7,6 +7,7 @@ export const defaultOptions: GmOptionsData = {
   settings: {
     throttlingDelay: 10,
     controlsPosition: 'top-left',
+    controlsEnabledByDefault: true,
   },
   layerStyles: defaultLayerStyles,
   controls: {
@@ -92,7 +93,7 @@ export const defaultOptions: GmOptionsData = {
       shape_markers: {
         title: 'Shape markers',
         icon: null,
-        uiEnabled: true,
+        uiEnabled: false,
         active: false,
       },
       snapping: {

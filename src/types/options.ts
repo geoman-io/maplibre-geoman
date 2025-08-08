@@ -20,6 +20,7 @@ export type GmOptionsData = {
   settings: {
     throttlingDelay: number,
     controlsPosition: BaseControlsPosition,
+    controlsEnabledByDefault: boolean,
   },
   layerStyles: typeof defaultLayerStyles,
   controls: {

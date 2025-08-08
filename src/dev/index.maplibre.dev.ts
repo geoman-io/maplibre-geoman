@@ -19,12 +19,14 @@ log.setLevel(log.levels.TRACE);
 const gmOptions: PartialDeep<GmOptionsData> = {
   settings: {
     controlsPosition: 'top-left',
+    controlsEnabledByDefault: true,
   },
   layerStyles: layerStyles,
   controls: {
     edit: {
       drag: {
         title: 'Drag',
+        uiEnabled: true,
       },
     },
     draw: {},
