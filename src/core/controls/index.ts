@@ -113,6 +113,7 @@ export default class GMControl extends BaseControl {
     controlsStore.update(() => ({
       controls: this.controls,
       options: this.gm.options.controls,
+      settings: this.gm.options.settings,
     }));
   }
 

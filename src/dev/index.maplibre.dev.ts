@@ -19,7 +19,8 @@ log.setLevel(log.levels.TRACE);
 const gmOptions: PartialDeep<GmOptionsData> = {
   settings: {
     controlsPosition: 'top-left',
-    controlsUiEnabledByDefault: false,
+    controlsUiEnabledByDefault: true,
+    controlsCollapsable: false,
   },
   layerStyles: layerStyles,
   controls: {

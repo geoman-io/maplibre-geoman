@@ -8,6 +8,7 @@ export const defaultOptions: GmOptionsData = {
     throttlingDelay: 10,
     controlsPosition: 'top-left',
     controlsUiEnabledByDefault: true,
+    controlsCollapsable: false,
   },
   layerStyles: defaultLayerStyles,
   controls: {
