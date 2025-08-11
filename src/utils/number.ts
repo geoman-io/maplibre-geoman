@@ -1,3 +1,8 @@
+const UNIT_SYSTEMS = {
+  imperial: 'en-US',
+  metric: 'nb-NO',
+} as const;
+
 const UNITS = {
   distance: {
     metric: [
@@ -35,6 +40,8 @@ export const isImperialByBrowser = () => {
 
 type FormatOptions = {
   units: 'imperial' | 'metric',
+  minimumFractionDigits?: number,
+  maximumFractionDigits?: number,
 };
 
 export const toMod = (
@@ -42,10 +49,13 @@ export const toMod = (
   mod: number,
 ) => ((num % mod) + mod) % mod;
 
-export const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('nb-NO', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+export const formatNumber = (
+  num: number,
+  options: FormatOptions,
+): string => {
+  return new Intl.NumberFormat(UNIT_SYSTEMS[options.units], {
+    minimumFractionDigits: options.minimumFractionDigits ?? 0,
+    maximumFractionDigits: options.maximumFractionDigits ?? 2,
   }).format(num);
 };
 
@@ -57,10 +67,10 @@ export const formatDistance = (
   const range = ranges.find((item) => num >= item.range[0] && num < item.range[1]);
 
   if (range) {
-    return `${formatNumber(num * range.factor)} ${range.unit}`;
+    return `${formatNumber(num * range.factor, options)} ${range.unit}`;
   }
 
-  return formatNumber(num);
+  return formatNumber(num, options);
 };
 
 export const formatArea = (
@@ -71,8 +81,8 @@ export const formatArea = (
   const range = ranges.find((item) => num >= item.range[0] && num < item.range[1]);
 
   if (range) {
-    return `${formatNumber(num * range.factor)} ${range.unit}`;
+    return `${formatNumber(num * range.factor, options)} ${range.unit}`;
   }
 
-  return formatNumber(num);
+  return formatNumber(num, options);
 };
