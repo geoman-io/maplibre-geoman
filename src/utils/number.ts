@@ -38,7 +38,7 @@ export const isImperialByBrowser = () => {
   return IMPERIAL_REGIONS.has(loc.region || '--');
 }
 
-type FormatOptions = {
+export type NumberFormatOptions = {
   units: 'imperial' | 'metric',
   minimumFractionDigits?: number,
   maximumFractionDigits?: number,
@@ -51,7 +51,7 @@ export const toMod = (
 
 export const formatNumber = (
   num: number,
-  options: FormatOptions,
+  options: NumberFormatOptions,
 ): string => {
   return new Intl.NumberFormat(UNIT_SYSTEMS[options.units], {
     minimumFractionDigits: options.minimumFractionDigits ?? 0,
@@ -61,7 +61,7 @@ export const formatNumber = (
 
 export const formatDistance = (
   num: number,
-  options: FormatOptions,
+  options: NumberFormatOptions,
 ): string => {
   const ranges = UNITS.distance[options.units];
   const range = ranges.find((item) => num >= item.range[0] && num < item.range[1]);
@@ -75,7 +75,7 @@ export const formatDistance = (
 
 export const formatArea = (
   num: number,
-  options: FormatOptions,
+  options: NumberFormatOptions,
 ): string => {
   const ranges = UNITS.area[options.units];
   const range = ranges.find((item) => num >= item.range[0] && num < item.range[1]);
