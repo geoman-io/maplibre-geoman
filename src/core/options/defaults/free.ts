@@ -9,6 +9,11 @@ export const defaultOptions: GmOptionsData = {
     controlsPosition: 'top-left',
     controlsUiEnabledByDefault: true,
     controlsCollapsible: false,
+    controlsStyles: {
+      controlGroupClass: 'maplibregl-ctrl maplibregl-ctrl-group',
+      controlContainerClass: 'gm-control-container',
+      controlButtonClass: 'gm-control-button',
+    },
   },
   layerStyles: defaultLayerStyles,
   controls: {

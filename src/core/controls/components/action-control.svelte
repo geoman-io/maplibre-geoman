@@ -4,6 +4,7 @@
   import DOMPurify from 'dompurify';
   import log from 'loglevel';
   import { getContext } from 'svelte';
+  import { controlsStore } from '@/core/controls/components/controls-store.ts';
 
   const { control, controlOptions }: {
     control: GenericSystemControl,
@@ -25,11 +26,11 @@
 </script>
 
 {#if control && controlOptions && controlOptions.uiEnabled}
-  <div class="control-container">
+  <div class={$controlsStore.settings.controlsStyles.controlContainerClass}>
     <button
       type="button"
       id={`id_${control.type}_${control.targetMode}`}
-      class={`gm-control-button ${control.type}-${control.targetMode}`}
+      class={`${$controlsStore.settings.controlsStyles.controlButtonClass} ${control.type}-${control.targetMode}`}
       class:active={controlOptions.active}
       title={controlOptions.title}
       onclick={handleClick}>
@@ -54,7 +55,7 @@
 {/if}
 
 <style lang="scss">
-  .control-container {
+  .gm-control-container {
     position: relative;
 
     .control-menu {

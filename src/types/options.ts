@@ -16,12 +16,19 @@ export interface ControlOptions {
   options?: ActionOptions,
 }
 
+export interface ControlStyles {
+  controlGroupClass: string,
+  controlContainerClass: string,
+  controlButtonClass: string,
+}
+
 export type GmOptionsData = {
   settings: {
     throttlingDelay: number,
     controlsPosition: BaseControlsPosition,
     controlsUiEnabledByDefault: boolean,
     controlsCollapsible: boolean,
+    controlsStyles: ControlStyles,
   },
   layerStyles: typeof defaultLayerStyles,
   controls: {

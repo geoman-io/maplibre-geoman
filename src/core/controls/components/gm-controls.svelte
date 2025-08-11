@@ -3,20 +3,17 @@
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
   import { controlsStore } from '@/core/controls/components/controls-store.ts';
-  import type { ActionType, GenericSystemControls, Geoman, ModeName } from '@/main.ts';
+  import type { ActionType, GenericSystemControls, ModeName } from '@/main.ts';
   import DOMPurify from 'dompurify';
-  import { getContext, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
 
   let { controls, options } = $controlsStore;
-  const gm: Geoman = getContext('gm');
-  const mapName = `${gm.mapAdapter.mapType}gl`;
-  let controlsCollapsible = $state(false);
+  // const gm: Geoman = getContext('gm');
   let expanded = $state(true);
 
   const unsubscribe = controlsStore.subscribe((value) => {
     controls = value.controls;
     options = value.options;
-    controlsCollapsible = value.settings.controlsCollapsible;
   });
 
   onDestroy(unsubscribe);
@@ -44,8 +41,8 @@
 </style>
 
 <div class="gm-reactive-controls">
-  {#if controlsCollapsible}
-    <div class={`${mapName}-ctrl ${mapName}-ctrl-group group-settings`}>
+  {#if $controlsStore.settings.controlsCollapsible}
+    <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-settings`}>
       <button class="gm-control-button" onclick={toggleExpanded}>
         {@html getToggleExpandedIcon()}
       </button>
@@ -54,7 +51,7 @@
 
   {#if expanded}
     {#each Object.entries(options) as [groupKey, groupControls]}
-      <div class={`${mapName}-ctrl ${mapName}-ctrl-group group-${groupKey}`}>
+      <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-${groupKey}`}>
         {#each Object.entries(groupControls) as [controlKey, controlOptions]}
           {@const control = getControl(groupKey, controlKey)}
           {#if control}

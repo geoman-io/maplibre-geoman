@@ -21,6 +21,11 @@ const gmOptions: PartialDeep<GmOptionsData> = {
     controlsPosition: 'top-left',
     controlsUiEnabledByDefault: true,
     controlsCollapsible: true,
+    controlsStyles: {
+      controlGroupClass: 'maplibregl-ctrl maplibregl-ctrl-group',
+      controlContainerClass: 'gm-control-container',
+      controlButtonClass: 'gm-control-button',
+    },
   },
   layerStyles: layerStyles,
   controls: {
