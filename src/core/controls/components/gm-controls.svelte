@@ -10,13 +10,13 @@
   let { controls, options } = $controlsStore;
   const gm: Geoman = getContext('gm');
   const mapName = `${gm.mapAdapter.mapType}gl`;
-  let controlsCollapsable = $state(false);
+  let controlsCollapsible = $state(false);
   let expanded = $state(true);
 
   const unsubscribe = controlsStore.subscribe((value) => {
     controls = value.controls;
     options = value.options;
-    controlsCollapsable = value.settings.controlsCollapsable;
+    controlsCollapsible = value.settings.controlsCollapsible;
   });
 
   onDestroy(unsubscribe);
@@ -44,7 +44,7 @@
 </style>
 
 <div class="gm-reactive-controls">
-  {#if controlsCollapsable}
+  {#if controlsCollapsible}
     <div class={`${mapName}-ctrl ${mapName}-ctrl-group group-settings`}>
       <button class="gm-control-button" onclick={toggleExpanded}>
         {@html getToggleExpandedIcon()}

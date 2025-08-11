@@ -20,7 +20,7 @@ const gmOptions: PartialDeep<GmOptionsData> = {
   settings: {
     controlsPosition: 'top-left',
     controlsUiEnabledByDefault: true,
-    controlsCollapsable: false,
+    controlsCollapsible: true,
   },
   layerStyles: layerStyles,
   controls: {

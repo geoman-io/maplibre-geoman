@@ -21,7 +21,7 @@ export type GmOptionsData = {
     throttlingDelay: number,
     controlsPosition: BaseControlsPosition,
     controlsUiEnabledByDefault: boolean,
-    controlsCollapsable: boolean,
+    controlsCollapsible: boolean,
   },
   layerStyles: typeof defaultLayerStyles,
   controls: {
