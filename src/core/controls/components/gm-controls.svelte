@@ -46,9 +46,9 @@
 
   {#if expanded}
     <div class="animation-container" in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
-      {#each Object.entries(options) as [groupKey, groupControls]}
+      {#each Object.entries(options) as [groupKey, groupControls] (groupKey)}
         <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-${groupKey}`}>
-          {#each Object.entries(groupControls) as [controlKey, controlOptions]}
+          {#each Object.entries(groupControls) as [controlKey, controlOptions]  (controlKey)}
             {@const control = getControl(groupKey, controlKey)}
             {#if control}
               <ActionControl control={control} controlOptions={controlOptions} />
