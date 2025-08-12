@@ -6,6 +6,7 @@
   import type { ActionType, GenericSystemControls, ModeName } from '@/main.ts';
   import DOMPurify from 'dompurify';
   import { onDestroy } from 'svelte';
+  import { slide } from 'svelte/transition';
 
   let { controls, options } = $controlsStore;
   // const gm: Geoman = getContext('gm');
@@ -34,12 +35,6 @@
   };
 </script>
 
-<style>
-  .gm-reactive-controls {
-    color: brown;
-  }
-</style>
-
 <div class="gm-reactive-controls">
   {#if $controlsStore.settings.controlsCollapsible}
     <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-settings`}>
@@ -50,15 +45,28 @@
   {/if}
 
   {#if expanded}
-    {#each Object.entries(options) as [groupKey, groupControls]}
-      <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-${groupKey}`}>
-        {#each Object.entries(groupControls) as [controlKey, controlOptions]}
-          {@const control = getControl(groupKey, controlKey)}
-          {#if control}
-            <ActionControl control={control} controlOptions={controlOptions} />
-          {/if}
-        {/each}
-      </div>
-    {/each}
+    <div class="animation-container" in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
+      {#each Object.entries(options) as [groupKey, groupControls]}
+        <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-${groupKey}`}>
+          {#each Object.entries(groupControls) as [controlKey, controlOptions]}
+            {@const control = getControl(groupKey, controlKey)}
+            {#if control}
+              <ActionControl control={control} controlOptions={controlOptions} />
+            {/if}
+          {/each}
+        </div>
+      {/each}
+    </div>
   {/if}
 </div>
+
+<style>
+  .gm-reactive-controls {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .animation-container {
+    overflow: hidden;
+  }
+</style>
