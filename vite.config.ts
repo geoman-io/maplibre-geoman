@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@mapLib': path.resolve(__dirname, `./src/core/map/${baseMap}`)
       },
     },
     plugins: [
