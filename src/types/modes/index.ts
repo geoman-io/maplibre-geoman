@@ -53,6 +53,9 @@ export type ActionOption = SelectActionOption | ToggleActionOption | HiddenActio
 export type ActionOptions = { [key: string]: ActionOption };
 export type SubActions = { [key: string]: SubAction };
 
+export type ActionSetting = boolean | string | null | undefined;
+export type ActionSettings = { [key: string]: ActionSetting };
+
 
 export type MarkerId = string;
 
