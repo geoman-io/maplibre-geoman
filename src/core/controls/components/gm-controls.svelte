@@ -5,23 +5,16 @@
   import { controlsStore } from '@/core/controls/components/controls-store.ts';
   import type { ActionType, GenericSystemControls, ModeName } from '@/main.ts';
   import DOMPurify from 'dompurify';
-  import { onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
 
-  let { controls, options } = $controlsStore;
   // const gm: Geoman = getContext('gm');
   let expanded = $state(true);
-
-  const unsubscribe = controlsStore.subscribe((value) => {
-    controls = value.controls;
-    options = value.options;
-  });
-
-  onDestroy(unsubscribe);
+  let controlsCollapsible = $derived($controlsStore.settings.controlsCollapsible);
+  let controlsStyles = $derived($controlsStore.settings.controlsStyles);
 
   const getControl = (groupKey: string, mode: string) => {
     const controlSection = (
-      controls?.[groupKey as ActionType] as GenericSystemControls | undefined
+      $controlsStore.controls?.[groupKey as ActionType] as GenericSystemControls | undefined
     );
     return controlSection?.[mode as ModeName] || null;
   };
@@ -36,8 +29,8 @@
 </script>
 
 <div class="gm-reactive-controls">
-  {#if $controlsStore.settings.controlsCollapsible}
-    <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-settings`}>
+  {#if controlsCollapsible}
+    <div class={`${controlsStyles.controlGroupClass} group-settings`}>
       <button class="gm-control-button" onclick={toggleExpanded}>
         {@html getToggleExpandedIcon()}
       </button>
@@ -46,9 +39,9 @@
 
   {#if expanded}
     <div class="animation-container" in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
-      {#each Object.entries(options) as [groupKey, groupControls] (groupKey)}
-        <div class={`${$controlsStore.settings.controlsStyles.controlGroupClass} group-${groupKey}`}>
-          {#each Object.entries(groupControls) as [controlKey, controlOptions]  (controlKey)}
+      {#each Object.entries($controlsStore.options) as [groupKey, groupControls] (groupKey)}
+        <div class={`${controlsStyles.controlGroupClass} group-${groupKey}`}>
+          {#each Object.entries(groupControls) as [controlKey, controlOptions] (controlKey)}
             {@const control = getControl(groupKey, controlKey)}
             {#if control}
               <ActionControl control={control} controlOptions={controlOptions} />
