@@ -2,6 +2,7 @@ import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionOptions,
+  ActionSettings,
   ActionType,
   AnyEvent,
   EditModeName,
@@ -27,6 +28,7 @@ export abstract class BaseAction {
   abstract actionType: ActionType;
   abstract mode: ModeName;
   options: ActionOptions = {};
+  settings: ActionSettings = {};
   actions: SubActions = {};
   flags = {
     featureCreateAllowed: true,
@@ -78,6 +80,13 @@ export abstract class BaseAction {
     } else {
       throw new Error(`Unknown option type: ${JSON.stringify(option)}`);
     }
+  }
+
+  getSettingValue(name: string) {
+    if (name in this.settings) {
+      return this.settings[name];
+    }
+    return undefined;
   }
 
   applyOptionValue(name: string, value: boolean | string | number) {

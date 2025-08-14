@@ -2,7 +2,7 @@ import defaultLayerStyles from '@/core/options/layers/style.ts';
 import { actionTypes } from '@/modes/base-action.ts';
 import type { ModeName } from '@/types/controls.ts';
 import type { BaseControlsPosition } from '@/types/map/index.ts';
-import type { ActionOptions, DrawModeName, EditModeName, HelperModeName } from '@/types/modes/index.ts';
+import type { ActionOptions, ActionSettings, DrawModeName, EditModeName, HelperModeName } from '@/types/modes/index.ts';
 import type { PartialDeep } from 'type-fest';
 
 
@@ -14,6 +14,7 @@ export interface ControlOptions {
   uiEnabled: boolean,
   active: boolean,
   options?: ActionOptions,
+  settings?: ActionSettings,
 }
 
 export interface ControlStyles {
