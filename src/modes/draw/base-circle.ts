@@ -1,13 +1,10 @@
 import circleMarker from '@/assets/images/controls/circle-marker.svg';
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   DrawModeName,
   GeoJsonShapeFeature,
-  GMDrawShapeEvent,
-  GMDrawShapeEventWithData,
   LngLat,
   MapHandlerReturnData,
   MarkerData,
@@ -97,48 +94,5 @@ export abstract class BaseCircle extends BaseDraw {
         path: [-1],
       },
     };
-  }
-
-  fireStartEvent(
-    featureData: FeatureData,
-    markerData: MarkerData,
-  ) {
-    const event: GMDrawShapeEventWithData = {
-      level: 'system',
-      type: 'draw',
-      mode: this.shape,
-      variant: null,
-      action: 'start',
-      featureData,
-      markerData,
-    };
-    this.gm.events.fire(`${gmPrefix}:draw`, event);
-  }
-
-  fireUpdateEvent(
-    featureData: FeatureData,
-    markerData: MarkerData,
-  ) {
-    const event: GMDrawShapeEventWithData = {
-      level: 'system',
-      type: 'draw',
-      mode: this.shape,
-      variant: null,
-      action: 'update',
-      featureData,
-      markerData,
-    };
-    this.gm.events.fire(`${gmPrefix}:draw`, event);
-  }
-
-  fireFinishEvent() {
-    const event: GMDrawShapeEvent = {
-      level: 'system',
-      type: 'draw',
-      mode: this.shape,
-      variant: null,
-      action: 'finish',
-    };
-    this.gm.events.fire(`${gmPrefix}:draw`, event);
   }
 }

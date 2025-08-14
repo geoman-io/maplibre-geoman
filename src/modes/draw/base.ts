@@ -7,6 +7,7 @@ import type {
   GMDrawShapeEvent,
   GMDrawShapeEventWithData,
   GMEvent,
+  MarkerData,
   ShapeName,
 } from '@/main.ts';
 import { BaseAction } from '@/modes/base-action.ts';
@@ -158,5 +159,60 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     return { next: true };
+  }
+
+  fireStartEvent(
+    featureData: FeatureData,
+    markerData: MarkerData | null = null,
+  ) {
+    if (!this.shape) {
+      return;
+    }
+
+    const event: GMDrawShapeEventWithData = {
+      level: 'system',
+      type: 'draw',
+      mode: this.shape,
+      variant: null,
+      action: 'start',
+      featureData,
+      markerData,
+    };
+    this.gm.events.fire(`${gmPrefix}:draw`, event);
+  }
+
+  fireUpdateEvent(
+    featureData: FeatureData,
+    markerData: MarkerData | null = null,
+  ) {
+    if (!this.shape) {
+      return;
+    }
+
+    const event: GMDrawShapeEventWithData = {
+      level: 'system',
+      type: 'draw',
+      mode: this.shape,
+      variant: null,
+      action: 'update',
+      featureData,
+      markerData,
+    };
+    this.gm.events.fire(`${gmPrefix}:draw`, event);
+  }
+
+  fireFinishEvent() {
+    if (!this.shape) {
+      return;
+    }
+
+    const event: GMDrawShapeEvent = {
+      level: 'system',
+      type: 'draw',
+      mode: this.shape,
+      variant: null,
+      action: 'finish',
+    };
+    this.gm.events.fire(`${gmPrefix}:draw`, event);
   }
 }

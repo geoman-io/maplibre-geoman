@@ -38,7 +38,7 @@ export const isImperialByBrowser = () => {
   return IMPERIAL_REGIONS.has(loc.region || '--');
 }
 
-type NumberFormatOptions = {
+export type NumberFormatOptions = {
   units: 'imperial' | 'metric',
   minimumFractionDigits?: number,
   maximumFractionDigits?: number,
