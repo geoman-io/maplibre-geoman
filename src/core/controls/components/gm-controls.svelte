@@ -38,7 +38,7 @@
   {/if}
 
   {#if expanded}
-    <div class="animation-container" in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
+    <div in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
       {#each Object.entries($controlsStore.options) as [groupKey, groupControls] (groupKey)}
         <div class={`${controlsStyles.controlGroupClass} group-${groupKey}`}>
           {#each Object.entries(groupControls) as [controlKey, controlOptions] (controlKey)}
@@ -57,9 +57,5 @@
   .gm-reactive-controls {
     display: flex;
     flex-direction: column;
-  }
-
-  .animation-container {
-    overflow: hidden;
   }
 </style>
