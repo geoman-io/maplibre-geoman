@@ -52,7 +52,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   activeMarker: MarkerData | null = null;
   activeFeatureData: FeatureData | null = null;
   sharedMarkers: Array<SharedMarker> = [];
-  allowedShapes: Array<FeatureShape> = ['circle', 'line', 'rectangle', 'polygon'];
+  allowedShapes: Array<FeatureShape> = ['circle', 'line', 'rectangle', 'polygon', 'ellipse'];
   edgeMarkersAllowed: boolean = false;
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
@@ -331,6 +331,8 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     if (shape === 'circle') {
       return (markerIndex + divider / 2) % divider === 0;
+    } else if (shape === 'ellipse') {
+      return markerIndex % divider === 0;
     } else {
       return true;
     }
