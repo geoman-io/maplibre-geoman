@@ -63,7 +63,8 @@ export class DrawPolygon extends BaseDraw {
       shapeGeoJson: {
         ...geoJsonPolygon,
         properties: {
-          ...geoJsonPolygon.properties,
+          // we don't need to have collected properties for a new polygon
+          // ...geoJsonPolygon.properties,
           shape: this.shape,
         },
       },
