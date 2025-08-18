@@ -27,6 +27,7 @@ import type {
   UpdateStorage,
 } from '@/main.ts';
 import { shapeNames } from '@/modes/draw/base.ts';
+import { IS_PRO } from '@/utils/behavior.ts';
 import { fixGeoJsonFeature } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -34,7 +35,6 @@ import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature, FeatureCollection, GeoJSON, Geometry, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
-import { IS_PRO } from '@/utils/behavior.ts';
 
 
 export const SOURCES: { [key: string]: string } = {
@@ -564,10 +564,9 @@ export class Features {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
         styles.forEach((partialStyle) => {
           const layer = this.createGenericLayer({
-            layerId: `${sourceName}-${shapeName}__${partialStyle.type}-layer`,
-            partialStyle,
-            shape: shapeName,
             sourceName,
+            shapeName,
+            partialStyle,
           });
 
           if (layer) {
@@ -580,12 +579,27 @@ export class Features {
     return layers;
   }
 
-  createGenericLayer({ layerId, sourceName, partialStyle, shape }: {
-    layerId: string,
-    partialStyle: PartialLayerStyle,
-    shape: FeatureShape,
+  createGenericLayer({ sourceName, shapeName, partialStyle }: {
     sourceName: FeatureSourceName,
+    shapeName: FeatureShape,
+    partialStyle: PartialLayerStyle,
   }): BaseLayer | null {
+    const MAX_LAYERS = 100;
+    const getLayerId = (index: number) => `${sourceName}-${shapeName}__${partialStyle.type}-layer-${index}`;
+    let layerId: string | null = null;
+
+    for (let i = 0; i < MAX_LAYERS; i += 1) {
+      const tmpLayerId = getLayerId(i);
+      if (!this.gm.mapAdapter.getLayer(tmpLayerId)) {
+        layerId = tmpLayerId;
+        break;
+      }
+    }
+
+    if (!layerId) {
+      throw new Error(`Can't create a layer, max layers per source/shape exceeded: ${MAX_LAYERS}`);
+    }
+
     const layerOptions = {
       ...partialStyle,
       id: layerId,
@@ -593,7 +607,7 @@ export class Features {
       filter: [
         'in',
         ['get', 'shape'],
-        ['literal', [shape]],
+        ['literal', [shapeName]],
       ],
     };
 

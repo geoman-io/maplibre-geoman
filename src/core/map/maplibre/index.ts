@@ -192,8 +192,11 @@ export class MaplibreAdapter
     return new MaplibreLayer({ gm: this.gm, layerId, options });
   }
 
-  getLayer(layerId: string): BaseLayer<MaplibreAnyLayer> {
-    return new MaplibreLayer({ gm: this.gm, layerId });
+  getLayer(layerId: string): BaseLayer<MaplibreAnyLayer> | null {
+    if (this.mapInstance.getLayer(layerId)) {
+      return new MaplibreLayer({ gm: this.gm, layerId });
+    }
+    return null;
   }
 
   removeLayer(layerId: string) {
