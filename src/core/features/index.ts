@@ -504,7 +504,7 @@ export class Features {
     const shapeGeoJson = inputSource.getGeoJson();
     const sourceGeoJsonFeatures = 'features' in shapeGeoJson ? shapeGeoJson.features : [shapeGeoJson];
     const baseSource = this.gm.mapAdapter.getSource(inputSource.id);
-    baseSource.remove({ removeLayers: false });
+    baseSource.remove();
 
     sourceGeoJsonFeatures.forEach((sourceFeature) => {
       const featureData = this.addGeoJsonFeature({

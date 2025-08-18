@@ -142,14 +142,16 @@ export class Geoman {
     await this.addControls();
   }
 
-  destroy(removeLayers = true) {
+  destroy({ removeSources }: {
+    removeSources: boolean,
+  } = { removeSources: false }) {
     this.removeControls();
     this.events.bus.detachAllEvents();
 
-    if (removeLayers) {
+    if (removeSources) {
       for (const source of Object.values(this.features.sources)) {
         if (source) {
-          source.remove({ removeLayers });
+          source.remove();
         }
       }
     }
@@ -393,18 +395,30 @@ export { convertToThrottled } from '@/utils/behavior.ts';
 export { isGeoJsonFeatureInPolygon, moveFeatureData, moveGeoJson } from '@/utils/features.ts';
 export {
   boundsContains,
-  boundsToBBox, calculatePerimeter, convertToLineStringFeatureCollection,
+  boundsToBBox,
+  calculatePerimeter,
+  convertToLineStringFeatureCollection,
   eachCoordinateWithPath,
-  eachSegmentWithPath, findCoordinateWithPath, geoJsonPointToLngLat, getEuclideanDistance,
-  getEuclideanSegmentNearestPoint, getGeoJsonCoordinatesCount, getGeoJsonFirstPoint, getLngLatDiff, isEqualPosition, isMultiPolygonFeature,
-  isPolygonFeature, lngLatToGeoJsonPoint, twoCoordsToLineString
+  eachSegmentWithPath,
+  findCoordinateWithPath,
+  geoJsonPointToLngLat,
+  getEuclideanDistance,
+  getEuclideanSegmentNearestPoint,
+  getGeoJsonCoordinatesCount,
+  getGeoJsonFirstPoint,
+  getLngLatDiff,
+  isEqualPosition,
+  isMultiPolygonFeature,
+  isPolygonFeature,
+  lngLatToGeoJsonPoint,
+  twoCoordsToLineString,
 } from '@/utils/geojson.ts';
 export { formatArea, formatDistance, toMod } from '@/utils/number.ts';
 export { includesWithType, typedKeys } from '@/utils/typing.ts';
 
 // guards
 export {
-  isGmDrawFreehandDrawerEvent, isGmDrawLineDrawerEvent, isGmDrawShapeEvent
+  isGmDrawFreehandDrawerEvent, isGmDrawLineDrawerEvent, isGmDrawShapeEvent,
 } from '@/utils/guards/events/draw.ts';
 export { isGmEditEvent } from '@/utils/guards/events/edit.ts';
 export { isGmFeatureBeforeCreateEvent, isGmFeatureBeforeUpdateEvent } from '@/utils/guards/events/features.ts';

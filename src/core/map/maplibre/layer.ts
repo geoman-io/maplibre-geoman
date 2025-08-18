@@ -2,6 +2,7 @@ import { BaseLayer } from '@/core/map/base/layer.ts';
 import type { MaplibreAnyLayer } from '@/core/map/maplibre/types.ts';
 import type { Geoman } from '@/main.ts';
 import ml from 'maplibre-gl';
+import log from 'loglevel';
 
 
 export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
@@ -43,7 +44,9 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
 
   createLayer(options: ml.AddLayerObject): MaplibreAnyLayer {
     let layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer | undefined;
-    if (!layer) {
+    if (layer) {
+      log.warn(`Layer "${options.id}" already exists, skipping`);
+    } else {
       this.mapInstance.addLayer(options);
       layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer;
     }
