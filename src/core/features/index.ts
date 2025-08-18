@@ -104,7 +104,9 @@ export class Features {
       this.sources[sourceName] = this.createSource(sourceName);
     });
 
-    this.layers = this.createLayers();
+    if (this.gm.options.settings.useDefaultLayers) {
+      this.layers = this.createLayers();
+    }
   }
 
   get forEach() {
