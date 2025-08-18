@@ -42,8 +42,12 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
   }
 
   createLayer(options: ml.AddLayerObject): MaplibreAnyLayer {
-    this.mapInstance.addLayer(options);
-    return this.mapInstance.getLayer(options.id) as MaplibreAnyLayer || null;
+    let layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer | undefined;
+    if (!layer) {
+      this.mapInstance.addLayer(options);
+      layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer;
+    }
+    return layer ?? null
   }
 
   remove(): void {
