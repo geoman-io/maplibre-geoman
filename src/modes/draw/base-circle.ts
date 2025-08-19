@@ -20,7 +20,7 @@ export abstract class BaseCircle extends BaseDraw {
   shape: ShapeName = 'circle';
   protected circleCenterPoint: ScreenPoint | null = null;
   protected circleCenterLngLat: LngLat | null = null;
-  mapEventHandlers = {
+  eventHandlers = {
     mousemove: this.onMouseMove.bind(this),
     click: this.onMouseClick.bind(this),
   };

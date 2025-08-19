@@ -4,7 +4,7 @@ import { BaseDraw } from '@/modes/draw/base.ts';
 
 export class DummyDraw extends BaseDraw {
   mode: DrawModeName = 'marker';
-  mapEventHandlers = {};
+  eventHandlers = {};
 
   constructor(gm: Geoman) {
     super(gm);

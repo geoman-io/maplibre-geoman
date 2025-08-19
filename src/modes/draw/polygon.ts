@@ -18,7 +18,7 @@ export class DrawPolygon extends BaseDraw {
     this.gm,
     { snappingMarkers: 'first', targetShape: 'polygon' },
   );
-  mapEventHandlers = {
+  eventHandlers = {
     [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };

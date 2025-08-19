@@ -10,7 +10,7 @@ import type {
   GmEventHandlersWithControl,
   GmEventName,
   MapEventHadler,
-  MapEventHandlers,
+  EventHandlers,
   MapEventHandlersWithControl,
   MapEventName,
 } from '@/main.ts';
@@ -43,7 +43,7 @@ export class EventBus {
     this.forwarder.processEvent(eventName, payload);
   }
 
-  attachEvents(handlers: MapEventHandlers) {
+  attachEvents(handlers: EventHandlers) {
     typedKeys(handlers).forEach((eventName) => {
       const handler = handlers[eventName];
       if (handler) {
@@ -52,7 +52,7 @@ export class EventBus {
     });
   }
 
-  detachEvents(handlers: MapEventHandlers) {
+  detachEvents(handlers: EventHandlers) {
     typedKeys(handlers).forEach((eventName) => {
       const handler = handlers[eventName];
       if (handler) {

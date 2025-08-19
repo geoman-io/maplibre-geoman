@@ -15,7 +15,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
   abstract allowedShapeTypes: Array<FeatureShape>;
   features: Array<FeatureData> = [];
   featureData: FeatureData | null = null;
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
   };
 

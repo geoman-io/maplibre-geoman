@@ -6,7 +6,7 @@ export type MapHandlerReturnData = { next: boolean };
 export type MapEventHadler = (event: MapEvent) => MapHandlerReturnData;
 export type GmEventHadler = (event: GMEvent) => MapHandlerReturnData;
 
-export type MapEventHandlers = {
+export type EventHandlers = {
   [key in AnyEventName]?: GmEventHadler | MapEventHadler
 };
 

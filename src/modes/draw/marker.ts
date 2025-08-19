@@ -18,7 +18,7 @@ import { isMapPointerEvent } from '@/utils/guards/map.ts';
 export class DrawMarker extends BaseDraw {
   mode: DrawModeName = 'marker';
   shape: ShapeName = 'marker';
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };

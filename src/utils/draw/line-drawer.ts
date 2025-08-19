@@ -62,7 +62,7 @@ export class LineDrawer extends BaseDraw {
     onMouseMove: this.onMouseMove,
   }, this, this.gm.options.settings.throttlingDelay);
 
-  mapEventHandlers = {
+  eventHandlers = {
     [`${gmPrefix}:helper`]: this.handleGmHelperEvent.bind(this),
     click: this.onMouseClick.bind(this),
     mousemove: this.throttledMethods.onMouseMove.bind(this),

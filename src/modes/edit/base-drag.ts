@@ -39,7 +39,7 @@ export abstract class BaseDrag extends BaseEdit {
     onMouseMove: this.onMouseMove,
   }, this, this.gm.options.settings.throttlingDelay);
 
-  mapEventHandlers = {
+  eventHandlers = {
     [`${gmPrefix}:edit`]: this.handleGmEdit.bind(this),
 
     mousedown: this.onMouseDown.bind(this),

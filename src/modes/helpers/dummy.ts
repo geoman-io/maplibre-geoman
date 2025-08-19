@@ -3,7 +3,7 @@ import { BaseHelper } from '@/modes/helpers/base.ts';
 
 export class DummyHelper extends BaseHelper {
   mode: HelperModeName = 'pin';
-  mapEventHandlers = {};
+  eventHandlers = {};
 
   onStartAction() {
     throw new Error('DummyHelper: method onStartAction isn\'t implemented');
