@@ -11,7 +11,6 @@ import { FEATURE_ID_PROPERTY, Geoman } from "@/main.ts";
 import type {
   GeoJsonImportFeature,
   GeoJsonImportFeatureCollection,
-  GmOptions,
   GmOptionsPartial,
   LngLat,
 } from "@/main.ts";
