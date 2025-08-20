@@ -22,7 +22,7 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
   ellipse: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    // [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]),
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
   },
   rectangle: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
