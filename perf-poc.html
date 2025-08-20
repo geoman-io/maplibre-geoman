@@ -9,18 +9,55 @@
   <body>
     <div
       id="test-controls"
-      style="position: absolute; z-index: 1000; margin: 15px; right: 0"
+      style="
+        position: absolute;
+        z-index: 1000;
+        margin: 15px;
+        right: 0;
+        display: flex;
+        gap: 1rem;
+      "
     >
-      <button id="b-throttling-1">Throttling 1</button>
-      <button id="b-throttling-10">Throttling 10 (default)</button>
-      <button id="b-throttling-100">Throttling 100</button>
-      <button id="b-mergeDiff-throttling-1">mergeDiff and Throttling 1</button>
-      <button id="b-mergeDiff-throttling-10">
-        mergeDiff and Throttling 10
-      </button>
-      <button id="b-mergeDiff-throttling-100">
-        mergeDiff and Throttling 100
-      </button>
+      <div class="button-col">
+        <button id="b-throttling-1">Rectangle - Throttling 1</button>
+        <button id="b-circle-throttling-1">Circle - Throttling 1</button>
+      </div>
+      <div class="button-col">
+        <button id="b-throttling-10">
+          Rectangle - Throttling 10 (default)
+        </button>
+        <button id="b-circle-throttling-10">
+          Circle - Throttling 10 (default)
+        </button>
+      </div>
+      <div class="button-col">
+        <button id="b-throttling-100">Rectangle - Throttling 100</button>
+        <button id="b-circle-throttling-100">Circle - Throttling 100</button>
+      </div>
+      <div class="button-col">
+        <button id="b-mergeDiff-throttling-1">
+          Rectangle - mergeDiff and Throttling 1
+        </button>
+        <button id="b-circle-mergeDiff-throttling-1">
+          Circle - mergeDiff and Throttling 1
+        </button>
+      </div>
+      <div class="button-col">
+        <button id="b-mergeDiff-throttling-10">
+          Rectangle - mergeDiff and Throttling 10
+        </button>
+        <button id="b-circle-mergeDiff-throttling-10">
+          Circle - mergeDiff and Throttling 10
+        </button>
+      </div>
+      <div class="button-col">
+        <button id="b-mergeDiff-throttling-100">
+          Rectangle - mergeDiff and Throttling 100
+        </button>
+        <button id="b-circle-mergeDiff-throttling-100">
+          Circle - mergeDiff and Throttling 100
+        </button>
+      </div>
     </div>
 
     <div id="dev-map"></div>

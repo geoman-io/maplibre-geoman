@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       __GEOMAN_VERSION__: JSON.stringify(gmVersion),
-      __BYPASS_THROTTLING__: JSON.stringify(false)
+      __BYPASS_THROTTLING__: JSON.stringify(true)
     },
     server: {
       port: 3100,

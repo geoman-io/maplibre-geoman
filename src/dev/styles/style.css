@@ -12,3 +12,8 @@ body {
   /*margin: 8rem;*/
   /*border-radius: 0.3rem;*/
 }
+
+.button-col {
+  display: flex;
+  flex-direction: column;
+}
