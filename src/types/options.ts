@@ -25,6 +25,7 @@ export interface ControlStyles {
 
 export type GmOptionsData = {
   settings: {
+    mergeDiff: boolean;
     throttlingDelay: number,
     useDefaultLayers: boolean,
     controlsPosition: BaseControlsPosition,

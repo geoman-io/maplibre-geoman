@@ -17,7 +17,6 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   sourceInstance: ml.GeoJSONSource | null;
 
   pendingUpdateStorage: GeoJsonDiffStorage | null = null;
-  mlSourceDiff: ml.GeoJSONSourceDiff | null = null
   updateTimeout: null | number = null;
 
 
@@ -81,22 +80,30 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
       return;
     }
 
-    const fullUpdateStorage = mergeGeoJsonDiff(this.pendingUpdateStorage, updateStorage ?? null)
+    console.log(this.sourceInstance._pendingLoads)
 
-    if (this.updateTimeout) {
-      window.clearTimeout(this.updateTimeout)
-      this.updateTimeout = null;
-    }
-
-    if (this.sourceInstance._pendingLoads === 0) {
-      this.pendingUpdateStorage = null;
-      const mlDiff = this.convertGeoJsonDiffToMlDiff(fullUpdateStorage);
-
+    if (this.gm.options.settings.mergeDiff) {
+      const fullUpdateStorage = mergeGeoJsonDiff(this.pendingUpdateStorage, updateStorage ?? null)
+  
+      if (this.updateTimeout) {
+        window.clearTimeout(this.updateTimeout)
+        this.updateTimeout = null;
+      }
+  
+      if (this.sourceInstance._pendingLoads === 0) {
+        this.pendingUpdateStorage = null;
+        const mlDiff = this.convertGeoJsonDiffToMlDiff(fullUpdateStorage);
+  
+        this.sourceInstance.updateData(mlDiff);
+      } else {
+        this.pendingUpdateStorage = fullUpdateStorage;
+        this.updateTimeout = window.setTimeout(this.updateData, 15)
+      }
+    } else if (updateStorage) {
+      const mlDiff = this.convertGeoJsonDiffToMlDiff(updateStorage);
       this.sourceInstance.updateData(mlDiff);
-    } else {
-      this.pendingUpdateStorage = fullUpdateStorage;
-      this.updateTimeout = window.setTimeout(this.updateData, 15)
     }
+
   }
 
   convertGeoJsonDiffToMlDiff(
