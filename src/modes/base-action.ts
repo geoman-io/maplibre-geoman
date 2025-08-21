@@ -11,7 +11,7 @@ import type {
   GMBeforeFeatureCreateEvent,
   GMBeforeFeatureUpdateEvent,
   GMGeofencingViolationEvent,
-  MapEventHandlers,
+  EventHandlers,
   ModeName,
   NonEmptyArray,
   SubActions,
@@ -35,9 +35,9 @@ export abstract class BaseAction {
     featureUpdateAllowed: true,
   };
 
-  abstract mapEventHandlers: MapEventHandlers;
+  abstract eventHandlers: EventHandlers;
 
-  internalMapEventHandlers: MapEventHandlers = {
+  internalEventHandlers: EventHandlers = {
     [`${gmPrefix}:helper`]: this.handleHelperEvent.bind(this),
   };
 
@@ -50,15 +50,15 @@ export abstract class BaseAction {
   abstract onEndAction(): void;
 
   startAction() {
-    this.gm.events.bus.attachEvents(this.internalMapEventHandlers);
-    this.gm.events.bus.attachEvents(this.mapEventHandlers);
+    this.gm.events.bus.attachEvents(this.internalEventHandlers);
+    this.gm.events.bus.attachEvents(this.eventHandlers);
     this.onStartAction();
   }
 
   endAction() {
     this.onEndAction();
-    this.gm.events.bus.detachEvents(this.mapEventHandlers);
-    this.gm.events.bus.detachEvents(this.internalMapEventHandlers);
+    this.gm.events.bus.detachEvents(this.eventHandlers);
+    this.gm.events.bus.detachEvents(this.internalEventHandlers);
   }
 
   get snappingHelper(): SnappingHelper | null {

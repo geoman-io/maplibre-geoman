@@ -16,7 +16,7 @@ export class DrawTextMarker extends BaseDraw {
   mode: DrawModeName = 'text_marker';
   shape: ShapeName = 'text_marker';
   textarea: HTMLTextAreaElement | null = null;
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };

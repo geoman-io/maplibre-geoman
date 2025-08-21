@@ -26,6 +26,7 @@ export interface ControlStyles {
 export type GmOptionsData = {
   settings: {
     throttlingDelay: number,
+    useDefaultLayers: boolean,
     controlsPosition: BaseControlsPosition,
     controlsUiEnabledByDefault: boolean,
     controlsCollapsible: boolean,

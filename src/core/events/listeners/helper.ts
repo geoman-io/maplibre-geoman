@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMEvent, GMHelperModeEvent, MapEventHandlers } from '@/main.ts';
+import type { ActionInstanceKey, Geoman, GMEvent, GMHelperModeEvent, EventHandlers } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { createHelperInstance } from '@/modes/helpers/index.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
@@ -8,13 +8,13 @@ import log from 'loglevel';
 
 
 export class HelperEventListener extends BaseEventListener {
-  mapEventHandlers: MapEventHandlers = {
+  eventHandlers: EventHandlers = {
     [`${gmPrefix}:helper`]: this.handleHelperEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {
     super(gm);
-    bus.attachEvents(this.mapEventHandlers);
+    bus.attachEvents(this.eventHandlers);
   }
 
   handleHelperEvent(payload: GMEvent) {

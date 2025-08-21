@@ -7,6 +7,7 @@ import {
 } from '@/main.ts';
 import type { Feature, GeoJSON } from 'geojson';
 import ml from 'maplibre-gl';
+import log from 'loglevel';
 
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
@@ -41,12 +42,18 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   createSource(
     { geoJson, sourceId }: { sourceId: string, geoJson: GeoJSON },
   ): ml.GeoJSONSource {
-    this.mapInstance.addSource(sourceId, {
-      type: 'geojson',
-      data: geoJson,
-      promoteId: FEATURE_ID_PROPERTY,
-    });
-    return this.mapInstance.getSource(sourceId) as ml.GeoJSONSource || null;
+    let source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource | undefined;
+    if (source) {
+      log.warn(`Source "${source.id}" already exists, skipping`);
+    } else {
+      this.mapInstance.addSource(sourceId, {
+        type: 'geojson',
+        data: geoJson,
+        promoteId: FEATURE_ID_PROPERTY,
+      });
+      source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource
+    }
+    return source ?? null;
   }
 
   getGeoJson() {
@@ -96,18 +103,17 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     };
   }
 
-  remove({ removeLayers }: { removeLayers: boolean }) {
+  remove() {
     if (!this.isInstanceAvailable()) {
       return;
     }
 
-    if (removeLayers) {
-      this.gm.mapAdapter.eachLayer((layer) => {
-        if (layer.source === this.sourceInstance.id) {
-          this.gm.mapAdapter.removeLayer(layer.id);
-        }
-      });
-    }
+    this.gm.mapAdapter.eachLayer((layer) => {
+      if (layer.source === this.sourceInstance.id) {
+        this.gm.mapAdapter.removeLayer(layer.id);
+      }
+    });
+
     this.mapInstance.removeSource(this.sourceInstance.id);
   }
 }

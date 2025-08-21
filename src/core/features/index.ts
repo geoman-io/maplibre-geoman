@@ -27,6 +27,7 @@ import type {
   UpdateStorage,
 } from '@/main.ts';
 import { shapeNames } from '@/modes/draw/base.ts';
+import { IS_PRO } from '@/utils/behavior.ts';
 import { fixGeoJsonFeature } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -34,7 +35,6 @@ import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature, FeatureCollection, GeoJSON, Geometry, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
-import { IS_PRO } from '@/utils/behavior.ts';
 
 
 export const SOURCES: { [key: string]: string } = {
@@ -104,7 +104,9 @@ export class Features {
       this.sources[sourceName] = this.createSource(sourceName);
     });
 
-    this.layers = this.createLayers();
+    if (this.gm.options.settings.useDefaultLayers) {
+      this.layers = this.createLayers();
+    }
   }
 
   get forEach() {
@@ -504,7 +506,7 @@ export class Features {
     const shapeGeoJson = inputSource.getGeoJson();
     const sourceGeoJsonFeatures = 'features' in shapeGeoJson ? shapeGeoJson.features : [shapeGeoJson];
     const baseSource = this.gm.mapAdapter.getSource(inputSource.id);
-    baseSource.remove({ removeLayers: false });
+    baseSource.remove();
 
     sourceGeoJsonFeatures.forEach((sourceFeature) => {
       const featureData = this.addGeoJsonFeature({
@@ -564,10 +566,9 @@ export class Features {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
         styles.forEach((partialStyle) => {
           const layer = this.createGenericLayer({
-            layerId: `${sourceName}-${shapeName}__${partialStyle.type}-layer`,
-            partialStyle,
-            shape: shapeName,
             sourceName,
+            shapeNames: [shapeName],
+            partialStyle,
           });
 
           if (layer) {
@@ -580,12 +581,16 @@ export class Features {
     return layers;
   }
 
-  createGenericLayer({ layerId, sourceName, partialStyle, shape }: {
-    layerId: string,
-    partialStyle: PartialLayerStyle,
-    shape: FeatureShape,
+  createGenericLayer({ sourceName, shapeNames, partialStyle }: {
     sourceName: FeatureSourceName,
+    shapeNames: Array<FeatureShape>,
+    partialStyle: PartialLayerStyle,
   }): BaseLayer | null {
+    const layerId = this.getGenericLayerName({ sourceName, shapeNames, partialStyle });
+    if (!layerId) {
+      throw new Error(`Can't create a layer, for ${{ sourceName, shapeNames, partialStyle }}`);
+    }
+
     const layerOptions = {
       ...partialStyle,
       id: layerId,
@@ -593,11 +598,32 @@ export class Features {
       filter: [
         'in',
         ['get', 'shape'],
-        ['literal', [shape]],
+        ['literal', shapeNames],
       ],
     };
 
     return this.gm.mapAdapter.addLayer(layerOptions);
+  }
+
+  getGenericLayerName({ sourceName, shapeNames, partialStyle }: {
+    sourceName: FeatureSourceName,
+    shapeNames: Array<FeatureShape>,
+    partialStyle: PartialLayerStyle,
+  }): string | null {
+    const MAX_LAYERS = 100;
+    const shapeName = shapeNames.length === 1 ? shapeNames[0]: 'mixed';
+    const getLayerId = (index: number) => `${sourceName}-${shapeName}__${partialStyle.type}-layer-${index}`;
+    let layerId: string | null = null;
+
+    for (let i = 0; i < MAX_LAYERS; i += 1) {
+      const tmpLayerId = getLayerId(i);
+      if (!this.gm.mapAdapter.getLayer(tmpLayerId)) {
+        layerId = tmpLayerId;
+        return layerId;
+      }
+    }
+
+    return null;
   }
 
   getFeatureShapeByGeoJson(shapeGeoJson: GeoJsonImportFeature): ShapeName | null {

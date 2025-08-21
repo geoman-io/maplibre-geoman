@@ -18,7 +18,7 @@ export abstract class BaseSource<TSourceInstance = unknown> {
 
   abstract updateData(updateStorage: GeoJsonDiffStorage): void;
 
-  abstract remove({ removeLayers }: { removeLayers: boolean }): void;
+  abstract remove(): void;
 
   isInstanceAvailable(): this is { sourceInstance: TSourceInstance } {
     if (this.sourceInstance) {

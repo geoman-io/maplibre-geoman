@@ -14,7 +14,7 @@ export class DrawLine extends BaseDraw {
     this.gm,
     { snappingMarkers: 'first', targetShape: 'line' },
   );
-  mapEventHandlers = {
+  eventHandlers = {
     [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };

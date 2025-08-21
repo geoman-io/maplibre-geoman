@@ -1,4 +1,11 @@
-import type { AnyEvent, BaseMapEventName, MapPointerEvent, MapWithOnceMethod, PointerEventName } from '@/main.ts';
+import type {
+  AnyEvent,
+  BaseMapEventName,
+  MapPointerEvent,
+  MapWithOnceMethod,
+  PartialLayerStyle,
+  PointerEventName,
+} from '@/main.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
 import log from 'loglevel';
 
@@ -46,4 +53,20 @@ export const isMapPointerEvent = (
   }
 
   return isCursorEvent;
+};
+
+export const isPartialLayer = (object: unknown): object is PartialLayerStyle => {
+  const allowedTypes = [
+    'symbol',
+    'fill',
+    'line',
+    'circle',
+  ] as const satisfies Array<PartialLayerStyle['type']>;
+
+  return (
+    !!object &&
+    typeof object === 'object' &&
+    'type' in object &&
+    allowedTypes.includes(object.type as PartialLayerStyle['type'])
+  );
 };

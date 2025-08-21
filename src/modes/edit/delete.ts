@@ -6,7 +6,7 @@ import { isMapPointerEvent } from '@/utils/guards/map.ts';
 export class EditDelete extends BaseEdit {
   mode: EditModeName = 'delete';
   allowedShapes: Array<FeatureShape> = [...shapeNames];
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
   };
 

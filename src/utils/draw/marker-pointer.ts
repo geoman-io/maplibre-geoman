@@ -1,5 +1,5 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { AnyEvent, Geoman, LngLat, MapEventHadler, MapEventHandlers, ScreenPoint } from '@/main.ts';
+import type { AnyEvent, Geoman, LngLat, MapEventHadler, EventHandlers, ScreenPoint } from '@/main.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
 import { createMarkerElement } from '@/utils/dom.ts';
@@ -22,7 +22,7 @@ export class MarkerPointer {
   private oldSnapping: boolean | undefined = undefined;
 
   declare throttledMethods: { onMouseMove: MapEventHadler, };
-  declare mapEventHandlers: MapEventHandlers;
+  declare eventHandlers: EventHandlers;
 
   constructor(gm: Geoman) {
     this.gm = gm;
@@ -34,7 +34,7 @@ export class MarkerPointer {
       onMouseMove: this.onMouseMove,
     }, this, this.gm.options.settings.throttlingDelay);
 
-    this.mapEventHandlers = {
+    this.eventHandlers = {
       mousemove: this.throttledMethods.onMouseMove.bind(this),
     };
   }
@@ -89,7 +89,7 @@ export class MarkerPointer {
       throw new Error('MarkerPointer: marker is already enabled');
     }
 
-    this.gm.events.bus.attachEvents(this.mapEventHandlers);
+    this.gm.events.bus.attachEvents(this.eventHandlers);
     if (invisibleMarker) {
       this.marker = this.createInvisibleMarker(lngLat || [0, 0]);
     } else {
@@ -105,7 +105,7 @@ export class MarkerPointer {
 
   disable() {
     if (this.marker) {
-      this.gm.events.bus.detachEvents(this.mapEventHandlers);
+      this.gm.events.bus.detachEvents(this.eventHandlers);
       this.marker.remove();
       this.marker = null;
     }

@@ -18,7 +18,7 @@ export class DrawPolygon extends BaseDraw {
     this.gm,
     { snappingMarkers: 'first', targetShape: 'polygon' },
   );
-  mapEventHandlers = {
+  eventHandlers = {
     [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
@@ -63,7 +63,8 @@ export class DrawPolygon extends BaseDraw {
       shapeGeoJson: {
         ...geoJsonPolygon,
         properties: {
-          ...geoJsonPolygon.properties,
+          // we don't need to have collected properties for a new polygon
+          // ...geoJsonPolygon.properties,
           shape: this.shape,
         },
       },

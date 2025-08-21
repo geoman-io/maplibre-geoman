@@ -10,7 +10,7 @@ import type {
   ControlOptions,
   GenericSystemControl,
   GenericSystemControls,
-  MapEventHandlers,
+  EventHandlers,
   ModeAction,
   ModeName,
   SystemControls,
@@ -26,7 +26,7 @@ export default class GMControl extends BaseControl {
   controls: SystemControls = cloneDeep(systemControls);
   reactiveControls: Record<string, unknown> | null = null;
   container: HTMLElement | undefined = undefined;
-  mapEventHandlers: MapEventHandlers = {
+  eventHandlers: EventHandlers = {
     [`${gmPrefix}:draw`]: this.handleModeEvent.bind(this),
     [`${gmPrefix}:edit`]: this.handleModeEvent.bind(this),
     [`${gmPrefix}:helper`]: this.handleModeEvent.bind(this),
@@ -34,7 +34,7 @@ export default class GMControl extends BaseControl {
 
   onAdd(): HTMLElement {
     this.createControls();
-    this.gm.events.bus.attachEvents(this.mapEventHandlers);
+    this.gm.events.bus.attachEvents(this.eventHandlers);
 
     if (!this.container) {
       // container must be created in .createControls()
@@ -54,7 +54,7 @@ export default class GMControl extends BaseControl {
   }
 
   onRemove() {
-    this.gm.events.bus.detachEvents(this.mapEventHandlers);
+    this.gm.events.bus.detachEvents(this.eventHandlers);
 
     // Destroy the Svelte component
     if (this.reactiveControls) {

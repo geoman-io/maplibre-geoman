@@ -3,7 +3,7 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 
 export class DummyEdit extends BaseEdit {
   mode: EditModeName = 'drag';
-  mapEventHandlers = {};
+  eventHandlers = {};
   featureData = null;
 
   // constructor(gm: Geoman) {

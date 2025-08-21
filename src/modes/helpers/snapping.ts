@@ -27,7 +27,7 @@ export class SnappingHelper extends BaseHelper {
     'polygon',
     'snap_guide',
   ];
-  mapEventHandlers = {};
+  eventHandlers = {};
 
   shapeSnappingHandlers: { [key in FeatureShape]?: ShapeSnappingHandler } = {
     marker: this.getPointsSnapping.bind(this),

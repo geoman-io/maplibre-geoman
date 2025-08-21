@@ -25,7 +25,7 @@ export class DrawRectangle extends BaseDraw {
   shape: ShapeName = 'rectangle';
   startLngLat: LngLat | null = null;
 
-  mapEventHandlers = {
+  eventHandlers = {
     mousemove: this.onMouseMove.bind(this),
     click: this.onMouseClick.bind(this),
   };

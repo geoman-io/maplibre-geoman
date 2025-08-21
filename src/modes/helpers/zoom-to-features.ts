@@ -8,7 +8,7 @@ import { IS_PRO } from '@/utils/behavior.ts';
 
 export class ZoomToFeaturesHelper extends BaseHelper {
   mode: HelperModeName = 'zoom_to_features';
-  mapEventHandlers = {};
+  eventHandlers = {};
 
   onStartAction() {
     this.fitMapToFeatures();

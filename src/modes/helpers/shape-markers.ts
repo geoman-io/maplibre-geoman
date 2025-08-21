@@ -56,7 +56,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   edgeMarkersAllowed: boolean = false;
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
-  mapEventHandlers = {
+  eventHandlers = {
     [`${gmPrefix}:draw`]: this.handleGmDraw.bind(this),
     [`${gmPrefix}:edit`]: this.handleGmEdit.bind(this),
 
