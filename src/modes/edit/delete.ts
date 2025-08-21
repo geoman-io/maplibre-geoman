@@ -1,11 +1,11 @@
 import { SOURCES } from '@/core/features/index.ts';
-import type { AnyEvent, EditModeName, MapHandlerReturnData } from '@/main.ts';
+import { type AnyEvent, type EditModeName, type FeatureShape, type MapHandlerReturnData, shapeNames } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
-
 export class EditDelete extends BaseEdit {
   mode: EditModeName = 'delete';
+  allowedShapes: Array<FeatureShape> = [...shapeNames];
   eventHandlers = {
     click: this.onMouseClick.bind(this),
   };
@@ -26,7 +26,7 @@ export class EditDelete extends BaseEdit {
     }
 
     const feature = this.gm.features.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
-    if (feature) {
+    if (feature && this.allowedShapes.includes(feature.shape)) {
       this.gm.features.delete(feature);
       this.fireFeatureRemovedEvent(feature);
     }
