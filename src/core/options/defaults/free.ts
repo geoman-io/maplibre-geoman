@@ -5,6 +5,7 @@ import type { GmOptionsData } from '@/main.ts';
 
 export const defaultOptions: GmOptionsData = {
   settings: {
+    mergeDiff: false,
     throttlingDelay: 10,
     useDefaultLayers: true,
     controlsPosition: 'top-left',

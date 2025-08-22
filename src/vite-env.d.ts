@@ -5,4 +5,5 @@ import type { Options } from '../vite.config.ts';
 
 declare global {
   declare const __GEOMAN_VERSION__: Options['GmVersion'];
+  declare const __BYPASS_THROTTLING__: boolean;
 }

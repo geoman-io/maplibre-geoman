@@ -40,6 +40,23 @@ export const convertToThrottled = <T extends object>(
   context: unknown,
   wait: number = 10,
 ) => {
+  if (__BYPASS_THROTTLING__) {
+    console.log("by pass throttling", methods)
+
+    const bindedMethods: T = { ...methods };
+
+    typedKeys(methods).forEach((key) => {
+      const method = methods[key];
+      if (typeof method === 'function') {
+        bindedMethods[key] = method.bind(context) as T[typeof key];
+      } else {
+        log.error('convertToThrottled: item is not a function', methods[key]);
+      }
+    });
+
+    return bindedMethods
+  }
+
   const throttledMethods: T = { ...methods };
 
   typedKeys(methods).forEach((key) => {
@@ -63,6 +80,23 @@ export const convertToDebounced = <T extends object>(
   context: unknown,
   wait: number = 10,
 ) => {
+  if (__BYPASS_THROTTLING__) {
+    console.log("by pass Debounce", methods)
+
+    const bindedMethods: T = { ...methods };
+
+    typedKeys(methods).forEach((key) => {
+      const method = methods[key];
+      if (typeof method === 'function') {
+        bindedMethods[key] = method.bind(context) as T[typeof key];
+      } else {
+        log.error('convertToDebounced: item is not a function', methods[key]);
+      }
+    });
+
+    return bindedMethods
+  }
+
   const debouncedMethods: T = { ...methods };
 
   typedKeys(methods).forEach((key) => {
