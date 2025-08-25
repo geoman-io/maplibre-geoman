@@ -49,9 +49,12 @@ export class FeatureData {
     const currentOrder = this.orders[sourceName];
     const featureCollection = this.getSourceGeoJson();
 
-    if (currentOrder === null || this.id !== featureCollection.features[currentOrder].id) {
+    if (currentOrder !== null && this.id === featureCollection.features[currentOrder]?.id) {
+      return currentOrder;
+    } else {
       const newOrder = featureCollection.features.findIndex((item) => item?.id === this.id);
       if (newOrder !== -1) {
+        this.setOrder(newOrder);
         return newOrder;
       }
     }
@@ -89,14 +92,15 @@ export class FeatureData {
     this.shapeProperties[name] = value;
   }
 
-  getGeoJson(): GeoJsonShapeFeature | null {
+  getGeoJson(): GeoJsonShapeFeature {
     const order = this.getOrder();
     if (order !== null) {
       const featureCollection = this.getSourceGeoJson();
       return featureCollection.features[order];
     }
 
-    return null;
+    log.trace(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
+    throw new Error(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
   }
 
   getSourceGeoJson() {
@@ -104,7 +108,7 @@ export class FeatureData {
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {
-    if (this.getGeoJson()) {
+    if (this.getOrder() !== null) {
       throw new Error(`FeatureData.addGeoJson, not an empty feature: "${this.id}"`);
     }
 
