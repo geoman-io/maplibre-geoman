@@ -33,6 +33,7 @@ export class FeatureData {
   shapeProperties: FeatureShapeProperties = { center: null };
   source: BaseSource;
   orders: FeatureOrders = this.getEmptyOrders();
+  _geoJson: GeoJsonShapeFeature | null = null;
 
   constructor(parameters: FeatureDataParameters) {
     this.gm = parameters.gm;
@@ -93,14 +94,11 @@ export class FeatureData {
   }
 
   getGeoJson(): GeoJsonShapeFeature {
-    const order = this.getOrder();
-    if (order !== null) {
-      const featureCollection = this.getSourceGeoJson();
-      return featureCollection.features[order];
+    if (this._geoJson) {
+      return this._geoJson;
+    } else {
+      throw new Error(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
     }
-
-    log.trace(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
-    throw new Error(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
   }
 
   getSourceGeoJson() {
@@ -112,7 +110,7 @@ export class FeatureData {
       throw new Error(`FeatureData.addGeoJson, not an empty feature: "${this.id}"`);
     }
 
-    const shapeGeoJson = {
+    this._geoJson = {
       ...geoJson,
       id: this.id,
       properties: {
@@ -121,9 +119,9 @@ export class FeatureData {
       },
     };
 
-    this.updateGeoJsonCenter(shapeGeoJson);
+    this.updateGeoJsonCenter(this._geoJson);
     this.gm.features.updateSourceData({
-      diff: { add: [shapeGeoJson] },
+      diff: { add: [this._geoJson] },
       sourceName: this.sourceName,
     });
   }
@@ -139,6 +137,7 @@ export class FeatureData {
       sourceName: this.sourceName,
     });
     this.setOrder(null);
+    this._geoJson = null;
   }
 
   removeMarkers() {
@@ -158,10 +157,10 @@ export class FeatureData {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
+    this._geoJson = { ...featureGeoJson, geometry };
+
     const diff = {
-      update: [
-        { ...featureGeoJson, geometry },
-      ],
+      update: [this._geoJson],
     };
     this.gm.features.updateSourceData({
       diff,
@@ -175,11 +174,13 @@ export class FeatureData {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
+    this._geoJson = {
+      ...featureGeoJson,
+      properties: { ...featureGeoJson.properties, ...properties },
+    };
+
     const diff = {
-      update: [{
-        ...featureGeoJson,
-        properties: { ...featureGeoJson.properties, ...properties },
-      }],
+      update: [this._geoJson],
     };
     this.gm.features.updateSourceData({
       diff,
