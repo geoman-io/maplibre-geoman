@@ -5,7 +5,6 @@ import type {
   BasicGeometry,
   FeatureDataParameters,
   FeatureId,
-  FeatureOrder,
   FeatureOrders,
   FeatureShape,
   FeatureShapeProperties,
@@ -43,29 +42,6 @@ export class FeatureData {
     this.markers = new Map();
     this.shape = parameters.geoJsonShapeFeature.properties.shape;
     this.addGeoJson(parameters.geoJsonShapeFeature);
-  }
-
-  getOrder(): FeatureOrder {
-    const sourceName = this.source.id as FeatureSourceName;
-    const currentOrder = this.orders[sourceName];
-    const featureCollection = this.getSourceGeoJson();
-
-    if (currentOrder !== null && this.id === featureCollection.features[currentOrder]?.id) {
-      return currentOrder;
-    } else {
-      const newOrder = featureCollection.features.findIndex((item) => item?.id === this.id);
-      if (newOrder !== -1) {
-        this.setOrder(newOrder);
-        return newOrder;
-      }
-    }
-
-    return null;
-  }
-
-  setOrder(order: FeatureOrder) {
-    const sourceName = this.source.id as FeatureSourceName;
-    this.orders[sourceName] = order;
   }
 
   getEmptyOrders(): FeatureOrders {
@@ -135,7 +111,6 @@ export class FeatureData {
       diff: { remove: [this.id] },
       sourceName: this.sourceName,
     });
-    this.setOrder(null);
     this._geoJson = null;
   }
 
