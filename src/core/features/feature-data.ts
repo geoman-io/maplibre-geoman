@@ -11,7 +11,6 @@ import type {
   FeatureShapeProperties,
   FeatureSourceName,
   GeoJsonShapeFeature,
-  GeoJsonShapeFeatureWithGmProperties,
   Geoman,
   MarkerData,
   MarkerId,
@@ -42,21 +41,25 @@ export class FeatureData {
     this.parent = parameters.parent;
     this.markers = new Map();
     this.shape = parameters.geoJsonShapeFeature.properties.shape;
-    this.order = this.getFreeOrder();
     this.addGeoJson(parameters.geoJsonShapeFeature);
   }
 
-  get order(): FeatureOrder {
+  getOrder(): FeatureOrder {
     const sourceName = this.source.id as FeatureSourceName;
+    const currentOrder = this.orders[sourceName];
+    const featureCollection = this.getSourceGeoJson();
 
-    if (this.orders[sourceName] !== null) {
-      return this.orders[sourceName];
+    if (currentOrder === null || this.id !== featureCollection.features[currentOrder].id) {
+      const newOrder = featureCollection.features.findIndex((item) => item?.id === this.id);
+      if (newOrder !== -1) {
+        return newOrder;
+      }
     }
-    throw new Error(`Null order for feature id: ${this.id}`);
+
+    return null;
   }
 
-  set order(order: FeatureOrder) {
-    // Note: be careful, set source before working with order
+  setOrder(order: FeatureOrder) {
     const sourceName = this.source.id as FeatureSourceName;
     this.orders[sourceName] = order;
   }
@@ -75,27 +78,6 @@ export class FeatureData {
     return this.source.id as FeatureSourceName;
   }
 
-  getFreeOrder() {
-    // Note: order could be from regular or tmp source
-    // be careful, set temporary and source before working with order
-    return this.getSourceGeoJson().features.length;
-  }
-
-  getGeoJson() {
-    if (!this.isFeatureAvailable()) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-
-    this.fixOrder();
-
-    const geoJsonFeature = this.getSourceGeoJson().features[this.order] || null;
-    if (this.id !== geoJsonFeature?.id) {
-      log.error(`Feature not found: ${this.id} !== ${geoJsonFeature?.id}`, geoJsonFeature, this.getSourceGeoJson());
-      throw new Error('Feature not found');
-    }
-    return geoJsonFeature as GeoJsonShapeFeatureWithGmProperties;
-  }
-
   getShapeProperty(name: keyof FeatureShapeProperties) {
     return this.shapeProperties[name];
   }
@@ -107,18 +89,23 @@ export class FeatureData {
     this.shapeProperties[name] = value;
   }
 
+  getGeoJson(): GeoJsonShapeFeature | null {
+    const order = this.getOrder();
+    if (order !== null) {
+      const featureCollection = this.getSourceGeoJson();
+      return featureCollection.features[order];
+    }
+
+    return null;
+  }
+
   getSourceGeoJson() {
     return this.source.getGeoJson();
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {
-    if (!this.isFeatureAvailable()) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-
-    const featureCollection = this.getSourceGeoJson();
-    if (featureCollection.features[this.order]) {
-      log.error('FeatureData.addGeoJson, not an empty feature', this.id, featureCollection);
+    if (this.getGeoJson()) {
+      throw new Error(`FeatureData.addGeoJson, not an empty feature: "${this.id}"`);
     }
 
     const shapeGeoJson = {
@@ -129,7 +116,6 @@ export class FeatureData {
         [FEATURE_ID_PROPERTY]: this.id,
       },
     };
-    featureCollection.features[this.order] = shapeGeoJson;
 
     this.updateGeoJsonCenter(shapeGeoJson);
     this.gm.features.updateSourceData({
@@ -139,19 +125,16 @@ export class FeatureData {
   }
 
   removeGeoJson() {
-    if (!this.isFeatureAvailable()) {
+    const order = this.getOrder();
+    if (order === null) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
-    this.fixOrder();
 
-    const featureCollection = this.getSourceGeoJson();
-    delete featureCollection.features[this.order];
     this.gm.features.updateSourceData({
       diff: { remove: [this.id] },
       sourceName: this.sourceName,
     });
-
-    (this as { order: FeatureOrder }).order = null;
+    this.setOrder(null);
   }
 
   removeMarkers() {
@@ -166,17 +149,14 @@ export class FeatureData {
   }
 
   updateGeoJsonGeometry(geometry: BasicGeometry) {
-    if (!this.isFeatureAvailable()) {
+    const featureGeoJson = this.getGeoJson();
+    if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
-    this.fixOrder();
-
-    const fcGeoJson = this.getSourceGeoJson();
-    fcGeoJson.features[this.order].geometry = geometry;
 
     const diff = {
       update: [
-        fcGeoJson.features[this.order],
+        { ...featureGeoJson, geometry },
       ],
     };
     this.gm.features.updateSourceData({
@@ -186,21 +166,16 @@ export class FeatureData {
   }
 
   updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
-    if (!this.isFeatureAvailable()) {
+    const featureGeoJson = this.getGeoJson();
+    if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
-    this.fixOrder();
-
-    const fcGeoJson = this.getSourceGeoJson();
-    fcGeoJson.features[this.order].properties = {
-      ...fcGeoJson.features[this.order].properties,
-      ...properties,
-    };
 
     const diff = {
-      update: [
-        fcGeoJson.features[this.order],
-      ],
+      update: [{
+        ...featureGeoJson,
+        properties: { ...featureGeoJson.properties, ...properties },
+      }],
     };
     this.gm.features.updateSourceData({
       diff,
@@ -227,16 +202,6 @@ export class FeatureData {
 
   isConvertableToPolygon(): boolean {
     return conversionAllowedShapes.includes(this.shape);
-  }
-
-  fixOrder() {
-    if (!this.isFeatureAvailable()) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-  }
-
-  isFeatureAvailable(): this is { order: number } {
-    return this.order !== null;
   }
 
   changeSource({ sourceName, atomic }: {
@@ -268,9 +233,13 @@ export class FeatureData {
     }
 
     const shapeGeoJson = this.getGeoJson();
+    if (!shapeGeoJson) {
+      log.error('FeatureData.changeSource: missing shape GeoJSON');
+      return;
+    }
+
     this.removeGeoJson();
     this.source = source;
-    this.order = this.getFreeOrder();
     this.addGeoJson(shapeGeoJson);
 
     this.markers.forEach((markerData) => {

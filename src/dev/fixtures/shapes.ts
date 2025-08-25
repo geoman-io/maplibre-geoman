@@ -50,7 +50,7 @@ export const loadStressTestFeatureCollection = (geoman: Geoman, step: number, si
   geoJson.features = geoJson.features.concat(
     currentGeoJson.features as Array<GeoJsonImportFeature>,
   );
-  targetSource.setGeoJson(geoJson);
+  geoman.features.importGeoJson(geoJson);
 };
 
 export const loadStressTestCircleMarkers = (geoman: Geoman, step: number) => {
