@@ -106,7 +106,7 @@ export class FeatureData {
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {
-    if (this.getOrder() !== null) {
+    if (this._geoJson) {
       throw new Error(`FeatureData.addGeoJson, not an empty feature: "${this.id}"`);
     }
 
@@ -127,8 +127,7 @@ export class FeatureData {
   }
 
   removeGeoJson() {
-    const order = this.getOrder();
-    if (order === null) {
+    if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
