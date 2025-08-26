@@ -143,6 +143,7 @@ const initGeoman = async () => {
     zoom: 5,
     fadeDuration: 50,
   });
+  console.log(`Maplibre version: "${map.version}"`)
 
   if (window.geoman) {
     console.error('Geoman is already initialized', window.geoman);
