@@ -2,7 +2,6 @@ import { type FeatureSourceName, type GeoJsonSourceDiff, type Geoman, SOURCES, t
 import { typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
 import { debounce, throttle } from 'lodash-es';
-import log from 'loglevel';
 
 type SourceUpdateMethods = {
   [key in FeatureSourceName]: {
