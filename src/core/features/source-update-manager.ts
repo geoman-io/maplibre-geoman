@@ -48,13 +48,13 @@ export class SourceUpdateManager {
     if (type === 'throttled') {
       return throttle(
         () => this.updateSourceActual(sourceName),
-        2 * this.gm.options.settings.throttlingDelay,
+        this.gm.options.settings.throttlingDelay,
         { leading: false, trailing: true },
       );
     } else if (type === 'debounced') {
       return debounce(
         () => this.updateSourceActual(sourceName),
-        2 * this.gm.options.settings.throttlingDelay,
+        this.gm.options.settings.throttlingDelay,
         { leading: true, trailing: false },
       );
     } else {
@@ -79,8 +79,9 @@ export class SourceUpdateManager {
       const source = this.gm.features.sources[sourceName];
       // log.debug(`source: ${sourceName}, diffs count: ${this.updateStorage[sourceName].length}`);
       const combinedDiff = this.getCombinedDiff(sourceName);
-      // log.debug(`source: ${sourceName}, diff`, JSON.stringify(combinedDiff, null, 2));
-      if (source) {
+      if (source && combinedDiff) {
+        // log.debug(`source: ${sourceName}, combined diff counts`, Object.values(combinedDiff));
+        // log.debug(`source: ${sourceName}, combined diff`, JSON.stringify(combinedDiff, null, 2));
         source.updateData(combinedDiff);
       }
     }
@@ -98,7 +99,7 @@ export class SourceUpdateManager {
     }
   }
 
-  getCombinedDiff(sourceName: FeatureSourceName) {
+  getCombinedDiff(sourceName: FeatureSourceName): GeoJsonSourceDiff | null {
     let combinedDiff: GeoJsonSourceDiff = {
       remove: [],
       add: [],
@@ -110,7 +111,12 @@ export class SourceUpdateManager {
     });
 
     this.updateStorage[sourceName] = [];
-    return combinedDiff;
+
+    if (Object.values(combinedDiff).find((item) => item.length)) {
+      return combinedDiff;
+    }
+
+    return null;
   }
 
   mergeGeoJsonDiff(
