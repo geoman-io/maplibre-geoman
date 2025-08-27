@@ -161,7 +161,7 @@ export class Features {
     if (featureData) {
       featureData.delete();
       this.featureStore.delete(featureData.id);
-      log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
+      // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
     }
