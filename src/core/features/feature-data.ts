@@ -31,7 +31,6 @@ export class FeatureData {
   markers: Map<MarkerId, MarkerData>;
   shapeProperties: FeatureShapeProperties = { center: null };
   source: BaseSource;
-  orders: FeatureOrders = this.getEmptyOrders();
   _geoJson: GeoJsonShapeFeature | null = null;
 
   constructor(parameters: FeatureDataParameters) {
@@ -96,7 +95,7 @@ export class FeatureData {
     };
 
     this.updateGeoJsonCenter(this._geoJson);
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff: { add: [this._geoJson] },
       sourceName: this.sourceName,
     });
@@ -107,7 +106,7 @@ export class FeatureData {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff: { remove: [this.id] },
       sourceName: this.sourceName,
     });
@@ -136,7 +135,7 @@ export class FeatureData {
     const diff = {
       update: [this._geoJson],
     };
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
@@ -156,7 +155,7 @@ export class FeatureData {
     const diff = {
       update: [this._geoJson],
     };
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
@@ -188,7 +187,7 @@ export class FeatureData {
     atomic: boolean,
   }) {
     if (atomic) {
-      this.gm.features.withAtomicSourcesUpdate(
+      this.gm.features.updateManager.withAtomicSourcesUpdate(
         () => this.actualChangeSource({ sourceName, atomic }),
       );
     } else {
@@ -233,6 +232,5 @@ export class FeatureData {
     this.removeMarkers();
 
     this.id = 'no-id';
-    this.orders = this.getEmptyOrders();
   }
 }

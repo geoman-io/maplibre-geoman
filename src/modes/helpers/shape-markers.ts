@@ -455,7 +455,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     if (event.action === 'feature_updated') {
-      this.gm.features.withAtomicSourcesUpdate(() => {
+      this.gm.features.updateManager.withAtomicSourcesUpdate(() => {
         this.handleShapeUpdate(event);
       });
     }
