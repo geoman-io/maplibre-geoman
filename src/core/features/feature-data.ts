@@ -230,7 +230,5 @@ export class FeatureData {
   delete() {
     this.removeGeoJson();
     this.removeMarkers();
-
-    this.id = 'no-id';
   }
 }

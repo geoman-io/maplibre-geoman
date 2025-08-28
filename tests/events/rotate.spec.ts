@@ -1,8 +1,8 @@
 import test, { expect } from '@playwright/test';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '../utils/basic.ts';
+import { checkGeomanEventResultFromCustomData, saveGeomanEventResultToCustomData } from '../utils/events.ts';
 import { getFeatureMarkersData, getRenderedFeaturesData } from '../utils/features.ts';
-import { getGeomanEventPromise } from '../utils/events.ts';
+import { setupGeomanTest } from '../utils/test-helpers.ts';
 
 test.describe('Rotate Events', () => {
   test.beforeEach(async ({ page }) => {
@@ -42,35 +42,16 @@ test.describe('Rotate Events', () => {
         ];
 
         // Set up event listeners
-        const rotateStartPromise = getGeomanEventPromise(page, 'rotatestart');
-        const rotatePromise = getGeomanEventPromise(page, 'rotate');
-        const rotateEndPromise = getGeomanEventPromise(page, 'rotateend');
+        await saveGeomanEventResultToCustomData(page, 'rotatestart', 'rotatestart');
+        await saveGeomanEventResultToCustomData(page, 'rotate', 'rotate');
+        await saveGeomanEventResultToCustomData(page, 'rotateend', 'rotateend');
 
         // Perform rotation operation
         await dragAndDrop(page, initialScreenPoint, targetScreenPoint);
 
-        const [
-          rotateStartEvent,
-          rotateEvent,
-          rotateEndEvent
-        ] = await Promise.all([ rotateStartPromise, rotatePromise, rotateEndPromise ]);
-
-        // Verify rotatestart event
-        expect(rotateStartEvent.shape, `Shape in rotatestart event for ${feature.id} should match`).toBe(feature.shape);
-        expect(rotateStartEvent.feature, `Feature in rotatestart event for ${feature.id} should exist`).toBeTruthy();
-
-        // Verify rotate event
-        expect(
-          rotateEvent.feature || rotateEvent.features,
-          `Feature or features in rotate event for ${feature.id} should exist`,
-        ).toBeTruthy();
-        if (rotateEvent.shape) {
-          expect(rotateEvent.shape, `Shape in rotate event for ${feature.id} should match`).toBe(feature.shape);
-        }
-
-        // Verify rotateend event
-        expect(rotateEndEvent.shape, `Shape in rotateend event for ${feature.id} should exist`).toBeTruthy();
-        expect(rotateEndEvent.feature, `Feature in rotateend event for ${feature.id} should exist`).toBeTruthy();
+        await checkGeomanEventResultFromCustomData(page, 'rotatestart', 'rotatestart', feature);
+        await checkGeomanEventResultFromCustomData(page, 'rotate', 'rotate', feature);
+        await checkGeomanEventResultFromCustomData(page, 'rotateend', 'rotateend', feature);
       }
     }
   });

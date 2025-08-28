@@ -24,7 +24,8 @@ export interface BaseEventResult {
 // Define a type for window.customData that allows for any property
 // but still provides type checking for known properties
 export interface CustomData {
-  eventResults: { [key: string]: BaseEventResult },
+  rawEventResults?: { [key: string]: unknown },
+  eventResults?: { [key: string]: BaseEventResult },
   map?: MapInstanceWithGeoman,
 }
 

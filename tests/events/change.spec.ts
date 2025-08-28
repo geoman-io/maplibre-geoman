@@ -1,16 +1,16 @@
 import type { Page } from '@playwright/test';
 import test, { expect } from '@playwright/test';
+import { pointBasedGeometryType } from '../types.ts';
 import { disableMode, enableMode } from '../utils/basic.ts';
-import { getGeomanEventPromise } from '../utils/events.ts';
+import { checkGeomanEventResultFromCustomData, saveGeomanEventResultToCustomData } from '../utils/events.ts';
 import {
   type FeatureCustomData,
   getFeatureMarkersData,
   getRenderedFeaturesData,
-  performDragAndVerify,
   type MarkerCustomData,
+  performDragAndVerify,
 } from '../utils/features.ts';
 import { setupGeomanTest } from '../utils/test-helpers.ts';
-import { pointBasedGeometryType } from '../types.ts';
 
 
 const getDraggableVertexForShape = async (
@@ -41,21 +41,16 @@ test('Change events for all shape types', async ({ page }) => {
 
   for (const feature of features) {
     // Set up event listener for this feature
-    const eventHandlerPromise = getGeomanEventPromise(
-      page,
-      pointBasedGeometryType.includes(feature.geoJson.geometry.type) ? 'dragend' : 'editend',
-    );
+    const eventName = pointBasedGeometryType.includes(feature.geoJson.geometry.type) ? 'dragend' : 'editend';
+    await saveGeomanEventResultToCustomData(page, eventName, eventName);
+
     const vertexMarker = await getDraggableVertexForShape(page, feature);
 
     await performDragAndVerify(page, feature, dX, dY, {
       vertexMarker: vertexMarker || undefined,
     });
 
-    const result = await eventHandlerPromise;
-    expect(result.feature || result.features, `Feature data should be present for ${feature.shape}`).toBe(true);
-    if (result.shape) {
-      expect(result.shape, `Shape should match for ${feature.shape}`).toBe(feature.shape);
-    }
+    await checkGeomanEventResultFromCustomData(page, eventName, eventName, feature);
   }
 
   // Disable mode to reset state
