@@ -3,7 +3,7 @@ import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import type {
   BasicGeometry,
-  FeatureDataParameters,
+  FeatureDataParameters, FeatureGMProperties,
   FeatureId,
   FeatureOrders,
   FeatureShape,
@@ -30,6 +30,7 @@ export class FeatureData {
   shape: FeatureShape;
   markers: Map<MarkerId, MarkerData>;
   shapeProperties: FeatureShapeProperties = { center: null };
+  gmProperties: FeatureGMProperties = { disableEdit: false };
   source: BaseSource;
   _geoJson: GeoJsonShapeFeature | null = null;
 
@@ -51,6 +52,10 @@ export class FeatureData {
 
   get temporary(): boolean {
     return (this.source.id as FeatureSourceName) === SOURCES.temporary;
+  }
+
+  get editDisabled(): boolean {
+    return this.gmProperties.disableEdit
   }
 
   get sourceName(): FeatureSourceName {
