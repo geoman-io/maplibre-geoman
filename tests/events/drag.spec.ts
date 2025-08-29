@@ -1,9 +1,9 @@
-import type { LngLat } from '@/main.ts';
+import type { FeatureEditEndFwdEvent, FeatureEditStartFwdEvent, FeatureUpdatedFwdEvent, LngLat } from '@/main.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '../utils/basic.ts';
-import { checkGeomanEventResultFromCustomData, saveGeomanEventResultToCustomData } from '../utils/events.ts';
+import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from '../utils/events.ts';
 import { getRenderedFeaturesData } from '../utils/features.ts';
 import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
 import { setupGeomanTest } from '../utils/test-helpers.ts';
@@ -46,16 +46,42 @@ test.describe('Drag Events', () => {
       const targetPoint: ScreenCoordinates = [point[0] + dX, point[1] + dY];
 
       // Set up event listeners
-      await saveGeomanEventResultToCustomData(page, 'dragstart', 'dragstart');
-      await saveGeomanEventResultToCustomData(page, 'drag', 'drag');
-      await saveGeomanEventResultToCustomData(page, 'dragend', 'dragend');
+      const dragStartResultId = await saveGeomanEventResultToCustomData(page, 'dragstart');
+      const dragResultId = await saveGeomanEventResultToCustomData(page, 'drag');
+      const dragEndResultId = await saveGeomanEventResultToCustomData(page, 'dragend');
 
       // Perform drag operation
       await dragAndDrop(page, point, targetPoint);
 
-      await checkGeomanEventResultFromCustomData(page, 'dragstart', 'dragstart', feature);
-      await checkGeomanEventResultFromCustomData(page, 'drag', 'drag', feature);
-      await checkGeomanEventResultFromCustomData(page, 'dragend', 'dragend', feature);
+      const dragStartEvent = await getGeomanEventResultById(
+        page,
+        dragStartResultId,
+      ) as FeatureEditStartFwdEvent | undefined;
+      expect(dragStartEvent, 'Retrieved event result must be defined').toBeDefined();
+      if (dragStartEvent) {
+        expect(dragStartEvent.feature, 'Event feature must be defined').toBeDefined();
+      }
+
+      const dragEvent = await getGeomanEventResultById(
+        page,
+        dragResultId,
+      ) as FeatureUpdatedFwdEvent | undefined;
+      expect(dragEvent, 'Retrieved event result must be defined').toBeDefined();
+      if (dragEvent) {
+        expect(dragEvent.feature, 'Event feature must be defined').toBeDefined();
+        expect(dragEvent.shape, `Shape should be ${feature.shape}`).toEqual(feature.shape);
+        expect(dragEvent.originalFeature, 'Event feature must be defined').toBeDefined();
+      }
+
+      const dragEndEvent = await getGeomanEventResultById(
+        page,
+        dragEndResultId,
+      ) as FeatureEditEndFwdEvent | undefined;
+      expect(dragEndEvent, 'Retrieved event result must be defined').toBeDefined();
+      if (dragEndEvent) {
+        expect(dragEndEvent.feature, 'Event feature must be defined').toBeDefined();
+        expect(dragEndEvent.shape, `Shape should be ${feature.shape}`).toEqual(feature.shape);
+      }
     }
   });
 });
