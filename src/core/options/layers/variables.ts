@@ -1,6 +1,6 @@
-import { SOURCES } from '@/core/features/index.ts';
 import type { SourceStyles } from '@/main.ts';
-import { IS_PRO } from '@/utils/behavior.ts';
+import { IS_PRO } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 export const defaultRegularStyle = {
   lineColor: '#278cda',

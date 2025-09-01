@@ -1,14 +1,14 @@
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  EditModeName,
-  FeatureShape,
-  GeoJsonShapeFeature,
-  GMEditMarkerEvent,
-  GMEditMarkerMoveEvent,
-  LngLat,
-  MapHandlerReturnData,
-  MarkerData,
+import {
+  type AnyEvent,
+  type EditModeName,
+  type FeatureShape,
+  type GeoJsonShapeFeature,
+  type GMEditMarkerEvent,
+  type GMEditMarkerMoveEvent,
+  type LngLat,
+  type MapHandlerReturnData,
+  type MarkerData,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { getFeatureFirstPoint } from '@/utils/features.ts';

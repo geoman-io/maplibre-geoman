@@ -1,4 +1,3 @@
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   DrawModeName,
@@ -11,12 +10,14 @@ import type {
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
+import { SOURCES } from '@/core/features/constants.ts';
+
 
 export class DrawTextMarker extends BaseDraw {
   mode: DrawModeName = 'text_marker';
   shape: ShapeName = 'text_marker';
   textarea: HTMLTextAreaElement | null = null;
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };

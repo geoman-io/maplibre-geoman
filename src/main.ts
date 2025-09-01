@@ -5,7 +5,6 @@ import defaultMarker from '@/assets/images/markers/default-marker.png';
 import GMControl from '@/core/controls/index.ts';
 import { type EventForwarder } from '@/core/events/forwarder.ts';
 import GMEvents from '@/core/events/index.ts';
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { Features } from '@/core/features/index.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import { getMapAdapter } from '@/core/map/index.ts';
@@ -35,6 +34,7 @@ import { isActionType, isGmDrawEvent, isModeName } from '@/utils/guards/modes.ts
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
 // declare module 'maplibre-gl' {
@@ -76,26 +76,6 @@ export class Geoman {
     }
   }
 
-  initCoreOptions(options: PartialDeep<GmOptionsData> = {}) {
-    return new GmOptions(this, options);
-  }
-
-  initCoreEvents() {
-    return new GMEvents(this);
-  }
-
-  initCoreFeatures() {
-    return new Features(this);
-  }
-
-  initCoreControls() {
-    return new GMControl(this);
-  }
-
-  initMarkerPointer() {
-    return new MarkerPointer(this);
-  }
-
   get drawClassMap() {
     return drawClassMap;
   }
@@ -114,6 +94,26 @@ export class Geoman {
     }
     log.trace('Map adapter is not initialized');
     throw new Error('Map adapter is not initialized');
+  }
+
+  initCoreOptions(options: PartialDeep<GmOptionsData> = {}) {
+    return new GmOptions(this, options);
+  }
+
+  initCoreEvents() {
+    return new GMEvents(this);
+  }
+
+  initCoreFeatures() {
+    return new Features(this);
+  }
+
+  initCoreControls() {
+    return new GMControl(this);
+  }
+
+  initMarkerPointer() {
+    return new MarkerPointer(this);
   }
 
   addControls(controlsElement: HTMLElement | undefined = undefined) {
@@ -142,9 +142,19 @@ export class Geoman {
     await this.addControls();
   }
 
-  destroy() {
+  destroy({ removeSources }: {
+    removeSources: boolean,
+  } = { removeSources: false }) {
     this.removeControls();
     this.events.bus.detachAllEvents();
+
+    if (removeSources) {
+      for (const source of Object.values(this.features.sources)) {
+        if (source) {
+          source.remove();
+        }
+      }
+    }
 
     if ('gm' in this.mapAdapter.mapInstance) {
       delete this.mapAdapter.mapInstance.gm;
@@ -166,7 +176,7 @@ export class Geoman {
       image: defaultMarker,
     });
 
-    this.events.fire(`${gmPrefix}:control`, {
+    this.events.fire(`${GM_PREFIX}:control`, {
       level: 'system',
       type: 'control',
       action: 'loaded',
@@ -352,7 +362,7 @@ export const createGeomanInstance = async (
 
   await Promise.race([
     new Promise((resolve) => {
-      geoman.mapAdapter.once(`${gmPrefix}:loaded`, resolve);
+      geoman.mapAdapter.once(`${GM_PREFIX}:loaded`, resolve);
     }),
     new Promise((_, reject) => {
       setTimeout(() => reject(new Error(`Timeout ${TIMEOUT / 1000} seconds: can't init geoman`)), TIMEOUT);
@@ -366,14 +376,9 @@ export const createGeomanInstance = async (
 export * from '@/types/index.ts';
 
 // constants
-export { gmPrefix } from '@/core/events/listeners/base.ts';
-export { FEATURE_ID_PROPERTY, SOURCES } from '@/core/features/index.ts';
 export { controlIcons } from '@/core/options/icons.ts';
 export { default as defaultLayerStyles } from '@/core/options/layers/style.ts';
 export { customShapeRectangle, customShapeTriangle } from '@/core/options/shapes.ts';
-export { drawModes, extraDrawModes, shapeNames } from '@/modes/draw/base.ts';
-export { editModes } from '@/modes/edit/base.ts';
-export { helperModes } from '@/modes/helpers/base.ts';
 
 // core classes
 export { GmOptions } from '@/core/options/index.ts';
@@ -385,18 +390,30 @@ export { convertToThrottled } from '@/utils/behavior.ts';
 export { isGeoJsonFeatureInPolygon, moveFeatureData, moveGeoJson } from '@/utils/features.ts';
 export {
   boundsContains,
-  boundsToBBox, calculatePerimeter, convertToLineStringFeatureCollection,
+  boundsToBBox,
+  calculatePerimeter,
+  convertToLineStringFeatureCollection,
   eachCoordinateWithPath,
-  eachSegmentWithPath, findCoordinateWithPath, geoJsonPointToLngLat, getEuclideanDistance,
-  getEuclideanSegmentNearestPoint, getGeoJsonCoordinatesCount, getGeoJsonFirstPoint, getLngLatDiff, isEqualPosition, isMultiPolygonFeature,
-  isPolygonFeature, lngLatToGeoJsonPoint, twoCoordsToLineString
+  eachSegmentWithPath,
+  findCoordinateWithPath,
+  geoJsonPointToLngLat,
+  getEuclideanDistance,
+  getEuclideanSegmentNearestPoint,
+  getGeoJsonCoordinatesCount,
+  getGeoJsonFirstPoint,
+  getLngLatDiff,
+  isEqualPosition,
+  isMultiPolygonFeature,
+  isPolygonFeature,
+  lngLatToGeoJsonPoint,
+  twoCoordsToLineString,
 } from '@/utils/geojson.ts';
 export { formatArea, formatDistance, toMod } from '@/utils/number.ts';
 export { includesWithType, typedKeys } from '@/utils/typing.ts';
 
 // guards
 export {
-  isGmDrawFreehandDrawerEvent, isGmDrawLineDrawerEvent, isGmDrawShapeEvent
+  isGmDrawFreehandDrawerEvent, isGmDrawLineDrawerEvent, isGmDrawShapeEvent,
 } from '@/utils/guards/events/draw.ts';
 export { isGmEditEvent } from '@/utils/guards/events/edit.ts';
 export { isGmFeatureBeforeCreateEvent, isGmFeatureBeforeUpdateEvent } from '@/utils/guards/events/features.ts';
@@ -428,3 +445,11 @@ export { ShapeMarkersHelper } from '@/modes/helpers/shape-markers.ts';
 export { LineDrawer } from '@/utils/draw/line-drawer.ts';
 export { MarkerPointer } from '@/utils/draw/marker-pointer.ts';
 
+export { GM_PREFIX } from '@/core/constants.ts';
+export { DRAW_MODES } from '@/modes/constants.ts';
+export { EXTRA_DRAW_MODES } from '@/modes/constants.ts';
+export { SHAPE_NAMES } from '@/modes/constants.ts';
+export { SOURCES } from '@/core/features/constants.ts';
+export { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
+export { HELPER_MODES } from '@/modes/constants.ts';
+export { EDIT_MODES } from '@/modes/constants.ts';

@@ -1,4 +1,3 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionOptions,
@@ -6,12 +5,12 @@ import type {
   ActionType,
   AnyEvent,
   EditModeName,
+  EventHandlers,
   GeoJsonShapeFeature,
   Geoman,
   GMBeforeFeatureCreateEvent,
   GMBeforeFeatureUpdateEvent,
   GMGeofencingViolationEvent,
-  MapEventHandlers,
   ModeName,
   NonEmptyArray,
   SubActions,
@@ -19,9 +18,8 @@ import type {
 import type { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { isGmGeofencingViolationEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
+import { GM_PREFIX } from '@/core/constants.ts';
 
-
-export const actionTypes = ['draw', 'edit', 'helper'] as const;
 
 export abstract class BaseAction {
   gm: Geoman;
@@ -35,14 +33,20 @@ export abstract class BaseAction {
     featureUpdateAllowed: true,
   };
 
-  abstract mapEventHandlers: MapEventHandlers;
+  abstract eventHandlers: EventHandlers;
 
-  internalMapEventHandlers: MapEventHandlers = {
-    [`${gmPrefix}:helper`]: this.handleHelperEvent.bind(this),
+  internalEventHandlers: EventHandlers = {
+    [`${GM_PREFIX}:helper`]: this.handleHelperEvent.bind(this),
   };
 
   constructor(gm: Geoman) {
     this.gm = gm;
+  }
+
+  get snappingHelper(): SnappingHelper | null {
+    return (
+      this.gm.actionInstances.helper__snapping || null
+    ) as SnappingHelper | null;
   }
 
   abstract onStartAction(): void;
@@ -50,21 +54,15 @@ export abstract class BaseAction {
   abstract onEndAction(): void;
 
   startAction() {
-    this.gm.events.bus.attachEvents(this.internalMapEventHandlers);
-    this.gm.events.bus.attachEvents(this.mapEventHandlers);
+    this.gm.events.bus.attachEvents(this.internalEventHandlers);
+    this.gm.events.bus.attachEvents(this.eventHandlers);
     this.onStartAction();
   }
 
   endAction() {
     this.onEndAction();
-    this.gm.events.bus.detachEvents(this.mapEventHandlers);
-    this.gm.events.bus.detachEvents(this.internalMapEventHandlers);
-  }
-
-  get snappingHelper(): SnappingHelper | null {
-    return (
-      this.gm.actionInstances.helper__snapping || null
-    ) as SnappingHelper | null;
+    this.gm.events.bus.detachEvents(this.eventHandlers);
+    this.gm.events.bus.detachEvents(this.internalEventHandlers);
   }
 
   getOptionValue(name: string) {
@@ -142,7 +140,7 @@ export abstract class BaseAction {
       action: 'before_create',
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${gmPrefix}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 
   fireBeforeFeatureUpdate(
@@ -162,6 +160,6 @@ export abstract class BaseAction {
       features,
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${gmPrefix}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 }

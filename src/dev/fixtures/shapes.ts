@@ -1,5 +1,10 @@
-import { FEATURE_ID_PROPERTY } from '@/core/features/index.ts';
-import type { GeoJsonImportFeature, GeoJsonImportFeatureCollection, Geoman, LngLat } from '@/main.ts';
+import {
+  FEATURE_ID_PROPERTY,
+  type GeoJsonImportFeature,
+  type GeoJsonImportFeatureCollection,
+  type Geoman,
+  type LngLat,
+} from '@/main.ts';
 import log from 'loglevel';
 
 
@@ -50,7 +55,7 @@ export const loadStressTestFeatureCollection = (geoman: Geoman, step: number, si
   geoJson.features = geoJson.features.concat(
     currentGeoJson.features as Array<GeoJsonImportFeature>,
   );
-  targetSource.setGeoJson(geoJson);
+  geoman.features.importGeoJson(geoJson);
 };
 
 export const loadStressTestCircleMarkers = (geoman: Geoman, step: number) => {

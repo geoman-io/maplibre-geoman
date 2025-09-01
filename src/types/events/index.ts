@@ -1,10 +1,10 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { GMControlEvent } from '@/types/events/control.ts';
 import type { GMDrawEvent } from '@/types/events/draw.ts';
 import { type GMEditEvent } from '@/types/events/edit.ts';
 import type { GMFeatureEvent } from '@/types/events/feature.ts';
 import type { GMHelperEvent } from '@/types/events/helper.ts';
 import type { ActionType } from '@/types/options.ts';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
 export type EventType = ActionType | 'control';
@@ -24,7 +24,7 @@ export type GMEvent =
   GMControlEvent |
   GMFeatureEvent;
 
-export type GmPrefix = typeof gmPrefix;
+export type GmPrefix = typeof GM_PREFIX;
 export type GmEventNameWithoutPrefix = EventType;
 export type GmEventName = `${GmPrefix}:${GmEventNameWithoutPrefix}`;
 

@@ -1,6 +1,11 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type { AnyEvent, DrawModeName, LineEventHandlerArguments, ShapeName } from '@/main.ts';
+import {
+  type AnyEvent,
+  type DrawModeName,
+  GM_PREFIX,
+  type LineEventHandlerArguments,
+  type ShapeName,
+  SOURCES,
+} from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -18,8 +23,8 @@ export class DrawPolygon extends BaseDraw {
     this.gm,
     { snappingMarkers: 'first', targetShape: 'polygon' },
   );
-  mapEventHandlers = {
-    [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
 
@@ -63,7 +68,8 @@ export class DrawPolygon extends BaseDraw {
       shapeGeoJson: {
         ...geoJsonPolygon,
         properties: {
-          ...geoJsonPolygon.properties,
+          // we don't need to have collected properties for a new polygon
+          // ...geoJsonPolygon.properties,
           shape: this.shape,
         },
       },

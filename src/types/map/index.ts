@@ -94,12 +94,6 @@ export type GeoJsonSourceDiff = {
   update?: Array<Feature>;
 };
 
-export type GeoJsonDiffStorage = {
-  add: Array<Feature>;
-  update: Array<Feature>;
-  remove: Array<FeatureId>;
-};
-
 export type BaseFitBoundsOptions = {
   padding?: number;
 };

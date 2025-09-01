@@ -81,7 +81,7 @@ export abstract class BaseMapAdapter<
 
   abstract addLayer(options: unknown): BaseLayer<TLayer>;
 
-  abstract getLayer(layerId: string): BaseLayer<TLayer>;
+  abstract getLayer(layerId: string): BaseLayer<TLayer> | null;
 
   abstract removeLayer(layerId: string): void;
 

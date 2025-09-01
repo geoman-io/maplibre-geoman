@@ -1,6 +1,5 @@
 import GMControl from '@/core/controls/index.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { FEATURE_ID_PROPERTY } from '@/core/features/index.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
@@ -10,22 +9,23 @@ import { MaplibreDomMarker } from '@/core/map/maplibre/marker.ts';
 import { MaplibrePopup } from '@/core/map/maplibre/popup.ts';
 import { MaplibreSource } from '@/core/map/maplibre/source.ts';
 import type { MaplibreAnyLayer } from '@/core/map/maplibre/types.ts';
-import type {
-  BaseDomMarkerOptions,
-  BaseEventListener,
-  BaseFitBoundsOptions,
-  BasePopupOptions,
-  CursorType,
-  FeatureId,
-  FeatureSourceName,
-  GeoJsonFeatureData,
-  GeoJsonImportFeature,
-  Geoman,
-  LngLat,
-  MapInstanceWithGeoman,
-  MapInteraction,
-  MapTypes,
-  ScreenPoint,
+import {
+  type BaseDomMarkerOptions,
+  type BaseEventListener,
+  type BaseFitBoundsOptions,
+  type BasePopupOptions,
+  type CursorType,
+  FEATURE_ID_PROPERTY,
+  type FeatureId,
+  type FeatureSourceName,
+  type GeoJsonFeatureData,
+  type GeoJsonImportFeature,
+  type Geoman,
+  type LngLat,
+  type MapInstanceWithGeoman,
+  type MapInteraction,
+  type MapTypes,
+  type ScreenPoint,
 } from '@/main.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';
@@ -70,8 +70,10 @@ export class MaplibreAdapter
   }
 
   async loadImage({ id, image }: { id: string, image: string }) {
-    const loadedImage = await this.mapInstance.loadImage(image);
-    this.mapInstance.addImage(id, loadedImage.data);
+    if (!this.mapInstance.hasImage(id)) {
+      const loadedImage = await this.mapInstance.loadImage(image);
+      this.mapInstance.addImage(id, loadedImage.data);
+    }
   }
 
   getBounds(): [LngLat, LngLat] {
@@ -192,8 +194,11 @@ export class MaplibreAdapter
     return new MaplibreLayer({ gm: this.gm, layerId, options });
   }
 
-  getLayer(layerId: string): BaseLayer<MaplibreAnyLayer> {
-    return new MaplibreLayer({ gm: this.gm, layerId });
+  getLayer(layerId: string): BaseLayer<MaplibreAnyLayer> | null {
+    if (this.mapInstance.getLayer(layerId)) {
+      return new MaplibreLayer({ gm: this.gm, layerId });
+    }
+    return null;
   }
 
   removeLayer(layerId: string) {

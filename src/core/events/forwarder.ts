@@ -1,4 +1,3 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type {
   EditModeName,
   FeatureCreatedFwdEvent,
@@ -27,9 +26,10 @@ import type {
   GMHelperModeEvent,
   ModeName,
 } from '@/main.ts';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
-export const gmSystemPrefix = `_${gmPrefix}`;
+export const gmSystemPrefix = `_${GM_PREFIX}`;
 
 export class EventForwarder {
   gm: Geoman;
@@ -156,7 +156,7 @@ export class EventForwarder {
     this.fireToMap(
       'converted',
       `${payload.action}`,
-      { map: this.map, [gmPrefix]: this.gm },
+      { map: this.map, [GM_PREFIX]: this.gm },
     );
   }
 
@@ -165,7 +165,7 @@ export class EventForwarder {
     eventName: GmEventNameWithoutPrefix | GmFwdEventName,
     payload: GlobalEventsListenerParameters['payload'],
   ) {
-    const prefix = type === 'system' ? gmSystemPrefix : gmPrefix;
+    const prefix = type === 'system' ? gmSystemPrefix : GM_PREFIX;
     const eventNameWithPrefix = `${prefix}:${eventName}` as GmFwdEventNameWithPrefix | GmFwdSystemEventNameWithPrefix;
 
     if (this.globalEventsListener) {

@@ -1,26 +1,25 @@
-import { FEATURE_ID_PROPERTY, SOURCES } from '@/core/features/index.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import type {
-  BasicGeometry,
-  FeatureDataParameters,
-  FeatureId,
-  FeatureOrder,
-  FeatureOrders,
-  FeatureShape,
-  FeatureShapeProperties,
-  FeatureSourceName,
-  GeoJsonShapeFeature,
-  GeoJsonShapeFeatureWithGmProperties,
-  Geoman,
-  MarkerData,
-  MarkerId,
-  ShapeGeoJsonProperties,
+import {
+  type BasicGeometry,
+  FEATURE_ID_PROPERTY,
+  type FeatureDataParameters,
+  type FeatureId,
+  type FeatureOrders,
+  type FeatureShape,
+  type FeatureShapeProperties,
+  type FeatureSourceName,
+  type GeoJsonShapeFeature,
+  type Geoman,
+  type MarkerData,
+  type MarkerId,
+  type ShapeGeoJsonProperties,
 } from '@/main.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import { typedValues } from '@/utils/typing.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
@@ -33,7 +32,7 @@ export class FeatureData {
   markers: Map<MarkerId, MarkerData>;
   shapeProperties: FeatureShapeProperties = { center: null };
   source: BaseSource;
-  orders: FeatureOrders = this.getEmptyOrders();
+  _geoJson: GeoJsonShapeFeature | null = null;
 
   constructor(parameters: FeatureDataParameters) {
     this.gm = parameters.gm;
@@ -42,29 +41,7 @@ export class FeatureData {
     this.parent = parameters.parent;
     this.markers = new Map();
     this.shape = parameters.geoJsonShapeFeature.properties.shape;
-    this.order = this.getFreeOrder();
     this.addGeoJson(parameters.geoJsonShapeFeature);
-  }
-
-  get order(): FeatureOrder {
-    const sourceName = this.source.id as FeatureSourceName;
-
-    if (this.orders[sourceName] !== null) {
-      return this.orders[sourceName];
-    }
-    throw new Error(`Null order for feature id: ${this.id}`);
-  }
-
-  set order(order: FeatureOrder) {
-    // Note: be careful, set source before working with order
-    const sourceName = this.source.id as FeatureSourceName;
-    this.orders[sourceName] = order;
-  }
-
-  getEmptyOrders(): FeatureOrders {
-    return Object.fromEntries(
-      typedValues(SOURCES).map((name) => [name, null]),
-    ) as FeatureOrders;
   }
 
   get temporary(): boolean {
@@ -75,25 +52,10 @@ export class FeatureData {
     return this.source.id as FeatureSourceName;
   }
 
-  getFreeOrder() {
-    // Note: order could be from regular or tmp source
-    // be careful, set temporary and source before working with order
-    return this.getSourceGeoJson().features.length;
-  }
-
-  getGeoJson() {
-    if (!this.isFeatureAvailable()) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-
-    this.fixOrder();
-
-    const geoJsonFeature = this.getSourceGeoJson().features[this.order] || null;
-    if (this.id !== geoJsonFeature?.id) {
-      log.error(`Feature not found: ${this.id} !== ${geoJsonFeature?.id}`, geoJsonFeature, this.getSourceGeoJson());
-      throw new Error('Feature not found');
-    }
-    return geoJsonFeature as GeoJsonShapeFeatureWithGmProperties;
+  getEmptyOrders(): FeatureOrders {
+    return Object.fromEntries(
+      typedValues(SOURCES).map((name) => [name, null]),
+    ) as FeatureOrders;
   }
 
   getShapeProperty(name: keyof FeatureShapeProperties) {
@@ -107,51 +69,48 @@ export class FeatureData {
     this.shapeProperties[name] = value;
   }
 
+  getGeoJson(): GeoJsonShapeFeature {
+    if (this._geoJson) {
+      return this._geoJson;
+    } else {
+      throw new Error(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
+    }
+  }
+
   getSourceGeoJson() {
     return this.source.getGeoJson();
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {
-    if (!this.isFeatureAvailable()) {
-      throw new Error(`Feature not found: "${this.id}"`);
+    if (this._geoJson) {
+      throw new Error(`FeatureData.addGeoJson, not an empty feature: "${this.id}"`);
     }
 
-    const featureCollection = this.getSourceGeoJson();
-    if (featureCollection.features[this.order]) {
-      log.error('FeatureData.addGeoJson, not an empty feature', this.id, featureCollection);
-    }
-
-    const shapeGeoJson = {
+    this._geoJson = {
       ...geoJson,
-      id: this.id,
       properties: {
         ...geoJson.properties,
         [FEATURE_ID_PROPERTY]: this.id,
       },
     };
-    featureCollection.features[this.order] = shapeGeoJson;
 
-    this.updateGeoJsonCenter(shapeGeoJson);
-    this.gm.features.updateSourceData({
-      diff: { add: [shapeGeoJson] },
+    this.updateGeoJsonCenter(this._geoJson);
+    this.gm.features.updateManager.updateSource({
+      diff: { add: [this._geoJson] },
       sourceName: this.sourceName,
     });
   }
 
   removeGeoJson() {
-    if (!this.isFeatureAvailable()) {
+    if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
-    this.fixOrder();
 
-    const featureCollection = this.getSourceGeoJson();
-    delete featureCollection.features[this.order];
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff: { remove: [this.id] },
       sourceName: this.sourceName,
     });
-
-    (this as { order: FeatureOrder }).order = null;
+    this._geoJson = null;
   }
 
   removeMarkers() {
@@ -166,43 +125,37 @@ export class FeatureData {
   }
 
   updateGeoJsonGeometry(geometry: BasicGeometry) {
-    if (!this.isFeatureAvailable()) {
+    const featureGeoJson = this.getGeoJson();
+    if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
-    this.fixOrder();
 
-    const fcGeoJson = this.getSourceGeoJson();
-    fcGeoJson.features[this.order].geometry = geometry;
+    this._geoJson = { ...featureGeoJson, geometry };
 
     const diff = {
-      update: [
-        fcGeoJson.features[this.order],
-      ],
+      update: [this._geoJson],
     };
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
   }
 
   updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
-    if (!this.isFeatureAvailable()) {
+    const featureGeoJson = this.getGeoJson();
+    if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
-    this.fixOrder();
 
-    const fcGeoJson = this.getSourceGeoJson();
-    fcGeoJson.features[this.order].properties = {
-      ...fcGeoJson.features[this.order].properties,
-      ...properties,
+    this._geoJson = {
+      ...featureGeoJson,
+      properties: { ...featureGeoJson.properties, ...properties },
     };
 
     const diff = {
-      update: [
-        fcGeoJson.features[this.order],
-      ],
+      update: [this._geoJson],
     };
-    this.gm.features.updateSourceData({
+    this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
@@ -229,22 +182,12 @@ export class FeatureData {
     return conversionAllowedShapes.includes(this.shape);
   }
 
-  fixOrder() {
-    if (!this.isFeatureAvailable()) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-  }
-
-  isFeatureAvailable(): this is { order: number } {
-    return this.order !== null;
-  }
-
   changeSource({ sourceName, atomic }: {
     sourceName: FeatureSourceName,
     atomic: boolean,
   }) {
     if (atomic) {
-      this.gm.features.withAtomicSourcesUpdate(
+      this.gm.features.updateManager.withAtomicSourcesUpdate(
         () => this.actualChangeSource({ sourceName, atomic }),
       );
     } else {
@@ -268,9 +211,13 @@ export class FeatureData {
     }
 
     const shapeGeoJson = this.getGeoJson();
+    if (!shapeGeoJson) {
+      log.error('FeatureData.changeSource: missing shape GeoJSON');
+      return;
+    }
+
     this.removeGeoJson();
     this.source = source;
-    this.order = this.getFreeOrder();
     this.addGeoJson(shapeGeoJson);
 
     this.markers.forEach((markerData) => {
@@ -283,8 +230,5 @@ export class FeatureData {
   delete() {
     this.removeGeoJson();
     this.removeMarkers();
-
-    this.id = 'no-id';
-    this.orders = this.getEmptyOrders();
   }
 }

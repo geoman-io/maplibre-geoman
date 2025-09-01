@@ -1,8 +1,8 @@
 import type {
-  GMDrawLineDrawerEvent,
   GMDrawEvent,
   GMDrawFreehandDrawerEvent,
   GMDrawFreehandDrawerEventWithData,
+  GMDrawLineDrawerEvent,
   GMDrawLineDrawerEventWithData,
   GMDrawShapeEvent,
   GMDrawShapeEventWithData,

@@ -1,50 +1,39 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
-import type {
-  AnyEvent,
-  FeatureId,
-  FeatureShape,
-  FeatureSourceName,
-  FeatureStore,
-  ForEachFeatureDataCallbackFn,
-  GeoJsonDiffStorage,
-  GeoJsonImportFeature,
-  GeoJsonImportFeatureCollection,
-  GeoJsonShapeFeature,
-  GeoJsonShapeFeatureCollection,
-  GeoJsonSourceDiff,
-  Geoman,
-  GMDrawShapeCreatedEvent,
-  LngLat,
-  MarkerData,
-  PartialLayerStyle,
-  ScreenPoint,
-  ShapeName,
-  SourcesStorage,
-  SourceUpdateMethods,
-  UpdateStorage,
+import {
+  type AnyEvent,
+  FEATURE_ID_PROPERTY,
+  type FeatureId,
+  type FeatureShape,
+  type FeatureSourceName,
+  type FeatureStore,
+  type ForEachFeatureDataCallbackFn,
+  type GeoJsonImportFeature,
+  type GeoJsonImportFeatureCollection,
+  type GeoJsonShapeFeature,
+  type GeoJsonShapeFeatureCollection,
+  type Geoman,
+  type GMDrawShapeCreatedEvent,
+  type LngLat,
+  type MarkerData,
+  type PartialLayerStyle,
+  type ScreenPoint,
+  SHAPE_NAMES,
+  type ShapeName,
+  type SourcesStorage,
 } from '@/main.ts';
-import { shapeNames } from '@/modes/draw/base.ts';
 import { fixGeoJsonFeature } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature, FeatureCollection, GeoJSON, Geometry, LineString, MultiPolygon, Polygon } from 'geojson';
-import { cloneDeep, debounce, throttle } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-import { IS_PRO } from '@/utils/behavior.ts';
+import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
+import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
-
-export const SOURCES: { [key: string]: string } = {
-  // order matters here, layers order will be aligned according to these items
-  ...(IS_PRO && { standby: `${gmPrefix}_standby` }), // available only in the pro version
-  main: `${gmPrefix}_main`,
-  temporary: `${gmPrefix}_temporary`,
-} as const;
-
-export const FEATURE_ID_PROPERTY = '_gmid' as const;
 
 export class Features {
   gm: Geoman;
@@ -52,46 +41,29 @@ export class Features {
   featureCounter: number = 0;
   featureStore: FeatureStore = new Map<FeatureId, FeatureData>();
   featureStoreAllowedSources: Array<FeatureSourceName> = [SOURCES.main, SOURCES.temporary];
-  autoUpdatesEnabled: boolean = true;
-  diffUpdatesEnabled: boolean = true;
 
   sources: SourcesStorage;
   defaultSourceName: FeatureSourceName = SOURCES.main;
-  updateStorage: UpdateStorage;
-  delayedSourceUpdateMethods: SourceUpdateMethods;
+  updateManager: SourceUpdateManager;
   layers: Array<BaseLayer>;
 
   constructor(gm: Geoman) {
     this.gm = gm;
+    this.updateManager = new SourceUpdateManager(gm);
 
     this.sources = Object.fromEntries(
       typedValues(SOURCES).map((name) => [name, null]),
     ) as SourcesStorage;
 
-    this.updateStorage = Object.fromEntries(
-      typedValues(SOURCES).map((name) => [
-        name,
-        { add: [] as Array<Feature>, remove: [] as Array<FeatureId>, update: [] as Array<Feature> },
-      ]),
-    ) as UpdateStorage;
-
-    this.delayedSourceUpdateMethods = Object.fromEntries(
-      typedValues(SOURCES).map((sourceName) => [
-        sourceName,
-        {
-          throttled: this.getDelayedSourceUpdateMethod({
-            sourceName,
-            type: 'throttled',
-          }),
-          debounced: this.getDelayedSourceUpdateMethod({
-            sourceName,
-            type: 'debounced',
-          }),
-        } as { debounced: () => void, throttled: () => void },
-      ]),
-    ) as SourceUpdateMethods;
-
     this.layers = [];
+  }
+
+  get forEach() {
+    return this.filteredForEach((featureData) => !featureData.temporary);
+  }
+
+  get tmpForEach() {
+    return this.filteredForEach((featureData) => featureData.temporary);
   }
 
   init() {
@@ -104,15 +76,9 @@ export class Features {
       this.sources[sourceName] = this.createSource(sourceName);
     });
 
-    this.layers = this.createLayers();
-  }
-
-  get forEach() {
-    return this.filteredForEach((featureData) => !featureData.temporary);
-  }
-
-  get tmpForEach() {
-    return this.filteredForEach((featureData) => featureData.temporary);
+    if (this.gm.options.settings.useDefaultLayers) {
+      this.layers = this.createLayers();
+    }
   }
 
   getNewFeatureId(): FeatureId {
@@ -159,104 +125,6 @@ export class Features {
     this.defaultSourceName = sourceName;
   }
 
-  getDelayedSourceUpdateMethod(
-    { sourceName, type }: {
-      sourceName: FeatureSourceName,
-      type: 'throttled' | 'debounced',
-    },
-  ) {
-    if (type === 'throttled') {
-      return throttle(
-        () => this.updateSourceByStorage(sourceName),
-        2 * this.gm.options.settings.throttlingDelay,
-        { leading: false, trailing: true },
-      );
-    } else if (type === 'debounced') {
-      return debounce(
-        () => this.updateSourceByStorage(sourceName),
-        2 * this.gm.options.settings.throttlingDelay,
-        { leading: true, trailing: false },
-      );
-    } else {
-      throw new Error('Features: getDelayedSourceUpdateMethod: invalid type');
-    }
-  }
-
-  updateSourceByStorage(sourceName: FeatureSourceName) {
-    const source = this.sources[sourceName];
-    const updateStorage = this.updateStorage[sourceName];
-
-    const updatesAvailable = Object.values(updateStorage).some((item) => item.length);
-
-    if (source && updatesAvailable) {
-      source.updateData(updateStorage);
-      this.resetDiffStorage(sourceName);
-    }
-  }
-
-  resetDiffStorage(sourceName: FeatureSourceName) {
-    const updateStorage = this.updateStorage[sourceName];
-
-    updateStorage.add = [];
-    updateStorage.remove = [];
-    updateStorage.update = [];
-  }
-
-  withAtomicSourcesUpdate<T>(callback: () => T): T {
-    try {
-      this.autoUpdatesEnabled = false;
-      return callback();
-    } finally {
-      typedValues(SOURCES).forEach((sourceName) => {
-        this.updateSourceByStorage(sourceName);
-      });
-      this.autoUpdatesEnabled = true;
-    }
-  }
-
-  updateSourceData({ diff, sourceName }: {
-    diff: GeoJsonSourceDiff,
-    sourceName: FeatureSourceName,
-  }) {
-    if (this.gm.features.diffUpdatesEnabled) {
-      this.updateSourceDataWithDiff({ diff, sourceName });
-    } else {
-      this.setSourceData({ diff, sourceName });
-    }
-  }
-
-  updateSourceDataWithDiff({ diff, sourceName }: {
-    diff: GeoJsonSourceDiff,
-    sourceName: FeatureSourceName
-  }) {
-    const updateStorage: GeoJsonDiffStorage = this.updateStorage[sourceName];
-
-    if (diff.add) {
-      updateStorage.add = updateStorage.add.concat(diff.add);
-    }
-    if (diff.update) {
-      updateStorage.update = updateStorage.update.concat(diff.update);
-    }
-    if (diff.remove) {
-      updateStorage.remove = updateStorage.remove.concat(diff.remove);
-    }
-
-    if (this.gm.features.autoUpdatesEnabled) {
-      this.delayedSourceUpdateMethods[sourceName].throttled();
-      this.delayedSourceUpdateMethods[sourceName].debounced();
-    }
-  }
-
-  setSourceData({ sourceName }: {
-    diff: GeoJsonSourceDiff,
-    sourceName: FeatureSourceName,
-  }) {
-    log.warn('Review this Features.setSourceData() method');
-    const fcGeoJson = this.getSourceGeoJson(sourceName);
-    fcGeoJson.features = fcGeoJson.features.filter((feature) => !!feature);
-    this.setSourceGeoJson({ geoJson: fcGeoJson, sourceName });
-  }
-
   createSource(sourceName: FeatureSourceName) {
     const source = this.gm.mapAdapter.addSource(
       sourceName,
@@ -283,9 +151,9 @@ export class Features {
     }
 
     if (featureData) {
-      featureData.removeMarkers();
-      featureData.removeGeoJson();
       this.featureStore.delete(featureData.id);
+      featureData.delete();
+      // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
     }
@@ -411,7 +279,8 @@ export class Features {
       return null;
     }
 
-    const featureId = shapeGeoJson.id || `${sourceName}-feature-${this.featureCounter}`;
+    const featureId = shapeGeoJson.id
+      || this.getNewFeatureId();
 
     return this.createFeature({
       featureId: shapeGeoJson.id as FeatureId | undefined,
@@ -442,7 +311,7 @@ export class Features {
         SOURCES.main,
         ...(IS_PRO ? [SOURCES.standby] : []),
       ],
-      shapeTypes: allowedShapes ? allowedShapes : [...shapeNames],
+      shapeTypes: allowedShapes ? allowedShapes : [...SHAPE_NAMES],
     });
   }
 
@@ -486,7 +355,10 @@ export class Features {
           .filter((feature) => !!feature)
           .forEach((feature) => {
             if (shapeTypes === undefined || shapeTypes.includes(feature.properties.shape)) {
-              resultFeatureCollection.features.push(feature);
+              resultFeatureCollection.features.push({
+                ...feature,
+                id: feature.properties[FEATURE_ID_PROPERTY],
+              });
             }
           });
       }
@@ -504,7 +376,7 @@ export class Features {
     const shapeGeoJson = inputSource.getGeoJson();
     const sourceGeoJsonFeatures = 'features' in shapeGeoJson ? shapeGeoJson.features : [shapeGeoJson];
     const baseSource = this.gm.mapAdapter.getSource(inputSource.id);
-    baseSource.remove({ removeLayers: false });
+    baseSource.remove();
 
     sourceGeoJsonFeatures.forEach((sourceFeature) => {
       const featureData = this.addGeoJsonFeature({
@@ -564,10 +436,9 @@ export class Features {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
         styles.forEach((partialStyle) => {
           const layer = this.createGenericLayer({
-            layerId: `${sourceName}-${shapeName}__${partialStyle.type}-layer`,
-            partialStyle,
-            shape: shapeName,
             sourceName,
+            shapeNames: [shapeName],
+            partialStyle,
           });
 
           if (layer) {
@@ -580,12 +451,16 @@ export class Features {
     return layers;
   }
 
-  createGenericLayer({ layerId, sourceName, partialStyle, shape }: {
-    layerId: string,
-    partialStyle: PartialLayerStyle,
-    shape: FeatureShape,
+  createGenericLayer({ sourceName, shapeNames, partialStyle }: {
     sourceName: FeatureSourceName,
+    shapeNames: Array<FeatureShape>,
+    partialStyle: PartialLayerStyle,
   }): BaseLayer | null {
+    const layerId = this.getGenericLayerName({ sourceName, shapeNames, partialStyle });
+    if (!layerId) {
+      throw new Error(`Can't create a layer, for ${{ sourceName, shapeNames, partialStyle }}`);
+    }
+
     const layerOptions = {
       ...partialStyle,
       id: layerId,
@@ -593,11 +468,32 @@ export class Features {
       filter: [
         'in',
         ['get', 'shape'],
-        ['literal', [shape]],
+        ['literal', shapeNames],
       ],
     };
 
     return this.gm.mapAdapter.addLayer(layerOptions);
+  }
+
+  getGenericLayerName({ sourceName, shapeNames, partialStyle }: {
+    sourceName: FeatureSourceName,
+    shapeNames: Array<FeatureShape>,
+    partialStyle: PartialLayerStyle,
+  }): string | null {
+    const MAX_LAYERS = 100;
+    const shapeName = shapeNames.length === 1 ? shapeNames[0] : 'mixed';
+    const getLayerId = (index: number) => `${sourceName}-${shapeName}__${partialStyle.type}-layer-${index}`;
+    let layerId: string | null = null;
+
+    for (let i = 0; i < MAX_LAYERS; i += 1) {
+      const tmpLayerId = getLayerId(i);
+      if (!this.gm.mapAdapter.getLayer(tmpLayerId)) {
+        layerId = tmpLayerId;
+        return layerId;
+      }
+    }
+
+    return null;
   }
 
   getFeatureShapeByGeoJson(shapeGeoJson: GeoJsonImportFeature): ShapeName | null {
@@ -609,7 +505,7 @@ export class Features {
     };
 
     const properties = shapeGeoJson.properties;
-    if (properties?.shape && shapeNames.includes(properties?.shape)) {
+    if (properties?.shape && SHAPE_NAMES.includes(properties?.shape)) {
       return properties?.shape;
     }
 
@@ -648,7 +544,7 @@ export class Features {
   }
 
   fireFeatureCreatedEvent(featureData: FeatureData) {
-    if (includesWithType(featureData.shape, shapeNames)) {
+    if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GMDrawShapeCreatedEvent = {
         level: 'system',
         type: 'draw',
@@ -656,7 +552,7 @@ export class Features {
         action: 'feature_created',
         featureData,
       };
-      this.gm.events.fire(`${gmPrefix}:draw`, payload);
+      this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
     }
   }
 }

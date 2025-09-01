@@ -36,7 +36,7 @@ const IMPERIAL_REGIONS = new Set(['US', 'LR', 'MM', 'GB', 'UK', 'IE']);
 export const isImperialByBrowser = () => {
   const loc = new Intl.Locale(navigator.language);
   return IMPERIAL_REGIONS.has(loc.region || '--');
-}
+};
 
 export type NumberFormatOptions = {
   units: 'imperial' | 'metric',

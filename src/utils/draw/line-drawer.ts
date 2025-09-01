@@ -1,20 +1,19 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type {
-  AnyEvent,
-  DrawModeName,
-  GeoJsonLineFeature,
-  GeoJsonShapeFeature,
-  Geoman,
-  LineEventHandlerArguments,
-  LngLat,
-  MapHandlerReturnData,
-  MapPointerEvent,
-  MarkerData,
-  MarkerId,
-  ShapeName,
+import {
+  type AnyEvent,
+  type DrawModeName,
+  type GeoJsonLineFeature,
+  type GeoJsonShapeFeature,
+  type Geoman,
+  type LineEventHandlerArguments,
+  type LngLat,
+  type MapHandlerReturnData,
+  type MapPointerEvent,
+  type MarkerData,
+  type MarkerId,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 
@@ -27,6 +26,7 @@ import lineToPolygon from '@turf/line-to-polygon';
 import type { Position } from 'geojson';
 import log from 'loglevel';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
 type LineDrawerOptions = {
@@ -62,8 +62,8 @@ export class LineDrawer extends BaseDraw {
     onMouseMove: this.onMouseMove,
   }, this, this.gm.options.settings.throttlingDelay);
 
-  mapEventHandlers = {
-    [`${gmPrefix}:helper`]: this.handleGmHelperEvent.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:helper`]: this.handleGmHelperEvent.bind(this),
     click: this.onMouseClick.bind(this),
     mousemove: this.throttledMethods.onMouseMove.bind(this),
   };
@@ -487,7 +487,7 @@ export class LineDrawer extends BaseDraw {
 
   fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
     this.gm.events.fire(
-      `${gmPrefix}:draw`,
+      `${GM_PREFIX}:draw`,
       {
         level: 'system',
         type: 'draw',
@@ -502,7 +502,7 @@ export class LineDrawer extends BaseDraw {
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
     this.gm.events.fire(
-      `${gmPrefix}:draw`,
+      `${GM_PREFIX}:draw`,
       {
         level: 'system',
         type: 'draw',
@@ -516,7 +516,7 @@ export class LineDrawer extends BaseDraw {
   }
 
   fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
-    this.gm.events.fire(`${gmPrefix}:draw`, {
+    this.gm.events.fire(`${GM_PREFIX}:draw`, {
       level: 'system',
       type: 'draw',
       mode: 'line',

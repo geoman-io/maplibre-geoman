@@ -1,13 +1,15 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  EditModeName,
-  FeatureShape,
-  GeoJsonShapeFeature,
-  GMEditMarkerMoveEvent,
-  LngLat,
-  MapHandlerReturnData,
+import {
+  type AnyEvent,
+  type EditModeName,
+  type FeatureShape,
+  type GeoJsonShapeFeature,
+  type GMEditEvent,
+  type GMEditMarkerMoveEvent,
+  type LngLat,
+  type MapHandlerReturnData,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
@@ -21,6 +23,7 @@ import log from 'loglevel';
 
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
+  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon'];
   convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
 
   onStartAction(): void {
@@ -35,6 +38,10 @@ export class EditRotate extends BaseDrag {
     if (!isGmEditEvent(event)) {
       log.error('EditChange.handleGmEdit: not an edit event', event);
       return { next: false };
+    }
+
+    if (this.isFeatureAllowed(event)) {
+      return { next: true };
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
@@ -52,6 +59,11 @@ export class EditRotate extends BaseDrag {
       this.fireFeatureEditEndEvent({ feature: event.featureData });
     }
     return { next: true };
+  }
+
+  isFeatureAllowed(event: GMEditEvent): boolean {
+    return 'featureData' in event
+      && !this.allowedShapes.includes(event.featureData.shape as ShapeName);
   }
 
   moveVertex(event: GMEditMarkerMoveEvent) {

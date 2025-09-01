@@ -1,4 +1,3 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import {
   loadDevShapes,
   loadExternalGeoJson,
@@ -13,12 +12,14 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
 import testShapes from '@/dev/fixtures/test-shapes.json';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 log.setLevel(log.levels.TRACE);
 
 const gmOptions: PartialDeep<GmOptionsData> = {
   settings: {
     controlsPosition: 'top-left',
+    useDefaultLayers: true,
     controlsUiEnabledByDefault: true,
     controlsCollapsible: true,
     controlsStyles: {
@@ -142,6 +143,7 @@ const initGeoman = async () => {
     zoom: 5,
     fadeDuration: 50,
   });
+  console.log(`Maplibre version: "${map.version}"`);
 
   if (window.geoman) {
     console.error('Geoman is already initialized', window.geoman);
@@ -150,7 +152,7 @@ const initGeoman = async () => {
   const geoman = new Geoman(map, gmOptions);
 
   await new Promise((resolve) => {
-    map.once(`${gmPrefix}:loaded`, async () => {
+    map.once(`${GM_PREFIX}:loaded`, async () => {
       resolve(geoman);
     });
   });

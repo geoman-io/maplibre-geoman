@@ -1,6 +1,4 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   EditModeName,
@@ -16,6 +14,8 @@ import { getGeoJsonCircle, getGeoJsonFirstPoint, getLngLatDiff } from '@/utils/g
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { Feature, Polygon } from 'geojson';
 import log from 'loglevel';
+import { GM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 type UpdateShapeHandler = (
@@ -39,8 +39,8 @@ export abstract class BaseDrag extends BaseEdit {
     onMouseMove: this.onMouseMove,
   }, this, this.gm.options.settings.throttlingDelay);
 
-  mapEventHandlers = {
-    [`${gmPrefix}:edit`]: this.handleGmEdit.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
 
     mousedown: this.onMouseDown.bind(this),
     touchstart: this.onMouseDown.bind(this),

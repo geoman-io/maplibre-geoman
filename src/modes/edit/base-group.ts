@@ -1,5 +1,4 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type { AnyEvent, EditModeName, FeatureShape, FeatureSourceName, MapHandlerReturnData } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
@@ -9,13 +8,15 @@ import union from '@turf/union';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import log from 'loglevel';
 
+import { SOURCES } from '@/core/features/constants.ts';
+
 
 export abstract class BaseGroupEdit extends BaseEdit {
   abstract mode: EditModeName;
   abstract allowedShapeTypes: Array<FeatureShape>;
   features: Array<FeatureData> = [];
   featureData: FeatureData | null = null;
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
   };
 

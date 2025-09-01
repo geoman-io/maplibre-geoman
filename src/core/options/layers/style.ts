@@ -1,4 +1,3 @@
-import { SOURCES } from '@/core/features/index.ts';
 import { getCircleMarkerStyles } from '@/core/options/layers/shapes/circle-marker.ts';
 import { getControlMarkerStyles } from '@/core/options/layers/shapes/control-marker.ts';
 import { getLineStyles } from '@/core/options/layers/shapes/line.ts';
@@ -8,8 +7,9 @@ import { getSecondaryControlMarkerStyles } from '@/core/options/layers/shapes/se
 import { getSnapGuideStyles } from '@/core/options/layers/shapes/snap-guides.ts';
 import { getTextMarkerStyles } from '@/core/options/layers/shapes/text-marker.ts';
 import { sourceStyles } from '@/core/options/layers/variables.ts';
-import type { FeatureShape, LayerStyle } from '@/main.ts';
-import { IS_PRO } from '@/utils/behavior.ts';
+import { type FeatureShape, type LayerStyle, SOURCES } from '@/main.ts';
+
+import { IS_PRO } from '@/core/constants.ts';
 
 
 const styles: { [key in FeatureShape]: LayerStyle } = {

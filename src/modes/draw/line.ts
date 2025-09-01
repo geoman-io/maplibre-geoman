@@ -1,10 +1,10 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type { AnyEvent, DrawModeName, GeoJsonShapeFeature, LineEventHandlerArguments, ShapeName } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { Position } from 'geojson';
+import { GM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export class DrawLine extends BaseDraw {
@@ -14,8 +14,8 @@ export class DrawLine extends BaseDraw {
     this.gm,
     { snappingMarkers: 'first', targetShape: 'line' },
   );
-  mapEventHandlers = {
-    [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
 

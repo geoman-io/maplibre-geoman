@@ -11,7 +11,7 @@
     controlOptions: ControlOptions,
   } = $props();
 
-  const sanitizedSvg = controlOptions?.icon ? DOMPurify.sanitize(controlOptions.icon.trim()) : null;
+  const sanitizedSvg = $derived(controlOptions?.icon ? DOMPurify.sanitize(controlOptions.icon.trim()) : null);
 
   const gm: Geoman = getContext('gm');
   const menuPosition = gm.control.getDefaultPosition();
