@@ -87,7 +87,6 @@ export class FeatureData {
 
     this._geoJson = {
       ...geoJson,
-      id: this.id,
       properties: {
         ...geoJson.properties,
         [FEATURE_ID_PROPERTY]: this.id,

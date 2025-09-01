@@ -12,7 +12,8 @@ import type {
   GeoJsonImportFeature,
   GeoJsonImportFeatureCollection,
   GeoJsonShapeFeature,
-  GeoJsonShapeFeatureCollection, GeoJsonSourceDiff,
+  GeoJsonShapeFeatureCollection,
+  GeoJsonSourceDiff,
   Geoman,
   GMDrawShapeCreatedEvent,
   LngLat,
@@ -33,6 +34,13 @@ import { cloneDeep, debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
 
 
+type SourceUpdateMethods = {
+  [key in FeatureSourceName]: {
+    debounced: () => void,
+    throttled: () => void,
+  }
+};
+
 export const SOURCES: { [key: string]: string } = {
   // order matters here, layers order will be aligned according to these items
   ...(IS_PRO && { standby: `${gmPrefix}_standby` }), // available only in the pro version
@@ -40,14 +48,7 @@ export const SOURCES: { [key: string]: string } = {
   temporary: `${gmPrefix}_temporary`,
 } as const;
 
-export const FEATURE_ID_PROPERTY = '_gmid' as const;
-
-type SourceUpdateMethods = {
-  [key in FeatureSourceName]: {
-    debounced: () => void,
-    throttled: () => void,
-  }
-};
+export const FEATURE_ID_PROPERTY = '__gmid' as const;
 
 // this class is here cause playwright fails if it's extracted for unknown reason
 // (possible imports trouble)
@@ -78,6 +79,14 @@ export class SourceUpdateManager {
         } as { debounced: () => void, throttled: () => void },
       ]),
     ) as SourceUpdateMethods;
+  }
+
+  getFeatureId(feature: Feature) {
+    const id = feature.properties?.[FEATURE_ID_PROPERTY] ?? feature.id;
+    if (id === null || id === undefined) {
+      console.warn('Feature id is null or undefined', feature);
+    }
+    return id;
   }
 
   getDelayedSourceUpdateMethod(
@@ -169,14 +178,14 @@ export class SourceUpdateManager {
 
     const nextRemoveIds = new Set(next.remove);
 
-    const pendingAdd = pending.add?.filter((item) => !nextRemoveIds.has(item.id!)) || [];
-    const pendingUpdate = pending.update?.filter((item) => !nextRemoveIds.has(item.id!)) || [];
+    const pendingAdd = pending.add?.filter((item) => !nextRemoveIds.has(this.getFeatureId(item))) || [];
+    const pendingUpdate = pending.update?.filter((item) => !nextRemoveIds.has(this.getFeatureId(item))) || [];
 
     const nextUpdate: Array<Feature> = [];
 
     next.update?.forEach((updatedFeature) => {
-      const pendingAddIdx = pendingAdd.findIndex((item) => item.id === updatedFeature.id);
-      const pendingUpdateIdx = pendingUpdate.findIndex((item) => item.id === updatedFeature.id);
+      const pendingAddIdx = pendingAdd.findIndex((item) => this.getFeatureId(item) === this.getFeatureId(updatedFeature));
+      const pendingUpdateIdx = pendingUpdate.findIndex((item) => this.getFeatureId(item) === this.getFeatureId(updatedFeature));
 
       if (pendingAddIdx === -1 && pendingUpdateIdx === -1) {
         nextUpdate.push(updatedFeature);
@@ -443,7 +452,8 @@ export class Features {
       return null;
     }
 
-    const featureId = shapeGeoJson.id || `${sourceName}-feature-${this.featureCounter}`;
+    const featureId = shapeGeoJson.id
+      || this.getNewFeatureId();
 
     return this.createFeature({
       featureId: shapeGeoJson.id as FeatureId | undefined,
@@ -518,7 +528,10 @@ export class Features {
           .filter((feature) => !!feature)
           .forEach((feature) => {
             if (shapeTypes === undefined || shapeTypes.includes(feature.properties.shape)) {
-              resultFeatureCollection.features.push(feature);
+              resultFeatureCollection.features.push({
+                ...feature,
+                id: feature.properties[FEATURE_ID_PROPERTY],
+              });
             }
           });
       }

@@ -1,12 +1,13 @@
 import { BaseSource } from '@/core/map/base/source.ts';
 import {
   FEATURE_ID_PROPERTY,
-  type GeoJsonShapeFeatureCollection, type GeoJsonSourceDiff,
+  type GeoJsonShapeFeatureCollection,
+  type GeoJsonSourceDiff,
   type Geoman,
 } from '@/main.ts';
 import type { Feature, GeoJSON } from 'geojson';
-import ml from 'maplibre-gl';
 import log from 'loglevel';
+import ml from 'maplibre-gl';
 
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
@@ -50,7 +51,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
         data: geoJson,
         promoteId: FEATURE_ID_PROPERTY,
       });
-      source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource
+      source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource;
     }
     return source ?? null;
   }
@@ -96,7 +97,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
       .map((item) => ({ key: item[0], value: item[1] }));
 
     return {
-      id: feature.id as string,
+      id: feature.properties?.[FEATURE_ID_PROPERTY],
       newGeometry: feature.geometry,
       addOrUpdateProperties: propertiesArray,
     };
