@@ -9,7 +9,6 @@ import {
 
 import { ACTION_TYPES, EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
 
-
 export const isActionType = (name: string): name is ActionType => {
   return ACTION_TYPES.includes(name as ActionType);
 };

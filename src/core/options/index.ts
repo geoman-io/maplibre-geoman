@@ -20,7 +20,6 @@ import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
 import { EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
 
-
 export class GmOptions {
   gm: Geoman;
 
@@ -40,16 +39,13 @@ export class GmOptions {
     const defaultOptions = getDefaultOptions();
 
     if (typeof options.settings?.controlsUiEnabledByDefault === 'boolean') {
-      defaultOptions.settings.controlsUiEnabledByDefault = options.settings.controlsUiEnabledByDefault;
+      defaultOptions.settings.controlsUiEnabledByDefault =
+        options.settings.controlsUiEnabledByDefault;
     }
 
     trackDefaultUiEnabledState(defaultOptions);
 
-    return mergeWith(
-      defaultOptions,
-      options,
-      mergeByTypeCustomizer,
-    );
+    return mergeWith(defaultOptions, options, mergeByTypeCustomizer);
   }
 
   enableMode(actionType: ActionType, modeName: ModeName) {
@@ -72,7 +68,7 @@ export class GmOptions {
       this.fireControlEvent(actionType, modeName, 'on');
       this.fireModeEvent(actionType, modeName, 'mode_started');
     } else {
-      log.error('Can\'t find control section for', actionType, modeName);
+      log.error("Can't find control section for", actionType, modeName);
     }
   }
 
@@ -92,7 +88,7 @@ export class GmOptions {
       this.fireControlEvent(actionType, modeName, 'off');
       this.fireModeEvent(actionType, modeName, 'mode_ended');
     } else {
-      log.error('Can\'t find control section for', actionType, modeName);
+      log.error("Can't find control section for", actionType, modeName);
     }
   }
 
@@ -145,9 +141,12 @@ export class GmOptions {
     return false;
   }
 
-  getControlOptions({ actionType, modeName }: {
-    actionType: ActionType,
-    modeName: ModeName,
+  getControlOptions({
+    actionType,
+    modeName,
+  }: {
+    actionType: ActionType;
+    modeName: ModeName;
   }): ControlOptions | null {
     if (actionType && modeName) {
       const sectionOptions = this.controls[actionType] as GenericControlsOptions;
@@ -176,7 +175,11 @@ export class GmOptions {
     }
   }
 
-  fireControlEvent(sectionName: ActionType, modeName: ModeName, action: GMControlSwitchEvent['action']) {
+  fireControlEvent(
+    sectionName: ActionType,
+    modeName: ModeName,
+    action: GMControlSwitchEvent['action'],
+  ) {
     const payload: GMControlSwitchEvent = {
       level: 'system',
       type: 'control',

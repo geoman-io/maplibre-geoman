@@ -7,7 +7,6 @@ import { isGmDrawEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export class DrawEventListener extends BaseEventListener {
   eventHandlers: EventHandlers = {
     [`${GM_PREFIX}:draw`]: this.handleDrawEvent.bind(this),
@@ -57,10 +56,7 @@ export class DrawEventListener extends BaseEventListener {
       actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
-      console.error(
-        `Wrong action instance for draw event "${actionInstanceKey}":`,
-        actionInstance,
-      );
+      console.error(`Wrong action instance for draw event "${actionInstanceKey}":`, actionInstance);
     }
   }
 }

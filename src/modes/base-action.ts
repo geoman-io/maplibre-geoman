@@ -20,7 +20,6 @@ import { isGmGeofencingViolationEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export abstract class BaseAction {
   gm: Geoman;
   abstract actionType: ActionType;
@@ -44,9 +43,7 @@ export abstract class BaseAction {
   }
 
   get snappingHelper(): SnappingHelper | null {
-    return (
-      this.gm.actionInstances.helper__snapping || null
-    ) as SnappingHelper | null;
+    return (this.gm.actionInstances.helper__snapping || null) as SnappingHelper | null;
   }
 
   abstract onStartAction(): void;
@@ -104,7 +101,7 @@ export abstract class BaseAction {
     } else if (option.type === 'hidden') {
       option.value = value;
     } else {
-      log.error('Can\'t apply option value', name, value, option);
+      log.error("Can't apply option value", name, value, option);
     }
   }
 
@@ -125,12 +122,13 @@ export abstract class BaseAction {
     return { next: true };
   }
 
-  fireBeforeFeatureCreate(
-    { geoJsonFeatures, forceMode = undefined }: {
-      geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireBeforeFeatureCreate({
+    geoJsonFeatures,
+    forceMode = undefined,
+  }: {
+    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
+    forceMode?: EditModeName;
+  }) {
     this.flags.featureCreateAllowed = true;
 
     const payload: GMBeforeFeatureCreateEvent = {
@@ -143,13 +141,15 @@ export abstract class BaseAction {
     this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 
-  fireBeforeFeatureUpdate(
-    { features, geoJsonFeatures, forceMode = undefined }: {
-      features: NonEmptyArray<FeatureData>,
-      geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireBeforeFeatureUpdate({
+    features,
+    geoJsonFeatures,
+    forceMode = undefined,
+  }: {
+    features: NonEmptyArray<FeatureData>;
+    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
+    forceMode?: EditModeName;
+  }) {
     this.flags.featureUpdateAllowed = true;
 
     const payload: GMBeforeFeatureUpdateEvent = {

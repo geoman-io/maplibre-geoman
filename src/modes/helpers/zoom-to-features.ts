@@ -5,7 +5,6 @@ import log from 'loglevel';
 
 import { IS_PRO } from '@/core/constants.ts';
 
-
 export class ZoomToFeaturesHelper extends BaseHelper {
   mode: HelperModeName = 'zoom_to_features';
   eventHandlers = {};
@@ -24,10 +23,7 @@ export class ZoomToFeaturesHelper extends BaseHelper {
 
   fitMapToFeatures() {
     const featureCollection = this.gm.features.asGeoJsonFeatureCollection({
-      sourceNames: [
-        SOURCES.main,
-        ...(IS_PRO ? [SOURCES.standby] : []),
-      ],
+      sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
     });
     const bboxArray = bbox(featureCollection) as [number, number, number, number];
     const bounds: [LngLat, LngLat] = [

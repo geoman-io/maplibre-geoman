@@ -13,13 +13,12 @@ import type {
 } from 'geojson';
 import type { SetRequired } from 'type-fest';
 
-
 export type ImportGeoJsonProperties = {
-  shape?: ShapeName,
-  center?: LngLat,
-  radius?: number,
-  text?: string,
-  [key: string]: unknown,
+  shape?: ShapeName;
+  center?: LngLat;
+  radius?: number;
+  text?: string;
+  [key: string]: unknown;
 };
 
 export type PointBasedGeometry = Point | MultiPoint;
@@ -34,34 +33,38 @@ export type GeoJsonImportFeature = Feature<BasicGeometry, ImportGeoJsonPropertie
 
 export type GeoJsonLineFeature = Feature<LineString, ShapeGeoJsonProperties>;
 
-export type GeoJsonShapeFeatureCollection =
-  FeatureCollection<BasicGeometry, ShapeGeoJsonProperties>;
+export type GeoJsonShapeFeatureCollection = FeatureCollection<
+  BasicGeometry,
+  ShapeGeoJsonProperties
+>;
 
-export type GeoJsonImportFeatureCollection =
-  FeatureCollection<BasicGeometry, ImportGeoJsonProperties>;
+export type GeoJsonImportFeatureCollection = FeatureCollection<
+  BasicGeometry,
+  ImportGeoJsonProperties
+>;
 
 export type GeoJsonShapeFeatureWithGmProperties = Omit<GeoJsonShapeFeature, 'properties'> & {
-  properties: SetRequired<GeoJsonShapeFeature['properties'], '_gmid'>
+  properties: SetRequired<GeoJsonShapeFeature['properties'], '_gmid'>;
 };
 
 export type LngLatDiff = {
-  lng: number,
-  lat: number,
+  lng: number;
+  lat: number;
 };
 
 export interface PositionData {
-  coordinate: LngLat,
-  path: Array<string | number>,
+  coordinate: LngLat;
+  path: Array<string | number>;
 }
 
 export type SegmentPosition = {
-  start: PositionData,
-  end: PositionData,
+  start: PositionData;
+  end: PositionData;
 };
 
 export type CoordinateIndices = {
-  absCoordIndex: number,
-  featureIndex: number,
-  multiFeatureIndex: number,
-  geometryIndex: number,
+  absCoordIndex: number;
+  featureIndex: number;
+  multiFeatureIndex: number;
+  geometryIndex: number;
 };

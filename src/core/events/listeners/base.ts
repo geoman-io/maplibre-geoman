@@ -13,7 +13,6 @@ import type {
 import { isGmControlEvent, isGmModeEvent } from '@/utils/guards/events/index.ts';
 import log from 'loglevel';
 
-
 export abstract class BaseEventListener {
   gm: Geoman;
 
@@ -27,10 +26,8 @@ export abstract class BaseEventListener {
       return;
     }
 
-    const {
-      sectionName: currentSectionName,
-      modeName: currentModeName,
-    } = this.getControlIds(payload) || {};
+    const { sectionName: currentSectionName, modeName: currentModeName } =
+      this.getControlIds(payload) || {};
 
     const control = this.getControl(payload);
     if (!control?.settings.exclusive) {

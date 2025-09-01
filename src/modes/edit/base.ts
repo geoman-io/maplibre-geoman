@@ -21,20 +21,15 @@ import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
 
-
 export abstract class BaseEdit extends BaseAction {
   actionType: ActionType = 'edit';
   abstract mode: EditModeName;
   featureData: FeatureData | null = null;
-  cursorExcludedLayerIds: Array<string> = [
-    'rectangle-line',
-    'polygon-line',
-    'circle-line',
-  ];
+  cursorExcludedLayerIds: Array<string> = ['rectangle-line', 'polygon-line', 'circle-line'];
   layerEventHandlersData: Array<{
-    eventName: PointerEventName,
-    layerId: string,
-    callback: () => void,
+    eventName: PointerEventName;
+    layerId: string;
+    callback: () => void;
   }> = [];
 
   startAction() {
@@ -76,13 +71,15 @@ export abstract class BaseEdit extends BaseAction {
     this.layerEventHandlersData = [];
   }
 
-  updateFeatureGeoJson(
-    { featureData, featureGeoJson, forceMode = undefined }: {
-      featureData: FeatureData,
-      featureGeoJson: GeoJsonShapeFeature,
-      forceMode?: EditModeName,
-    },
-  ): boolean {
+  updateFeatureGeoJson({
+    featureData,
+    featureGeoJson,
+    forceMode = undefined,
+  }: {
+    featureData: FeatureData;
+    featureGeoJson: GeoJsonShapeFeature;
+    forceMode?: EditModeName;
+  }): boolean {
     if (!this.flags.featureUpdateAllowed) {
       // used for geofencing violations, other modes could be added in the future
       return false;
@@ -103,14 +100,17 @@ export abstract class BaseEdit extends BaseAction {
     return true;
   }
 
-  fireFeatureUpdatedEvent(
-    { sourceFeatures, targetFeatures, markerData = undefined, forceMode = undefined }: {
-      sourceFeatures: NonEmptyArray<FeatureData>,
-      targetFeatures: NonEmptyArray<FeatureData>,
-      markerData?: MarkerData,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireFeatureUpdatedEvent({
+    sourceFeatures,
+    targetFeatures,
+    markerData = undefined,
+    forceMode = undefined,
+  }: {
+    sourceFeatures: NonEmptyArray<FeatureData>;
+    targetFeatures: NonEmptyArray<FeatureData>;
+    markerData?: MarkerData;
+    forceMode?: EditModeName;
+  }) {
     const payload: GMEditFeatureUpdatedEvent = {
       level: 'system',
       type: 'edit',
@@ -124,12 +124,13 @@ export abstract class BaseEdit extends BaseAction {
     this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
-  fireFeatureEditStartEvent(
-    { feature, forceMode = undefined }: {
-      feature: FeatureData,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireFeatureEditStartEvent({
+    feature,
+    forceMode = undefined,
+  }: {
+    feature: FeatureData;
+    forceMode?: EditModeName;
+  }) {
     const payload: GMEditFeatureEditStartEvent = {
       level: 'system',
       type: 'edit',
@@ -141,9 +142,13 @@ export abstract class BaseEdit extends BaseAction {
     this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
-  fireFeatureEditEndEvent(
-    { feature, forceMode = undefined }: { feature: FeatureData, forceMode?: EditModeName },
-  ) {
+  fireFeatureEditEndEvent({
+    feature,
+    forceMode = undefined,
+  }: {
+    feature: FeatureData;
+    forceMode?: EditModeName;
+  }) {
     const payload: GMEditFeatureEditEndEvent = {
       level: 'system',
       type: 'edit',

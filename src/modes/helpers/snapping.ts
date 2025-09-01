@@ -7,13 +7,11 @@ import { sortBy } from 'lodash-es';
 
 import { SOURCES } from '@/core/features/constants.ts';
 
-
 type ShapeSnappingHandler = (
   featureData: FeatureData,
   lngLat: LngLat,
   point: ScreenPoint,
-) => { lngLat: LngLat, distance: number };
-
+) => { lngLat: LngLat; distance: number };
 
 export class SnappingHelper extends BaseHelper {
   mode: HelperModeName = 'snapping';
@@ -100,7 +98,7 @@ export class SnappingHelper extends BaseHelper {
   }
 
   getCustomLngLatsSnapping(point: ScreenPoint): LngLat | null {
-    const closestPointData: { distance: number, lngLat: LngLat | null } = {
+    const closestPointData: { distance: number; lngLat: LngLat | null } = {
       distance: Infinity,
       lngLat: null,
     };
@@ -121,10 +119,12 @@ export class SnappingHelper extends BaseHelper {
   }
 
   getFeaturePointsSnapping(features: Array<FeatureData>, lngLat: LngLat, point: ScreenPoint) {
-    let featuresPointsSnapping = features.map((featureData) => ({
-      shape: featureData.shape,
-      ...this.getPointsSnapping(featureData, lngLat, point),
-    })).filter((item) => item.distance < this.tolerance);
+    let featuresPointsSnapping = features
+      .map((featureData) => ({
+        shape: featureData.shape,
+        ...this.getPointsSnapping(featureData, lngLat, point),
+      }))
+      .filter((item) => item.distance < this.tolerance);
 
     if (featuresPointsSnapping.length) {
       featuresPointsSnapping = sortBy(featuresPointsSnapping, ['distance']);
@@ -136,20 +136,19 @@ export class SnappingHelper extends BaseHelper {
   getFeatureLinesSnapping(features: Array<FeatureData>, lngLat: LngLat, point: ScreenPoint) {
     type LineSpappingData = ReturnType<ShapeSnappingHandler> & { shape: FeatureShape };
 
-    let featuresLineSnapping = features.filter(
-      (featureData) => this.lineSnappingShapes.includes(featureData.shape),
-    ).map((featureData) => {
-      const snappingHandler = this.shapeSnappingHandlers[featureData.shape];
-      if (snappingHandler) {
-        return {
-          shape: featureData.shape,
-          ...snappingHandler(featureData, lngLat, point),
-        };
-      }
-      return null;
-    }).filter(
-      (item): item is LineSpappingData => item !== null && item.distance < this.tolerance,
-    );
+    let featuresLineSnapping = features
+      .filter((featureData) => this.lineSnappingShapes.includes(featureData.shape))
+      .map((featureData) => {
+        const snappingHandler = this.shapeSnappingHandlers[featureData.shape];
+        if (snappingHandler) {
+          return {
+            shape: featureData.shape,
+            ...snappingHandler(featureData, lngLat, point),
+          };
+        }
+        return null;
+      })
+      .filter((item): item is LineSpappingData => item !== null && item.distance < this.tolerance);
 
     if (featuresLineSnapping.length) {
       featuresLineSnapping = sortBy(featuresLineSnapping, ['distance']);
@@ -165,11 +164,13 @@ export class SnappingHelper extends BaseHelper {
       [point[0] + this.tolerance, point[1] + this.tolerance],
     ];
 
-    return this.gm.features.getFeaturesByScreenBounds(
-      { bounds, sourceNames: [SOURCES.main, SOURCES.temporary] },
-    ).filter((featureData) => {
-      return featureData.temporary ? this.customSnappingFeatures.has(featureData) : true;
-    }) || [];
+    return (
+      this.gm.features
+        .getFeaturesByScreenBounds({ bounds, sourceNames: [SOURCES.main, SOURCES.temporary] })
+        .filter((featureData) => {
+          return featureData.temporary ? this.customSnappingFeatures.has(featureData) : true;
+        }) || []
+    );
   }
 
   getPointsSnapping(
@@ -178,20 +179,24 @@ export class SnappingHelper extends BaseHelper {
     point: ScreenPoint,
   ): ReturnType<ShapeSnappingHandler> {
     const shapeGeoJson = featureData.getGeoJson();
-    const closestPointData: { distance: number, coord: LngLat | null } = {
+    const closestPointData: { distance: number; coord: LngLat | null } = {
       distance: Infinity,
       coord: null, // lngLat coords
     };
 
-    eachCoordinateWithPath(shapeGeoJson, (position) => {
-      const coordPoint = this.gm.mapAdapter.project(position.coordinate);
-      const distance = getEuclideanDistance(point, coordPoint);
+    eachCoordinateWithPath(
+      shapeGeoJson,
+      (position) => {
+        const coordPoint = this.gm.mapAdapter.project(position.coordinate);
+        const distance = getEuclideanDistance(point, coordPoint);
 
-      if (distance < this.tolerance && distance < closestPointData.distance) {
-        closestPointData.distance = distance;
-        closestPointData.coord = position.coordinate;
-      }
-    }, true);
+        if (distance < this.tolerance && distance < closestPointData.distance) {
+          closestPointData.distance = distance;
+          closestPointData.coord = position.coordinate;
+        }
+      },
+      true,
+    );
 
     return {
       lngLat: closestPointData.coord ? closestPointData.coord : lngLat,
@@ -218,10 +223,7 @@ export class SnappingHelper extends BaseHelper {
       distance: Infinity,
     };
 
-    const nearestPointLngLat = this.gm.mapAdapter.getEuclideanNearestLngLat(
-      lineGeoJson,
-      lngLat,
-    );
+    const nearestPointLngLat = this.gm.mapAdapter.getEuclideanNearestLngLat(lineGeoJson, lngLat);
 
     const nearestPointCoord = this.gm.mapAdapter.project(nearestPointLngLat);
 

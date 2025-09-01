@@ -39,30 +39,21 @@ export const isImperialByBrowser = () => {
 };
 
 export type NumberFormatOptions = {
-  units: 'imperial' | 'metric',
-  minimumFractionDigits?: number,
-  maximumFractionDigits?: number,
+  units: 'imperial' | 'metric';
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
 };
 
-export const toMod = (
-  num: number,
-  mod: number,
-) => ((num % mod) + mod) % mod;
+export const toMod = (num: number, mod: number) => ((num % mod) + mod) % mod;
 
-export const formatNumber = (
-  num: number,
-  options: NumberFormatOptions,
-): string => {
+export const formatNumber = (num: number, options: NumberFormatOptions): string => {
   return new Intl.NumberFormat(UNIT_SYSTEMS[options.units], {
     minimumFractionDigits: options.minimumFractionDigits ?? 0,
     maximumFractionDigits: options.maximumFractionDigits ?? 2,
   }).format(num);
 };
 
-export const formatDistance = (
-  num: number,
-  options: NumberFormatOptions,
-): string => {
+export const formatDistance = (num: number, options: NumberFormatOptions): string => {
   const ranges = UNITS.distance[options.units];
   const range = ranges.find((item) => num >= item.range[0] && num < item.range[1]);
 
@@ -73,10 +64,7 @@ export const formatDistance = (
   return formatNumber(num, options);
 };
 
-export const formatArea = (
-  num: number,
-  options: NumberFormatOptions,
-): string => {
+export const formatArea = (num: number, options: NumberFormatOptions): string => {
   const ranges = UNITS.area[options.units];
   const range = ranges.find((item) => num >= item.range[0] && num < item.range[1]);
 

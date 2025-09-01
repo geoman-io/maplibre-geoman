@@ -2,19 +2,20 @@ import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseDomMarkerOptions, LngLat } from '@/main.ts';
 import ml from 'maplibre-gl';
 
-
 export class MaplibreDomMarker extends BaseDomMarker<ml.Marker> {
   markerInstance: ml.Marker | null;
 
-  constructor({ mapInstance, options, lngLat }: {
-    mapInstance: ml.Map,
-    options: BaseDomMarkerOptions,
-    lngLat: LngLat,
+  constructor({
+    mapInstance,
+    options,
+    lngLat,
+  }: {
+    mapInstance: ml.Map;
+    options: BaseDomMarkerOptions;
+    lngLat: LngLat;
   }) {
     super();
-    this.markerInstance = new ml.Marker(options)
-      .setLngLat(lngLat)
-      .addTo(mapInstance);
+    this.markerInstance = new ml.Marker(options).setLngLat(lngLat).addTo(mapInstance);
   }
 
   getElement(): HTMLElement | null {

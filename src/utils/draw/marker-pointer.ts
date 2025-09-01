@@ -1,24 +1,29 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { AnyEvent, EventHandlers, Geoman, LngLat, MapEventHadler, ScreenPoint } from '@/main.ts';
+import type {
+  AnyEvent,
+  EventHandlers,
+  Geoman,
+  LngLat,
+  MapEventHadler,
+  ScreenPoint,
+} from '@/main.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
 import { createMarkerElement } from '@/utils/dom.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import log from 'loglevel';
 
-
 type EnableMarkerParameters = {
-  lngLat?: LngLat,
-  customMarker?: BaseDomMarker,
-  invisibleMarker?: boolean,
+  lngLat?: LngLat;
+  customMarker?: BaseDomMarker;
+  invisibleMarker?: boolean;
 };
-
 
 export class MarkerPointer {
   gm: Geoman;
   marker: BaseDomMarker | null = null;
   tmpMarker: BaseDomMarker | null = null;
-  declare throttledMethods: { onMouseMove: MapEventHadler, };
+  declare throttledMethods: { onMouseMove: MapEventHadler };
   declare eventHandlers: EventHandlers;
   private snapping: boolean = false;
   private oldSnapping: boolean | undefined = undefined;
@@ -29,15 +34,17 @@ export class MarkerPointer {
   }
 
   get snappingHelper(): SnappingHelper | null {
-    return (
-      this.gm.actionInstances.helper__snapping || null
-    ) as SnappingHelper | null;
+    return (this.gm.actionInstances.helper__snapping || null) as SnappingHelper | null;
   }
 
   initEventHandlers() {
-    this.throttledMethods = convertToThrottled({
-      onMouseMove: this.onMouseMove,
-    }, this, this.gm.options.settings.throttlingDelay);
+    this.throttledMethods = convertToThrottled(
+      {
+        onMouseMove: this.onMouseMove,
+      },
+      this,
+      this.gm.options.settings.throttlingDelay,
+    );
 
     this.eventHandlers = {
       mousemove: this.throttledMethods.onMouseMove.bind(this),
@@ -71,18 +78,20 @@ export class MarkerPointer {
     }
   }
 
-  enable({ lngLat, customMarker, invisibleMarker }: EnableMarkerParameters = {
-    lngLat: [0, 0],
-    customMarker: undefined,
-    invisibleMarker: false,
-  }) {
+  enable(
+    { lngLat, customMarker, invisibleMarker }: EnableMarkerParameters = {
+      lngLat: [0, 0],
+      customMarker: undefined,
+      invisibleMarker: false,
+    },
+  ) {
     if (isTouchScreen()) {
       // marker pointer is not available on touch screens
       return;
     }
 
     if (customMarker && invisibleMarker) {
-      throw new Error('MarkerPointer: customMarker and invisibleMarker can\'t be used together');
+      throw new Error("MarkerPointer: customMarker and invisibleMarker can't be used together");
     }
     if (this.marker) {
       throw new Error('MarkerPointer: marker is already enabled');
@@ -112,10 +121,13 @@ export class MarkerPointer {
   }
 
   createMarker(lngLat: LngLat = [0, 0]): BaseDomMarker {
-    return this.gm.mapAdapter.createDomMarker({
-      anchor: 'center',
-      element: createMarkerElement('dom', { pointerEvents: 'none' }),
-    }, lngLat) as BaseDomMarker; // todo: create a marker abstraction
+    return this.gm.mapAdapter.createDomMarker(
+      {
+        anchor: 'center',
+        element: createMarkerElement('dom', { pointerEvents: 'none' }),
+      },
+      lngLat,
+    ) as BaseDomMarker; // todo: create a marker abstraction
   }
 
   createInvisibleMarker(lngLat: LngLat = [0, 0]): BaseDomMarker {
@@ -123,10 +135,13 @@ export class MarkerPointer {
     htmlElement.style.width = '0px';
     htmlElement.style.height = '0px';
 
-    return this.gm.mapAdapter.createDomMarker({
-      anchor: 'center',
-      element: htmlElement,
-    }, lngLat) as BaseDomMarker; // todo: create a marker abstraction
+    return this.gm.mapAdapter.createDomMarker(
+      {
+        anchor: 'center',
+        element: htmlElement,
+      },
+      lngLat,
+    ) as BaseDomMarker; // todo: create a marker abstraction
   }
 
   onMouseMove(event: AnyEvent) {

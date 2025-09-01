@@ -14,7 +14,6 @@ import {
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
-
 export class DrawMarker extends BaseDraw {
   mode: DrawModeName = 'marker';
   shape: ShapeName = 'marker';
@@ -90,10 +89,13 @@ export class DrawMarker extends BaseDraw {
     iconElement.style.backgroundSize = 'cover';
     iconElement.style.pointerEvents = 'none';
 
-    return this.gm.mapAdapter.createDomMarker({
-      draggable: false,
-      anchor: 'bottom',
-      element: iconElement,
-    }, [0, 0]);
+    return this.gm.mapAdapter.createDomMarker(
+      {
+        draggable: false,
+        anchor: 'bottom',
+        element: iconElement,
+      },
+      [0, 0],
+    );
   }
 }

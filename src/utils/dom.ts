@@ -2,7 +2,6 @@ import defaultShapeMarker from '@/assets/images/markers/default-shape-marker.svg
 import type { MarkerData } from '@/main.ts';
 import log from 'loglevel';
 
-
 const markerIcons: { [key in MarkerData['type']]?: string } = {
   dom: defaultShapeMarker,
 };

@@ -2,15 +2,18 @@ import type { GeoJsonShapeFeatureCollection, GeoJsonSourceDiff } from '@/main.ts
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
 
-
 export abstract class BaseSource<TSourceInstance = unknown> {
   abstract sourceInstance: TSourceInstance | null;
 
   abstract get id(): string;
 
-  abstract createSource(
-    { geoJson, sourceId }: { sourceId: string, geoJson: GeoJSON },
-  ): TSourceInstance;
+  abstract createSource({
+    geoJson,
+    sourceId,
+  }: {
+    sourceId: string;
+    geoJson: GeoJSON;
+  }): TSourceInstance;
 
   abstract getGeoJson(): GeoJsonShapeFeatureCollection;
 

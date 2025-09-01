@@ -21,7 +21,6 @@ import centroid from '@turf/centroid';
 import log from 'loglevel';
 import { SOURCES } from '@/core/features/constants.ts';
 
-
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
 
 export class FeatureData {
@@ -53,9 +52,7 @@ export class FeatureData {
   }
 
   getEmptyOrders(): FeatureOrders {
-    return Object.fromEntries(
-      typedValues(SOURCES).map((name) => [name, null]),
-    ) as FeatureOrders;
+    return Object.fromEntries(typedValues(SOURCES).map((name) => [name, null])) as FeatureOrders;
   }
 
   getShapeProperty(name: keyof FeatureShapeProperties) {
@@ -182,25 +179,21 @@ export class FeatureData {
     return conversionAllowedShapes.includes(this.shape);
   }
 
-  changeSource({ sourceName, atomic }: {
-    sourceName: FeatureSourceName,
-    atomic: boolean,
-  }) {
+  changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
     if (atomic) {
-      this.gm.features.updateManager.withAtomicSourcesUpdate(
-        () => this.actualChangeSource({ sourceName, atomic }),
+      this.gm.features.updateManager.withAtomicSourcesUpdate(() =>
+        this.actualChangeSource({ sourceName, atomic }),
       );
     } else {
       this.actualChangeSource({ sourceName, atomic });
     }
   }
 
-  actualChangeSource({ sourceName, atomic }: {
-    sourceName: FeatureSourceName,
-    atomic: boolean,
-  }) {
+  actualChangeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
     if (this.source.id === sourceName) {
-      log.error(`FeatureData.changeSource: feature "${this.id}" already has the source "${sourceName}"`);
+      log.error(
+        `FeatureData.changeSource: feature "${this.id}" already has the source "${sourceName}"`,
+      );
       return;
     }
 

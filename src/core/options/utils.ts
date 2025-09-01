@@ -18,11 +18,11 @@ export const mergeByTypeCustomizer = (objValue: unknown, srcValue: unknown) => {
   if (Object.values(countMap).some((count) => count > 1)) {
     throw new Error(
       'Multiple layers for the same shape are detected. ' +
-      'Use "useDefaultLayers: false" and define layers manually.',
+        'Use "useDefaultLayers: false" and define layers manually.',
     );
   }
 
-  srcValue.forEach(item => {
+  srcValue.forEach((item) => {
     if (baseMap[item.type]) {
       merge(baseMap[item.type], item);
     } else {

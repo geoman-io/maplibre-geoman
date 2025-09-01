@@ -9,7 +9,6 @@ import { DrawRectangle } from '@/modes/draw/rectangle.ts';
 import { DrawTextMarker } from '@/modes/draw/text-marker.ts';
 import log from 'loglevel';
 
-
 type DrawClassConstructor = new (gm: Geoman) => BaseDraw;
 type DrawClassMap = {
   [K in DrawModeName]: DrawClassConstructor | null;

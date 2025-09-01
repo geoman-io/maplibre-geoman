@@ -2,7 +2,6 @@ import { controlIcons } from '@/core/options/icons.ts';
 import defaultLayerStyles from '@/core/options/layers/style.ts';
 import type { GmOptionsData } from '@/main.ts';
 
-
 export const defaultOptions: GmOptionsData = {
   settings: {
     throttlingDelay: 10,

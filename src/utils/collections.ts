@@ -31,9 +31,7 @@ export function forEachDeep(
   iteratee(item, path);
 
   if (Array.isArray(item)) {
-    item.forEach((value, index) =>
-      forEachDeep(value, iteratee, [...path, index]),
-    );
+    item.forEach((value, index) => forEachDeep(value, iteratee, [...path, index]));
   } else if (isPlainObject(item)) {
     Object.entries(item as Record<string, unknown>).forEach(([key, value]) =>
       forEachDeep(value, iteratee, [...path, key]),

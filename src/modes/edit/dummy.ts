@@ -11,10 +11,10 @@ export class DummyEdit extends BaseEdit {
   // }
 
   onStartAction() {
-    throw new Error('DummyEdit: method onStartAction isn\'t implemented');
+    throw new Error("DummyEdit: method onStartAction isn't implemented");
   }
 
   onEndAction() {
-    throw new Error('DummyEdit: method onEndAction isn\'t implemented');
+    throw new Error("DummyEdit: method onEndAction isn't implemented");
   }
 }

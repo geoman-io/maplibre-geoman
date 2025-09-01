@@ -7,7 +7,11 @@ import {
   type LngLat,
   type LngLatDiff,
 } from '@/main.ts';
-import { eachCoordinateWithPath, getAllGeoJsonCoordinates, getGeoJsonFirstPoint } from '@/utils/geojson.ts';
+import {
+  eachCoordinateWithPath,
+  getAllGeoJsonCoordinates,
+  getGeoJsonFirstPoint,
+} from '@/utils/geojson.ts';
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
 import rewind from '@turf/rewind';
@@ -17,11 +21,7 @@ import { isLineBasedGeoJsonFeature, isPointBasedGeoJsonFeature } from '../../tes
 import buffer from '@turf/buffer';
 import distance from '@turf/distance';
 
-
-export const moveGeoJson = (
-  geoJson: GeoJsonShapeFeature,
-  lngLatDiff: LngLatDiff,
-) => {
+export const moveGeoJson = (geoJson: GeoJsonShapeFeature, lngLatDiff: LngLatDiff) => {
   eachCoordinateWithPath(geoJson, (position) => {
     const lngLat = position.coordinate;
     lngLat[0] += lngLatDiff.lng;
@@ -90,11 +90,8 @@ export const isGeoJsonFeatureInPolygon = (
   }
 
   if (allPointsInPolygon && isLineBasedGeoJsonFeature(featureGeoJson)) {
-    return !lineIntersect(
-      featureGeoJson,
-      containerGeoJson,
-      { ignoreSelfIntersections: true },
-    ).features.length;
+    return !lineIntersect(featureGeoJson, containerGeoJson, { ignoreSelfIntersections: true })
+      .features.length;
   }
   return false;
 };
@@ -108,9 +105,7 @@ export const getFeatureFirstPoint = (featureData: FeatureData): LngLat | null =>
   return getGeoJsonFirstPoint(shapeGeoJson);
 };
 
-export const fixGeoJsonFeature = (
-  feature: GeoJsonImportFeature,
-): GeoJsonImportFeature | null => {
+export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportFeature | null => {
   if (isLineBasedGeoJsonFeature(feature)) {
     const resultFeature = rewind(feature, { mutate: false });
     if (resultFeature.type === 'Feature' && isLineBasedGeoJsonFeature(resultFeature)) {

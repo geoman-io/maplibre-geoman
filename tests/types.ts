@@ -24,9 +24,9 @@ export interface BaseEventResult {
 // Define a type for window.customData that allows for any property
 // but still provides type checking for known properties
 export interface CustomData {
-  rawEventResults?: { [key: string]: unknown },
-  eventResults?: { [key: string]: BaseEventResult },
-  map?: MapInstanceWithGeoman,
+  rawEventResults?: { [key: string]: unknown };
+  eventResults?: { [key: string]: BaseEventResult };
+  map?: MapInstanceWithGeoman;
 }
 
 declare global {
@@ -37,7 +37,7 @@ declare global {
 }
 
 export const pointBasedGeometryType: Array<Geometry['type']> = ['Point', 'MultiPoint'];
-export type PointBasedGeometryType = typeof pointBasedGeometryType[number];
+export type PointBasedGeometryType = (typeof pointBasedGeometryType)[number];
 
 export const lineBasedGeometryType: Array<Geometry['type']> = [
   'LineString',
@@ -45,14 +45,13 @@ export const lineBasedGeometryType: Array<Geometry['type']> = [
   'Polygon',
   'MultiPolygon',
 ];
-export type LineBasedGeometryType = typeof lineBasedGeometryType[number];
+export type LineBasedGeometryType = (typeof lineBasedGeometryType)[number];
 
 export const pointBasedFeatures = ['marker', 'circle_marker', 'text_marker'];
-export type PointBasedFeature = typeof pointBasedFeatures[number];
+export type PointBasedFeature = (typeof pointBasedFeatures)[number];
 
 export const lineBasedFeatures = ['circle', 'line', 'rectangle', 'polygon'];
-export type LineBasedFeature = typeof lineBasedFeatures[number];
-
+export type LineBasedFeature = (typeof lineBasedFeatures)[number];
 
 export const isPointBasedGeoJsonFeature = (
   feature: Feature,

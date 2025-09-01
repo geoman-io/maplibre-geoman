@@ -18,7 +18,6 @@ import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export class EventBus {
   gm: Geoman;
   forwarder: EventForwarder;
@@ -111,9 +110,7 @@ export class EventBus {
 
   offGmEvent(eventName: GmEventName, handler: GmEventHadler) {
     const eventHandlers = this.gmEventHandlers[eventName]?.handlers || [];
-    const handlerIndex = eventHandlers.findIndex(
-      (handlerItem) => handler === handlerItem,
-    );
+    const handlerIndex = eventHandlers.findIndex((handlerItem) => handler === handlerItem);
 
     if (handlerIndex === -1) {
       log.warn('MapEvents: handler not found', eventName, handler);
@@ -127,9 +124,7 @@ export class EventBus {
 
   offMapEvent(eventName: MapEventName, handler: MapEventHadler) {
     const eventHandlers = this.mapEventHandlers[eventName]?.handlers || [];
-    const handlerIndex = eventHandlers.findIndex(
-      (handlerItem) => handler === handlerItem,
-    );
+    const handlerIndex = eventHandlers.findIndex((handlerItem) => handler === handlerItem);
 
     if (handlerIndex === -1) {
       log.warn('MapEvents: handler not found', eventName, handler);

@@ -13,7 +13,6 @@ import {
 } from '../utils/features.ts';
 import { setupGeomanTest } from '../utils/test-helpers.ts';
 
-
 const getDraggableVertexForShape = async (
   page: Page,
   feature: FeatureCustomData,
@@ -42,7 +41,9 @@ test('Change events for all shape types', async ({ page }) => {
 
   for (const feature of features) {
     // Set up event listener for this feature
-    const eventName = pointBasedGeometryType.includes(feature.geoJson.geometry.type) ? 'dragend' : 'editend';
+    const eventName = pointBasedGeometryType.includes(feature.geoJson.geometry.type)
+      ? 'dragend'
+      : 'editend';
     const resultId = await saveGeomanEventResultToCustomData(page, eventName);
 
     const vertexMarker = await getDraggableVertexForShape(page, feature);
@@ -51,13 +52,14 @@ test('Change events for all shape types', async ({ page }) => {
       vertexMarker: vertexMarker || undefined,
     });
 
-    const event = await getGeomanEventResultById(page, resultId) as FeatureEditEndFwdEvent | undefined;
+    const event = (await getGeomanEventResultById(page, resultId)) as
+      | FeatureEditEndFwdEvent
+      | undefined;
     expect(event, 'Retrieved event result must be defined').toBeDefined();
     if (event) {
       expect(event.shape, `Shape should be ${feature.shape}`).toBe(feature.shape);
       expect(event.feature, `Feature should be defined`).toBeDefined();
     }
-
   }
 
   // Disable mode to reset state

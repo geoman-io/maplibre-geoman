@@ -36,7 +36,6 @@ import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 // declare module 'maplibre-gl' {
 //   interface Map {
 //     gm?: Geoman;
@@ -142,9 +141,13 @@ export class Geoman {
     await this.addControls();
   }
 
-  destroy({ removeSources }: {
-    removeSources: boolean,
-  } = { removeSources: false }) {
+  destroy(
+    {
+      removeSources,
+    }: {
+      removeSources: boolean;
+    } = { removeSources: false },
+  ) {
     this.removeControls();
     this.events.bus.detachAllEvents();
 
@@ -195,24 +198,30 @@ export class Geoman {
   }
 
   getActiveDrawModes(): Array<DrawModeName> {
-    return typedKeys(this.actionInstances).map((key) => {
-      const instance = this.actionInstances[key];
-      return instance instanceof BaseDraw ? instance.mode : null;
-    }).filter((mode): mode is DrawModeName => mode !== null);
+    return typedKeys(this.actionInstances)
+      .map((key) => {
+        const instance = this.actionInstances[key];
+        return instance instanceof BaseDraw ? instance.mode : null;
+      })
+      .filter((mode): mode is DrawModeName => mode !== null);
   }
 
   getActiveEditModes(): Array<EditModeName> {
-    return typedKeys(this.actionInstances).map((key) => {
-      const instance = this.actionInstances[key];
-      return instance instanceof BaseEdit ? instance.mode : null;
-    }).filter((mode): mode is EditModeName => mode !== null);
+    return typedKeys(this.actionInstances)
+      .map((key) => {
+        const instance = this.actionInstances[key];
+        return instance instanceof BaseEdit ? instance.mode : null;
+      })
+      .filter((mode): mode is EditModeName => mode !== null);
   }
 
   getActiveHelperModes(): Array<HelperModeName> {
-    return typedKeys(this.actionInstances).map((key) => {
-      const instance = this.actionInstances[key];
-      return instance instanceof BaseHelper ? instance.mode : null;
-    }).filter((mode): mode is HelperModeName => mode !== null);
+    return typedKeys(this.actionInstances)
+      .map((key) => {
+        const instance = this.actionInstances[key];
+        return instance instanceof BaseHelper ? instance.mode : null;
+      })
+      .filter((mode): mode is HelperModeName => mode !== null);
   }
 
   getGlobalLngLatBounds(): [LngLat, LngLat] {
@@ -254,9 +263,7 @@ export class Geoman {
   }
 
   disableDraw() {
-    this.getActiveDrawModes().forEach(
-      (shape) => this.options.disableMode('draw', shape),
-    );
+    this.getActiveDrawModes().forEach((shape) => this.options.disableMode('draw', shape));
   }
 
   toggleDraw(shape: DrawModeName) {
@@ -365,7 +372,10 @@ export const createGeomanInstance = async (
       geoman.mapAdapter.once(`${GM_PREFIX}:loaded`, resolve);
     }),
     new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Timeout ${TIMEOUT / 1000} seconds: can't init geoman`)), TIMEOUT);
+      setTimeout(
+        () => reject(new Error(`Timeout ${TIMEOUT / 1000} seconds: can't init geoman`)),
+        TIMEOUT,
+      );
     }),
   ]);
 
@@ -413,10 +423,15 @@ export { includesWithType, typedKeys } from '@/utils/typing.ts';
 
 // guards
 export {
-  isGmDrawFreehandDrawerEvent, isGmDrawLineDrawerEvent, isGmDrawShapeEvent,
+  isGmDrawFreehandDrawerEvent,
+  isGmDrawLineDrawerEvent,
+  isGmDrawShapeEvent,
 } from '@/utils/guards/events/draw.ts';
 export { isGmEditEvent } from '@/utils/guards/events/edit.ts';
-export { isGmFeatureBeforeCreateEvent, isGmFeatureBeforeUpdateEvent } from '@/utils/guards/events/features.ts';
+export {
+  isGmFeatureBeforeCreateEvent,
+  isGmFeatureBeforeUpdateEvent,
+} from '@/utils/guards/events/features.ts';
 export { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 export { isGmControlEvent, isGmEvent, isGmModeEvent } from '@/utils/guards/events/index.ts';
 export * from '@/utils/guards/index.ts';

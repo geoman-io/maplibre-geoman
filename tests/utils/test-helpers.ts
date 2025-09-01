@@ -12,7 +12,7 @@ export const testShapeCreation = async (
     points: Array<[number, number]> | [number, number];
     additionalActions?: () => Promise<void>;
     exitButtonId?: string;
-  }
+  },
 ) => {
   const { shapeName, points, additionalActions, exitButtonId = `#id_draw_${shapeName}` } = options;
 
@@ -31,7 +31,9 @@ export const testShapeCreation = async (
   }
 
   // Wait for and verify the event
-  const event = await getGeomanEventResultById(page, createEventResultId) as FeatureCreatedFwdEvent | undefined;
+  const event = (await getGeomanEventResultById(page, createEventResultId)) as
+    | FeatureCreatedFwdEvent
+    | undefined;
   expect(event, 'Retrieved event result must be defined').toBeDefined();
 
   if (event) {
@@ -49,8 +51,8 @@ export const testShapeCreation = async (
 export const setupGeomanTest = async (
   page: Page,
   options: {
-    loadFixture?: string
-  } = {}
+    loadFixture?: string;
+  } = {},
 ) => {
   await page.goto('/');
   await waitForGeoman(page);

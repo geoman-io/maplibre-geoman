@@ -15,213 +15,250 @@ import type { GeoJSON } from 'geojson';
 import { SHAPE_NAMES } from '@/modes/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 
-
 export type FeatureCustomData = {
-  id: FeatureId,
-  temporary: boolean,
-  shape: FeatureShape,
-  geoJson: GeoJsonShapeFeature,
+  id: FeatureId;
+  temporary: boolean;
+  shape: FeatureShape;
+  geoJson: GeoJsonShapeFeature;
 };
 
 export type MarkerCustomData = {
-  id: FeatureId | undefined,
-  temporary: boolean | undefined,
-  type: MarkerData['type'],
-  position: LngLat,
-  point: [number, number], // ScreenCoordinates
-  path?: Array<string | number>,
+  id: FeatureId | undefined;
+  temporary: boolean | undefined;
+  type: MarkerData['type'];
+  position: LngLat;
+  point: [number, number]; // ScreenCoordinates
+  path?: Array<string | number>;
 };
 
-export const getRenderedFeatureData = async (
-  { page, temporary, featureId }: {
-    page: Page,
-    temporary: boolean,
-    featureId: FeatureId
-  },
-) => {
-  return page.evaluate((context) => {
-    const geoman = window.geoman;
-    const featureData = geoman.features.get(
-      context.temporary ? context.SOURCES.temporary : context.SOURCES.main,
-      context.featureId,
-    );
+export const getRenderedFeatureData = async ({
+  page,
+  temporary,
+  featureId,
+}: {
+  page: Page;
+  temporary: boolean;
+  featureId: FeatureId;
+}) => {
+  return page.evaluate(
+    (context) => {
+      const geoman = window.geoman;
+      const featureData = geoman.features.get(
+        context.temporary ? context.SOURCES.temporary : context.SOURCES.main,
+        context.featureId,
+      );
 
-    if (!featureData) {
-      return null;
-    }
-
-    return {
-      id: featureData.id,
-      shape: featureData.shape,
-      temporary: featureData.temporary,
-      geoJson: featureData.getGeoJson(),
-    };
-  }, { SOURCES, temporary, featureId });
-};
-
-export const getRenderedFeaturesData = async (
-  { page, temporary, allowedTypes = [...SHAPE_NAMES] }: {
-    page: Page,
-    temporary: boolean,
-    allowedTypes?: Array<FeatureShape>,
-  },
-) => {
-  return page.evaluate((context) => {
-    const geoman = window.geoman;
-    const result: Array<FeatureCustomData> = [];
-    const forEach = context.temporary ? geoman.features.tmpForEach : geoman.features.forEach;
-
-    forEach((featureData) => {
-      if (!context.allowedTypes.includes(featureData.shape)) {
-        return;
+      if (!featureData) {
+        return null;
       }
 
-      result.push({
+      return {
         id: featureData.id,
         shape: featureData.shape,
         temporary: featureData.temporary,
         geoJson: featureData.getGeoJson(),
-      });
-    });
-
-    return result;
-  }, { temporary, allowedTypes });
+      };
+    },
+    { SOURCES, temporary, featureId },
+  );
 };
 
-export const waitForRenderedFeatureData = async (
-  { page, temporary, featureId, timeout = process.env.CI ? 30 * 1000 : 10 * 1000 }: {
-    page: Page,
-    featureId: FeatureId,
-    temporary: boolean,
-    timeout?: number,
-  },
-) => {
-  const promise = await page.waitForFunction((context) => {
-    const geoman = window.geoman;
-    const featureData = geoman.features.get(
-      context.temporary ? context.SOURCES.temporary : context.SOURCES.main,
-      context.featureId,
-    );
+export const getRenderedFeaturesData = async ({
+  page,
+  temporary,
+  allowedTypes = [...SHAPE_NAMES],
+}: {
+  page: Page;
+  temporary: boolean;
+  allowedTypes?: Array<FeatureShape>;
+}) => {
+  return page.evaluate(
+    (context) => {
+      const geoman = window.geoman;
+      const result: Array<FeatureCustomData> = [];
+      const forEach = context.temporary ? geoman.features.tmpForEach : geoman.features.forEach;
 
-    if (!featureData) {
-      // wait until feature is rendered
-      return null;
-    }
+      forEach((featureData) => {
+        if (!context.allowedTypes.includes(featureData.shape)) {
+          return;
+        }
 
-    return {
-      id: featureData.id,
-      shape: featureData.shape,
-      temporary: featureData.temporary,
-      geoJson: featureData.getGeoJson(),
-    };
-  }, { temporary, featureId, SOURCES }, { timeout });
+        result.push({
+          id: featureData.id,
+          shape: featureData.shape,
+          temporary: featureData.temporary,
+          geoJson: featureData.getGeoJson(),
+        });
+      });
+
+      return result;
+    },
+    { temporary, allowedTypes },
+  );
+};
+
+export const waitForRenderedFeatureData = async ({
+  page,
+  temporary,
+  featureId,
+  timeout = process.env.CI ? 30 * 1000 : 10 * 1000,
+}: {
+  page: Page;
+  featureId: FeatureId;
+  temporary: boolean;
+  timeout?: number;
+}) => {
+  const promise = await page.waitForFunction(
+    (context) => {
+      const geoman = window.geoman;
+      const featureData = geoman.features.get(
+        context.temporary ? context.SOURCES.temporary : context.SOURCES.main,
+        context.featureId,
+      );
+
+      if (!featureData) {
+        // wait until feature is rendered
+        return null;
+      }
+
+      return {
+        id: featureData.id,
+        shape: featureData.shape,
+        temporary: featureData.temporary,
+        geoJson: featureData.getGeoJson(),
+      };
+    },
+    { temporary, featureId, SOURCES },
+    { timeout },
+  );
 
   return promise.jsonValue() as Promise<FeatureCustomData | null>;
 };
 
-export const loadGeoJsonFeatures = async ({ page, geoJsonFeatures }: {
-  page: Page,
-  geoJsonFeatures: Array<GeoJsonImportFeature>,
+export const loadGeoJsonFeatures = async ({
+  page,
+  geoJsonFeatures,
+}: {
+  page: Page;
+  geoJsonFeatures: Array<GeoJsonImportFeature>;
 }) => {
-  await page.evaluate((context) => {
-    const geoman = window.geoman;
-    context.geoJsonFeatures.forEach((shapeGeoJson) => {
-      geoman.features.importGeoJsonFeature(shapeGeoJson);
-    });
-  }, { geoJsonFeatures, SOURCES });
+  await page.evaluate(
+    (context) => {
+      const geoman = window.geoman;
+      context.geoJsonFeatures.forEach((shapeGeoJson) => {
+        geoman.features.importGeoJsonFeature(shapeGeoJson);
+      });
+    },
+    { geoJsonFeatures, SOURCES },
+  );
 
   await waitForMapIdle(page);
 
-  const addedFeatureIds = geoJsonFeatures.map((geoJsonFeature) => geoJsonFeature.id).filter(id => id !== undefined);
-  await page.waitForFunction((context) => {
-    const geoman = window.geoman;
-    const features = geoman.mapAdapter.queryGeoJsonFeatures({
-      queryCoordinates: undefined,
-      sourceNames: [geoman.features.defaultSourceName],
-    });
-    const currentFeatureIds = features.map((feature) => feature.id);
+  const addedFeatureIds = geoJsonFeatures
+    .map((geoJsonFeature) => geoJsonFeature.id)
+    .filter((id) => id !== undefined);
+  await page.waitForFunction(
+    (context) => {
+      const geoman = window.geoman;
+      const features = geoman.mapAdapter.queryGeoJsonFeatures({
+        queryCoordinates: undefined,
+        sourceNames: [geoman.features.defaultSourceName],
+      });
+      const currentFeatureIds = features.map((feature) => feature.id);
 
-    return !context.addedFeatureIds.some((featureId) => !currentFeatureIds.includes(featureId));
-  }, { addedFeatureIds }, { timeout: process.env.CI ? 30000 : 10000 });
+      return !context.addedFeatureIds.some((featureId) => !currentFeatureIds.includes(featureId));
+    },
+    { addedFeatureIds },
+    { timeout: process.env.CI ? 30000 : 10000 },
+  );
 };
 
-export const getFeatureMarkersData = async (
-  { page, featureId, temporary, allowedTypes = undefined }: {
-    page: Page,
-    featureId: FeatureId,
-    temporary: boolean,
-    allowedTypes?: Array<MarkerData['type']>,
-  },
-): Promise<Array<MarkerCustomData>> => {
-  return page.evaluate((context) => {
-    const geoman = window.geoman;
-    if (!geoman.mapAdapter.mapInstance) {
-      console.error('Map is not initialized');
-      return [];
-    }
+export const getFeatureMarkersData = async ({
+  page,
+  featureId,
+  temporary,
+  allowedTypes = undefined,
+}: {
+  page: Page;
+  featureId: FeatureId;
+  temporary: boolean;
+  allowedTypes?: Array<MarkerData['type']>;
+}): Promise<Array<MarkerCustomData>> => {
+  return page.evaluate(
+    (context) => {
+      const geoman = window.geoman;
+      if (!geoman.mapAdapter.mapInstance) {
+        console.error('Map is not initialized');
+        return [];
+      }
 
-    const markers: Array<MarkerCustomData> = [];
-    const featureData = geoman.features.get(
-      context.temporary ? context.SOURCES.temporary : context.SOURCES.main,
-      context.featureId,
-    );
+      const markers: Array<MarkerCustomData> = [];
+      const featureData = geoman.features.get(
+        context.temporary ? context.SOURCES.temporary : context.SOURCES.main,
+        context.featureId,
+      );
 
-    if (!featureData) {
+      if (!featureData) {
+        return markers;
+      }
+
+      // Process each marker
+      featureData.markers.forEach((markerData: MarkerData) => {
+        // Skip if marker type is not allowed
+        if (context.allowedTypes && !context.allowedTypes.includes(markerData.type)) {
+          return;
+        }
+
+        // Process the marker
+        const type = markerData.type;
+        const result: MarkerCustomData = {
+          id: undefined,
+          type: type,
+          temporary: undefined,
+          position: [0, 0],
+          point: [0, 0],
+          path: undefined,
+        };
+        let position = null;
+
+        if (type === 'dom') {
+          position = markerData.instance.getLngLat();
+        } else {
+          result.id = markerData.instance.id;
+          result.temporary = markerData.instance.temporary;
+          const geoJson = markerData.instance.getGeoJson();
+          if (geoJson.geometry.type === 'Point') {
+            position = geoJson.geometry.coordinates;
+          }
+          if (type === 'vertex') {
+            result.path = markerData.position.path;
+          }
+        }
+
+        if (position) {
+          result.position = position as LngLat;
+          result.point = geoman.mapAdapter.project(position as LngLat);
+          markers.push(result);
+        }
+      });
+
       return markers;
-    }
-
-    // Process each marker
-    featureData.markers.forEach((markerData: MarkerData) => {
-      // Skip if marker type is not allowed
-      if (context.allowedTypes && !context.allowedTypes.includes(markerData.type)) {
-        return;
-      }
-
-      // Process the marker
-      const type = markerData.type;
-      const result: MarkerCustomData = {
-        id: undefined,
-        type: type,
-        temporary: undefined,
-        position: [0, 0],
-        point: [0, 0],
-        path: undefined,
-      };
-      let position = null;
-
-      if (type === 'dom') {
-        position = markerData.instance.getLngLat();
-      } else {
-        result.id = markerData.instance.id;
-        result.temporary = markerData.instance.temporary;
-        const geoJson = markerData.instance.getGeoJson();
-        if (geoJson.geometry.type === 'Point') {
-          position = geoJson.geometry.coordinates;
-        }
-        if (type === 'vertex') {
-          result.path = markerData.position.path;
-        }
-      }
-
-      if (position) {
-        result.position = position as LngLat;
-        result.point = geoman.mapAdapter.project(position as LngLat);
-        markers.push(result);
-      }
-    });
-
-    return markers;
-  }, { featureId, temporary, allowedTypes, SOURCES });
+    },
+    { featureId, temporary, allowedTypes, SOURCES },
+  );
 };
 
-export const waitForFeatureGeoJsonUpdate = async (
-  { feature, originalGeoJson, page, timeout = process.env.CI ? 30 * 1000 : 10 * 1000 }: {
-    feature: FeatureCustomData,
-    originalGeoJson: GeoJSON,
-    page: Page,
-    timeout?: number,
-  },
-) => {
+export const waitForFeatureGeoJsonUpdate = async ({
+  feature,
+  originalGeoJson,
+  page,
+  timeout = process.env.CI ? 30 * 1000 : 10 * 1000,
+}: {
+  feature: FeatureCustomData;
+  originalGeoJson: GeoJSON;
+  page: Page;
+  timeout?: number;
+}) => {
   await expect
     .poll(
       async () => {
@@ -237,26 +274,31 @@ export const waitForFeatureGeoJsonUpdate = async (
     .not.toEqual(originalGeoJson);
 };
 
-export const waitForFeatureRemoval = async (
-  { page, featureId, temporary, timeout = process.env.CI ? 30 * 1000 : 10 * 1000 }: {
-    page: Page,
-    featureId: FeatureId,
-    temporary: boolean,
-    timeout?: number,
-  },
-) => {
-  await expect.poll(
-    async () => {
-      return await getRenderedFeatureData({ page, featureId, temporary });
-    },
-    { timeout, message: `Feature ${featureId} was not removed within timeout.` },
-  ).toBeNull();
+export const waitForFeatureRemoval = async ({
+  page,
+  featureId,
+  temporary,
+  timeout = process.env.CI ? 30 * 1000 : 10 * 1000,
+}: {
+  page: Page;
+  featureId: FeatureId;
+  temporary: boolean;
+  timeout?: number;
+}) => {
+  await expect
+    .poll(
+      async () => {
+        return await getRenderedFeatureData({ page, featureId, temporary });
+      },
+      { timeout, message: `Feature ${featureId} was not removed within timeout.` },
+    )
+    .toBeNull();
 };
 
 const getInitialDragPoint = async (
   page: Page,
   feature: FeatureCustomData,
-  vertexMarker?: MarkerCustomData
+  vertexMarker?: MarkerCustomData,
 ): Promise<{ initialPoint: [number, number] | null; path?: Array<string | number> }> => {
   let initialPoint: [number, number] | null;
   let path: Array<string | number> | undefined;
@@ -275,7 +317,10 @@ const getInitialDragPoint = async (
     if (!initialLngLat) return { initialPoint: null };
 
     initialPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
-    expect(initialPoint, `Initial screen point for feature ${feature.id} should exist`).not.toBeNull();
+    expect(
+      initialPoint,
+      `Initial screen point for feature ${feature.id} should exist`,
+    ).not.toBeNull();
   }
 
   return { initialPoint, path };
@@ -285,7 +330,7 @@ const performDragOperation = async (
   page: Page,
   feature: FeatureCustomData,
   initialPoint: [number, number],
-  targetPoint: [number, number]
+  targetPoint: [number, number],
 ): Promise<void> => {
   const originalGeoJson = feature.geoJson;
   await dragAndDrop(page, initialPoint, targetPoint);
@@ -297,7 +342,7 @@ const verifyDragResult = async (
   feature: FeatureCustomData,
   targetPoint: [number, number],
   path?: Array<string | number>,
-  tolerance: number = 2
+  tolerance: number = 2,
 ): Promise<FeatureCustomData | null> => {
   const updatedFeature = await waitForRenderedFeatureData({
     page,
@@ -331,7 +376,7 @@ export const performDragAndVerify = async (
   options: {
     vertexMarker?: MarkerCustomData;
     tolerance?: number;
-  } = {}
+  } = {},
 ) => {
   const { vertexMarker, tolerance = 2 } = options;
 
@@ -340,10 +385,7 @@ export const performDragAndVerify = async (
   if (!initialPoint) return;
 
   // Calculate target point
-  const targetPoint: [number, number] = [
-    initialPoint[0] + offsetX,
-    initialPoint[1] + offsetY
-  ];
+  const targetPoint: [number, number] = [initialPoint[0] + offsetX, initialPoint[1] + offsetY];
 
   // Perform drag operation
   await performDragOperation(page, feature, initialPoint, targetPoint);

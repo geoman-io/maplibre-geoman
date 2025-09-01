@@ -6,7 +6,12 @@ import {
 } from '@/dev/fixtures/shapes.ts';
 import mapLibreStyle from '@/dev/maplibre-style.ts';
 import { layerStyles } from '@/dev/styles/layer-styles.ts';
-import { type GeoJsonImportFeature, Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
+import {
+  type GeoJsonImportFeature,
+  Geoman,
+  type GmOptionsData,
+  type MapInstanceWithGeoman,
+} from '@/main.ts';
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';
@@ -104,7 +109,6 @@ const unbindButtonHandlers = () => {
   });
 };
 
-
 const loadGeomanData = (geoman: Geoman) => {
   log.debug(`Running mode: "${import.meta.env.MODE}"`);
   log.debug('Geoman instance', geoman);
@@ -135,14 +139,16 @@ const loadGeomanData = (geoman: Geoman) => {
 
 const initGeoman = async () => {
   const existingMapInstance = window.customData?.map as ml.Map | undefined;
-  const map = existingMapInstance || new ml.Map({
-    container: 'dev-map',
-    // style: 'https://demotiles.maplibre.org/style.json',
-    style: mapLibreStyle,
-    center: [0, 51],
-    zoom: 5,
-    fadeDuration: 50,
-  });
+  const map =
+    existingMapInstance ||
+    new ml.Map({
+      container: 'dev-map',
+      // style: 'https://demotiles.maplibre.org/style.json',
+      style: mapLibreStyle,
+      center: [0, 51],
+      zoom: 5,
+      fadeDuration: 50,
+    });
   console.log(`Maplibre version: "${map.version}"`);
 
   if (window.geoman) {

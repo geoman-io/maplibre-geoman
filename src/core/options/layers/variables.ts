@@ -16,7 +16,6 @@ export const defaultTmpStyle = {
   lineColor: '#ff5600',
 };
 
-
 export const sourceStyles: SourceStyles = {
   [SOURCES.main]: {
     lineColor: '#278cda',
@@ -44,5 +43,4 @@ export const sourceStyles: SourceStyles = {
       circleMarkerRadius: 10,
     },
   }),
-
 };

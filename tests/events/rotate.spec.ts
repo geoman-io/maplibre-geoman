@@ -1,4 +1,8 @@
-import type { FeatureEditEndFwdEvent, FeatureEditStartFwdEvent, FeatureUpdatedFwdEvent } from '@/types/index.ts';
+import type {
+  FeatureEditEndFwdEvent,
+  FeatureEditStartFwdEvent,
+  FeatureUpdatedFwdEvent,
+} from '@/types/index.ts';
 import test, { expect } from '@playwright/test';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '../utils/basic.ts';
 import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from '../utils/events.ts';
@@ -10,7 +14,9 @@ test.describe('Rotate Events', () => {
     await setupGeomanTest(page, { loadFixture: 'one-shape-of-each-type' });
   });
 
-  test('should fire gm:rotatestart, gm:rotate, and gm:rotateend events during rotation operation', async ({ page }) => {
+  test('should fire gm:rotatestart, gm:rotate, and gm:rotateend events during rotation operation', async ({
+    page,
+  }) => {
     const dragOffsetX = 40;
     const dragOffsetY = -30;
     const rotatableShapes = ['polygon', 'line', 'rectangle'];
@@ -30,7 +36,9 @@ test.describe('Rotate Events', () => {
           allowedTypes: ['vertex'],
         });
 
-        expect(markers.length, `Vertex markers should exist for ${feature.shape}`).toBeGreaterThan(0);
+        expect(markers.length, `Vertex markers should exist for ${feature.shape}`).toBeGreaterThan(
+          0,
+        );
         if (markers.length === 0) {
           continue;
         }
@@ -50,20 +58,18 @@ test.describe('Rotate Events', () => {
         // Perform rotation operation
         await dragAndDrop(page, initialScreenPoint, targetScreenPoint);
 
-        const rotateStartEvent = await getGeomanEventResultById(
-          page,
-          rotateStartResultId,
-        ) as FeatureEditStartFwdEvent | undefined;
+        const rotateStartEvent = (await getGeomanEventResultById(page, rotateStartResultId)) as
+          | FeatureEditStartFwdEvent
+          | undefined;
         expect(rotateStartEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateStartEvent) {
           expect(rotateStartEvent.feature, 'Event feature must be defined').toBeDefined();
           expect(rotateStartEvent.shape, `Shape should be ${feature.shape}`).toEqual(feature.shape);
         }
 
-        const rotateEvent = await getGeomanEventResultById(
-          page,
-          rotateResultId,
-        ) as FeatureUpdatedFwdEvent | undefined;
+        const rotateEvent = (await getGeomanEventResultById(page, rotateResultId)) as
+          | FeatureUpdatedFwdEvent
+          | undefined;
         expect(rotateEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateEvent) {
           expect(rotateEvent.feature, 'Event feature must be defined').toBeDefined();
@@ -71,10 +77,9 @@ test.describe('Rotate Events', () => {
           expect(rotateEvent.originalFeature, 'Event feature must be defined').toBeDefined();
         }
 
-        const rotateEndEvent = await getGeomanEventResultById(
-          page,
-          rotateEndResultId,
-        ) as FeatureEditEndFwdEvent | undefined;
+        const rotateEndEvent = (await getGeomanEventResultById(page, rotateEndResultId)) as
+          | FeatureEditEndFwdEvent
+          | undefined;
         expect(rotateEndEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateEndEvent) {
           expect(rotateEndEvent.feature, 'Event feature must be defined').toBeDefined();

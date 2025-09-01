@@ -1,5 +1,9 @@
 import { BaseHelper } from '@/modes/helpers/base.ts';
-import type { AutoTraceHelperInterface, PinHelperInterface, SnapGuidesHelperInterface } from '@/types/interfaces.ts';
+import type {
+  AutoTraceHelperInterface,
+  PinHelperInterface,
+  SnapGuidesHelperInterface,
+} from '@/types/interfaces.ts';
 
 export const isSnapGuidesHelper = (instance: unknown): instance is SnapGuidesHelperInterface => {
   return (

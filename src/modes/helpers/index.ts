@@ -5,7 +5,6 @@ import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { ZoomToFeaturesHelper } from '@/modes/helpers/zoom-to-features.ts';
 import log from 'loglevel';
 
-
 type HelperClassConstructor = new (gm: Geoman) => BaseHelper;
 type HelperClassMap = {
   [K in HelperModeName]: HelperClassConstructor | null;

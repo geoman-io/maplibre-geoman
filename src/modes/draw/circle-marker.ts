@@ -1,6 +1,11 @@
-import type { DrawModeName, LngLat, MapHandlerReturnData, MapPointerEvent, ShapeName } from '@/main.ts';
+import type {
+  DrawModeName,
+  LngLat,
+  MapHandlerReturnData,
+  MapPointerEvent,
+  ShapeName,
+} from '@/main.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
-
 
 export class DrawCircleMarker extends BaseCircle {
   mode: DrawModeName = 'circle_marker';

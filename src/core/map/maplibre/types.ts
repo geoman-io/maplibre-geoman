@@ -19,4 +19,4 @@ export const maplibrePointerEvents: ReadonlyArray<keyof MapLayerEventType> = [
   'touchcancel',
 ] as const;
 
-export type MaplibrePointerEventName = typeof maplibrePointerEvents[number];
+export type MaplibrePointerEventName = (typeof maplibrePointerEvents)[number];

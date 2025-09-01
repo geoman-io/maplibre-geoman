@@ -1,4 +1,10 @@
-import { type AnyEvent, type EditModeName, type FeatureShape, type MapHandlerReturnData, SHAPE_NAMES } from '@/main.ts';
+import {
+  type AnyEvent,
+  type EditModeName,
+  type FeatureShape,
+  type MapHandlerReturnData,
+  SHAPE_NAMES,
+} from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 

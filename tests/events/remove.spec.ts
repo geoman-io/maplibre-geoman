@@ -22,7 +22,6 @@ test.describe('`gm:remove` Event', () => {
       // Set up the event listener
       const resultId = await saveGeomanEventResultToCustomData(page, 'remove');
 
-
       // Find a point to click
       const initialLngLat = getGeoJsonFirstPoint(feature.geoJson);
       expect(initialLngLat, `Initial LngLat for feature ${feature.id} should exist`).not.toBeNull();
@@ -32,7 +31,10 @@ test.describe('`gm:remove` Event', () => {
 
       // Convert to screen coordinates
       const clickPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
-      expect(clickPoint, `Screen coordinates for feature ${feature.id} should be calculable`).not.toBeNull();
+      expect(
+        clickPoint,
+        `Screen coordinates for feature ${feature.id} should be calculable`,
+      ).not.toBeNull();
       if (!clickPoint) {
         continue;
       }
@@ -40,7 +42,9 @@ test.describe('`gm:remove` Event', () => {
       // Simulate the deletion
       await mouseMoveAndClick(page, clickPoint);
 
-      const event = await getGeomanEventResultById(page, resultId) as FeatureRemovedFwdEvent | undefined;
+      const event = (await getGeomanEventResultById(page, resultId)) as
+        | FeatureRemovedFwdEvent
+        | undefined;
       expect(event, 'Retrieved event result must be defined').toBeDefined();
       if (event) {
         expect(event.shape, `Shape should be ${feature.shape}`).toBe(feature.shape);

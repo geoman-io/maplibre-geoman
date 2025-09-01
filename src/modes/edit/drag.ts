@@ -3,7 +3,6 @@ import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
 
-
 export class EditDrag extends BaseDrag {
   mode: EditModeName = 'drag';
 

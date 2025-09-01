@@ -6,45 +6,51 @@ import { createHelperInstance } from '@/modes/helpers/index.ts';
 import type { ModeName } from '@/types/controls.ts';
 import type { PositionData } from '@/types/geojson.ts';
 import type { ActionType } from '@/types/options.ts';
-import { DRAW_MODES, EDIT_MODES, EXTRA_DRAW_MODES, HELPER_MODES, SHAPE_NAMES } from '@/modes/constants.ts';
+import {
+  DRAW_MODES,
+  EDIT_MODES,
+  EXTRA_DRAW_MODES,
+  HELPER_MODES,
+  SHAPE_NAMES,
+} from '@/modes/constants.ts';
 
 export type ActionInstanceKey = `${ActionType}__${ModeName}`;
 export type ActionInstance = ReturnType<
   typeof createDrawInstance | typeof createEditInstance | typeof createHelperInstance
 >;
 
-export type ShapeName = typeof SHAPE_NAMES[number];
-export type DrawModeName = typeof DRAW_MODES[number];
-export type ExtraDrawModeName = typeof EXTRA_DRAW_MODES[number];
-export type EditModeName = typeof EDIT_MODES[number];
-export type HelperModeName = typeof HELPER_MODES[number];
+export type ShapeName = (typeof SHAPE_NAMES)[number];
+export type DrawModeName = (typeof DRAW_MODES)[number];
+export type ExtraDrawModeName = (typeof EXTRA_DRAW_MODES)[number];
+export type EditModeName = (typeof EDIT_MODES)[number];
+export type HelperModeName = (typeof HELPER_MODES)[number];
 
 export type ChoiceItem = {
-  title: string,
-  value: boolean | string | number,
+  title: string;
+  value: boolean | string | number;
 };
 
 export type SelectActionOption = {
-  type: 'select',
-  label: string,
-  value: ChoiceItem,
-  choices: Array<ChoiceItem>,
+  type: 'select';
+  label: string;
+  value: ChoiceItem;
+  choices: Array<ChoiceItem>;
 };
 
 export type ToggleActionOption = {
-  type: 'toggle',
-  label: string,
-  value: boolean,
+  type: 'toggle';
+  label: string;
+  value: boolean;
 };
 
 export type HiddenActionOption = {
-  type: 'hidden',
-  value: string | boolean | number | undefined,
+  type: 'hidden';
+  value: string | boolean | number | undefined;
 };
 
 export type SubAction = {
-  label: string,
-  method: () => void,
+  label: string;
+  method: () => void;
 };
 
 export type ActionOption = SelectActionOption | ToggleActionOption | HiddenActionOption;
@@ -54,35 +60,34 @@ export type SubActions = { [key: string]: SubAction };
 export type ActionSetting = boolean | string | null | undefined;
 export type ActionSettings = { [key: string]: ActionSetting };
 
-
 export type MarkerId = string;
 
 export interface DomMarkerData {
-  type: 'dom',
-  instance: BaseDomMarker,
-  position: PositionData,
+  type: 'dom';
+  instance: BaseDomMarker;
+  position: PositionData;
 }
 
 export interface VertexMarkerData {
-  type: 'vertex',
-  instance: FeatureData,
-  position: PositionData,
+  type: 'vertex';
+  instance: FeatureData;
+  position: PositionData;
 }
 
 export interface CenterMarkerData {
-  type: 'center',
-  instance: FeatureData,
-  position: PositionData,
+  type: 'center';
+  instance: FeatureData;
+  position: PositionData;
 }
 
 export interface EdgeMarkerData {
-  type: 'edge',
-  instance: FeatureData,
-  position: PositionData,
+  type: 'edge';
+  instance: FeatureData;
+  position: PositionData;
   segment: {
-    start: PositionData,
-    end: PositionData,
-  },
+    start: PositionData;
+    end: PositionData;
+  };
 }
 
 export type MarkerData = DomMarkerData | VertexMarkerData | CenterMarkerData | EdgeMarkerData;

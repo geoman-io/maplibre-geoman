@@ -7,7 +7,6 @@ import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export class EditEventListener extends BaseEventListener {
   eventHandlers: EventHandlers = {
     [`${GM_PREFIX}:edit`]: this.handleEditEvent.bind(this),

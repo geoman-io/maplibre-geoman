@@ -1,6 +1,12 @@
 import type { Page } from '@playwright/test';
 import test, { expect } from '@playwright/test';
-import { dragAndDrop, enableMode, type ScreenCoordinates, waitForGeoman, waitForMapIdle } from '../utils/basic.ts';
+import {
+  dragAndDrop,
+  enableMode,
+  type ScreenCoordinates,
+  waitForGeoman,
+  waitForMapIdle,
+} from '../utils/basic.ts';
 import {
   type FeatureCustomData,
   getFeatureMarkersData,
@@ -18,7 +24,6 @@ import centroid from '@turf/centroid';
 import bearing from '@turf/bearing';
 import transformRotate from '@turf/transform-rotate';
 import { compareGeoJsonGeometries } from '../utils/geojson.ts';
-
 
 const GEOJSON_COORD_DEFAULT_PRECISION = 1;
 const SCREEN_COORD_TOLERANCE = 3;
@@ -58,19 +63,25 @@ async function performRotationAndVerify(
     featureId: feature.id,
     temporary: false,
   });
-  expect(updatedFeatureData, `Feature ${feature.id} should be updated after rotation`).not.toBeNull();
+  expect(
+    updatedFeatureData,
+    `Feature ${feature.id} should be updated after rotation`,
+  ).not.toBeNull();
   if (!updatedFeatureData) {
     return;
   }
 
   const originalCentroid = centroid(originalGeoJson).geometry.coordinates as LngLat;
 
-  const { initialVertexLngLat, targetVertexLngLat } = await page.evaluate((coords) => {
-    return {
-      initialVertexLngLat: window.geoman.mapAdapter.unproject(coords.initialScreenPoint),
-      targetVertexLngLat: window.geoman.mapAdapter.unproject(coords.targetScreenPoint),
-    };
-  }, { initialScreenPoint, targetScreenPoint });
+  const { initialVertexLngLat, targetVertexLngLat } = await page.evaluate(
+    (coords) => {
+      return {
+        initialVertexLngLat: window.geoman.mapAdapter.unproject(coords.initialScreenPoint),
+        targetVertexLngLat: window.geoman.mapAdapter.unproject(coords.targetScreenPoint),
+      };
+    },
+    { initialScreenPoint, targetScreenPoint },
+  );
 
   const angleStart = bearing(originalCentroid, initialVertexLngLat);
   const angleEnd = bearing(originalCentroid, targetVertexLngLat);
@@ -114,7 +125,10 @@ async function performMovementAndVerify(
     featureId: feature.id,
     temporary: false,
   });
-  expect(updatedFeatureData, `Feature ${feature.id} should be updated after movement`).not.toBeNull();
+  expect(
+    updatedFeatureData,
+    `Feature ${feature.id} should be updated after movement`,
+  ).not.toBeNull();
   if (!updatedFeatureData) {
     return;
   }
@@ -122,18 +136,28 @@ async function performMovementAndVerify(
   let referenceLngLat: LngLat | null;
   if (updatedFeatureData.geoJson.geometry.type === 'Point') {
     referenceLngLat = updatedFeatureData.geoJson.geometry.coordinates as LngLat;
-  } else if (updatedFeatureData.shape === 'circle' || updatedFeatureData.shape === 'polygon' || updatedFeatureData.shape === 'rectangle') {
+  } else if (
+    updatedFeatureData.shape === 'circle' ||
+    updatedFeatureData.shape === 'polygon' ||
+    updatedFeatureData.shape === 'rectangle'
+  ) {
     referenceLngLat = centroid(updatedFeatureData.geoJson).geometry.coordinates as LngLat;
   } else {
     referenceLngLat = getGeoJsonFirstPoint(updatedFeatureData.geoJson);
   }
-  expect(referenceLngLat, `Reference LngLat for ${feature.shape} (ID: ${feature.id}) should exist`).not.toBeNull();
+  expect(
+    referenceLngLat,
+    `Reference LngLat for ${feature.shape} (ID: ${feature.id}) should exist`,
+  ).not.toBeNull();
   if (!referenceLngLat) {
     return;
   }
 
   const newScreenPos = await getScreenCoordinatesByLngLat({ page, position: referenceLngLat });
-  expect(newScreenPos, `New screen position for ${feature.shape} (ID: ${feature.id}) should be calculable`).not.toBeNull();
+  expect(
+    newScreenPos,
+    `New screen position for ${feature.shape} (ID: ${feature.id}) should be calculable`,
+  ).not.toBeNull();
 
   if (newScreenPos) {
     expect(newScreenPos[0]).toBeGreaterThanOrEqual(targetScreenPoint[0] - SCREEN_COORD_TOLERANCE);
@@ -171,7 +195,10 @@ test('Rotate Polygon, Line, Rectangle, Circle via vertex drag', async ({ page })
   for (const feature of features) {
     if (rotatableShapes.includes(feature.shape)) {
       const vertexMarker = await getFirstDraggableVertex(page, feature);
-      expect(vertexMarker, `Vertex marker should be found for ${feature.shape} (ID: ${feature.id})`).not.toBeNull();
+      expect(
+        vertexMarker,
+        `Vertex marker should be found for ${feature.shape} (ID: ${feature.id})`,
+      ).not.toBeNull();
       if (vertexMarker) {
         await performRotationAndVerify(page, feature, vertexMarker, dragOffsetX, dragOffsetY);
       }
@@ -193,12 +220,18 @@ test('Move Marker, CircleMarker, TextMarker via body drag', async ({ page }) => 
   for (const feature of features) {
     if (pointBasedShapes.includes(feature.shape)) {
       const initialLngLat = getGeoJsonFirstPoint(feature.geoJson);
-      expect(initialLngLat, `Initial LngLat for ${feature.shape} (ID: ${feature.id}) should exist`).not.toBeNull();
+      expect(
+        initialLngLat,
+        `Initial LngLat for ${feature.shape} (ID: ${feature.id}) should exist`,
+      ).not.toBeNull();
       if (!initialLngLat) {
         continue;
       }
 
-      const dragStartScreenPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
+      const dragStartScreenPoint = await getScreenCoordinatesByLngLat({
+        page,
+        position: initialLngLat,
+      });
       expect(
         dragStartScreenPoint,
         `Drag start screen point for ${feature.shape} (ID: ${feature.id}) should exist`,

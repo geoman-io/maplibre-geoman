@@ -4,14 +4,17 @@ import { convertToThrottled } from '@/utils/behavior.ts';
 import { allCoordinatesEqual, getGeoJsonCircle } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
-
 export class DrawCircle extends BaseCircle {
   mode: DrawModeName = 'circle';
   shape: ShapeName = 'circle';
 
-  throttledMethods = convertToThrottled({
-    updateFeatureGeoJson: this.updateFeatureGeoJson,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      updateFeatureGeoJson: this.updateFeatureGeoJson,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
   onMouseClick(event: AnyEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event)) {

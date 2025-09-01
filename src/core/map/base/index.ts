@@ -20,10 +20,13 @@ import type {
   MapTypes,
   ScreenPoint,
 } from '@/main.ts';
-import { eachSegmentWithPath, getEuclideanDistance, getEuclideanSegmentNearestPoint } from '@/utils/geojson.ts';
+import {
+  eachSegmentWithPath,
+  getEuclideanDistance,
+  getEuclideanSegmentNearestPoint,
+} from '@/utils/geojson.ts';
 import turfDistance from '@turf/distance';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
-
 
 export abstract class BaseMapAdapter<
   TMapInstance = MapInstanceWithGeoman,
@@ -46,14 +49,11 @@ export abstract class BaseMapAdapter<
 
   abstract removeControl(control: GMControl): void;
 
-  abstract loadImage({ id, image }: { id: string, image: string }): Promise<void>;
+  abstract loadImage({ id, image }: { id: string; image: string }): Promise<void>;
 
   abstract getBounds(): [LngLat, LngLat];
 
-  abstract fitBounds(
-    bounds: [LngLat, LngLat],
-    options?: BaseFitBoundsOptions,
-  ): void;
+  abstract fitBounds(bounds: [LngLat, LngLat], options?: BaseFitBoundsOptions): void;
 
   abstract setCursor(cursor: CursorType): void;
 
@@ -63,14 +63,20 @@ export abstract class BaseMapAdapter<
 
   abstract setDragPan(value: boolean): void;
 
-  abstract queryFeaturesByScreenCoordinates({ queryCoordinates, sourceNames }: {
-    queryCoordinates: ScreenPoint | [ScreenPoint, ScreenPoint],
-    sourceNames: Array<FeatureSourceName>,
+  abstract queryFeaturesByScreenCoordinates({
+    queryCoordinates,
+    sourceNames,
+  }: {
+    queryCoordinates: ScreenPoint | [ScreenPoint, ScreenPoint];
+    sourceNames: Array<FeatureSourceName>;
   }): Array<FeatureData>;
 
-  abstract queryGeoJsonFeatures({ queryCoordinates, sourceNames }: {
-    queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint],
-    sourceNames: Array<FeatureSourceName>,
+  abstract queryGeoJsonFeatures({
+    queryCoordinates,
+    sourceNames,
+  }: {
+    queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint];
+    sourceNames: Array<FeatureSourceName>;
   }): Array<GeoJsonFeatureData>;
 
   abstract addSource(sourceId: string, geoJson: GeoJSON): BaseSource<TSource>;
@@ -95,9 +101,7 @@ export abstract class BaseMapAdapter<
 
   abstract unproject(point: ScreenPoint): LngLat;
 
-  abstract coordBoundsToScreenBounds(
-    bounds: [LngLat, LngLat],
-  ): [ScreenPoint, ScreenPoint];
+  abstract coordBoundsToScreenBounds(bounds: [LngLat, LngLat]): [ScreenPoint, ScreenPoint];
 
   getEuclideanNearestLngLat(
     shapeGeoJson: Feature<LineBasedGeometry> | FeatureCollection<LineBasedGeometry>,

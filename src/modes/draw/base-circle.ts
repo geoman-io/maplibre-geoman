@@ -15,7 +15,6 @@ import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { SOURCES } from '@/core/features/constants.ts';
 
-
 export abstract class BaseCircle extends BaseDraw {
   mode: DrawModeName = 'circle';
   shape: ShapeName = 'circle';
@@ -90,10 +89,13 @@ export abstract class BaseCircle extends BaseDraw {
     svgElement.style.height = '28px';
     svgElement.style.pointerEvents = 'none';
 
-    return this.gm.mapAdapter.createDomMarker({
-      draggable: false,
-      anchor: 'center',
-      element: svgElement,
-    }, [0, 0]);
+    return this.gm.mapAdapter.createDomMarker(
+      {
+        draggable: false,
+        anchor: 'center',
+        element: svgElement,
+      },
+      [0, 0],
+    );
   }
 }

@@ -1,4 +1,9 @@
-import type { FeatureEditEndFwdEvent, FeatureEditStartFwdEvent, FeatureUpdatedFwdEvent, LngLat } from '@/main.ts';
+import type {
+  FeatureEditEndFwdEvent,
+  FeatureEditStartFwdEvent,
+  FeatureUpdatedFwdEvent,
+  LngLat,
+} from '@/main.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
@@ -13,7 +18,9 @@ test.describe('Drag Events', () => {
     await setupGeomanTest(page, { loadFixture: 'common-shapes' });
   });
 
-  test('should fire gm:dragstart, gm:drag, and gm:dragend events during drag operation', async ({ page }) => {
+  test('should fire gm:dragstart, gm:drag, and gm:dragend events during drag operation', async ({
+    page,
+  }) => {
     const dX = -30;
     const dY = 0;
 
@@ -37,7 +44,10 @@ test.describe('Drag Events', () => {
 
       // Get screen coordinates
       const point = await getScreenCoordinatesByLngLat({ page, position });
-      expect(point, `Screen coordinates for feature ${feature.id} should be calculable`).not.toBeNull();
+      expect(
+        point,
+        `Screen coordinates for feature ${feature.id} should be calculable`,
+      ).not.toBeNull();
       if (!point) {
         continue;
       }
@@ -53,19 +63,17 @@ test.describe('Drag Events', () => {
       // Perform drag operation
       await dragAndDrop(page, point, targetPoint);
 
-      const dragStartEvent = await getGeomanEventResultById(
-        page,
-        dragStartResultId,
-      ) as FeatureEditStartFwdEvent | undefined;
+      const dragStartEvent = (await getGeomanEventResultById(page, dragStartResultId)) as
+        | FeatureEditStartFwdEvent
+        | undefined;
       expect(dragStartEvent, 'Retrieved event result must be defined').toBeDefined();
       if (dragStartEvent) {
         expect(dragStartEvent.feature, 'Event feature must be defined').toBeDefined();
       }
 
-      const dragEvent = await getGeomanEventResultById(
-        page,
-        dragResultId,
-      ) as FeatureUpdatedFwdEvent | undefined;
+      const dragEvent = (await getGeomanEventResultById(page, dragResultId)) as
+        | FeatureUpdatedFwdEvent
+        | undefined;
       expect(dragEvent, 'Retrieved event result must be defined').toBeDefined();
       if (dragEvent) {
         expect(dragEvent.feature, 'Event feature must be defined').toBeDefined();
@@ -73,10 +81,9 @@ test.describe('Drag Events', () => {
         expect(dragEvent.originalFeature, 'Event feature must be defined').toBeDefined();
       }
 
-      const dragEndEvent = await getGeomanEventResultById(
-        page,
-        dragEndResultId,
-      ) as FeatureEditEndFwdEvent | undefined;
+      const dragEndEvent = (await getGeomanEventResultById(page, dragEndResultId)) as
+        | FeatureEditEndFwdEvent
+        | undefined;
       expect(dragEndEvent, 'Retrieved event result must be defined').toBeDefined();
       if (dragEndEvent) {
         expect(dragEndEvent.feature, 'Event feature must be defined').toBeDefined();

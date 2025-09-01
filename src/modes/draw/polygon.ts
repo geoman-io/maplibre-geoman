@@ -15,14 +15,10 @@ import lineToPolygon from '@turf/line-to-polygon';
 import unkinkPolygon from '@turf/unkink-polygon';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 
-
 export class DrawPolygon extends BaseDraw {
   mode: DrawModeName = 'polygon';
   shape: ShapeName = 'polygon';
-  lineDrawer = new LineDrawer(
-    this.gm,
-    { snappingMarkers: 'first', targetShape: 'polygon' },
-  );
+  lineDrawer = new LineDrawer(this.gm, { snappingMarkers: 'first', targetShape: 'polygon' });
   eventHandlers = {
     [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
@@ -34,10 +30,7 @@ export class DrawPolygon extends BaseDraw {
 
   onStartAction(): void {
     this.lineDrawer.startAction();
-    this.lineDrawer.on(
-      'firstMarkerClick',
-      this.polygonFinished.bind(this),
-    );
+    this.lineDrawer.on('firstMarkerClick', this.polygonFinished.bind(this));
   }
 
   onMouseMove(event: AnyEvent) {

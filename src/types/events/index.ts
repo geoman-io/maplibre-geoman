@@ -6,23 +6,17 @@ import type { GMHelperEvent } from '@/types/events/helper.ts';
 import type { ActionType } from '@/types/options.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export type EventType = ActionType | 'control';
 export type EventLevel = 'system' | 'user';
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type GMBaseEvent = {
-  level: EventLevel,
-  type: EventType,
-  action: string,
+  level: EventLevel;
+  type: EventType;
+  action: string;
 };
 
-export type GMEvent =
-  GMDrawEvent |
-  GMEditEvent |
-  GMHelperEvent |
-  GMControlEvent |
-  GMFeatureEvent;
+export type GMEvent = GMDrawEvent | GMEditEvent | GMHelperEvent | GMControlEvent | GMFeatureEvent;
 
 export type GmPrefix = typeof GM_PREFIX;
 export type GmEventNameWithoutPrefix = EventType;

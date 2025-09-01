@@ -9,17 +9,12 @@ import type { Feature, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
 
-
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
   mapInstance: ml.Map;
   sourceInstance: ml.GeoJSONSource | null;
 
-  constructor({ gm, geoJson, sourceId }: {
-    gm: Geoman,
-    sourceId: string,
-    geoJson?: GeoJSON,
-  }) {
+  constructor({ gm, geoJson, sourceId }: { gm: Geoman; sourceId: string; geoJson?: GeoJSON }) {
     super();
     this.gm = gm;
     this.mapInstance = this.gm.mapAdapter.mapInstance as ml.Map;
@@ -27,7 +22,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     if (geoJson) {
       this.sourceInstance = this.createSource({ geoJson, sourceId });
     } else {
-      this.sourceInstance = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource || null;
+      this.sourceInstance = (this.mapInstance.getSource(sourceId) as ml.GeoJSONSource) || null;
     }
   }
 
@@ -39,9 +34,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     return this.sourceInstance.id;
   }
 
-  createSource(
-    { geoJson, sourceId }: { sourceId: string, geoJson: GeoJSON },
-  ): ml.GeoJSONSource {
+  createSource({ geoJson, sourceId }: { sourceId: string; geoJson: GeoJSON }): ml.GeoJSONSource {
     let source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource | undefined;
     if (source) {
       log.warn(`Source "${source.id}" already exists, skipping`);
@@ -79,9 +72,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     this.sourceInstance.updateData(mlDiff);
   }
 
-  convertGeoJsonDiffToMlDiff(
-    diff: GeoJsonSourceDiff,
-  ): ml.GeoJSONSourceDiff {
+  convertGeoJsonDiffToMlDiff(diff: GeoJsonSourceDiff): ml.GeoJSONSourceDiff {
     // todo: check possible performance issue here,
     // todo: feature properties updates applies geometry updates
     return {
@@ -92,9 +83,10 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   }
 
   convertFeatureToMlUpdateDiff(feature: Feature): ml.GeoJSONFeatureDiff {
-    const propertiesArray = Object
-      .entries(feature.properties || {})
-      .map((item) => ({ key: item[0], value: item[1] }));
+    const propertiesArray = Object.entries(feature.properties || {}).map((item) => ({
+      key: item[0],
+      value: item[1],
+    }));
 
     return {
       id: feature.properties?.[FEATURE_ID_PROPERTY],

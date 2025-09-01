@@ -13,12 +13,15 @@ import type {
 
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { allCoordinatesEqual, getBboxFromTwoCoords, twoCoordsToGeoJsonRectangle } from '@/utils/geojson.ts';
+import {
+  allCoordinatesEqual,
+  getBboxFromTwoCoords,
+  twoCoordsToGeoJsonRectangle,
+} from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BBox } from 'geojson';
 import { GM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
-
 
 export class DrawRectangle extends BaseDraw {
   mode: DrawModeName = 'rectangle';
@@ -29,9 +32,13 @@ export class DrawRectangle extends BaseDraw {
     mousemove: this.onMouseMove.bind(this),
     click: this.onMouseClick.bind(this),
   };
-  throttledMethods = convertToThrottled({
-    updateFeaturePosition: this.updateFeaturePosition,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      updateFeaturePosition: this.updateFeaturePosition,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
   onStartAction() {
     this.gm.markerPointer.enable();
@@ -52,18 +59,14 @@ export class DrawRectangle extends BaseDraw {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.startLngLat) {
-      const geoJson = this.getFeatureGeoJson(
-        getBboxFromTwoCoords(this.startLngLat, lngLat),
-      );
+      const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(this.startLngLat, lngLat));
       this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
         this.finishShape(lngLat);
       }
     } else {
-      const geoJson = this.getFeatureGeoJson(
-        getBboxFromTwoCoords(lngLat, lngLat),
-      );
+      const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(lngLat, lngLat));
       this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
@@ -183,10 +186,7 @@ export class DrawRectangle extends BaseDraw {
     };
   }
 
-  fireStartEvent(
-    featureData: FeatureData,
-    markerData: MarkerData | null,
-  ) {
+  fireStartEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GMDrawShapeEventWithData = {
       level: 'system',
       type: 'draw',
@@ -199,10 +199,7 @@ export class DrawRectangle extends BaseDraw {
     this.gm.events.fire(`${GM_PREFIX}:draw`, event);
   }
 
-  fireUpdateEvent(
-    featureData: FeatureData,
-    markerData: MarkerData | null,
-  ) {
+  fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GMDrawShapeEventWithData = {
       level: 'system',
       type: 'draw',

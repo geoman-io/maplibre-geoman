@@ -21,7 +21,6 @@ import log from 'loglevel';
 import { mount, unmount } from 'svelte';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export default class GMControl extends BaseControl {
   controls: SystemControls = cloneDeep(systemControls);
   reactiveControls: Record<string, unknown> | null = null;
@@ -45,7 +44,7 @@ export default class GMControl extends BaseControl {
 
   createControls(containerElement: HTMLElement | undefined = undefined) {
     if (this.controlsAdded()) {
-      log.warn('Can\'t add controls: controls already added');
+      log.warn("Can't add controls: controls already added");
       return;
     }
 
@@ -89,7 +88,7 @@ export default class GMControl extends BaseControl {
 
   createReactivePanel() {
     if (!this.container) {
-      log.error('Can\'t create reactive panel: container is not initialized');
+      log.error("Can't create reactive panel: container is not initialized");
       return;
     }
 
@@ -98,13 +97,10 @@ export default class GMControl extends BaseControl {
     const controlsContext = new Map();
     controlsContext.set('gm', this.gm);
 
-    this.reactiveControls = mount(
-      GmReactiveControls,
-      {
-        target: this.container,
-        context: controlsContext,
-      },
-    );
+    this.reactiveControls = mount(GmReactiveControls, {
+      target: this.container,
+      context: controlsContext,
+    });
 
     this.updateReactivePanel();
   }
@@ -130,11 +126,12 @@ export default class GMControl extends BaseControl {
   }
 
   eachControlWithOptions(
-    callback: (
-      { control }: {
-        control: GenericSystemControl
-        controlOptions: ControlOptions
-      }) => void,
+    callback: ({
+      control,
+    }: {
+      control: GenericSystemControl;
+      controlOptions: ControlOptions;
+    }) => void,
   ) {
     return typedKeys(this.controls).forEach((actionType) => {
       const section = this.controls[actionType];
@@ -154,9 +151,12 @@ export default class GMControl extends BaseControl {
     });
   }
 
-  getControl({ actionType, modeName }: {
-    actionType: ActionType,
-    modeName: ModeName,
+  getControl({
+    actionType,
+    modeName,
+  }: {
+    actionType: ActionType;
+    modeName: ModeName;
   }): GenericSystemControl | null {
     if (actionType && modeName) {
       const section = this.controls[actionType] as GenericSystemControls;

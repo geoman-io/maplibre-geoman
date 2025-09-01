@@ -31,18 +31,17 @@ import type { SharedMarker } from '@/types/interfaces.ts';
 import { isPinHelper } from '@/utils/guards/interfaces.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 type SegmentData = {
-  segment: SegmentPosition,
-  middle: PositionData,
-  edgeMarkerKey: string,
+  segment: SegmentPosition;
+  middle: PositionData;
+  edgeMarkerKey: string;
 };
 
 type CreateMarkerParams = {
-  type: MarkerData['type'],
-  positionData: PositionData,
-  parentFeature: FeatureData,
-  segment?: EdgeMarkerData['segment'],
+  type: MarkerData['type'];
+  positionData: PositionData;
+  parentFeature: FeatureData;
+  segment?: EdgeMarkerData['segment'];
 };
 
 export class ShapeMarkersHelper extends BaseHelper {
@@ -71,14 +70,22 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     contextmenu: this.onMouseRightButtonClick.bind(this),
   };
-  throttledMethods = convertToThrottled({
-    sendMarkerMoveEvent: this.sendMarkerMoveEvent,
-    sendMarkerRightClickEvent: this.sendMarkerRightClickEvent,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      sendMarkerMoveEvent: this.sendMarkerMoveEvent,
+      sendMarkerRightClickEvent: this.sendMarkerRightClickEvent,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
-  debouncedMethods = convertToDebounced({
-    refreshMarkers: this.refreshMarkers,
-  }, this, this.gm.options.settings.throttlingDelay * 10);
+  debouncedMethods = convertToDebounced(
+    {
+      refreshMarkers: this.refreshMarkers,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay * 10,
+  );
 
   get pinHelperInstance() {
     if (!this.pinEnabled) {
@@ -132,9 +139,11 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     if (this.pinEnabled && this.pinHelperInstance) {
-      this.sharedMarkers = this.pinHelperInstance.getSharedMarkers(this.activeMarker.position.coordinate);
-      this.sharedMarkers.forEach(
-        (sharedMarker) => this.snappingHelper?.addExcludedFeature(sharedMarker.featureData),
+      this.sharedMarkers = this.pinHelperInstance.getSharedMarkers(
+        this.activeMarker.position.coordinate,
+      );
+      this.sharedMarkers.forEach((sharedMarker) =>
+        this.snappingHelper?.addExcludedFeature(sharedMarker.featureData),
       );
     } else {
       this.snappingHelper?.addExcludedFeature(this.activeFeatureData);
@@ -195,10 +204,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   isShapeMarkerAllowed() {
-    return intersection(
-      this.shapeMarkerAllowedModes,
-      this.gm.getActiveEditModes(),
-    ).length > 0;
+    return intersection(this.shapeMarkerAllowedModes, this.gm.getActiveEditModes()).length > 0;
   }
 
   convertToVertexMarker(markerData: MarkerData): MarkerData {
@@ -321,11 +327,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     return this.edgeMarkersAllowed && this.edgeMarkerAllowedShapes.includes(featureData.shape);
   }
 
-  isMarkerIndexAllowed(
-    shape: FeatureData['shape'],
-    markerIndex: number,
-    verticesCount: number,
-  ) {
+  isMarkerIndexAllowed(shape: FeatureData['shape'], markerIndex: number, verticesCount: number) {
     // allows 4 markers for a circle's rim
     const divider = Math.floor(verticesCount / 4);
 
@@ -581,10 +583,14 @@ export class ShapeMarkersHelper extends BaseHelper {
     const markerLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.activeMarker && this.activeFeatureData) {
-      const targetMarkers = this.pinEnabled ? this.sharedMarkers : [{
-        markerData: this.activeMarker,
-        featureData: this.activeFeatureData,
-      }];
+      const targetMarkers = this.pinEnabled
+        ? this.sharedMarkers
+        : [
+            {
+              markerData: this.activeMarker,
+              featureData: this.activeFeatureData,
+            },
+          ];
 
       targetMarkers.forEach((item) => {
         if (this.previousPosition) {
@@ -606,9 +612,12 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.previousPosition = markerLngLat;
   }
 
-  protected createMarker(
-    { type, segment, positionData, parentFeature }: CreateMarkerParams,
-  ): MarkerData {
+  protected createMarker({
+    type,
+    segment,
+    positionData,
+    parentFeature,
+  }: CreateMarkerParams): MarkerData {
     const coordinate = positionData.coordinate;
 
     const featureData = this.gm.features.createMarkerFeature({

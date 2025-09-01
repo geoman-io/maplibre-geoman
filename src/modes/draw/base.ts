@@ -14,7 +14,6 @@ import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 
-
 export abstract class BaseDraw extends BaseAction {
   actionType: ActionType = 'draw';
   abstract mode: DrawModeName;
@@ -139,10 +138,7 @@ export abstract class BaseDraw extends BaseAction {
     return { next: true };
   }
 
-  fireStartEvent(
-    featureData: FeatureData,
-    markerData: MarkerData | null = null,
-  ) {
+  fireStartEvent(featureData: FeatureData, markerData: MarkerData | null = null) {
     if (!this.shape) {
       return;
     }
@@ -159,10 +155,7 @@ export abstract class BaseDraw extends BaseAction {
     this.gm.events.fire(`${GM_PREFIX}:draw`, event);
   }
 
-  fireUpdateEvent(
-    featureData: FeatureData,
-    markerData: MarkerData | null = null,
-  ) {
+  fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null = null) {
     if (!this.shape) {
       return;
     }

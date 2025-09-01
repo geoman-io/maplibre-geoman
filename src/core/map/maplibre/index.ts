@@ -32,9 +32,11 @@ import { isEqual, uniqWith } from 'lodash-es';
 import ml from 'maplibre-gl';
 import { isMaplibreSupportedPointerEventName } from '@/core/map/maplibre/guards.ts';
 
-
-export class MaplibreAdapter
-  extends BaseMapAdapter<MapInstanceWithGeoman<ml.Map>, ml.GeoJSONSource, MaplibreAnyLayer> {
+export class MaplibreAdapter extends BaseMapAdapter<
+  MapInstanceWithGeoman<ml.Map>,
+  ml.GeoJSONSource,
+  MaplibreAnyLayer
+> {
   gm: Geoman;
   mapType: keyof MapTypes = 'maplibre';
   mapInstance: MapInstanceWithGeoman<ml.Map>;
@@ -69,7 +71,7 @@ export class MaplibreAdapter
     this.mapInstance.removeControl(control);
   }
 
-  async loadImage({ id, image }: { id: string, image: string }) {
+  async loadImage({ id, image }: { id: string; image: string }) {
     if (!this.mapInstance.hasImage(id)) {
       const loadedImage = await this.mapInstance.loadImage(image);
       this.mapInstance.addImage(id, loadedImage.data);
@@ -81,10 +83,7 @@ export class MaplibreAdapter
     return mapBounds.toArray() as [LngLat, LngLat];
   }
 
-  fitBounds(
-    bounds: [LngLat, LngLat],
-    options?: BaseFitBoundsOptions,
-  ) {
+  fitBounds(bounds: [LngLat, LngLat], options?: BaseFitBoundsOptions) {
     this.mapInstance.fitBounds(bounds, options);
   }
 
@@ -112,29 +111,38 @@ export class MaplibreAdapter
     }
   }
 
-  queryFeaturesByScreenCoordinates({ queryCoordinates = undefined, sourceNames }: {
-    queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint],
-    sourceNames: Array<FeatureSourceName>,
+  queryFeaturesByScreenCoordinates({
+    queryCoordinates = undefined,
+    sourceNames,
+  }: {
+    queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint];
+    sourceNames: Array<FeatureSourceName>;
   }): Array<FeatureData> {
-    const features = uniqWith(this.mapInstance
-      .queryRenderedFeatures(queryCoordinates)
-      .map((feature) => ({
+    const features = uniqWith(
+      this.mapInstance.queryRenderedFeatures(queryCoordinates).map((feature) => ({
         featureId: feature.properties[FEATURE_ID_PROPERTY] as FeatureId | undefined,
         featureSourceName: feature.source as FeatureSourceName,
-      })), isEqual);
+      })),
+      isEqual,
+    );
 
-    return features.map(({ featureId, featureSourceName }) => {
-      if (featureId === undefined || !sourceNames.includes(featureSourceName)) {
-        return null;
-      }
+    return features
+      .map(({ featureId, featureSourceName }) => {
+        if (featureId === undefined || !sourceNames.includes(featureSourceName)) {
+          return null;
+        }
 
-      return this.gm.features.get(featureSourceName, featureId) || null;
-    }).filter((featureData): featureData is FeatureData => !!featureData);
+        return this.gm.features.get(featureSourceName, featureId) || null;
+      })
+      .filter((featureData): featureData is FeatureData => !!featureData);
   }
 
-  queryGeoJsonFeatures({ queryCoordinates = undefined, sourceNames }: {
-    queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint],
-    sourceNames: Array<FeatureSourceName>,
+  queryGeoJsonFeatures({
+    queryCoordinates = undefined,
+    sourceNames,
+  }: {
+    queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint];
+    sourceNames: Array<FeatureSourceName>;
   }) {
     const comparator = (
       item1: GeoJsonFeatureData | null,
@@ -143,9 +151,8 @@ export class MaplibreAdapter
       return item1?.id === item2?.id;
     };
 
-    const features: Array<GeoJsonFeatureData | null> = uniqWith(this.mapInstance
-      .queryRenderedFeatures(queryCoordinates)
-      .map((feature) => {
+    const features: Array<GeoJsonFeatureData | null> = uniqWith(
+      this.mapInstance.queryRenderedFeatures(queryCoordinates).map((feature) => {
         const geoJson = this.convertToGeoJsonImportFeature(feature);
         if (!geoJson) {
           return null;
@@ -155,16 +162,15 @@ export class MaplibreAdapter
           sourceName: feature.source as FeatureSourceName,
           geoJson,
         };
-      }), comparator);
-
-    return features.filter(
-      (item: GeoJsonFeatureData | null): item is GeoJsonFeatureData => {
-        return !!item
-          && item.id !== undefined
-          && item.geoJson
-          && sourceNames.includes(item.sourceName);
-      },
+      }),
+      comparator,
     );
+
+    return features.filter((item: GeoJsonFeatureData | null): item is GeoJsonFeatureData => {
+      return (
+        !!item && item.id !== undefined && item.geoJson && sourceNames.includes(item.sourceName)
+      );
+    });
   }
 
   convertToGeoJsonImportFeature(feature: ml.MapGeoJSONFeature): GeoJsonImportFeature | null {
@@ -240,9 +246,7 @@ export class MaplibreAdapter
     return [lngLat.lng, lngLat.lat] as LngLat;
   }
 
-  coordBoundsToScreenBounds(
-    bounds: [LngLat, LngLat],
-  ): [ScreenPoint, ScreenPoint] {
+  coordBoundsToScreenBounds(bounds: [LngLat, LngLat]): [ScreenPoint, ScreenPoint] {
     const mlBounds = new ml.LngLatBounds(bounds);
     const sw = this.project(mlBounds.getSouthWest().toArray());
     const ne = this.project(mlBounds.getNorthEast().toArray());
@@ -261,7 +265,7 @@ export class MaplibreAdapter
     } else if (typeof arg2 === 'function') {
       this.mapInstance.on(type, arg2);
     } else {
-      throw new Error('Invalid arguments passed to \'on\' method');
+      throw new Error("Invalid arguments passed to 'on' method");
     }
   }
 
@@ -275,7 +279,7 @@ export class MaplibreAdapter
     } else if (typeof arg2 === 'function') {
       this.mapInstance.once(type, arg2);
     } else {
-      throw new Error('Invalid arguments passed to \'once\' method.');
+      throw new Error("Invalid arguments passed to 'once' method.");
     }
   }
 
@@ -287,7 +291,7 @@ export class MaplibreAdapter
     } else if (typeof arg2 === 'function') {
       this.mapInstance.off(type, arg2);
     } else {
-      throw new Error('Invalid arguments passed to \'off\' method');
+      throw new Error("Invalid arguments passed to 'off' method");
     }
   }
 }

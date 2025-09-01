@@ -4,16 +4,19 @@ import type { Geoman } from '@/main.ts';
 import ml from 'maplibre-gl';
 import log from 'loglevel';
 
-
 export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
   gm: Geoman;
   layerInstance: MaplibreAnyLayer | null = null;
   mapInstance: ml.Map;
 
-  constructor({ gm, layerId, options }: {
-    gm: Geoman,
-    layerId: string,
-    options?: ml.AddLayerObject
+  constructor({
+    gm,
+    layerId,
+    options,
+  }: {
+    gm: Geoman;
+    layerId: string;
+    options?: ml.AddLayerObject;
   }) {
     super();
     this.gm = gm;
@@ -22,7 +25,7 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
     if (options) {
       this.layerInstance = this.createLayer(options);
     } else {
-      this.layerInstance = this.mapInstance.getLayer(layerId) as MaplibreAnyLayer || null;
+      this.layerInstance = (this.mapInstance.getLayer(layerId) as MaplibreAnyLayer) || null;
     }
   }
 
@@ -60,4 +63,3 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
     this.layerInstance = null;
   }
 }
-

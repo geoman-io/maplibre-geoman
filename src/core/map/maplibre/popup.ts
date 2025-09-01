@@ -2,14 +2,17 @@ import { BasePopup } from '@/core/map/base/popup.ts';
 import type { BasePopupOptions, LngLat } from '@/main.ts';
 import ml from 'maplibre-gl';
 
-
 export class MaplibrePopup extends BasePopup<ml.Popup> {
   popupInstance: ml.Popup | null;
 
-  constructor({ mapInstance, options, lngLat }: {
-    mapInstance: ml.Map,
-    options: BasePopupOptions,
-    lngLat?: LngLat,
+  constructor({
+    mapInstance,
+    options,
+    lngLat,
+  }: {
+    mapInstance: ml.Map;
+    options: BasePopupOptions;
+    lngLat?: LngLat;
   }) {
     super();
     this.popupInstance = new ml.Popup(options).addTo(mapInstance);

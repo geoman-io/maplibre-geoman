@@ -1,6 +1,11 @@
 import test, { expect, type Page } from '@playwright/test';
 import { setupGeomanTest } from '../utils/test-helpers.ts';
-import { enableMode, mouseMoveAndClick, type ScreenCoordinates, waitForMapIdle } from '../utils/basic.ts';
+import {
+  enableMode,
+  mouseMoveAndClick,
+  type ScreenCoordinates,
+  waitForMapIdle,
+} from '../utils/basic.ts';
 import { getRenderedFeaturesData } from '../utils/features.ts';
 import { loadGeoJson } from '../utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
@@ -72,13 +77,18 @@ test.describe('Cut Operation', () => {
 
     // Wait for the expected number of features after the cut
     const POLLING_TIMEOUT = 10 * 1000;
-    await expect.poll(
-      async () => {
-        const features = await getRenderedFeaturesData({ page, temporary: false });
-        return features.length;
-      },
-      { timeout: POLLING_TIMEOUT, message: `Features count never reached ${expectedResultGeoJson.length}` },
-    ).toEqual(expectedResultGeoJson.length);
+    await expect
+      .poll(
+        async () => {
+          const features = await getRenderedFeaturesData({ page, temporary: false });
+          return features.length;
+        },
+        {
+          timeout: POLLING_TIMEOUT,
+          message: `Features count never reached ${expectedResultGeoJson.length}`,
+        },
+      )
+      .toEqual(expectedResultGeoJson.length);
 
     // Verify that the number of features has changed
     const finalFeatures = await getRenderedFeaturesData({ page, temporary: false });

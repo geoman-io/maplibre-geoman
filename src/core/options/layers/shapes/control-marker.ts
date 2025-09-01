@@ -1,6 +1,5 @@
 import type { PartialLayerStyle, StyleVariables } from '@/main.ts';
 
-
 export const getControlMarkerStyles = (
   styleVariables: StyleVariables,
 ): Array<PartialLayerStyle> => {

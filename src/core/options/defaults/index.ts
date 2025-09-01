@@ -3,11 +3,8 @@ import type { GmOptionsData, ModeName } from '@/types/index.ts';
 import { cloneDeep, set } from 'lodash-es';
 import { forEachDeep } from '@/utils/collections.ts';
 
-
 export const trackDefaultUiEnabledState = (options: GmOptionsData) => {
-  const EXCLUDED_ACTIONS: ReadonlyArray<ModeName> = [
-    'shape_markers',
-  ];
+  const EXCLUDED_ACTIONS: ReadonlyArray<ModeName> = ['shape_markers'];
   const defaultUiEnabled = options.settings.controlsUiEnabledByDefault;
 
   forEachDeep(options, (_, path) => {

@@ -1,6 +1,5 @@
 import type { Options } from '../../vite.config.ts';
 
-
 let geomanVersion: Options['GmVersion'] | null;
 try {
   geomanVersion = __GEOMAN_VERSION__;

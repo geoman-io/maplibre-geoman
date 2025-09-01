@@ -5,7 +5,6 @@ import { isGmControlEvent } from '@/utils/guards/events/control.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 
-
 export class ControlEventListener extends BaseEventListener {
   eventHandlers: EventHandlers = {
     [`${GM_PREFIX}:control`]: this.handleControlEvent.bind(this),

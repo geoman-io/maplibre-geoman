@@ -7,9 +7,9 @@ import { SOURCES } from '@/core/features/constants.ts';
 
 type SourceUpdateMethods = {
   [key in FeatureSourceName]: {
-    debounced: () => void,
-    throttled: () => void,
-  }
+    debounced: () => void;
+    throttled: () => void;
+  };
 };
 // this class is here cause playwright fails if it's extracted for unknown reason
 // (possible imports trouble)
@@ -21,9 +21,7 @@ export class SourceUpdateManager {
 
   constructor(gm: Geoman) {
     this.gm = gm;
-    this.updateStorage = Object.fromEntries(
-      typedValues(SOURCES).map((name) => [name, []]),
-    );
+    this.updateStorage = Object.fromEntries(typedValues(SOURCES).map((name) => [name, []]));
 
     this.delayedSourceUpdateMethods = Object.fromEntries(
       typedValues(SOURCES).map((sourceName) => [
@@ -37,7 +35,7 @@ export class SourceUpdateManager {
             sourceName,
             type: 'debounced',
           }),
-        } as { debounced: () => void, throttled: () => void },
+        } as { debounced: () => void; throttled: () => void },
       ]),
     ) as SourceUpdateMethods;
   }
@@ -50,12 +48,13 @@ export class SourceUpdateManager {
     return id;
   }
 
-  getDelayedSourceUpdateMethod(
-    { sourceName, type }: {
-      sourceName: FeatureSourceName,
-      type: 'throttled' | 'debounced',
-    },
-  ) {
+  getDelayedSourceUpdateMethod({
+    sourceName,
+    type,
+  }: {
+    sourceName: FeatureSourceName;
+    type: 'throttled' | 'debounced';
+  }) {
     if (type === 'throttled') {
       return throttle(
         () => this.updateSourceActual(sourceName),
@@ -73,10 +72,7 @@ export class SourceUpdateManager {
     }
   }
 
-  updateSource({ sourceName, diff }: {
-    sourceName: FeatureSourceName
-    diff?: GeoJsonSourceDiff,
-  }) {
+  updateSource({ sourceName, diff }: { sourceName: FeatureSourceName; diff?: GeoJsonSourceDiff }) {
     if (diff) {
       this.updateStorage[sourceName].push(diff);
     }
@@ -139,14 +135,20 @@ export class SourceUpdateManager {
 
     const nextRemoveIds = new Set(next.remove);
 
-    const pendingAdd = pending.add?.filter((item) => !nextRemoveIds.has(this.getFeatureId(item))) || [];
-    const pendingUpdate = pending.update?.filter((item) => !nextRemoveIds.has(this.getFeatureId(item))) || [];
+    const pendingAdd =
+      pending.add?.filter((item) => !nextRemoveIds.has(this.getFeatureId(item))) || [];
+    const pendingUpdate =
+      pending.update?.filter((item) => !nextRemoveIds.has(this.getFeatureId(item))) || [];
 
     const nextUpdate: Array<Feature> = [];
 
     next.update?.forEach((updatedFeature) => {
-      const pendingAddIdx = pendingAdd.findIndex((item) => this.getFeatureId(item) === this.getFeatureId(updatedFeature));
-      const pendingUpdateIdx = pendingUpdate.findIndex((item) => this.getFeatureId(item) === this.getFeatureId(updatedFeature));
+      const pendingAddIdx = pendingAdd.findIndex(
+        (item) => this.getFeatureId(item) === this.getFeatureId(updatedFeature),
+      );
+      const pendingUpdateIdx = pendingUpdate.findIndex(
+        (item) => this.getFeatureId(item) === this.getFeatureId(updatedFeature),
+      );
 
       if (pendingAddIdx === -1 && pendingUpdateIdx === -1) {
         nextUpdate.push(updatedFeature);
@@ -161,9 +163,9 @@ export class SourceUpdateManager {
     });
 
     return {
-      add: [...pendingAdd, ...next.add || []],
+      add: [...pendingAdd, ...(next.add || [])],
       update: [...pendingUpdate, ...nextUpdate],
-      remove: [...pending.remove || [], ...next.remove || []],
+      remove: [...(pending.remove || []), ...(next.remove || [])],
     };
   }
 }

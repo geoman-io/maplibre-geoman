@@ -11,15 +11,9 @@ export const SHAPE_NAMES = [
   'polygon',
 ] as const;
 
-export const EXTRA_DRAW_MODES = [
-  'freehand',
-  'custom_shape',
-] as const;
+export const EXTRA_DRAW_MODES = ['freehand', 'custom_shape'] as const;
 
-export const DRAW_MODES = [
-  ...SHAPE_NAMES,
-  ...EXTRA_DRAW_MODES,
-] as const;
+export const DRAW_MODES = [...SHAPE_NAMES, ...EXTRA_DRAW_MODES] as const;
 
 export const HELPER_MODES = [
   'shape_markers',

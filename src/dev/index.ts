@@ -2,7 +2,6 @@ import log from 'loglevel';
 import '@/dev/styles/style.css';
 import '@/styles/map/maplibre.css';
 
-
 if (import.meta.env.MODE === 'development') {
   await import('./index.maplibre.dev.ts');
 } else if (import.meta.env.MODE === 'test') {

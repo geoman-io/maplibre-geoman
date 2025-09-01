@@ -7,7 +7,6 @@ import { EditDrag } from '@/modes/edit/drag.ts';
 import { EditRotate } from '@/modes/edit/rotate.ts';
 import log from 'loglevel';
 
-
 type EditClassConstructor = new (gm: Geoman) => BaseEdit;
 type EditClassMap = {
   [K in EditModeName]: EditClassConstructor | null;

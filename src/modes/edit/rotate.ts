@@ -20,7 +20,6 @@ import transformRotate from '@turf/transform-rotate';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
-
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
   allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon'];
@@ -62,8 +61,9 @@ export class EditRotate extends BaseDrag {
   }
 
   isFeatureAllowed(event: GMEditEvent): boolean {
-    return 'featureData' in event
-      && !this.allowedShapes.includes(event.featureData.shape as ShapeName);
+    return (
+      'featureData' in event && !this.allowedShapes.includes(event.featureData.shape as ShapeName)
+    );
   }
 
   moveVertex(event: GMEditMarkerMoveEvent) {
@@ -74,11 +74,7 @@ export class EditRotate extends BaseDrag {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
     const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
 
-    const angle = this.calculateRotationAngle(
-      shapeCentroid,
-      event.lngLatStart,
-      event.lngLatEnd,
-    );
+    const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
 
     geoJson.geometry = transformRotate(geoJson, angle, { pivot: shapeCentroid }).geometry;
     this.fireBeforeFeatureUpdate({

@@ -1,6 +1,5 @@
 import log from 'loglevel';
 
-
 export abstract class BaseLayer<TLayerInstance = unknown> {
   abstract layerInstance: TLayerInstance | null;
 

@@ -11,7 +11,6 @@ import { type FeatureShape, type LayerStyle, SOURCES } from '@/main.ts';
 
 import { IS_PRO } from '@/core/constants.ts';
 
-
 const styles: { [key in FeatureShape]: LayerStyle } = {
   // order matters here, layers order will be aligned according to these items
   polygon: {
@@ -68,7 +67,9 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
   edge_marker: {
     [SOURCES.main]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
+    ...(IS_PRO && {
+      [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]),
+    }),
   },
   snap_guide: {
     // todo: check which sources can't display snap guides (and other shapes) and remove layers

@@ -1,12 +1,17 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, EventHandlers, Geoman, GMEvent, GMHelperModeEvent } from '@/main.ts';
+import type {
+  ActionInstanceKey,
+  EventHandlers,
+  Geoman,
+  GMEvent,
+  GMHelperModeEvent,
+} from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { createHelperInstance } from '@/modes/helpers/index.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
-
 
 export class HelperEventListener extends BaseEventListener {
   eventHandlers: EventHandlers = {
@@ -57,10 +62,7 @@ export class HelperEventListener extends BaseEventListener {
       actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
-      console.error(
-        `Wrong action instance for edit event "${actionInstanceKey}":`,
-        actionInstance,
-      );
+      console.error(`Wrong action instance for edit event "${actionInstanceKey}":`, actionInstance);
     }
   }
 }

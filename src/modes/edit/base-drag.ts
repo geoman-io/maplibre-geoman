@@ -17,7 +17,6 @@ import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 
-
 type UpdateShapeHandler = (
   featureData: FeatureData,
   lngLatStart: LngLat,
@@ -29,15 +28,15 @@ export abstract class BaseDrag extends BaseEdit {
   isDragging: boolean = false;
   previousLngLat: LngLat | null = null;
 
-  pointBasedShapes: Array<FeatureShape> = [
-    'marker',
-    'circle_marker',
-    'text_marker',
-  ];
+  pointBasedShapes: Array<FeatureShape> = ['marker', 'circle_marker', 'text_marker'];
 
-  throttledMethods = convertToThrottled({
-    onMouseMove: this.onMouseMove,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      onMouseMove: this.onMouseMove,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
   eventHandlers = {
     [`${GM_PREFIX}:edit`]: this.handleGmEdit.bind(this),

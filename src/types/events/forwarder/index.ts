@@ -11,9 +11,9 @@ export type GmSystemPrefix = typeof gmSystemPrefix;
 export type GmFwdEventNameWithPrefix = `${GmPrefix}:${GmFwdEventName}`;
 export type GmFwdSystemEventNameWithPrefix = `${GmSystemPrefix}:${GmEventNameWithoutPrefix}`;
 export type GlobalEventsListenerParameters = {
-  type: 'system' | 'converted',
-  name: GmFwdEventNameWithPrefix | GmFwdSystemEventNameWithPrefix,
-  payload: GmFwdEvent | GMEvent,
+  type: 'system' | 'converted';
+  name: GmFwdEventNameWithPrefix | GmFwdSystemEventNameWithPrefix;
+  payload: GmFwdEvent | GMEvent;
 };
 export type GlobalEventsListener = (parameters: GlobalEventsListenerParameters) => void;
 
