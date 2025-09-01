@@ -76,26 +76,6 @@ export class Geoman {
     }
   }
 
-  initCoreOptions(options: PartialDeep<GmOptionsData> = {}) {
-    return new GmOptions(this, options);
-  }
-
-  initCoreEvents() {
-    return new GMEvents(this);
-  }
-
-  initCoreFeatures() {
-    return new Features(this);
-  }
-
-  initCoreControls() {
-    return new GMControl(this);
-  }
-
-  initMarkerPointer() {
-    return new MarkerPointer(this);
-  }
-
   get drawClassMap() {
     return drawClassMap;
   }
@@ -114,6 +94,26 @@ export class Geoman {
     }
     log.trace('Map adapter is not initialized');
     throw new Error('Map adapter is not initialized');
+  }
+
+  initCoreOptions(options: PartialDeep<GmOptionsData> = {}) {
+    return new GmOptions(this, options);
+  }
+
+  initCoreEvents() {
+    return new GMEvents(this);
+  }
+
+  initCoreFeatures() {
+    return new Features(this);
+  }
+
+  initCoreControls() {
+    return new GMControl(this);
+  }
+
+  initMarkerPointer() {
+    return new MarkerPointer(this);
   }
 
   addControls(controlsElement: HTMLElement | undefined = undefined) {

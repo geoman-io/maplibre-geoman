@@ -1,5 +1,5 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { AnyEvent, Geoman, LngLat, MapEventHadler, EventHandlers, ScreenPoint } from '@/main.ts';
+import type { AnyEvent, EventHandlers, Geoman, LngLat, MapEventHadler, ScreenPoint } from '@/main.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
 import { createMarkerElement } from '@/utils/dom.ts';
@@ -18,15 +18,20 @@ export class MarkerPointer {
   gm: Geoman;
   marker: BaseDomMarker | null = null;
   tmpMarker: BaseDomMarker | null = null;
-  private snapping: boolean = false;
-  private oldSnapping: boolean | undefined = undefined;
-
   declare throttledMethods: { onMouseMove: MapEventHadler, };
   declare eventHandlers: EventHandlers;
+  private snapping: boolean = false;
+  private oldSnapping: boolean | undefined = undefined;
 
   constructor(gm: Geoman) {
     this.gm = gm;
     this.initEventHandlers();
+  }
+
+  get snappingHelper(): SnappingHelper | null {
+    return (
+      this.gm.actionInstances.helper__snapping || null
+    ) as SnappingHelper | null;
   }
 
   initEventHandlers() {
@@ -37,12 +42,6 @@ export class MarkerPointer {
     this.eventHandlers = {
       mousemove: this.throttledMethods.onMouseMove.bind(this),
     };
-  }
-
-  get snappingHelper(): SnappingHelper | null {
-    return (
-      this.gm.actionInstances.helper__snapping || null
-    ) as SnappingHelper | null;
   }
 
   setSnapping(snapping: boolean) {

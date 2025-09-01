@@ -1,4 +1,3 @@
-
 import {
   type AnyEvent,
   type EditModeName,
@@ -8,7 +7,8 @@ import {
   type GMEditMarkerMoveEvent,
   type LngLat,
   type MapHandlerReturnData,
-  type MarkerData, SOURCES,
+  type MarkerData,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { getFeatureFirstPoint } from '@/utils/features.ts';

@@ -19,12 +19,12 @@ import { SOURCES } from '@/core/features/constants.ts';
 export abstract class BaseCircle extends BaseDraw {
   mode: DrawModeName = 'circle';
   shape: ShapeName = 'circle';
-  protected circleCenterPoint: ScreenPoint | null = null;
-  protected circleCenterLngLat: LngLat | null = null;
   eventHandlers = {
     mousemove: this.onMouseMove.bind(this),
     click: this.onMouseClick.bind(this),
   };
+  protected circleCenterPoint: ScreenPoint | null = null;
+  protected circleCenterLngLat: LngLat | null = null;
 
   onStartAction() {
     this.gm.markerPointer.enable();
@@ -40,18 +40,6 @@ export abstract class BaseCircle extends BaseDraw {
 
   abstract onMouseClick(event: AnyEvent): MapHandlerReturnData;
 
-  protected createFeature(): FeatureData | null {
-    const featureData = this.gm.features.createFeature({
-      shapeGeoJson: this.getFeatureGeoJson(this.circleCenterLngLat || [0, 0]),
-      sourceName: SOURCES.temporary,
-    });
-
-    if (featureData && this.circleCenterLngLat) {
-      featureData.setShapeProperty('center', this.circleCenterLngLat);
-    }
-    return featureData;
-  }
-
   getFeatureGeoJson(position: LngLat): GeoJsonShapeFeature {
     return {
       type: 'Feature',
@@ -63,22 +51,6 @@ export abstract class BaseCircle extends BaseDraw {
         coordinates: position,
       },
     };
-  }
-
-  protected createMarker() {
-    const element = document.createElement('div');
-    element.innerHTML = circleMarker;
-    const svgElement = element.firstChild as HTMLElement;
-    svgElement.style.color = '#278cda';
-    svgElement.style.width = '28px';
-    svgElement.style.height = '28px';
-    svgElement.style.pointerEvents = 'none';
-
-    return this.gm.mapAdapter.createDomMarker({
-      draggable: false,
-      anchor: 'center',
-      element: svgElement,
-    }, [0, 0]);
   }
 
   getControlMarkerData(): MarkerData | null {
@@ -95,5 +67,33 @@ export abstract class BaseCircle extends BaseDraw {
         path: [-1],
       },
     };
+  }
+
+  protected createFeature(): FeatureData | null {
+    const featureData = this.gm.features.createFeature({
+      shapeGeoJson: this.getFeatureGeoJson(this.circleCenterLngLat || [0, 0]),
+      sourceName: SOURCES.temporary,
+    });
+
+    if (featureData && this.circleCenterLngLat) {
+      featureData.setShapeProperty('center', this.circleCenterLngLat);
+    }
+    return featureData;
+  }
+
+  protected createMarker() {
+    const element = document.createElement('div');
+    element.innerHTML = circleMarker;
+    const svgElement = element.firstChild as HTMLElement;
+    svgElement.style.color = '#278cda';
+    svgElement.style.width = '28px';
+    svgElement.style.height = '28px';
+    svgElement.style.pointerEvents = 'none';
+
+    return this.gm.mapAdapter.createDomMarker({
+      draggable: false,
+      anchor: 'center',
+      element: svgElement,
+    }, [0, 0]);
   }
 }

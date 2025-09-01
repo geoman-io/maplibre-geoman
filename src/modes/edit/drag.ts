@@ -1,4 +1,3 @@
-
 import { type AnyEvent, type EditModeName, type MapHandlerReturnData, SOURCES } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';

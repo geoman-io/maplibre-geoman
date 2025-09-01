@@ -1,8 +1,8 @@
-
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import {
-  type BasicGeometry, FEATURE_ID_PROPERTY,
+  type BasicGeometry,
+  FEATURE_ID_PROPERTY,
   type FeatureDataParameters,
   type FeatureId,
   type FeatureOrders,
@@ -44,18 +44,18 @@ export class FeatureData {
     this.addGeoJson(parameters.geoJsonShapeFeature);
   }
 
-  getEmptyOrders(): FeatureOrders {
-    return Object.fromEntries(
-      typedValues(SOURCES).map((name) => [name, null]),
-    ) as FeatureOrders;
-  }
-
   get temporary(): boolean {
     return (this.source.id as FeatureSourceName) === SOURCES.temporary;
   }
 
   get sourceName(): FeatureSourceName {
     return this.source.id as FeatureSourceName;
+  }
+
+  getEmptyOrders(): FeatureOrders {
+    return Object.fromEntries(
+      typedValues(SOURCES).map((name) => [name, null]),
+    ) as FeatureOrders;
   }
 
   getShapeProperty(name: keyof FeatureShapeProperties) {

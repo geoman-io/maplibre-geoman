@@ -1,4 +1,3 @@
-
 import {
   FEATURE_ID_PROPERTY,
   type GeoJsonImportFeature,

@@ -8,7 +8,8 @@ import {
   type GMEditMarkerMoveEvent,
   type LngLat,
   type MapHandlerReturnData,
-  type ShapeName, SOURCES,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';

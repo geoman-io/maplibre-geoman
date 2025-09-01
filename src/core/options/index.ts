@@ -1,7 +1,8 @@
 import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/defaults/index.ts';
 import {
   type ActionType,
-  type ControlOptions, DRAW_MODES,
+  type ControlOptions,
+  DRAW_MODES,
   type GenericControlsOptions,
   type Geoman,
   type GMControlSwitchEvent,

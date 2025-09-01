@@ -43,6 +43,12 @@ export abstract class BaseAction {
     this.gm = gm;
   }
 
+  get snappingHelper(): SnappingHelper | null {
+    return (
+      this.gm.actionInstances.helper__snapping || null
+    ) as SnappingHelper | null;
+  }
+
   abstract onStartAction(): void;
 
   abstract onEndAction(): void;
@@ -57,12 +63,6 @@ export abstract class BaseAction {
     this.onEndAction();
     this.gm.events.bus.detachEvents(this.eventHandlers);
     this.gm.events.bus.detachEvents(this.internalEventHandlers);
-  }
-
-  get snappingHelper(): SnappingHelper | null {
-    return (
-      this.gm.actionInstances.helper__snapping || null
-    ) as SnappingHelper | null;
   }
 
   getOptionValue(name: string) {

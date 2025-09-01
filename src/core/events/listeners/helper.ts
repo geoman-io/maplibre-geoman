@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMEvent, GMHelperModeEvent, EventHandlers } from '@/main.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GMEvent, GMHelperModeEvent } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { createHelperInstance } from '@/modes/helpers/index.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';

@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMDrawEvent, GMEvent, EventHandlers } from '@/main.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GMDrawEvent, GMEvent } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { createDrawInstance } from '@/modes/draw/index.ts';
 import { isGmDrawEvent } from '@/utils/guards/modes.ts';

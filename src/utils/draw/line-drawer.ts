@@ -12,7 +12,8 @@ import {
   type MapPointerEvent,
   type MarkerData,
   type MarkerId,
-  type ShapeName, SOURCES,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 

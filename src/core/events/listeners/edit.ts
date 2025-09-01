@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMEditEvent, GMEvent, EventHandlers } from '@/main.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GMEditEvent, GMEvent } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';

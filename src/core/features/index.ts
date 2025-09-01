@@ -3,6 +3,7 @@ import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
 import {
   type AnyEvent,
+  FEATURE_ID_PROPERTY,
   type FeatureId,
   type FeatureShape,
   type FeatureSourceName,
@@ -18,8 +19,9 @@ import {
   type MarkerData,
   type PartialLayerStyle,
   type ScreenPoint,
-  type ShapeName, SHAPE_NAMES,
-  type SourcesStorage, FEATURE_ID_PROPERTY,
+  SHAPE_NAMES,
+  type ShapeName,
+  type SourcesStorage,
 } from '@/main.ts';
 import { fixGeoJsonFeature } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
@@ -56,6 +58,14 @@ export class Features {
     this.layers = [];
   }
 
+  get forEach() {
+    return this.filteredForEach((featureData) => !featureData.temporary);
+  }
+
+  get tmpForEach() {
+    return this.filteredForEach((featureData) => featureData.temporary);
+  }
+
   init() {
     if (Object.values(this.sources).some((source) => source !== null)) {
       log.warn('features.init(): features are already initialized');
@@ -69,14 +79,6 @@ export class Features {
     if (this.gm.options.settings.useDefaultLayers) {
       this.layers = this.createLayers();
     }
-  }
-
-  get forEach() {
-    return this.filteredForEach((featureData) => !featureData.temporary);
-  }
-
-  get tmpForEach() {
-    return this.filteredForEach((featureData) => featureData.temporary);
   }
 
   getNewFeatureId(): FeatureId {

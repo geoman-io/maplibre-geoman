@@ -18,9 +18,6 @@ type ShapeSnappingHandler = (
 export class SnappingHelper extends BaseHelper {
   mode: HelperModeName = 'snapping';
   tolerance: number = 18;
-  private excludedFeature = new Set<FeatureData>();
-  private customSnappingLngLats = new Map<string, Array<LngLat>>();
-  private customSnappingFeatures = new Set<FeatureData>();
   lineSnappingShapes: ReadonlyArray<FeatureShape> = [
     'circle',
     'line',
@@ -29,7 +26,6 @@ export class SnappingHelper extends BaseHelper {
     'snap_guide',
   ];
   eventHandlers = {};
-
   shapeSnappingHandlers: { [key in FeatureShape]?: ShapeSnappingHandler } = {
     marker: this.getPointsSnapping.bind(this),
     circle: this.getLineSnapping.bind(this),
@@ -40,7 +36,9 @@ export class SnappingHelper extends BaseHelper {
     polygon: this.getLineSnapping.bind(this),
     snap_guide: this.getLineSnapping.bind(this),
   };
-
+  private excludedFeature = new Set<FeatureData>();
+  private customSnappingLngLats = new Map<string, Array<LngLat>>();
+  private customSnappingFeatures = new Set<FeatureData>();
 
   onStartAction() {
     this.gm.markerPointer.setSnapping(true);

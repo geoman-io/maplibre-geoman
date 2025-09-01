@@ -1,7 +1,7 @@
 import {
   type ActionType,
-  type DrawModeName,
   DRAW_MODES,
+  type DrawModeName,
   type EditModeName,
   type HelperModeName,
   type ModeName,

@@ -50,7 +50,7 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
       this.mapInstance.addLayer(options);
       layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer;
     }
-    return layer ?? null
+    return layer ?? null;
   }
 
   remove(): void {

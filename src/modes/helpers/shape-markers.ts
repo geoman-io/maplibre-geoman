@@ -15,7 +15,8 @@ import {
   type MarkerData,
   type PositionData,
   type ScreenPoint,
-  type SegmentPosition, SOURCES,
+  type SegmentPosition,
+  SOURCES,
 } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';
@@ -78,6 +79,14 @@ export class ShapeMarkersHelper extends BaseHelper {
   debouncedMethods = convertToDebounced({
     refreshMarkers: this.refreshMarkers,
   }, this, this.gm.options.settings.throttlingDelay * 10);
+
+  get pinHelperInstance() {
+    if (!this.pinEnabled) {
+      return null;
+    }
+
+    return Object.values(this.gm.actionInstances).find(isPinHelper) || null;
+  }
 
   onStartAction() {
     if (this.isShapeMarkerAllowed()) {
@@ -183,14 +192,6 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     return { next: true };
-  }
-
-  get pinHelperInstance() {
-    if (!this.pinEnabled) {
-      return null;
-    }
-
-    return Object.values(this.gm.actionInstances).find(isPinHelper) || null;
   }
 
   isShapeMarkerAllowed() {
@@ -393,39 +394,6 @@ export class ShapeMarkersHelper extends BaseHelper {
       });
     } catch {
       // ...
-    }
-  }
-
-  protected createMarker(
-    { type, segment, positionData, parentFeature }: CreateMarkerParams,
-  ): MarkerData {
-    const coordinate = positionData.coordinate;
-
-    const featureData = this.gm.features.createMarkerFeature({
-      sourceName: parentFeature.sourceName,
-      parentFeature,
-      type,
-      coordinate,
-    });
-    if (!featureData) {
-      throw new Error(`Missine feature data for the "${type}" marker`);
-    }
-
-    if (type === 'edge' && segment) {
-      return {
-        type,
-        instance: featureData,
-        position: cloneDeep(positionData),
-        segment,
-      };
-    } else if (type === 'vertex' || type === 'center') {
-      return {
-        type,
-        instance: featureData,
-        position: cloneDeep(positionData),
-      };
-    } else {
-      throw new Error(`Invalid marker type "${type}" with segment: ${segment}`);
     }
   }
 
@@ -636,5 +604,38 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     this.previousPosition = markerLngLat;
+  }
+
+  protected createMarker(
+    { type, segment, positionData, parentFeature }: CreateMarkerParams,
+  ): MarkerData {
+    const coordinate = positionData.coordinate;
+
+    const featureData = this.gm.features.createMarkerFeature({
+      sourceName: parentFeature.sourceName,
+      parentFeature,
+      type,
+      coordinate,
+    });
+    if (!featureData) {
+      throw new Error(`Missine feature data for the "${type}" marker`);
+    }
+
+    if (type === 'edge' && segment) {
+      return {
+        type,
+        instance: featureData,
+        position: cloneDeep(positionData),
+        segment,
+      };
+    } else if (type === 'vertex' || type === 'center') {
+      return {
+        type,
+        instance: featureData,
+        position: cloneDeep(positionData),
+      };
+    } else {
+      throw new Error(`Invalid marker type "${type}" with segment: ${segment}`);
+    }
   }
 }

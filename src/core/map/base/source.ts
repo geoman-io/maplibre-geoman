@@ -6,11 +6,11 @@ import log from 'loglevel';
 export abstract class BaseSource<TSourceInstance = unknown> {
   abstract sourceInstance: TSourceInstance | null;
 
+  abstract get id(): string;
+
   abstract createSource(
     { geoJson, sourceId }: { sourceId: string, geoJson: GeoJSON },
   ): TSourceInstance;
-
-  abstract get id(): string;
 
   abstract getGeoJson(): GeoJsonShapeFeatureCollection;
 

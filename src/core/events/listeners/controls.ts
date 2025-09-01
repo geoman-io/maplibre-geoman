@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { Geoman, GMEvent, EventHandlers } from '@/main.ts';
+import type { EventHandlers, Geoman, GMEvent } from '@/main.ts';
 import { isGmControlEvent } from '@/utils/guards/events/control.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';

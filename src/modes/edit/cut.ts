@@ -5,7 +5,8 @@ import {
   type FeatureId,
   type FeatureShape,
   type GeoJsonShapeFeature,
-  type LineEventHandlerArguments, SOURCES,
+  type LineEventHandlerArguments,
+  SOURCES,
 } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';

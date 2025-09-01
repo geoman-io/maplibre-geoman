@@ -1,4 +1,3 @@
-
 import type { AnyEvent, DrawModeName, GeoJsonShapeFeature, LineEventHandlerArguments, ShapeName } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
