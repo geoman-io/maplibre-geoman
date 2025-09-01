@@ -1,6 +1,4 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   DrawModeName,
@@ -18,6 +16,8 @@ import { convertToThrottled } from '@/utils/behavior.ts';
 import { allCoordinatesEqual, getBboxFromTwoCoords, twoCoordsToGeoJsonRectangle } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BBox } from 'geojson';
+import { GM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export class DrawRectangle extends BaseDraw {
@@ -196,7 +196,7 @@ export class DrawRectangle extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, event);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
   }
 
   fireUpdateEvent(
@@ -212,7 +212,7 @@ export class DrawRectangle extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, event);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
   }
 
   fireFinishEvent() {
@@ -223,6 +223,6 @@ export class DrawRectangle extends BaseDraw {
       variant: null,
       action: 'finish',
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, event);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
   }
 }

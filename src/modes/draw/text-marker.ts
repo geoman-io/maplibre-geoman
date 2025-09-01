@@ -1,4 +1,3 @@
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   DrawModeName,
@@ -10,6 +9,8 @@ import type {
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export class DrawTextMarker extends BaseDraw {

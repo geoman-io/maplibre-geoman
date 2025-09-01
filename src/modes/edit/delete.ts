@@ -1,11 +1,12 @@
-import { SOURCES } from '@/core/features/index.ts';
-import { type AnyEvent, type EditModeName, type FeatureShape, type MapHandlerReturnData, shapeNames } from '@/main.ts';
+import { type AnyEvent, type EditModeName, type FeatureShape, type MapHandlerReturnData, SHAPE_NAMES } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
+import { SOURCES } from '@/core/features/constants.ts';
+
 export class EditDelete extends BaseEdit {
   mode: EditModeName = 'delete';
-  allowedShapes: Array<FeatureShape> = [...shapeNames];
+  allowedShapes: Array<FeatureShape> = [...SHAPE_NAMES];
   eventHandlers = {
     click: this.onMouseClick.bind(this),
   };

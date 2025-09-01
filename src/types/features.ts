@@ -1,7 +1,6 @@
 import type { FeatureData } from '@/core/features/feature-data.ts';
-import { FEATURE_ID_PROPERTY, SOURCES } from '@/core/features/index.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import type { Geoman } from '@/main.ts';
+import { FEATURE_ID_PROPERTY, type Geoman, SOURCES } from '@/main.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { MarkerData, ShapeName } from '@/types/modes/index.ts';

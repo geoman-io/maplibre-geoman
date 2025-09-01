@@ -1,4 +1,3 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionOptions,
@@ -6,12 +5,12 @@ import type {
   ActionType,
   AnyEvent,
   EditModeName,
+  EventHandlers,
   GeoJsonShapeFeature,
   Geoman,
   GMBeforeFeatureCreateEvent,
   GMBeforeFeatureUpdateEvent,
   GMGeofencingViolationEvent,
-  EventHandlers,
   ModeName,
   NonEmptyArray,
   SubActions,
@@ -19,9 +18,8 @@ import type {
 import type { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { isGmGeofencingViolationEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
+import { GM_PREFIX } from '@/core/constants.ts';
 
-
-export const actionTypes = ['draw', 'edit', 'helper'] as const;
 
 export abstract class BaseAction {
   gm: Geoman;
@@ -38,7 +36,7 @@ export abstract class BaseAction {
   abstract eventHandlers: EventHandlers;
 
   internalEventHandlers: EventHandlers = {
-    [`${gmPrefix}:helper`]: this.handleHelperEvent.bind(this),
+    [`${GM_PREFIX}:helper`]: this.handleHelperEvent.bind(this),
   };
 
   constructor(gm: Geoman) {
@@ -142,7 +140,7 @@ export abstract class BaseAction {
       action: 'before_create',
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${gmPrefix}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 
   fireBeforeFeatureUpdate(
@@ -162,6 +160,6 @@ export abstract class BaseAction {
       features,
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${gmPrefix}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 }

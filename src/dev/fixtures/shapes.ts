@@ -1,5 +1,11 @@
-import { FEATURE_ID_PROPERTY } from '@/core/features/index.ts';
-import type { GeoJsonImportFeature, GeoJsonImportFeatureCollection, Geoman, LngLat } from '@/main.ts';
+
+import {
+  FEATURE_ID_PROPERTY,
+  type GeoJsonImportFeature,
+  type GeoJsonImportFeatureCollection,
+  type Geoman,
+  type LngLat,
+} from '@/main.ts';
 import log from 'loglevel';
 
 

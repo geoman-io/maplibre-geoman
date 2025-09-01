@@ -1,6 +1,6 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { AnyEventName } from '@/types/index.ts';
 import type { Page } from '@playwright/test';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
 export const getEventKey = (eventName: string): string => {
@@ -24,7 +24,7 @@ export const saveGeomanEventResultToCustomData = async (
         window.customData.rawEventResults[context.resultId] = event;
       }
     });
-  }, { gmPrefix, eventName, resultId });
+  }, { gmPrefix: GM_PREFIX, eventName, resultId });
 
   return resultId;
 };

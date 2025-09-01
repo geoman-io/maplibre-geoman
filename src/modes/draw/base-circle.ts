@@ -1,6 +1,5 @@
 import circleMarker from '@/assets/images/controls/circle-marker.svg';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   DrawModeName,
@@ -13,6 +12,8 @@ import type {
 } from '@/main.ts';
 
 import { BaseDraw } from '@/modes/draw/base.ts';
+
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export abstract class BaseCircle extends BaseDraw {

@@ -1,10 +1,11 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type { FeatureShape, HelperModeName, LngLat, ScreenPoint } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { eachCoordinateWithPath, getEuclideanDistance } from '@/utils/geojson.ts';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import { sortBy } from 'lodash-es';
+
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 type ShapeSnappingHandler = (

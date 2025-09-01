@@ -1,5 +1,4 @@
 import { EventForwarder } from '@/core/events/forwarder.ts';
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type {
   AnyEvent,
   AnyEventName,
@@ -17,6 +16,7 @@ import type {
 import { isGmEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
 export class EventBus {
@@ -78,7 +78,7 @@ export class EventBus {
   }
 
   on(eventName: AnyEventName, handler: MapEventHadler | GmEventHadler) {
-    if (eventName.startsWith(gmPrefix)) {
+    if (eventName.startsWith(GM_PREFIX)) {
       this.onGmEvent(eventName as GmEventName, handler as GmEventHadler);
     } else {
       this.onMapEvent(eventName as MapEventName, handler as MapEventHadler);
@@ -102,7 +102,7 @@ export class EventBus {
   }
 
   off(eventName: AnyEventName, handler: GmEventHadler | MapEventHadler) {
-    if (eventName.startsWith(`${gmPrefix}`)) {
+    if (eventName.startsWith(`${GM_PREFIX}`)) {
       this.offGmEvent(eventName as GmEventName, handler as GmEventHadler);
     } else {
       this.offMapEvent(eventName as MapEventName, handler as MapEventHadler);
@@ -150,7 +150,7 @@ export class EventBus {
       handlers: [],
       controlHandler: (event: AnyEvent) => {
         let eventHandler: EventControls;
-        if (isGmEvent(event) && eventName.startsWith(`${gmPrefix}`)) {
+        if (isGmEvent(event) && eventName.startsWith(`${GM_PREFIX}`)) {
           eventHandler = this.gmEventHandlers[eventName as GmEventName];
         } else {
           eventHandler = this.mapEventHandlers[eventName as MapEventName];

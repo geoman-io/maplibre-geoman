@@ -14,8 +14,6 @@ import { isGmControlEvent, isGmModeEvent } from '@/utils/guards/events/index.ts'
 import log from 'loglevel';
 
 
-export const gmPrefix = 'gm';
-
 export abstract class BaseEventListener {
   gm: Geoman;
 

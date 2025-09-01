@@ -1,5 +1,3 @@
-import { SOURCES } from '@/core/features/index.ts';
-import { shapeNames } from '@/modes/draw/base.ts';
 import type {
   FeatureId,
   FeatureShape,
@@ -14,6 +12,8 @@ import { expectCoordinatesWithinTolerance } from './assertions.ts';
 import { getCoordinateByPath, getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import { getScreenCoordinatesByLngLat } from './shapes.ts';
 import type { GeoJSON } from 'geojson';
+import { SHAPE_NAMES } from '@/modes/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export type FeatureCustomData = {
@@ -60,7 +60,7 @@ export const getRenderedFeatureData = async (
 };
 
 export const getRenderedFeaturesData = async (
-  { page, temporary, allowedTypes = [...shapeNames] }: {
+  { page, temporary, allowedTypes = [...SHAPE_NAMES] }: {
     page: Page,
     temporary: boolean,
     allowedTypes?: Array<FeatureShape>,

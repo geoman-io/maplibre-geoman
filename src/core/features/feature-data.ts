@@ -1,24 +1,25 @@
-import { FEATURE_ID_PROPERTY, SOURCES } from '@/core/features/index.ts';
+
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import type {
-  BasicGeometry,
-  FeatureDataParameters,
-  FeatureId,
-  FeatureOrders,
-  FeatureShape,
-  FeatureShapeProperties,
-  FeatureSourceName,
-  GeoJsonShapeFeature,
-  Geoman,
-  MarkerData,
-  MarkerId,
-  ShapeGeoJsonProperties,
+import {
+  type BasicGeometry, FEATURE_ID_PROPERTY,
+  type FeatureDataParameters,
+  type FeatureId,
+  type FeatureOrders,
+  type FeatureShape,
+  type FeatureShapeProperties,
+  type FeatureSourceName,
+  type GeoJsonShapeFeature,
+  type Geoman,
+  type MarkerData,
+  type MarkerId,
+  type ShapeGeoJsonProperties,
 } from '@/main.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import { typedValues } from '@/utils/typing.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
+import { SOURCES } from '@/core/features/constants.ts';
 
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];

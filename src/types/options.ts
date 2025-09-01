@@ -1,12 +1,13 @@
 import defaultLayerStyles from '@/core/options/layers/style.ts';
-import { actionTypes } from '@/modes/base-action.ts';
 import type { ModeName } from '@/types/controls.ts';
 import type { BaseControlsPosition } from '@/types/map/index.ts';
 import type { ActionOptions, ActionSettings, DrawModeName, EditModeName, HelperModeName } from '@/types/modes/index.ts';
 import type { PartialDeep } from 'type-fest';
 
+import { ACTION_TYPES } from '@/modes/constants.ts';
 
-export type ActionType = typeof actionTypes[number];
+
+export type ActionType = typeof ACTION_TYPES[number];
 
 export interface ControlOptions {
   title: string,

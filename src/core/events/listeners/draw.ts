@@ -1,15 +1,16 @@
 import { EventBus } from '@/core/events/bus.ts';
-import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
+import { BaseEventListener } from '@/core/events/listeners/base.ts';
 import type { ActionInstanceKey, Geoman, GMDrawEvent, GMEvent, EventHandlers } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { createDrawInstance } from '@/modes/draw/index.ts';
 import { isGmDrawEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 
 export class DrawEventListener extends BaseEventListener {
   eventHandlers: EventHandlers = {
-    [`${gmPrefix}:draw`]: this.handleDrawEvent.bind(this),
+    [`${GM_PREFIX}:draw`]: this.handleDrawEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {

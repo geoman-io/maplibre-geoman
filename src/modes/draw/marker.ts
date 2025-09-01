@@ -1,15 +1,14 @@
 import defaultMarker from '@/assets/images/markers/default-marker.png';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  DrawModeName,
-  GeoJsonShapeFeature,
-  GMEvent,
-  LngLat,
-  MapHandlerReturnData,
-  MapPointerEvent,
-  ShapeName,
+import {
+  type AnyEvent,
+  type DrawModeName,
+  type GeoJsonShapeFeature,
+  type GMEvent,
+  type LngLat,
+  type MapHandlerReturnData,
+  type MapPointerEvent,
+  type ShapeName, SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
