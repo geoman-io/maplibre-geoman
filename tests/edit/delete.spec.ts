@@ -21,7 +21,10 @@ const performDeleteAndVerify = async (page: Page, feature: FeatureCustomData) =>
   }
 
   const clickPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
-  expect(clickPoint, `Screen coordinates for feature ${featureId} should be calculable`).not.toBeNull();
+  expect(
+    clickPoint,
+    `Screen coordinates for feature ${featureId} should be calculable`,
+  ).not.toBeNull();
 
   if (!clickPoint) {
     return;
@@ -53,7 +56,7 @@ test.beforeEach(async ({ page }) => {
   }
 });
 
-test('should correctly \'delete\' each shape type', async ({ page }) => {
+test("should correctly 'delete' each shape type", async ({ page }) => {
   const features = await getRenderedFeaturesData({ page, temporary: false });
   expect(features.length).toBeGreaterThan(0);
 

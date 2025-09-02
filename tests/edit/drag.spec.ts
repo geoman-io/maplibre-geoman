@@ -3,11 +3,20 @@ import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
 import { isEqual } from 'lodash-es';
-import { configurePageTimeouts, dragAndDrop, enableMode, type ScreenCoordinates, waitForGeoman } from '../utils/basic.ts';
-import { getRenderedFeaturesData, loadGeoJsonFeatures, waitForRenderedFeatureData } from '../utils/features.ts';
+import {
+  configurePageTimeouts,
+  dragAndDrop,
+  enableMode,
+  type ScreenCoordinates,
+  waitForGeoman,
+} from '../utils/basic.ts';
+import {
+  getRenderedFeaturesData,
+  loadGeoJsonFeatures,
+  waitForRenderedFeatureData,
+} from '../utils/features.ts';
 import { loadGeoJson } from '../utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
-
 
 test.beforeEach(async ({ page }) => {
   await configurePageTimeouts(page);
@@ -58,9 +67,7 @@ test('Drag', async ({ page }) => {
       if (updatedFeature) {
         let updatedPosition;
         if (feature.shape === 'circle') {
-          updatedPosition = (
-            centroid(updatedFeature.geoJson).geometry.coordinates as LngLat
-          );
+          updatedPosition = centroid(updatedFeature.geoJson).geometry.coordinates as LngLat;
         } else {
           updatedPosition = getGeoJsonFirstPoint(updatedFeature.geoJson);
         }

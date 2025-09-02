@@ -3,7 +3,6 @@ import { loadGeoJsonFeatures } from 'tests/utils/features.ts';
 import { enableMode, waitForGeoman } from '../utils/basic.ts';
 import { loadGeoJson } from '../utils/fixtures.ts';
 
-
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await waitForGeoman(page);

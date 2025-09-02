@@ -3,7 +3,7 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 
 export class DummyEdit extends BaseEdit {
   mode: EditModeName = 'drag';
-  mapEventHandlers = {};
+  eventHandlers = {};
   featureData = null;
 
   // constructor(gm: Geoman) {
@@ -11,10 +11,10 @@ export class DummyEdit extends BaseEdit {
   // }
 
   onStartAction() {
-    throw new Error('DummyEdit: method onStartAction isn\'t implemented');
+    throw new Error("DummyEdit: method onStartAction isn't implemented");
   }
 
   onEndAction() {
-    throw new Error('DummyEdit: method onEndAction isn\'t implemented');
+    throw new Error("DummyEdit: method onEndAction isn't implemented");
   }
 }

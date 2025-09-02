@@ -5,8 +5,8 @@ import type { MarkerData } from '@/types/modes';
 import { FeatureData } from '@/core/features/feature-data.ts';
 
 export type SharedMarker = {
-  markerData: MarkerData,
-  featureData: FeatureData,
+  markerData: MarkerData;
+  featureData: FeatureData;
 };
 
 export interface SnapGuidesHelperInterface extends BaseHelper {

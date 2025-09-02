@@ -3,7 +3,6 @@ import { getWindowDimensions } from '../utils/basic.ts';
 import { getRenderedFeaturesData } from '../utils/features.ts';
 import { setupGeomanTest, testShapeCreation } from '../utils/test-helpers.ts';
 
-
 test.beforeEach(async ({ page }) => {
   await setupGeomanTest(page);
 });
@@ -127,13 +126,15 @@ test('Polygon create event', async ({ page }) => {
     points,
   });
 
-  await expect.poll(
-    async () => {
-      const renderedFeatures = await getRenderedFeaturesData({ page, temporary: false });
-      return renderedFeatures.length;
-    },
-    { timeout: 10 * 1000, message: `A feature was not created within timeout` },
-  ).toBeGreaterThan(0);
+  await expect
+    .poll(
+      async () => {
+        const renderedFeatures = await getRenderedFeaturesData({ page, temporary: false });
+        return renderedFeatures.length;
+      },
+      { timeout: 10 * 1000, message: `A feature was not created within timeout` },
+    )
+    .toBeGreaterThan(0);
 
   expect(result.shape).toBe('polygon');
   expect(result.feature).toBeTruthy();

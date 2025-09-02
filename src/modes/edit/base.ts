@@ -1,54 +1,35 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type {
-  ActionType,
-  DrawModeName,
-  EditModeName,
-  GeoJsonShapeFeature,
-  GMDrawShapeEvent,
-  GMDrawShapeEventWithData,
-  GMEditFeatureEditEndEvent,
-  GMEditFeatureEditStartEvent,
-  GMEditFeatureRemovedEvent,
-  GMEditFeatureUpdatedEvent,
-  GMEvent,
-  MarkerData,
-  NonEmptyArray,
-  PointerEventName,
+import {
+  type ActionType,
+  type DrawModeName,
+  type EditModeName,
+  type GeoJsonShapeFeature,
+  GM_PREFIX,
+  type GMDrawShapeEvent,
+  type GMDrawShapeEventWithData,
+  type GMEditFeatureEditEndEvent,
+  type GMEditFeatureEditStartEvent,
+  type GMEditFeatureRemovedEvent,
+  type GMEditFeatureUpdatedEvent,
+  type GMEvent,
+  type MarkerData,
+  type NonEmptyArray,
+  type PointerEventName,
+  SHAPE_NAMES,
 } from '@/main.ts';
 import { BaseAction } from '@/modes/base-action.ts';
-import { shapeNames } from '@/modes/draw/base.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
-
-export const editModes = [
-  'drag',
-  'change',
-  'rotate',
-  'scale',
-  'copy',
-  'cut',
-  'split',
-  'union',
-  'difference',
-  'line_simplification',
-  'lasso',
-  'delete',
-] as const;
 
 export abstract class BaseEdit extends BaseAction {
   actionType: ActionType = 'edit';
   abstract mode: EditModeName;
   featureData: FeatureData | null = null;
-  cursorExcludedLayerIds: Array<string> = [
-    'rectangle-line',
-    'polygon-line',
-    'circle-line',
-  ];
+  cursorExcludedLayerIds: Array<string> = ['rectangle-line', 'polygon-line', 'circle-line'];
   layerEventHandlersData: Array<{
-    eventName: PointerEventName,
-    layerId: string,
-    callback: () => void,
+    eventName: PointerEventName;
+    layerId: string;
+    callback: () => void;
   }> = [];
 
   startAction() {
@@ -90,13 +71,15 @@ export abstract class BaseEdit extends BaseAction {
     this.layerEventHandlersData = [];
   }
 
-  updateFeatureGeoJson(
-    { featureData, featureGeoJson, forceMode = undefined }: {
-      featureData: FeatureData,
-      featureGeoJson: GeoJsonShapeFeature,
-      forceMode?: EditModeName,
-    },
-  ): boolean {
+  updateFeatureGeoJson({
+    featureData,
+    featureGeoJson,
+    forceMode = undefined,
+  }: {
+    featureData: FeatureData;
+    featureGeoJson: GeoJsonShapeFeature;
+    forceMode?: EditModeName;
+  }): boolean {
     if (!this.flags.featureUpdateAllowed) {
       // used for geofencing violations, other modes could be added in the future
       return false;
@@ -126,14 +109,17 @@ export abstract class BaseEdit extends BaseAction {
     return true;
   }
 
-  fireFeatureUpdatedEvent(
-    { sourceFeatures, targetFeatures, markerData = undefined, forceMode = undefined }: {
-      sourceFeatures: NonEmptyArray<FeatureData>,
-      targetFeatures: NonEmptyArray<FeatureData>,
-      markerData?: MarkerData,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireFeatureUpdatedEvent({
+    sourceFeatures,
+    targetFeatures,
+    markerData = undefined,
+    forceMode = undefined,
+  }: {
+    sourceFeatures: NonEmptyArray<FeatureData>;
+    targetFeatures: NonEmptyArray<FeatureData>;
+    markerData?: MarkerData;
+    forceMode?: EditModeName;
+  }) {
     const payload: GMEditFeatureUpdatedEvent = {
       level: 'system',
       type: 'edit',
@@ -144,15 +130,16 @@ export abstract class BaseEdit extends BaseAction {
       markerData: markerData || null,
     };
 
-    this.gm.events.fire(`${gmPrefix}:edit`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
-  fireFeatureEditStartEvent(
-    { feature, forceMode = undefined }: {
-      feature: FeatureData,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireFeatureEditStartEvent({
+    feature,
+    forceMode = undefined,
+  }: {
+    feature: FeatureData;
+    forceMode?: EditModeName;
+  }) {
     const payload: GMEditFeatureEditStartEvent = {
       level: 'system',
       type: 'edit',
@@ -161,12 +148,16 @@ export abstract class BaseEdit extends BaseAction {
       feature,
     };
 
-    this.gm.events.fire(`${gmPrefix}:edit`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
-  fireFeatureEditEndEvent(
-    { feature, forceMode = undefined }: { feature: FeatureData, forceMode?: EditModeName },
-  ) {
+  fireFeatureEditEndEvent({
+    feature,
+    forceMode = undefined,
+  }: {
+    feature: FeatureData;
+    forceMode?: EditModeName;
+  }) {
     const payload: GMEditFeatureEditEndEvent = {
       level: 'system',
       type: 'edit',
@@ -175,7 +166,7 @@ export abstract class BaseEdit extends BaseAction {
       feature,
     };
 
-    this.gm.events.fire(`${gmPrefix}:edit`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
   fireMarkerPointerUpdateEvent() {
@@ -200,7 +191,7 @@ export abstract class BaseEdit extends BaseAction {
       },
       featureData: null,
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
   forwardLineDrawerEvent(payload: GMEvent) {
@@ -218,7 +209,7 @@ export abstract class BaseEdit extends BaseAction {
         featureData: payload.featureData,
         markerData: payload.markerData,
       };
-      this.gm.events.fire(`${gmPrefix}:draw`, eventData);
+      this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
       const eventData: GMDrawShapeEvent = {
         level: 'system',
@@ -227,14 +218,14 @@ export abstract class BaseEdit extends BaseAction {
         variant: null,
         action: payload.action,
       };
-      this.gm.events.fire(`${gmPrefix}:draw`, eventData);
+      this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
     }
 
     return { next: true };
   }
 
   fireFeatureRemovedEvent(featureData: FeatureData) {
-    if (includesWithType(featureData.shape, shapeNames)) {
+    if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GMEditFeatureRemovedEvent = {
         level: 'system',
         type: 'edit',
@@ -242,7 +233,7 @@ export abstract class BaseEdit extends BaseAction {
         action: 'feature_removed',
         featureData,
       };
-      this.gm.events.fire(`${gmPrefix}:edit`, payload);
+      this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
     }
   }
 

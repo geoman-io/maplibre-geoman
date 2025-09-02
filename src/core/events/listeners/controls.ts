@@ -1,18 +1,18 @@
 import { EventBus } from '@/core/events/bus.ts';
-import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
-import type { Geoman, GMEvent, MapEventHandlers } from '@/main.ts';
+import { BaseEventListener } from '@/core/events/listeners/base.ts';
+import type { EventHandlers, Geoman, GMEvent } from '@/main.ts';
 import { isGmControlEvent } from '@/utils/guards/events/control.ts';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export class ControlEventListener extends BaseEventListener {
-  mapEventHandlers: MapEventHandlers = {
-    [`${gmPrefix}:control`]: this.handleControlEvent.bind(this),
+  eventHandlers: EventHandlers = {
+    [`${GM_PREFIX}:control`]: this.handleControlEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {
     super(gm);
-    bus.attachEvents(this.mapEventHandlers);
+    bus.attachEvents(this.eventHandlers);
   }
 
   handleControlEvent(payload: GMEvent) {

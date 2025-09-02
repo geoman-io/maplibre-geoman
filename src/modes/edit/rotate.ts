@@ -1,12 +1,14 @@
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  EditModeName,
-  FeatureShape,
-  GeoJsonShapeFeature,
-  GMEditMarkerMoveEvent,
-  LngLat,
-  MapHandlerReturnData,
+import {
+  type AnyEvent,
+  type EditModeName,
+  type FeatureShape,
+  type GeoJsonShapeFeature,
+  type GMEditEvent,
+  type GMEditMarkerMoveEvent,
+  type LngLat,
+  type MapHandlerReturnData,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { geoJsonPointToLngLat, getGeoJsonEllipse } from '@/utils/geojson.ts';
@@ -21,9 +23,10 @@ type RotateShapeHandler = (event: GMEditMarkerMoveEvent) => GeoJsonShapeFeature 
 
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
+  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon'];
   convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
 
-  shapeRotateHandlers: { [key in FeatureShape]?: RotateShapeHandler} = {
+  shapeRotateHandlers: { [key in FeatureShape]?: RotateShapeHandler } = {
     marker: this.rotateFeature.bind(this),
     circle: this.rotateFeature.bind(this),
     circle_marker: this.rotateFeature.bind(this),
@@ -31,8 +34,8 @@ export class EditRotate extends BaseDrag {
     line: this.rotateFeature.bind(this),
     rectangle: this.rotateFeature.bind(this),
     polygon: this.rotateFeature.bind(this),
-    ellipse: this.rotateEllipse.bind(this)
-  }
+    ellipse: this.rotateEllipse.bind(this),
+  };
 
   onStartAction(): void {
     // ...
@@ -46,6 +49,10 @@ export class EditRotate extends BaseDrag {
     if (!isGmEditEvent(event)) {
       log.error('EditChange.handleGmEdit: not an edit event', event);
       return { next: false };
+    }
+
+    if (this.isFeatureAllowed(event)) {
+      return { next: true };
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
@@ -63,6 +70,12 @@ export class EditRotate extends BaseDrag {
       this.fireFeatureEditEndEvent({ feature: event.featureData });
     }
     return { next: true };
+  }
+
+  isFeatureAllowed(event: GMEditEvent): boolean {
+    return (
+      'featureData' in event && !this.allowedShapes.includes(event.featureData.shape as ShapeName)
+    );
   }
 
   moveVertex(event: GMEditMarkerMoveEvent) {
@@ -116,7 +129,7 @@ export class EditRotate extends BaseDrag {
       center,
       event.lngLatStart,
       event.lngLatEnd,
-      false
+      false,
     );
 
     const ellipsePolygon = getGeoJsonEllipse({
@@ -135,15 +148,11 @@ export class EditRotate extends BaseDrag {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
     const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
 
-    const angle = this.calculateRotationAngle(
-      shapeCentroid,
-      event.lngLatStart,
-      event.lngLatEnd,
-    );
+    const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
 
     geoJson.geometry = transformRotate(geoJson, angle, { pivot: shapeCentroid }).geometry;
 
-    return geoJson
+    return geoJson;
   }
 
   calculateRotationAngle(pivot: LngLat, start: LngLat, end: LngLat, normalize = true) {

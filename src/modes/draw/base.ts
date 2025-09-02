@@ -1,41 +1,18 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   ActionType,
   DrawModeName,
   GMDrawShapeEvent,
   GMDrawShapeEventWithData,
   GMEvent,
+  MarkerData,
   ShapeName,
 } from '@/main.ts';
 import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import log from 'loglevel';
-
-
-export const shapeNames = [
-  // shapes
-  'marker',
-  'ellipse',
-  'circle',
-  'circle_marker',
-  'text_marker',
-  'line',
-  'rectangle',
-  'polygon',
-] as const;
-
-export const extraDrawModes = [
-  'freehand',
-  'custom_shape',
-] as const;
-
-export const drawModes = [
-  ...shapeNames,
-  ...extraDrawModes,
-] as const;
-
+import { GM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 export abstract class BaseDraw extends BaseAction {
   actionType: ActionType = 'draw';
@@ -88,7 +65,7 @@ export abstract class BaseDraw extends BaseAction {
       },
       featureData: this.featureData,
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
   fireMarkerPointerUpdateEvent() {
@@ -113,7 +90,7 @@ export abstract class BaseDraw extends BaseAction {
       },
       featureData: this.featureData,
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
   fireMarkerPointerFinishEvent() {
@@ -128,7 +105,7 @@ export abstract class BaseDraw extends BaseAction {
       mode: this.shape,
       action: 'finish',
     };
-    this.gm.events.fire(`${gmPrefix}:draw`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
   forwardLineDrawerEvent(payload: GMEvent) {
@@ -146,7 +123,7 @@ export abstract class BaseDraw extends BaseAction {
         featureData: payload.featureData,
         markerData: payload.markerData,
       };
-      this.gm.events.fire(`${gmPrefix}:draw`, eventData);
+      this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
       const eventData: GMDrawShapeEvent = {
         level: 'system',
@@ -155,9 +132,58 @@ export abstract class BaseDraw extends BaseAction {
         variant: null,
         action: payload.action,
       };
-      this.gm.events.fire(`${gmPrefix}:draw`, eventData);
+      this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
     }
 
     return { next: true };
+  }
+
+  fireStartEvent(featureData: FeatureData, markerData: MarkerData | null = null) {
+    if (!this.shape) {
+      return;
+    }
+
+    const event: GMDrawShapeEventWithData = {
+      level: 'system',
+      type: 'draw',
+      mode: this.shape,
+      variant: null,
+      action: 'start',
+      featureData,
+      markerData,
+    };
+    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+  }
+
+  fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null = null) {
+    if (!this.shape) {
+      return;
+    }
+
+    const event: GMDrawShapeEventWithData = {
+      level: 'system',
+      type: 'draw',
+      mode: this.shape,
+      variant: null,
+      action: 'update',
+      featureData,
+      markerData,
+    };
+    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+  }
+
+  fireFinishEvent() {
+    if (!this.shape) {
+      return;
+    }
+
+    const event: GMDrawShapeEvent = {
+      level: 'system',
+      type: 'draw',
+      mode: this.shape,
+      variant: null,
+      action: 'finish',
+    };
+    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
   }
 }

@@ -1,4 +1,8 @@
-import type { EllipseGeoJsonInternalProperties, EllipseProperties, ShapeGeoJsonProperties } from '@/types/features.ts';
+import type {
+  EllipseGeoJsonInternalProperties,
+  EllipseProperties,
+  ShapeGeoJsonProperties,
+} from '@/types/features.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
 import type {
@@ -13,13 +17,15 @@ import type {
 } from 'geojson';
 import type { SetRequired } from 'type-fest';
 
-export type ImportGeoJsonProperties = {
-  shape?: Exclude<ShapeName, "ellipse">,
-  center?: LngLat,
-  radius?: number,
-  text?: string,
-  [key: string]: unknown,
-} | ImportEllipseGeoJsonProperties;
+export type ImportGeoJsonProperties =
+  | {
+      shape?: Exclude<ShapeName, 'ellipse'>;
+      center?: LngLat;
+      radius?: number;
+      text?: string;
+      [key: string]: unknown;
+    }
+  | ImportEllipseGeoJsonProperties;
 
 export type ImportEllipseGeoJsonProperties = EllipseProperties & EllipseGeoJsonInternalProperties;
 
@@ -35,34 +41,38 @@ export type GeoJsonImportFeature = Feature<BasicGeometry, ImportGeoJsonPropertie
 
 export type GeoJsonLineFeature = Feature<LineString, ShapeGeoJsonProperties>;
 
-export type GeoJsonShapeFeatureCollection =
-  FeatureCollection<BasicGeometry, ShapeGeoJsonProperties>;
+export type GeoJsonShapeFeatureCollection = FeatureCollection<
+  BasicGeometry,
+  ShapeGeoJsonProperties
+>;
 
-export type GeoJsonImportFeatureCollection =
-  FeatureCollection<BasicGeometry, ImportGeoJsonProperties>;
+export type GeoJsonImportFeatureCollection = FeatureCollection<
+  BasicGeometry,
+  ImportGeoJsonProperties
+>;
 
 export type GeoJsonShapeFeatureWithGmProperties = Omit<GeoJsonShapeFeature, 'properties'> & {
-  properties: SetRequired<GeoJsonShapeFeature['properties'], '_gmid'>
+  properties: SetRequired<GeoJsonShapeFeature['properties'], '_gmid'>;
 };
 
 export type LngLatDiff = {
-  lng: number,
-  lat: number,
+  lng: number;
+  lat: number;
 };
 
 export interface PositionData {
-  coordinate: LngLat,
-  path: Array<string | number>,
+  coordinate: LngLat;
+  path: Array<string | number>;
 }
 
 export type SegmentPosition = {
-  start: PositionData,
-  end: PositionData,
+  start: PositionData;
+  end: PositionData;
 };
 
 export type CoordinateIndices = {
-  absCoordIndex: number,
-  featureIndex: number,
-  multiFeatureIndex: number,
-  geometryIndex: number,
+  absCoordIndex: number;
+  featureIndex: number;
+  multiFeatureIndex: number;
+  geometryIndex: number;
 };

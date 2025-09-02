@@ -75,7 +75,7 @@ jobs:
 
     strategy:
       matrix:
-        variant: [maplibre, mapbox]
+        variant: [maplibre]
 
     steps:
       - name: Checkout code
@@ -92,11 +92,7 @@ jobs:
 
       - name: Build ${{ matrix.variant }}
         run: |
-          if [[ "${{ matrix.variant }}" == "maplibre" ]]; then
-            npm run build
-          else
-            npm run build:mapbox
-          fi
+          npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -209,7 +205,7 @@ jobs:
 
             ### Artifacts:
             - Build artifacts are available for 3 days
-            - MapLibre and Mapbox variants built successfully
+            - MapLibre variant built successfully
 
             ---
             *This comment is automatically updated on each push*`;

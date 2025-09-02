@@ -2,7 +2,6 @@ import type { GeoJsonImportFeature } from '@/types/index.ts';
 import fs from 'fs/promises';
 import path from 'path';
 
-
 const testsRoot = path.join(process.cwd(), 'tests');
 
 export const loadGeoJson = async (fixtureName: string) => {

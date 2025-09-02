@@ -1,6 +1,5 @@
 import type { PartialLayerStyle } from '@/main.ts';
 
-
 export const getTextMarkerStyles = (): Array<PartialLayerStyle> => {
   return [
     {

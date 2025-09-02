@@ -1,19 +1,20 @@
 import { EventBus } from '@/core/events/bus.ts';
-import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMDrawEvent, GMEvent, MapEventHandlers } from '@/main.ts';
+import { BaseEventListener } from '@/core/events/listeners/base.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GMDrawEvent, GMEvent } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
+import { createDrawInstance } from '@/modes/draw/index.ts';
 import { isGmDrawEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export class DrawEventListener extends BaseEventListener {
-  mapEventHandlers: MapEventHandlers = {
-    [`${gmPrefix}:draw`]: this.handleDrawEvent.bind(this),
+  eventHandlers: EventHandlers = {
+    [`${GM_PREFIX}:draw`]: this.handleDrawEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {
     super(gm);
-    bus.attachEvents(this.mapEventHandlers);
+    bus.attachEvents(this.eventHandlers);
   }
 
   handleDrawEvent(payload: GMEvent) {
@@ -36,7 +37,7 @@ export class DrawEventListener extends BaseEventListener {
   }
 
   start(actionInstanceKey: ActionInstanceKey, payload: GMDrawEvent) {
-    const actionInstance = this.gm.createDrawInstance(payload.mode);
+    const actionInstance = createDrawInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
     }
@@ -55,10 +56,7 @@ export class DrawEventListener extends BaseEventListener {
       actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
-      console.error(
-        `Wrong action instance for draw event "${actionInstanceKey}":`,
-        actionInstance,
-      );
+      console.error(`Wrong action instance for draw event "${actionInstanceKey}":`, actionInstance);
     }
   }
 }

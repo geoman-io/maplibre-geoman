@@ -16,7 +16,7 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 - **Browser Matrix**: Tests run across Chromium, Firefox, and WebKit
 - **Caching**: Aggressive caching of dependencies and build artifacts
 - **Security Scanning**: npm audit and TruffleHog secret scanning
-- **Build Verification**: Both MapLibre and Mapbox variants are built and verified
+- **Build Verification**: MapLibre variant is built and verified
 
 **Performance Improvements:**
 
@@ -50,7 +50,7 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 
 - **Smart Triggering**: Skips CI on draft PRs unless explicitly requested
 - **Smoke Testing**: Quick validation tests for faster feedback
-- **Dual Builds**: Both MapLibre and Mapbox variants for comprehensive testing
+- **Dual Builds**: MapLibre variant for comprehensive testing
 - **PR Comments**: Automatic status updates on pull requests
 - **Performance Checks**: Bundle size analysis when labeled
 - **Short Retention**: 3-day artifact retention for development builds

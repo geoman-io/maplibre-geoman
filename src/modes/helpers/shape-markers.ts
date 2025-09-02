@@ -1,23 +1,22 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  DomMarkerData,
-  EdgeMarkerData,
-  EditModeName,
-  FeatureShape,
-  GMEditEvent,
-  GMEditFeatureUpdatedEvent,
-  GMEditMarkerEvent,
-  HelperModeName,
-  LngLat,
-  MapHandlerReturnData,
-  MapPointerEvent,
-  MarkerData,
-  PositionData,
-  ScreenPoint,
-  SegmentPosition,
+import {
+  type AnyEvent,
+  type DomMarkerData,
+  type EdgeMarkerData,
+  type EditModeName,
+  type FeatureShape,
+  type GMEditEvent,
+  type GMEditFeatureUpdatedEvent,
+  type GMEditMarkerEvent,
+  type HelperModeName,
+  type LngLat,
+  type MapHandlerReturnData,
+  type MapPointerEvent,
+  type MarkerData,
+  type PositionData,
+  type ScreenPoint,
+  type SegmentPosition,
+  SOURCES,
 } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';
@@ -30,19 +29,19 @@ import { cloneDeep, intersection } from 'lodash-es';
 import log from 'loglevel';
 import type { SharedMarker } from '@/types/interfaces.ts';
 import { isPinHelper } from '@/utils/guards/interfaces.ts';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 type SegmentData = {
-  segment: SegmentPosition,
-  middle: PositionData,
-  edgeMarkerKey: string,
+  segment: SegmentPosition;
+  middle: PositionData;
+  edgeMarkerKey: string;
 };
 
 type CreateMarkerParams = {
-  type: MarkerData['type'],
-  positionData: PositionData,
-  parentFeature: FeatureData,
-  segment?: EdgeMarkerData['segment'],
+  type: MarkerData['type'];
+  positionData: PositionData;
+  parentFeature: FeatureData;
+  segment?: EdgeMarkerData['segment'];
 };
 
 export class ShapeMarkersHelper extends BaseHelper {
@@ -56,9 +55,9 @@ export class ShapeMarkersHelper extends BaseHelper {
   edgeMarkersAllowed: boolean = false;
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
-  mapEventHandlers = {
-    [`${gmPrefix}:draw`]: this.handleGmDraw.bind(this),
-    [`${gmPrefix}:edit`]: this.handleGmEdit.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:draw`]: this.handleGmDraw.bind(this),
+    [`${GM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
 
     mousedown: this.onMouseDown.bind(this),
     touchstart: this.onMouseDown.bind(this),
@@ -71,14 +70,30 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     contextmenu: this.onMouseRightButtonClick.bind(this),
   };
-  throttledMethods = convertToThrottled({
-    sendMarkerMoveEvent: this.sendMarkerMoveEvent,
-    sendMarkerRightClickEvent: this.sendMarkerRightClickEvent,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      sendMarkerMoveEvent: this.sendMarkerMoveEvent,
+      sendMarkerRightClickEvent: this.sendMarkerRightClickEvent,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
-  debouncedMethods = convertToDebounced({
-    refreshMarkers: this.refreshMarkers,
-  }, this, this.gm.options.settings.throttlingDelay * 10);
+  debouncedMethods = convertToDebounced(
+    {
+      refreshMarkers: this.refreshMarkers,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay * 10,
+  );
+
+  get pinHelperInstance() {
+    if (!this.pinEnabled) {
+      return null;
+    }
+
+    return Object.values(this.gm.actionInstances).find(isPinHelper) || null;
+  }
 
   onStartAction() {
     if (this.isShapeMarkerAllowed()) {
@@ -124,9 +139,11 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     if (this.pinEnabled && this.pinHelperInstance) {
-      this.sharedMarkers = this.pinHelperInstance.getSharedMarkers(this.activeMarker.position.coordinate);
-      this.sharedMarkers.forEach(
-        (sharedMarker) => this.snappingHelper?.addExcludedFeature(sharedMarker.featureData),
+      this.sharedMarkers = this.pinHelperInstance.getSharedMarkers(
+        this.activeMarker.position.coordinate,
+      );
+      this.sharedMarkers.forEach((sharedMarker) =>
+        this.snappingHelper?.addExcludedFeature(sharedMarker.featureData),
       );
     } else {
       this.snappingHelper?.addExcludedFeature(this.activeFeatureData);
@@ -186,19 +203,8 @@ export class ShapeMarkersHelper extends BaseHelper {
     return { next: true };
   }
 
-  get pinHelperInstance() {
-    if (!this.pinEnabled) {
-      return null;
-    }
-
-    return Object.values(this.gm.actionInstances).find(isPinHelper) || null;
-  }
-
   isShapeMarkerAllowed() {
-    return intersection(
-      this.shapeMarkerAllowedModes,
-      this.gm.getActiveEditModes(),
-    ).length > 0;
+    return intersection(this.shapeMarkerAllowedModes, this.gm.getActiveEditModes()).length > 0;
   }
 
   convertToVertexMarker(markerData: MarkerData): MarkerData {
@@ -321,11 +327,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     return this.edgeMarkersAllowed && this.edgeMarkerAllowedShapes.includes(featureData.shape);
   }
 
-  isMarkerIndexAllowed(
-    shape: FeatureData['shape'],
-    markerIndex: number,
-    verticesCount: number,
-  ) {
+  isMarkerIndexAllowed(shape: FeatureData['shape'], markerIndex: number, verticesCount: number) {
     // allows 4 markers for a circle's rim
     const divider = Math.floor(verticesCount / 4);
 
@@ -399,39 +401,6 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
   }
 
-  protected createMarker(
-    { type, segment, positionData, parentFeature }: CreateMarkerParams,
-  ): MarkerData {
-    const coordinate = positionData.coordinate;
-
-    const featureData = this.gm.features.createMarkerFeature({
-      sourceName: parentFeature.sourceName,
-      parentFeature,
-      type,
-      coordinate,
-    });
-    if (!featureData) {
-      throw new Error(`Missine feature data for the "${type}" marker`);
-    }
-
-    if (type === 'edge' && segment) {
-      return {
-        type,
-        instance: featureData,
-        position: cloneDeep(positionData),
-        segment,
-      };
-    } else if (type === 'vertex' || type === 'center') {
-      return {
-        type,
-        instance: featureData,
-        position: cloneDeep(positionData),
-      };
-    } else {
-      throw new Error(`Invalid marker type "${type}" with segment: ${segment}`);
-    }
-  }
-
   handleGmDraw(event: AnyEvent): MapHandlerReturnData {
     if (!isGmDrawEvent(event)) {
       log.error('ShapeMarkersHelper.handleGmDraw: not a draw event', event);
@@ -457,7 +426,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     if (event.action === 'feature_updated') {
-      this.gm.features.withAtomicSourcesUpdate(() => {
+      this.gm.features.updateManager.withAtomicSourcesUpdate(() => {
         this.handleShapeUpdate(event);
       });
     }
@@ -597,7 +566,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${gmPrefix}:edit`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
   sendMarkerRightClickEvent(featureData: FeatureData, markerData: MarkerData) {
@@ -609,17 +578,21 @@ export class ShapeMarkersHelper extends BaseHelper {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${gmPrefix}:edit`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
   sendMarkerMoveEvent(event: MapPointerEvent) {
     const markerLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.activeMarker && this.activeFeatureData) {
-      const targetMarkers = this.pinEnabled ? this.sharedMarkers : [{
-        markerData: this.activeMarker,
-        featureData: this.activeFeatureData,
-      }];
+      const targetMarkers = this.pinEnabled
+        ? this.sharedMarkers
+        : [
+            {
+              markerData: this.activeMarker,
+              featureData: this.activeFeatureData,
+            },
+          ];
 
       targetMarkers.forEach((item) => {
         if (this.previousPosition) {
@@ -633,11 +606,47 @@ export class ShapeMarkersHelper extends BaseHelper {
             lngLatStart: this.previousPosition,
             lngLatEnd: markerLngLat,
           };
-          this.gm.events.fire(`${gmPrefix}:edit`, payload);
+          this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
         }
       });
     }
 
     this.previousPosition = markerLngLat;
+  }
+
+  protected createMarker({
+    type,
+    segment,
+    positionData,
+    parentFeature,
+  }: CreateMarkerParams): MarkerData {
+    const coordinate = positionData.coordinate;
+
+    const featureData = this.gm.features.createMarkerFeature({
+      sourceName: parentFeature.sourceName,
+      parentFeature,
+      type,
+      coordinate,
+    });
+    if (!featureData) {
+      throw new Error(`Missine feature data for the "${type}" marker`);
+    }
+
+    if (type === 'edge' && segment) {
+      return {
+        type,
+        instance: featureData,
+        position: cloneDeep(positionData),
+        segment,
+      };
+    } else if (type === 'vertex' || type === 'center') {
+      return {
+        type,
+        instance: featureData,
+        position: cloneDeep(positionData),
+      };
+    } else {
+      throw new Error(`Invalid marker type "${type}" with segment: ${segment}`);
+    }
   }
 }

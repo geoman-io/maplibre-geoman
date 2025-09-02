@@ -1,24 +1,28 @@
-import type { ActionType, DrawModeName, EditModeName, HelperModeName, ModeName } from '@/main.ts';
-import { actionTypes } from '@/modes/base-action.ts';
-import { drawModes } from '@/modes/draw/base.ts';
-import { editModes } from '@/modes/edit/base.ts';
-import { helperModes } from '@/modes/helpers/base.ts';
+import {
+  type ActionType,
+  DRAW_MODES,
+  type DrawModeName,
+  type EditModeName,
+  type HelperModeName,
+  type ModeName,
+} from '@/main.ts';
 
+import { ACTION_TYPES, EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
 
 export const isActionType = (name: string): name is ActionType => {
-  return actionTypes.includes(name as ActionType);
+  return ACTION_TYPES.includes(name as ActionType);
 };
 
 export const isDrawModeName = (name: string): name is DrawModeName => {
-  return drawModes.includes(name as DrawModeName);
+  return DRAW_MODES.includes(name as DrawModeName);
 };
 
 export const isEditModeName = (name: string): name is EditModeName => {
-  return editModes.includes(name as EditModeName);
+  return EDIT_MODES.includes(name as EditModeName);
 };
 
 export const isHelperModeName = (name: string): name is HelperModeName => {
-  return helperModes.includes(name as HelperModeName);
+  return HELPER_MODES.includes(name as HelperModeName);
 };
 
 export const isModeName = (name: string): name is ModeName => {

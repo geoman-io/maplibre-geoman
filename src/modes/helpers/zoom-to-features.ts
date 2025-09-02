@@ -1,13 +1,13 @@
-import { SOURCES } from '@/core/features/index.ts';
-import type { HelperModeName, LngLat } from '@/main.ts';
+import { type HelperModeName, type LngLat, SOURCES } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import bbox from '@turf/bbox';
 import log from 'loglevel';
 
+import { IS_PRO } from '@/core/constants.ts';
 
 export class ZoomToFeaturesHelper extends BaseHelper {
   mode: HelperModeName = 'zoom_to_features';
-  mapEventHandlers = {};
+  eventHandlers = {};
 
   onStartAction() {
     this.fitMapToFeatures();
@@ -23,10 +23,7 @@ export class ZoomToFeaturesHelper extends BaseHelper {
 
   fitMapToFeatures() {
     const featureCollection = this.gm.features.asGeoJsonFeatureCollection({
-      sourceNames: [
-        SOURCES.main,
-        // SOURCES.standby, // used in pro version only
-      ],
+      sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
     });
     const bboxArray = bbox(featureCollection) as [number, number, number, number];
     const bounds: [LngLat, LngLat] = [

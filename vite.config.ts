@@ -1,6 +1,6 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import svgLoader from 'vite-svg-loader';
 
 
@@ -12,10 +12,16 @@ export type Options = {
   GmVersion: typeof OPTIONS['gmVersion'][number];
 };
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
   const baseMap = 'maplibre';
+  const gmVersion = (env.VITE_GEOMAN_VERSION as Options['GmVersion']) || null;
 
   return {
+    define: {
+      __GEOMAN_VERSION__: JSON.stringify(gmVersion),
+    },
     server: {
       port: 3100,
     },
@@ -49,9 +55,10 @@ export default defineConfig(() => {
           },
           assetFileNames: (chunkInfo): string => {
             if (chunkInfo.name && chunkInfo.name.endsWith('.css')) {
-              return `${baseMap}-geoman.css`;
+              // return `${baseMap}-geoman.css`;
+              return `${baseMap}-geoman.[ext]`;
             }
-            return 'assets/[name].[extname]';
+            return 'assets/[name].[ext]';
           },
         },
       },

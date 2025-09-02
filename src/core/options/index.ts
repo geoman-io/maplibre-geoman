@@ -1,18 +1,15 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
-import { getDefaultOptions } from '@/core/options/defaults/index.ts';
-import type {
-  ActionType,
-  ControlOptions,
-  GenericControlsOptions,
-  Geoman,
-  GMControlSwitchEvent,
-  GmOptionsData,
-  ModeAction,
-  ModeName,
+import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/defaults/index.ts';
+import {
+  type ActionType,
+  type ControlOptions,
+  DRAW_MODES,
+  type GenericControlsOptions,
+  type Geoman,
+  type GMControlSwitchEvent,
+  type GmOptionsData,
+  type ModeAction,
+  type ModeName,
 } from '@/main.ts';
-import { drawModes } from '@/modes/draw/base.ts';
-import { editModes } from '@/modes/edit/base.ts';
-import { helperModes } from '@/modes/helpers/base.ts';
 import { isGmModeEvent } from '@/utils/guards/events/index.ts';
 import { isGmDrawEvent, isGmEditEvent, isGmHelperEvent } from '@/utils/guards/modes.ts';
 import { includesWithType } from '@/utils/typing.ts';
@@ -20,7 +17,8 @@ import mergeWith from 'lodash-es/mergeWith';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
-
+import { GM_PREFIX } from '@/core/constants.ts';
+import { EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
 
 export class GmOptions {
   gm: Geoman;
@@ -38,11 +36,16 @@ export class GmOptions {
   }
 
   getMergedOptions(options: PartialDeep<GmOptionsData> = {}): GmOptionsData {
-    return mergeWith(
-      getDefaultOptions(),
-      options,
-      mergeByTypeCustomizer,
-    );
+    const defaultOptions = getDefaultOptions();
+
+    if (typeof options.settings?.controlsUiEnabledByDefault === 'boolean') {
+      defaultOptions.settings.controlsUiEnabledByDefault =
+        options.settings.controlsUiEnabledByDefault;
+    }
+
+    trackDefaultUiEnabledState(defaultOptions);
+
+    return mergeWith(defaultOptions, options, mergeByTypeCustomizer);
   }
 
   enableMode(actionType: ActionType, modeName: ModeName) {
@@ -65,7 +68,7 @@ export class GmOptions {
       this.fireControlEvent(actionType, modeName, 'on');
       this.fireModeEvent(actionType, modeName, 'mode_started');
     } else {
-      log.error('Can\'t find control section for', actionType, modeName);
+      log.error("Can't find control section for", actionType, modeName);
     }
   }
 
@@ -85,7 +88,7 @@ export class GmOptions {
       this.fireControlEvent(actionType, modeName, 'off');
       this.fireModeEvent(actionType, modeName, 'mode_ended');
     } else {
-      log.error('Can\'t find control section for', actionType, modeName);
+      log.error("Can't find control section for", actionType, modeName);
     }
   }
 
@@ -127,20 +130,23 @@ export class GmOptions {
   }
 
   isModeAvailable(actionType: ActionType, modeName: ModeName): boolean {
-    if (actionType === 'draw' && includesWithType(modeName, drawModes)) {
+    if (actionType === 'draw' && includesWithType(modeName, DRAW_MODES)) {
       return !!this.gm.drawClassMap[modeName];
-    } else if (actionType === 'edit' && includesWithType(modeName, editModes)) {
+    } else if (actionType === 'edit' && includesWithType(modeName, EDIT_MODES)) {
       return !!this.gm.editClassMap[modeName];
-    } else if (actionType === 'helper' && includesWithType(modeName, helperModes)) {
+    } else if (actionType === 'helper' && includesWithType(modeName, HELPER_MODES)) {
       return !!this.gm.helperClassMap[modeName];
     }
 
     return false;
   }
 
-  getControlOptions({ actionType, modeName }: {
-    actionType: ActionType,
-    modeName: ModeName,
+  getControlOptions({
+    actionType,
+    modeName,
+  }: {
+    actionType: ActionType;
+    modeName: ModeName;
   }): ControlOptions | null {
     if (actionType && modeName) {
       const sectionOptions = this.controls[actionType] as GenericControlsOptions;
@@ -160,16 +166,20 @@ export class GmOptions {
 
     if (isGmModeEvent(payload)) {
       if (isGmDrawEvent(payload)) {
-        this.gm.events.fire(`${gmPrefix}:${sectionName}`, payload);
+        this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
       } else if (isGmEditEvent(payload)) {
-        this.gm.events.fire(`${gmPrefix}:${sectionName}`, payload);
+        this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
       } else if (isGmHelperEvent(payload)) {
-        this.gm.events.fire(`${gmPrefix}:${sectionName}`, payload);
+        this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
       }
     }
   }
 
-  fireControlEvent(sectionName: ActionType, modeName: ModeName, action: GMControlSwitchEvent['action']) {
+  fireControlEvent(
+    sectionName: ActionType,
+    modeName: ModeName,
+    action: GMControlSwitchEvent['action'],
+  ) {
     const payload: GMControlSwitchEvent = {
       level: 'system',
       type: 'control',
@@ -177,6 +187,6 @@ export class GmOptions {
       target: modeName,
       action,
     };
-    this.gm.events.fire(`${gmPrefix}:control`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:control`, payload);
   }
 }

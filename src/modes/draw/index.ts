@@ -8,6 +8,7 @@ import { DrawPolygon } from '@/modes/draw/polygon.ts';
 import { DrawRectangle } from '@/modes/draw/rectangle.ts';
 import { DrawTextMarker } from '@/modes/draw/text-marker.ts';
 import { DrawEllipse } from '@/modes/draw/ellipse.ts';
+import log from 'loglevel';
 
 type DrawClassConstructor = new (gm: Geoman) => BaseDraw;
 type DrawClassMap = {
@@ -26,3 +27,12 @@ export const drawClassMap: DrawClassMap = {
   freehand: null,
   custom_shape: null,
 } as const;
+
+export const createDrawInstance = (gm: Geoman, shape: DrawModeName) => {
+  if (drawClassMap[shape]) {
+    return new drawClassMap[shape](gm);
+  }
+
+  log.error(`Draw "${shape}" is not available`);
+  return null;
+};

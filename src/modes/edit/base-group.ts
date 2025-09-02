@@ -1,6 +1,11 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type { AnyEvent, EditModeName, FeatureShape, FeatureSourceName, MapHandlerReturnData } from '@/main.ts';
+import type {
+  AnyEvent,
+  EditModeName,
+  FeatureShape,
+  FeatureSourceName,
+  MapHandlerReturnData,
+} from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
 import booleanIntersects from '@turf/boolean-intersects';
@@ -9,13 +14,14 @@ import union from '@turf/union';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import log from 'loglevel';
 
+import { SOURCES } from '@/core/features/constants.ts';
 
 export abstract class BaseGroupEdit extends BaseEdit {
   abstract mode: EditModeName;
   abstract allowedShapeTypes: Array<FeatureShape>;
   features: Array<FeatureData> = [];
   featureData: FeatureData | null = null;
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
   };
 
@@ -59,9 +65,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
       sourceNames: [SOURCES.temporary],
     });
     if (tmpFeatureData) {
-      const featureIndex = this.features.findIndex(
-        (featureData) => featureData === tmpFeatureData,
-      );
+      const featureIndex = this.features.findIndex((featureData) => featureData === tmpFeatureData);
       if (featureIndex > -1) {
         this.features.splice(featureIndex, 1);
       }
@@ -71,9 +75,12 @@ export abstract class BaseGroupEdit extends BaseEdit {
     return false;
   }
 
-  getAllowedFeatureByMouseEvent({ event, sourceNames }: {
-    event: AnyEvent,
-    sourceNames: Array<FeatureSourceName>,
+  getAllowedFeatureByMouseEvent({
+    event,
+    sourceNames,
+  }: {
+    event: AnyEvent;
+    sourceNames: Array<FeatureSourceName>;
   }) {
     const featureData = this.gm.features.getFeatureByMouseEvent({ event, sourceNames });
     if (featureData && this.allowedShapeTypes.includes(featureData.shape)) {
@@ -91,8 +98,8 @@ export abstract class BaseGroupEdit extends BaseEdit {
     }
 
     const newFeatureGeoJson = featureData.getGeoJson();
-    return this.features.every(
-      (feature) => booleanIntersects(feature.getGeoJson(), newFeatureGeoJson),
+    return this.features.every((feature) =>
+      booleanIntersects(feature.getGeoJson(), newFeatureGeoJson),
     );
   }
 
@@ -104,13 +111,15 @@ export abstract class BaseGroupEdit extends BaseEdit {
 
     const featureCollection: FeatureCollection<Polygon | MultiPolygon> = {
       type: 'FeatureCollection',
-      features: this.features.map((featureData) => {
-        const geoJson = featureData.getGeoJson();
-        if (['Polygon', 'MultiPolygon'].includes(geoJson.geometry.type)) {
-          return geoJson as Feature<Polygon | MultiPolygon>;
-        }
-        return null;
-      }).filter((feature) => !!feature),
+      features: this.features
+        .map((featureData) => {
+          const geoJson = featureData.getGeoJson();
+          if (['Polygon', 'MultiPolygon'].includes(geoJson.geometry.type)) {
+            return geoJson as Feature<Polygon | MultiPolygon>;
+          }
+          return null;
+        })
+        .filter((feature) => !!feature),
     };
 
     let resultGeoJson: Feature<Polygon | MultiPolygon> | null = null;

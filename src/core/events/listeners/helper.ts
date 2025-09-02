@@ -1,19 +1,26 @@
 import { EventBus } from '@/core/events/bus.ts';
-import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMEvent, GMHelperModeEvent, MapEventHandlers } from '@/main.ts';
+import { BaseEventListener } from '@/core/events/listeners/base.ts';
+import type {
+  ActionInstanceKey,
+  EventHandlers,
+  Geoman,
+  GMEvent,
+  GMHelperModeEvent,
+} from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
+import { createHelperInstance } from '@/modes/helpers/index.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export class HelperEventListener extends BaseEventListener {
-  mapEventHandlers: MapEventHandlers = {
-    [`${gmPrefix}:helper`]: this.handleHelperEvent.bind(this),
+  eventHandlers: EventHandlers = {
+    [`${GM_PREFIX}:helper`]: this.handleHelperEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {
     super(gm);
-    bus.attachEvents(this.mapEventHandlers);
+    bus.attachEvents(this.eventHandlers);
   }
 
   handleHelperEvent(payload: GMEvent) {
@@ -36,7 +43,7 @@ export class HelperEventListener extends BaseEventListener {
   }
 
   start(actionInstanceKey: ActionInstanceKey, payload: GMHelperModeEvent) {
-    const actionInstance = this.gm.createHelperInstance(payload.mode);
+    const actionInstance = createHelperInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
     }
@@ -55,10 +62,7 @@ export class HelperEventListener extends BaseEventListener {
       actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
-      console.error(
-        `Wrong action instance for edit event "${actionInstanceKey}":`,
-        actionInstance,
-      );
+      console.error(`Wrong action instance for edit event "${actionInstanceKey}":`, actionInstance);
     }
   }
 }

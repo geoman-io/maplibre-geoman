@@ -7,7 +7,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 log.setLevel('debug');
 
-
 const emptyStyle: ml.StyleSpecification = {
   version: 8,
   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -25,7 +24,6 @@ const map = new ml.Map({
 
 const gmOptions: PartialDeep<GmOptionsData> = {};
 const geoman = new Geoman(map, gmOptions);
-
 
 map.on('load', () => {
   window.geoman = geoman;

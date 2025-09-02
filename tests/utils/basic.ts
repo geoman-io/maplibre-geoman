@@ -1,7 +1,6 @@
 import type { ActionType, ModeName } from '@/main.ts';
 import { expect, type Page } from '@playwright/test';
 
-
 export type ScreenCoordinates = [number, number];
 
 // Helper to determine if we're in CI
@@ -20,7 +19,9 @@ export const waitForGeoman = async (page: Page) => {
 };
 
 export const waitForMapIdle = async (page: Page) => {
-  await page.waitForFunction(() => window.geoman.mapAdapter.isLoaded(), { timeout: isCI ? 30000 : 10000 });
+  await page.waitForFunction(() => window.geoman.mapAdapter.isLoaded(), {
+    timeout: isCI ? 30000 : 10000,
+  });
 };
 
 export const waitForLocalFunction = async (callback: () => boolean) => {
@@ -42,21 +43,27 @@ export const waitForLocalFunction = async (callback: () => boolean) => {
 };
 
 export const enableMode = async (page: Page, actionType: ActionType, modeName: ModeName) => {
-  const isModeEnabled = await page.evaluate((context) => {
-    const geoman = window.geoman;
-    geoman.options.enableMode(context.actionType, context.modeName);
-    return geoman.options.isModeEnabled(context.actionType, context.modeName);
-  }, { actionType, modeName });
+  const isModeEnabled = await page.evaluate(
+    (context) => {
+      const geoman = window.geoman;
+      geoman.options.enableMode(context.actionType, context.modeName);
+      return geoman.options.isModeEnabled(context.actionType, context.modeName);
+    },
+    { actionType, modeName },
+  );
   expect(isModeEnabled).toBeTruthy();
   await waitForMapIdle(page);
 };
 
 export const disableMode = async (page: Page, actionType: ActionType, modeName: ModeName) => {
-  const isModeDisabled = await page.evaluate((context) => {
-    const geoman = window.geoman;
-    geoman.options.disableMode(context.actionType, context.modeName);
-    return !geoman.options.isModeEnabled(context.actionType, context.modeName);
-  }, { actionType, modeName });
+  const isModeDisabled = await page.evaluate(
+    (context) => {
+      const geoman = window.geoman;
+      geoman.options.disableMode(context.actionType, context.modeName);
+      return !geoman.options.isModeEnabled(context.actionType, context.modeName);
+    },
+    { actionType, modeName },
+  );
   expect(isModeDisabled).toBeTruthy();
   await waitForMapIdle(page);
 };
@@ -67,7 +74,7 @@ export const mouseMoveAndClick = async (
   // waitForShapeMarkers?: boolean = false,
 ) => {
   const pointsConverted: ScreenCoordinates[] = Array.isArray(points[0])
-    ? points as ScreenCoordinates[]
+    ? (points as ScreenCoordinates[])
     : [points as ScreenCoordinates];
 
   for await (const [x, y] of pointsConverted) {
@@ -84,7 +91,7 @@ export const dragAndDrop = async (
   targetPoint: ScreenCoordinates,
 ) => {
   const STEPS = isCI ? 10 : 5; // More steps for smoother CI operation
-  const STEP_DELAY = isCI ? 50 : 0; // Add delay between steps in CI
+  const STEP_DELAY = isCI ? 50 : 5; // Add delay between steps in CI
 
   await page.mouse.move(startPoint[0], startPoint[1]);
   if (isCI) await page.waitForTimeout(100); // Extra delay before mouse down in CI
@@ -94,7 +101,9 @@ export const dragAndDrop = async (
     const middleX = startPoint[0] + (targetPoint[0] - startPoint[0]) * (i / STEPS);
     const middleY = startPoint[1] + (targetPoint[1] - startPoint[1]) * (i / STEPS);
     await page.mouse.move(middleX, middleY);
-    if (STEP_DELAY > 0) await page.waitForTimeout(STEP_DELAY);
+    if (STEP_DELAY > 0) {
+      await page.waitForTimeout(STEP_DELAY);
+    }
   }
 
   await page.mouse.up();

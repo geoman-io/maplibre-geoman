@@ -1,9 +1,6 @@
 import type { PartialLayerStyle, StyleVariables } from '@/main.ts';
 
-
-export const getCircleMarkerStyles = (
-  styleVariables: StyleVariables,
-): Array<PartialLayerStyle> => {
+export const getCircleMarkerStyles = (styleVariables: StyleVariables): Array<PartialLayerStyle> => {
   return [
     {
       type: 'circle',

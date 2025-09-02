@@ -1,9 +1,7 @@
-import { SOURCES } from '@/core/features/index.ts';
-import type { AnyEvent, EditModeName, MapHandlerReturnData } from '@/main.ts';
+import { type AnyEvent, type EditModeName, type MapHandlerReturnData, SOURCES } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
-
 
 export class EditDrag extends BaseDrag {
   mode: EditModeName = 'drag';

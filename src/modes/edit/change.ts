@@ -1,14 +1,14 @@
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  EditModeName,
-  FeatureShape,
-  GeoJsonShapeFeature,
-  GMEditMarkerEvent,
-  GMEditMarkerMoveEvent,
-  LngLat,
-  MapHandlerReturnData,
-  MarkerData,
+import {
+  type AnyEvent,
+  type EditModeName,
+  type FeatureShape,
+  type GeoJsonShapeFeature,
+  type GMEditMarkerEvent,
+  type GMEditMarkerMoveEvent,
+  type LngLat,
+  type MapHandlerReturnData,
+  type MarkerData,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { getFeatureFirstPoint } from '@/utils/features.ts';
@@ -30,7 +30,6 @@ import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, get } from 'lodash-es';
 import log from 'loglevel';
 import { isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
-
 
 type UpdateShapeHandler = (event: GMEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
 
@@ -73,11 +72,7 @@ export class EditChange extends BaseDrag {
         this.moveVertex(event);
         return { next: false };
       } else if (event.lngLatEnd) {
-        this.moveSource(
-          event.featureData,
-          event.lngLatStart,
-          event.lngLatEnd,
-        );
+        this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
         return { next: false };
       }
     }
@@ -103,10 +98,7 @@ export class EditChange extends BaseDrag {
   moveVertex(event: GMEditMarkerMoveEvent) {
     if (!this.markerData) {
       this.markerData = event.markerData || null;
-      this.snapGuidesInstance?.updateSnapGuides(
-        event.featureData.getGeoJson(),
-        event.lngLatStart,
-      );
+      this.snapGuidesInstance?.updateSnapGuides(event.featureData.getGeoJson(), event.lngLatStart);
     }
 
     const featureData = event.featureData;
@@ -199,9 +191,7 @@ export class EditChange extends BaseDrag {
     }
   }
 
-  updateSingleVertex(
-    { featureData, lngLatEnd, markerData }: GMEditMarkerMoveEvent,
-  ) {
+  updateSingleVertex({ featureData, lngLatEnd, markerData }: GMEditMarkerMoveEvent) {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
     const coordPath = cloneDeep(markerData.position.path);
     const coordIndex = coordPath.pop();
@@ -303,9 +293,6 @@ export class EditChange extends BaseDrag {
 
     const oppositeVertexIndex = toMod(startIndex - 2, totalCoordsCount);
     const oppositeCoordinate = shapeCoords[oppositeVertexIndex] as LngLat;
-    return twoCoordsToGeoJsonRectangle(
-      lngLatEnd,
-      oppositeCoordinate,
-    );
+    return twoCoordsToGeoJsonRectangle(lngLatEnd, oppositeCoordinate);
   }
 }

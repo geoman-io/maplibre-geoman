@@ -1,7 +1,13 @@
-import type { AnyEvent, BaseMapEventName, MapPointerEvent, MapWithOnceMethod, PointerEventName } from '@/main.ts';
+import type {
+  AnyEvent,
+  BaseMapEventName,
+  MapPointerEvent,
+  MapWithOnceMethod,
+  PartialLayerStyle,
+  PointerEventName,
+} from '@/main.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
 import log from 'loglevel';
-
 
 export function isPointerEventName(key: string): key is PointerEventName {
   return pointerEvents.includes(key as PointerEventName);
@@ -13,10 +19,10 @@ export function isBaseMapEventName(key: string): key is BaseMapEventName {
 
 export const hasMapOnceMethod = (map: unknown): map is MapWithOnceMethod => {
   return !!(
-    map
-    && typeof map === 'object'
-    && 'once' in map
-    && typeof (map as MapWithOnceMethod).once === 'function'
+    map &&
+    typeof map === 'object' &&
+    'once' in map &&
+    typeof (map as MapWithOnceMethod).once === 'function'
   );
 };
 
@@ -31,19 +37,31 @@ export const isMapPointerEvent = (
     return false;
   }
 
-  const isCursorEvent = (
-    typeof event === 'object'
-    && 'lngLat' in event
-    && 'point' in event
-    && 'type' in event
-    && 'originalEvent' in event
-    && typeof event.type === 'string'
-    && pointerEvents.includes(event.type as PointerEventName)
-  );
+  const isCursorEvent =
+    typeof event === 'object' &&
+    'lngLat' in event &&
+    'point' in event &&
+    'type' in event &&
+    'originalEvent' in event &&
+    typeof event.type === 'string' &&
+    pointerEvents.includes(event.type as PointerEventName);
 
   if (!isCursorEvent && options.warning) {
     log.warn('Not a pointer event', event);
   }
 
   return isCursorEvent;
+};
+
+export const isPartialLayer = (object: unknown): object is PartialLayerStyle => {
+  const allowedTypes = ['symbol', 'fill', 'line', 'circle'] as const satisfies Array<
+    PartialLayerStyle['type']
+  >;
+
+  return (
+    !!object &&
+    typeof object === 'object' &&
+    'type' in object &&
+    allowedTypes.includes(object.type as PartialLayerStyle['type'])
+  );
 };

@@ -2,17 +2,21 @@ import { BaseLayer } from '@/core/map/base/layer.ts';
 import type { MaplibreAnyLayer } from '@/core/map/maplibre/types.ts';
 import type { Geoman } from '@/main.ts';
 import ml from 'maplibre-gl';
-
+import log from 'loglevel';
 
 export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
   gm: Geoman;
   layerInstance: MaplibreAnyLayer | null = null;
   mapInstance: ml.Map;
 
-  constructor({ gm, layerId, options }: {
-    gm: Geoman,
-    layerId: string,
-    options?: ml.AddLayerObject
+  constructor({
+    gm,
+    layerId,
+    options,
+  }: {
+    gm: Geoman;
+    layerId: string;
+    options?: ml.AddLayerObject;
   }) {
     super();
     this.gm = gm;
@@ -21,7 +25,7 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
     if (options) {
       this.layerInstance = this.createLayer(options);
     } else {
-      this.layerInstance = this.mapInstance.getLayer(layerId) as MaplibreAnyLayer || null;
+      this.layerInstance = (this.mapInstance.getLayer(layerId) as MaplibreAnyLayer) || null;
     }
   }
 
@@ -42,8 +46,14 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
   }
 
   createLayer(options: ml.AddLayerObject): MaplibreAnyLayer {
-    this.mapInstance.addLayer(options);
-    return this.mapInstance.getLayer(options.id) as MaplibreAnyLayer || null;
+    let layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer | undefined;
+    if (layer) {
+      log.warn(`Layer "${options.id}" already exists, skipping`);
+    } else {
+      this.mapInstance.addLayer(options);
+      layer = this.mapInstance.getLayer(options.id) as MaplibreAnyLayer;
+    }
+    return layer ?? null;
   }
 
   remove(): void {
@@ -53,4 +63,3 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
     this.layerInstance = null;
   }
 }
-

@@ -1,16 +1,16 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionOptions,
+  ActionSettings,
   ActionType,
   AnyEvent,
   EditModeName,
+  EventHandlers,
   GeoJsonShapeFeature,
   Geoman,
   GMBeforeFeatureCreateEvent,
   GMBeforeFeatureUpdateEvent,
   GMGeofencingViolationEvent,
-  MapEventHandlers,
   ModeName,
   NonEmptyArray,
   SubActions,
@@ -18,29 +18,32 @@ import type {
 import type { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { isGmGeofencingViolationEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
-
-
-export const actionTypes = ['draw', 'edit', 'helper'] as const;
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export abstract class BaseAction {
   gm: Geoman;
   abstract actionType: ActionType;
   abstract mode: ModeName;
-  options: ActionOptions = [];
-  actions: SubActions = [];
+  options: ActionOptions = {};
+  settings: ActionSettings = {};
+  actions: SubActions = {};
   flags = {
     featureCreateAllowed: true,
     featureUpdateAllowed: true,
   };
 
-  abstract mapEventHandlers: MapEventHandlers;
+  abstract eventHandlers: EventHandlers;
 
-  internalMapEventHandlers: MapEventHandlers = {
-    [`${gmPrefix}:helper`]: this.handleHelperEvent.bind(this),
+  internalEventHandlers: EventHandlers = {
+    [`${GM_PREFIX}:helper`]: this.handleHelperEvent.bind(this),
   };
 
   constructor(gm: Geoman) {
     this.gm = gm;
+  }
+
+  get snappingHelper(): SnappingHelper | null {
+    return (this.gm.actionInstances.helper__snapping || null) as SnappingHelper | null;
   }
 
   abstract onStartAction(): void;
@@ -48,30 +51,24 @@ export abstract class BaseAction {
   abstract onEndAction(): void;
 
   startAction() {
-    this.gm.events.bus.attachEvents(this.internalMapEventHandlers);
-    this.gm.events.bus.attachEvents(this.mapEventHandlers);
+    this.gm.events.bus.attachEvents(this.internalEventHandlers);
+    this.gm.events.bus.attachEvents(this.eventHandlers);
     this.onStartAction();
   }
 
   endAction() {
     this.onEndAction();
-    this.gm.events.bus.detachEvents(this.mapEventHandlers);
-    this.gm.events.bus.detachEvents(this.internalMapEventHandlers);
-  }
-
-  get snappingHelper(): SnappingHelper | null {
-    return (
-      this.gm.actionInstances.helper__snapping || null
-    ) as SnappingHelper | null;
+    this.gm.events.bus.detachEvents(this.eventHandlers);
+    this.gm.events.bus.detachEvents(this.internalEventHandlers);
   }
 
   getOptionValue(name: string) {
-    const option = this.options.find((item) => item.name === name);
+    const option = this.options[name];
     if (!option) {
       throw new Error(`Option ${name} not found`);
     }
 
-    if (option.type === 'toggle') {
+    if (['toggle', 'hidden'].includes(option.type)) {
       return option.value;
     } else if (option.type === 'select') {
       return option.value.value;
@@ -80,8 +77,15 @@ export abstract class BaseAction {
     }
   }
 
+  getSettingValue(name: string) {
+    if (name in this.settings) {
+      return this.settings[name];
+    }
+    return undefined;
+  }
+
   applyOptionValue(name: string, value: boolean | string | number) {
-    const option = this.options.find((item) => item.name === name);
+    const option = this.options[name];
     if (!option) {
       log.error('Option not found', name, value);
       return;
@@ -94,8 +98,10 @@ export abstract class BaseAction {
       if (choiceItemValue) {
         option.value = choiceItemValue;
       }
+    } else if (option.type === 'hidden') {
+      option.value = value;
     } else {
-      log.error('Can\'t apply option value', name, value, option);
+      log.error("Can't apply option value", name, value, option);
     }
   }
 
@@ -116,12 +122,13 @@ export abstract class BaseAction {
     return { next: true };
   }
 
-  fireBeforeFeatureCreate(
-    { geoJsonFeatures, forceMode = undefined }: {
-      geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireBeforeFeatureCreate({
+    geoJsonFeatures,
+    forceMode = undefined,
+  }: {
+    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
+    forceMode?: EditModeName;
+  }) {
     this.flags.featureCreateAllowed = true;
 
     const payload: GMBeforeFeatureCreateEvent = {
@@ -131,16 +138,18 @@ export abstract class BaseAction {
       action: 'before_create',
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${gmPrefix}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 
-  fireBeforeFeatureUpdate(
-    { features, geoJsonFeatures, forceMode = undefined }: {
-      features: NonEmptyArray<FeatureData>,
-      geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>,
-      forceMode?: EditModeName
-    },
-  ) {
+  fireBeforeFeatureUpdate({
+    features,
+    geoJsonFeatures,
+    forceMode = undefined,
+  }: {
+    features: NonEmptyArray<FeatureData>;
+    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
+    forceMode?: EditModeName;
+  }) {
     this.flags.featureUpdateAllowed = true;
 
     const payload: GMBeforeFeatureUpdateEvent = {
@@ -151,6 +160,6 @@ export abstract class BaseAction {
       features,
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${gmPrefix}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 }

@@ -8,7 +8,6 @@ import type { Geoman } from '@/main.ts';
 import log from 'loglevel';
 import type { EventType, GMEvent, GmEventName } from 'src/types/events';
 
-
 export default class GMEvents {
   gm: Geoman;
   bus: EventBus;

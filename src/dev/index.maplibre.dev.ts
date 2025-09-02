@@ -1,4 +1,3 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import {
   loadDevShapes,
   loadExternalGeoJson,
@@ -7,32 +6,43 @@ import {
 } from '@/dev/fixtures/shapes.ts';
 import mapLibreStyle from '@/dev/maplibre-style.ts';
 import { layerStyles } from '@/dev/styles/layer-styles.ts';
-import { type GeoJsonImportFeature, Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
+import {
+  type GeoJsonImportFeature,
+  Geoman,
+  type GmOptionsData,
+  type MapInstanceWithGeoman,
+} from '@/main.ts';
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
 import testShapes from '@/dev/fixtures/test-shapes.json';
+import { GM_PREFIX } from '@/core/constants.ts';
 
 log.setLevel(log.levels.TRACE);
 
 const gmOptions: PartialDeep<GmOptionsData> = {
   settings: {
     controlsPosition: 'top-left',
+    useDefaultLayers: true,
+    controlsUiEnabledByDefault: true,
+    controlsCollapsible: true,
+    controlsStyles: {
+      controlGroupClass: 'maplibregl-ctrl maplibregl-ctrl-group',
+      controlContainerClass: 'gm-control-container',
+      controlButtonClass: 'gm-control-button',
+    },
   },
   layerStyles: layerStyles,
   controls: {
     edit: {
       drag: {
         title: 'Drag',
+        uiEnabled: true,
       },
     },
     draw: {},
-    helper: {
-      snapping: {
-        active: true,
-      },
-    },
+    helper: {},
   },
 };
 
@@ -99,7 +109,6 @@ const unbindButtonHandlers = () => {
   });
 };
 
-
 const loadGeomanData = (geoman: Geoman) => {
   log.debug(`Running mode: "${import.meta.env.MODE}"`);
   log.debug('Geoman instance', geoman);
@@ -130,14 +139,17 @@ const loadGeomanData = (geoman: Geoman) => {
 
 const initGeoman = async () => {
   const existingMapInstance = window.customData?.map as ml.Map | undefined;
-  const map = existingMapInstance || new ml.Map({
-    container: 'dev-map',
-    // style: 'https://demotiles.maplibre.org/style.json',
-    style: mapLibreStyle,
-    center: [0, 51],
-    zoom: 5,
-    fadeDuration: 50,
-  });
+  const map =
+    existingMapInstance ||
+    new ml.Map({
+      container: 'dev-map',
+      // style: 'https://demotiles.maplibre.org/style.json',
+      style: mapLibreStyle,
+      center: [0, 51],
+      zoom: 5,
+      fadeDuration: 50,
+    });
+  console.log(`Maplibre version: "${map.version}"`);
 
   if (window.geoman) {
     console.error('Geoman is already initialized', window.geoman);
@@ -146,7 +158,7 @@ const initGeoman = async () => {
   const geoman = new Geoman(map, gmOptions);
 
   await new Promise((resolve) => {
-    map.once(`${gmPrefix}:loaded`, async () => {
+    map.once(`${GM_PREFIX}:loaded`, async () => {
       resolve(geoman);
     });
   });
@@ -188,6 +200,8 @@ onOffButtonElement?.addEventListener('click', async () => {
     window.geoman = geoman;
     window.customData ??= { eventResults: {} };
     window.customData.map = geoman.mapAdapter.mapInstance as MapInstanceWithGeoman;
+
+    log.debug('geoman version:', __GEOMAN_VERSION__);
   }
 });
 
