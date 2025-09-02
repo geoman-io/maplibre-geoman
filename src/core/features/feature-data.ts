@@ -11,14 +11,17 @@ import {
   type FeatureSourceName,
   type GeoJsonShapeFeature,
   type Geoman,
+  includesWithType,
   type MarkerData,
   type MarkerId,
+  SHAPE_NAMES,
   type ShapeGeoJsonProperties,
   typedKeys,
 } from '@/main.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
+import { isLngLat } from '@/utils/guards/geojson.ts';
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
 
@@ -26,7 +29,7 @@ export class FeatureData {
   gm: Geoman;
   id: FeatureId = 'no-id';
   parent: FeatureData | null = null;
-  shape: FeatureShape;
+  shape: FeatureShape = 'marker';
   markers: Map<MarkerId, MarkerData>;
   shapeProperties: FeatureShapeProperties = { center: null };
   source: BaseSource;
@@ -38,7 +41,7 @@ export class FeatureData {
     this.source = parameters.source;
     this.parent = parameters.parent;
     this.markers = new Map();
-    this.shape = parameters.geoJsonShapeFeature.properties.shape;
+    this.parseGmShapeProperties(parameters.geoJsonShapeFeature);
     this.addGeoJson(parameters.geoJsonShapeFeature);
   }
 
@@ -54,12 +57,43 @@ export class FeatureData {
     return this.shapeProperties[name];
   }
 
+  parseGmShapeProperties(geoJson: GeoJsonShapeFeature) {
+    this.shape = geoJson.properties.shape;
+    // const shape =
+    //   this.getGmShapeTypeProperty(geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
+    //
+    // if (shape) {
+    //   this.shape = shape;
+    // } else {
+    //   log.error(`FeatureData.importGmShapeProperties(): unknown shape: ${shape}`);
+    // }
+
+    const center = this.getGmCenterProperty(geoJson);
+    if (center) {
+      this.setShapeProperty('center', center);
+    }
+  }
+
+  getGmShapeTypeProperty(geoJson: GeoJsonShapeFeature) {
+    const value = geoJson.properties[`${FEATURE_PROPERTY_PREFIX}shape`] || geoJson.properties.shape;
+    if (value && typeof value === 'string' && includesWithType(value, SHAPE_NAMES)) {
+      return value;
+    }
+  }
+
+  getGmCenterProperty(geoJson: GeoJsonShapeFeature) {
+    const value =
+      geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] || geoJson.properties.center;
+    if (isLngLat(value)) {
+      return value;
+    }
+  }
+
   exportGmShapeProperties() {
     return Object.fromEntries(
-      typedKeys(this.shapeProperties).map((name) => [
-        `${FEATURE_PROPERTY_PREFIX}${name}`,
-        this.shapeProperties[name],
-      ]),
+      typedKeys(this.shapeProperties)
+        .map((name) => [`${FEATURE_PROPERTY_PREFIX}${name}`, this.shapeProperties[name]])
+        .filter(([, value]) => value !== undefined && value !== null),
     );
   }
 

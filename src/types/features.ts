@@ -30,6 +30,7 @@ export type ForEachFeatureDataCallbackFn = (
   key: FeatureId,
   map: FeatureStore,
 ) => void;
+
 export type FeatureShapeProperties = {
   center: LngLat | null;
 };
