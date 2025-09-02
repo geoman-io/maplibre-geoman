@@ -1,3 +1,4 @@
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import {
@@ -5,7 +6,6 @@ import {
   FEATURE_ID_PROPERTY,
   type FeatureDataParameters,
   type FeatureId,
-  type FeatureOrders,
   type FeatureShape,
   type FeatureShapeProperties,
   type FeatureSourceName,
@@ -14,12 +14,11 @@ import {
   type MarkerData,
   type MarkerId,
   type ShapeGeoJsonProperties,
+  typedKeys,
 } from '@/main.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
-import { typedValues } from '@/utils/typing.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
-import { SOURCES } from '@/core/features/constants.ts';
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
 
@@ -51,12 +50,17 @@ export class FeatureData {
     return this.source.id as FeatureSourceName;
   }
 
-  getEmptyOrders(): FeatureOrders {
-    return Object.fromEntries(typedValues(SOURCES).map((name) => [name, null])) as FeatureOrders;
-  }
-
   getShapeProperty(name: keyof FeatureShapeProperties) {
     return this.shapeProperties[name];
+  }
+
+  exportGmShapeProperties() {
+    return Object.fromEntries(
+      typedKeys(this.shapeProperties).map((name) => [
+        `${FEATURE_PROPERTY_PREFIX}${name}`,
+        this.shapeProperties[name],
+      ]),
+    );
   }
 
   setShapeProperty<T extends keyof FeatureShapeProperties>(
@@ -72,10 +76,6 @@ export class FeatureData {
     } else {
       throw new Error(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
     }
-  }
-
-  getSourceGeoJson() {
-    return this.source.getGeoJson();
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {

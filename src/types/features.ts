@@ -22,7 +22,6 @@ export type FeatureDataParameters = {
   geoJsonShapeFeature: GeoJsonShapeFeature;
 };
 
-export type FeatureOrder = number | null;
 export type FeatureSourceName = (typeof SOURCES)[keyof typeof SOURCES];
 export type SourcesStorage = { [key in FeatureSourceName]: BaseSource | null };
 export type FeatureStore = Map<FeatureId, FeatureData>;
@@ -31,7 +30,6 @@ export type ForEachFeatureDataCallbackFn = (
   key: FeatureId,
   map: FeatureStore,
 ) => void;
-export type FeatureOrders = Record<FeatureSourceName, FeatureOrder>;
 export type FeatureShapeProperties = {
   center: LngLat | null;
 };

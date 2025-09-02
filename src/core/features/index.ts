@@ -1,4 +1,7 @@
+import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
+import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
 import {
@@ -38,9 +41,6 @@ import type {
 } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
-import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
-import { SOURCES } from '@/core/features/constants.ts';
 
 export class Features {
   gm: Geoman;
@@ -365,10 +365,16 @@ export class Features {
         sourceFeatureCollection.features
           .filter((feature) => !!feature)
           .forEach((feature) => {
+            const featureData = this.get(sourceName, feature.id as FeatureId);
+
             if (shapeTypes === undefined || shapeTypes.includes(feature.properties.shape)) {
               resultFeatureCollection.features.push({
                 ...feature,
                 id: feature.properties[FEATURE_ID_PROPERTY],
+                properties: {
+                  ...feature.properties,
+                  ...featureData?.exportGmShapeProperties(),
+                },
               });
             }
           });
