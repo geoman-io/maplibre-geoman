@@ -85,10 +85,6 @@ export abstract class BaseEdit extends BaseAction {
       return false;
     }
 
-    if (featureData.shape === 'circle' && featureGeoJson.properties.center) {
-      featureData.setShapeProperty('center', featureGeoJson.properties.center);
-    }
-
     featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
 
     this.fireFeatureUpdatedEvent({

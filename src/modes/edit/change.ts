@@ -223,7 +223,6 @@ export class EditChange extends BaseDrag {
       type: 'Feature',
       properties: {
         shape: 'circle',
-        center: shapeCenter,
       },
       geometry: circlePolygon.geometry,
     };
