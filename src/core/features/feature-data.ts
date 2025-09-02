@@ -16,12 +16,12 @@ import {
   type MarkerId,
   type ShapeGeoJsonProperties,
 } from '@/main.ts';
+import { exportShapeProperties } from '@/utils/features.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import { typedValues } from '@/utils/typing.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
 import { SOURCES } from '@/core/features/constants.ts';
-import { exportShapeProperties } from '@/utils/features.ts';
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = [
   'circle',
