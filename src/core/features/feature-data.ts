@@ -14,7 +14,6 @@ import {
   includesWithType,
   type MarkerData,
   type MarkerId,
-  SHAPE_NAMES,
   type ShapeGeoJsonProperties,
   typedKeys,
 } from '@/main.ts';
@@ -22,6 +21,7 @@ import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
 import { isLngLat } from '@/utils/guards/geojson.ts';
+import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
 
@@ -58,15 +58,14 @@ export class FeatureData {
   }
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature) {
-    this.shape = geoJson.properties.shape;
-    // const shape =
-    //   this.getGmShapeTypeProperty(geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
-    //
-    // if (shape) {
-    //   this.shape = shape;
-    // } else {
-    //   log.error(`FeatureData.importGmShapeProperties(): unknown shape: ${shape}`);
-    // }
+    const shape =
+      this.getGmShapeTypeProperty(geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
+
+    if (shape) {
+      this.shape = shape;
+    } else {
+      log.error(`FeatureData.importGmShapeProperties(): unknown shape: ${shape}`);
+    }
 
     const center = this.getGmCenterProperty(geoJson);
     if (center) {
@@ -76,7 +75,7 @@ export class FeatureData {
 
   getGmShapeTypeProperty(geoJson: GeoJsonShapeFeature) {
     const value = geoJson.properties[`${FEATURE_PROPERTY_PREFIX}shape`] || geoJson.properties.shape;
-    if (value && typeof value === 'string' && includesWithType(value, SHAPE_NAMES)) {
+    if (value && typeof value === 'string' && includesWithType(value, ALL_SHAPE_NAMES)) {
       return value;
     }
   }
