@@ -9,6 +9,8 @@ import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export type FeatureId = number | string;
 
+export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';
+
 export type ShapeGeoJsonProperties = {
   [FEATURE_ID_PROPERTY]?: FeatureId;
   [key: string]: unknown;
@@ -42,4 +44,3 @@ export type PrefixedFeatureShapeProperties = WithPrefixedKeys<
   FeatureShapeProperties,
   typeof FEATURE_PROPERTY_PREFIX
 >;
-export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';

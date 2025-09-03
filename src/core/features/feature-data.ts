@@ -22,6 +22,7 @@ import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import { isLngLat } from '@/utils/guards/geojson.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
+import { propertyValidators } from '@/core/features/validators.ts';
 
 export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
 
@@ -69,26 +70,13 @@ export class FeatureData {
     return this.source.id as FeatureSourceName;
   }
 
-  getShapeProperty(name: 'id'): FeatureShapeProperties['id'] | undefined;
-  getShapeProperty(name: 'shape'): FeatureShapeProperties['shape'] | undefined;
-  getShapeProperty(name: 'center'): NonNullable<FeatureShapeProperties['center']> | undefined;
-  getShapeProperty(name: 'text'): FeatureShapeProperties['text'] | undefined;
   getShapeProperty<T extends keyof FeatureShapeProperties>(
     name: T,
-  ): FeatureShapeProperties[T] | undefined;
-  getShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
+  ): FeatureShapeProperties[T] | undefined {
+    const validator = propertyValidators[name];
     const value = this._geoJson?.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-    if ((name === 'id' && typeof value === 'string') || typeof value === 'number') {
-      return value;
-    } else if (
-      name === 'shape' &&
-      typeof value === 'string' &&
-      includesWithType(value, ALL_SHAPE_NAMES)
-    ) {
-      return value;
-    } else if (name === 'center' && isLngLat(value)) {
-      return value;
-    } else if (name === 'text' && typeof value === 'string') {
+
+    if (validator && validator(value)) {
       return value;
     }
 
