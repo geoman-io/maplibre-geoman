@@ -15,7 +15,6 @@ import type {
 export type ImportGeoJsonProperties = {
   shape?: ShapeName;
   center?: LngLat;
-  radius?: number;
   text?: string;
   [key: string]: unknown;
 };

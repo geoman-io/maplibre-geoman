@@ -146,7 +146,6 @@ export class Features {
   }
 
   delete(featureIdOrFeatureData: FeatureData | FeatureId) {
-    log.debug('removing feature', featureIdOrFeatureData);
     let featureData: FeatureData | null;
 
     if (featureIdOrFeatureData instanceof FeatureData) {
@@ -158,7 +157,7 @@ export class Features {
     if (featureData) {
       this.featureStore.delete(featureData.id);
       featureData.delete();
-      log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
+      // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
     }

@@ -54,7 +54,6 @@ export class FeatureData {
     if (typeof value === 'string' && includesWithType(value, ALL_SHAPE_NAMES)) {
       return value;
     }
-    log.debug('props', this._geoJson?.properties);
     throw new Error(`Wrong shape type: "${value}"`);
   }
 
