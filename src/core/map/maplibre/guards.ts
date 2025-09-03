@@ -1,4 +1,4 @@
-import { type MaplibrePointerEventName, maplibrePointerEvents } from '@/core/map/maplibre/types.ts';
+import { type MaplibrePointerEventName, maplibrePointerEvents } from '@mapLib/types/events.ts';
 
 export const isMaplibreSupportedPointerEventName = (
   name: string,

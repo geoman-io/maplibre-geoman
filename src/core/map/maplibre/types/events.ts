@@ -1,8 +1,7 @@
-import ml, { type MapLayerEventType } from 'maplibre-gl';
+import { type MapLayerEventType } from 'maplibre-gl';
 
 // NOTE: these types mustn't be used outside the maplibre adapter directory!
 
-export type MaplibreAnyLayer = NonNullable<ReturnType<ml.Map['getLayer']>>;
 export const maplibrePointerEvents: ReadonlyArray<keyof MapLayerEventType> = [
   'click',
   'dblclick',

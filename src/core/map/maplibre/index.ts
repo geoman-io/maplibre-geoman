@@ -8,7 +8,6 @@ import { MaplibreLayer } from '@/core/map/maplibre/layer.ts';
 import { MaplibreDomMarker } from '@/core/map/maplibre/marker.ts';
 import { MaplibrePopup } from '@/core/map/maplibre/popup.ts';
 import { MaplibreSource } from '@/core/map/maplibre/source.ts';
-import type { MaplibreAnyLayer } from '@/core/map/maplibre/types.ts';
 import {
   type BaseDomMarkerOptions,
   type BaseEventListener,
@@ -27,6 +26,7 @@ import {
   type MapTypes,
   type ScreenPoint,
 } from '@/main.ts';
+import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';
 import ml from 'maplibre-gl';
