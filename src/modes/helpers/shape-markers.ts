@@ -296,12 +296,13 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   addCenterMarker(featureData: FeatureData) {
-    if (featureData.shapeProperties.center) {
+    const shapeCenter = featureData.getShapeProperty('center');
+    if (shapeCenter) {
       const markerData = this.createMarker({
         type: 'center',
         positionData: {
           path: [],
-          coordinate: featureData.shapeProperties.center,
+          coordinate: shapeCenter,
         },
         parentFeature: featureData,
       });
@@ -542,12 +543,14 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   updateCenterMarkerPosition(featureData: FeatureData) {
     const markerData = featureData.markers.get('center') || null;
-    if (markerData && markerData.type !== 'dom' && featureData.shapeProperties.center) {
+    const shapeCenter = featureData.getShapeProperty('center');
+
+    if (markerData && markerData.type !== 'dom' && shapeCenter) {
       markerData.instance.updateGeoJsonGeometry({
         type: 'Point',
-        coordinates: featureData.shapeProperties.center,
+        coordinates: shapeCenter,
       });
-      markerData.position.coordinate = featureData.shapeProperties.center;
+      markerData.position.coordinate = shapeCenter;
     }
   }
 

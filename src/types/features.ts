@@ -8,12 +8,10 @@ import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
 export type FeatureId = number | string;
 
 export type ShapeGeoJsonProperties = {
-  shape: FeatureShape;
   [FEATURE_ID_PROPERTY]?: FeatureId;
-  center?: LngLat;
-  text?: string;
   [key: string]: unknown;
 };
+
 export type FeatureDataParameters = {
   gm: Geoman;
   id: FeatureId;
@@ -32,7 +30,10 @@ export type ForEachFeatureDataCallbackFn = (
 ) => void;
 
 export type FeatureShapeProperties = {
-  center: LngLat | null;
+  id?: FeatureId;
+  shape?: FeatureShape;
+  center?: LngLat;
+  text?: string;
 };
 
 export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';

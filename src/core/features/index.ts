@@ -146,6 +146,7 @@ export class Features {
   }
 
   delete(featureIdOrFeatureData: FeatureData | FeatureId) {
+    log.debug('removing feature', featureIdOrFeatureData);
     let featureData: FeatureData | null;
 
     if (featureIdOrFeatureData instanceof FeatureData) {
@@ -157,7 +158,7 @@ export class Features {
     if (featureData) {
       this.featureStore.delete(featureData.id);
       featureData.delete();
-      // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
+      log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
     }
@@ -294,18 +295,9 @@ export class Features {
       return null;
     }
 
-    const featureId = shapeGeoJson.id || this.getNewFeatureId();
-
     return this.createFeature({
       featureId: shapeGeoJson.id as FeatureId | undefined,
-      shapeGeoJson: {
-        ...shapeGeoJson,
-        properties: {
-          ...shapeGeoJson.properties,
-          [FEATURE_ID_PROPERTY]: featureId,
-          shape,
-        },
-      },
+      shapeGeoJson,
       sourceName,
       imported: true,
     });
@@ -366,8 +358,12 @@ export class Features {
           .filter((feature) => !!feature)
           .forEach((feature) => {
             const featureData = this.get(sourceName, feature.id as FeatureId);
+            if (!featureData) {
+              log.warn('Can\'t find featureData for the feature', feature);
+              return;
+            }
 
-            if (shapeTypes === undefined || shapeTypes.includes(feature.properties.shape)) {
+            if (shapeTypes === undefined || shapeTypes.includes(featureData.shape)) {
               resultFeatureCollection.features.push({
                 ...feature,
                 id: feature.properties[FEATURE_ID_PROPERTY],

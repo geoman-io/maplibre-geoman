@@ -34,6 +34,10 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     return this.sourceInstance.id;
   }
 
+  get loaded(): boolean {
+    return !!this.sourceInstance?.loaded();
+  }
+
   createSource({ geoJson, sourceId }: { sourceId: string; geoJson: GeoJSON }): ml.GeoJSONSource {
     let source = this.mapInstance.getSource(sourceId) as ml.GeoJSONSource | undefined;
     if (source) {

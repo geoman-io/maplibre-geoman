@@ -19,9 +19,14 @@ export const waitForGeoman = async (page: Page) => {
 };
 
 export const waitForMapIdle = async (page: Page) => {
-  await page.waitForFunction(() => window.geoman.mapAdapter.isLoaded(), {
-    timeout: isCI ? 30000 : 10000,
-  });
+  await page.waitForFunction(
+    () => {
+      return !Object.values(window.geoman.features.sources).some((source) => !source?.loaded);
+    },
+    {
+      timeout: isCI ? 30000 : 10000,
+    },
+  );
 };
 
 export const waitForLocalFunction = async (callback: () => boolean) => {
