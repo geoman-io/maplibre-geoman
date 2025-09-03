@@ -11,7 +11,6 @@ import type {
   Point,
   Polygon,
 } from 'geojson';
-import type { SetRequired } from 'type-fest';
 
 export type ImportGeoJsonProperties = {
   shape?: ShapeName;
@@ -42,10 +41,6 @@ export type GeoJsonImportFeatureCollection = FeatureCollection<
   BasicGeometry,
   ImportGeoJsonProperties
 >;
-
-export type GeoJsonShapeFeatureWithGmProperties = Omit<GeoJsonShapeFeature, 'properties'> & {
-  properties: SetRequired<GeoJsonShapeFeature['properties'], '_gmid'>;
-};
 
 export type LngLatDiff = {
   lng: number;

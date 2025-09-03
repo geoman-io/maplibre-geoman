@@ -1,5 +1,5 @@
 import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
-import { SOURCES } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
@@ -359,7 +359,7 @@ export class Features {
           .forEach((feature) => {
             const featureData = this.get(sourceName, feature.id as FeatureId);
             if (!featureData) {
-              log.warn('Can\'t find featureData for the feature', feature);
+              log.warn("Can't find featureData for the feature", feature);
               return;
             }
 
@@ -487,7 +487,7 @@ export class Features {
       ...partialStyle,
       id: layerId,
       source: sourceName,
-      filter: ['in', ['get', 'shape'], ['literal', shapeNames]],
+      filter: ['in', ['get', `${FEATURE_PROPERTY_PREFIX}shape`], ['literal', shapeNames]],
     };
 
     return this.gm.mapAdapter.addLayer(layerOptions);

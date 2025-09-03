@@ -4,6 +4,8 @@ import { FEATURE_ID_PROPERTY, type Geoman, SOURCES } from '@/main.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
+import type { WithPrefixedKeys } from '@/types/utils.ts';
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export type FeatureId = number | string;
 
@@ -36,4 +38,8 @@ export type FeatureShapeProperties = {
   text?: string;
 };
 
+export type PrefixedFeatureShapeProperties = WithPrefixedKeys<
+  FeatureShapeProperties,
+  typeof FEATURE_PROPERTY_PREFIX
+>;
 export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';

@@ -13,7 +13,9 @@ import {
   includesWithType,
   type MarkerData,
   type MarkerId,
+  type PrefixedFeatureShapeProperties,
   type ShapeGeoJsonProperties,
+  typedKeys,
 } from '@/main.ts';
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
@@ -37,8 +39,14 @@ export class FeatureData {
     this.source = parameters.source;
     this.parent = parameters.parent;
     this.markers = new Map();
-    this.addGeoJson(parameters.geoJsonShapeFeature);
-    this.parseGmShapeProperties(parameters.geoJsonShapeFeature);
+
+    this.addGeoJson({
+      ...parameters.geoJsonShapeFeature,
+      properties: {
+        ...parameters.geoJsonShapeFeature.properties,
+        ...this.parseGmShapeProperties(parameters.geoJsonShapeFeature),
+      },
+    });
   }
 
   get shape(): FeatureShape {
@@ -97,31 +105,29 @@ export class FeatureData {
       return;
     }
     this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`] = value;
-    // this.updateGeoJsonProperties(this._geoJson.properties);
+    this.updateGeoJsonProperties(this._geoJson.properties);
   }
 
-  parseGmShapeProperties(geoJson: GeoJsonShapeFeature) {
-    this.setShapeProperty('id', this.id);
-
+  parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
     const shape =
       this.getGmShapeTypeProperty(geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
 
-    if (shape) {
-      this.setShapeProperty('shape', shape);
-    } else {
+    if (!shape) {
       log.error(`FeatureData.importGmShapeProperties(): unknown shape: ${shape}`);
     }
 
-    const center = this.getGmCenterProperty(geoJson);
-    if (center) {
-      this.setShapeProperty('center', center);
-    }
+    const properties: FeatureShapeProperties = {
+      id: this.id,
+      shape: shape || undefined,
+      center: this.getGmCenterProperty(geoJson),
+      text: this.getGmTextProperty(geoJson),
+    };
 
-    if (this._geoJson) {
-      this.updateGeoJsonCenter(this._geoJson);
-    } else {
-      log.error(`FeatureData.parseGmShapeProperties(): missing this._geoJson`);
-    }
+    return Object.fromEntries(
+      typedKeys(properties)
+        .filter((fieldName) => properties[fieldName] !== undefined)
+        .map((fieldName) => [`${FEATURE_PROPERTY_PREFIX}${fieldName}`, properties[fieldName]]),
+    );
   }
 
   getGmShapeTypeProperty(geoJson: GeoJsonShapeFeature) {
@@ -135,6 +141,13 @@ export class FeatureData {
     const value =
       geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] || geoJson.properties.center;
     if (isLngLat(value)) {
+      return value;
+    }
+  }
+
+  getGmTextProperty(geoJson: GeoJsonShapeFeature) {
+    const value = geoJson.properties[`${FEATURE_PROPERTY_PREFIX}text`] || geoJson.properties.text;
+    if (typeof value === 'string') {
       return value;
     }
   }
@@ -167,11 +180,8 @@ export class FeatureData {
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {
-    // if (this._geoJson) {
-    //   throw new Error(`FeatureData.addGeoJson, not an empty feature: "${this.id}"`);
-    // }
-
     this._geoJson = geoJson;
+    this.updateGeoJsonCenter(this._geoJson);
 
     this.gm.features.updateManager.updateSource({
       diff: { add: [this._geoJson] },
