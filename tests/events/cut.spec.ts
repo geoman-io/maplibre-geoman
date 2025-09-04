@@ -1,14 +1,14 @@
 import test, { expect, type Page } from '@playwright/test';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 import {
   enableMode,
   mouseMoveAndClick,
   type ScreenCoordinates,
   waitForMapIdle,
-} from '../utils/basic.ts';
-import { getRenderedFeaturesData } from '../utils/features.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+} from '@tests/utils/basic.ts';
+import { getRenderedFeaturesData } from '@tests/utils/features.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import type { GeoJsonImportFeature } from '@/types/geojson';
 import type { LngLat } from '@/main.ts';
 import { eachCoordinateWithPath } from '@/utils/geojson.ts';

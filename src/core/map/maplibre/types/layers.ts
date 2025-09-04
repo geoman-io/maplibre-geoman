@@ -5,6 +5,8 @@ import ml, {
   type SymbolLayerSpecification,
 } from 'maplibre-gl';
 
+// NOTE: Don't use maplibre types directly outside of "core/map/maplibre" directory
+
 export type MaplibreAnyLayer = NonNullable<ReturnType<ml.Map['getLayer']>>;
 
 export type PartialCircleLayer = Pick<CircleLayerSpecification, 'type' | 'paint' | 'layout'>;

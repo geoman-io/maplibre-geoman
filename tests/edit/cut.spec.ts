@@ -5,17 +5,17 @@ import {
   type ScreenCoordinates,
   waitForGeoman,
   waitForMapIdle,
-} from '../utils/basic.ts';
+} from '@tests/utils/basic.ts';
 import {
   type FeatureCustomData,
   getRenderedFeaturesData,
   loadGeoJsonFeatures,
-} from '../utils/features.ts';
-import { compareGeoJsonGeometries } from '../utils/geojson.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
+} from '@tests/utils/features.ts';
+import { compareGeoJsonGeometries } from '@tests/utils/geojson.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import type { GeoJsonImportFeature, GeoJsonShapeFeature } from '@/types/geojson';
 import { eachCoordinateWithPath } from '@/utils/geojson.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import type { LngLat } from '@/types';
 import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
 

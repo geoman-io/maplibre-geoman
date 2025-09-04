@@ -1,8 +1,8 @@
 import test, { expect, type Page } from '@playwright/test';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
-import { enableMode } from '../utils/basic.ts';
-import { getRenderedFeaturesData, getMarkerPointerLngLat } from '../utils/features.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
+import { enableMode } from '@tests/utils/basic.ts';
+import { getRenderedFeaturesData, getMarkerPointerLngLat } from '@tests/utils/features.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import { eachCoordinateWithPath, eachSegmentWithPath } from '@/utils/geojson.ts';
 import type { LngLat } from '@/types';
 import type { Feature } from 'geojson';

@@ -6,7 +6,7 @@ import {
   type ScreenCoordinates,
   waitForGeoman,
   waitForMapIdle,
-} from '../utils/basic.ts';
+} from '@tests/utils/basic.ts';
 import {
   type FeatureCustomData,
   getFeatureMarkersData,
@@ -15,15 +15,15 @@ import {
   type MarkerCustomData,
   waitForFeatureGeoJsonUpdate,
   waitForRenderedFeatureData,
-} from '../utils/features.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+} from '@tests/utils/features.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import type { LngLat } from '@/main.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import bearing from '@turf/bearing';
 import transformRotate from '@turf/transform-rotate';
-import { compareGeoJsonGeometries } from '../utils/geojson.ts';
+import { compareGeoJsonGeometries } from '@tests/utils/geojson.ts';
 
 const GEOJSON_COORD_DEFAULT_PRECISION = 1;
 const SCREEN_COORD_TOLERANCE = 3;

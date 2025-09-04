@@ -5,6 +5,9 @@
       "@/*": [
         "src/*"
       ],
+      "@tests/*": [
+        "tests/*"
+      ],
       "@mapLib/*": [
         "src/core/map/maplibre/*"
       ]

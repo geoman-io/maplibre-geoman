@@ -6,7 +6,7 @@ import type {
   PointerEventName,
 } from '@/main.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
-import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
+import type { BaseMapMouseEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 
 export function isPointerEventName(key: string): key is PointerEventName {
@@ -51,6 +51,20 @@ export const isMapPointerEvent = (
   }
 
   return isCursorEvent;
+};
+
+export const isMapMouseEvent = (
+  event: AnyEvent,
+  options: { warning: boolean } = { warning: false },
+): event is BaseMapMouseEvent => {
+  return isMapPointerEvent(event, options) && !event.type.startsWith('touch');
+};
+
+export const isMapTouchEvent = (
+  event: AnyEvent,
+  options: { warning: boolean } = { warning: false },
+): event is BaseMapMouseEvent => {
+  return isMapPointerEvent(event, options) && event.type.startsWith('touch');
 };
 
 export const isPartialLayer = (object: unknown): object is PartialLayerStyle => {
