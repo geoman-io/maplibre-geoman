@@ -167,7 +167,7 @@ const initGeoman = async () => {
     // }
   });
 
-  // map.on('gm:create', (event: GMEvent) => {
+  // geoman.mapAdapter.on('gm:create', (event) => {
   //   log.debug('gm:create', event);
   // });
 

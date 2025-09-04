@@ -1,4 +1,4 @@
-import { type MapLayerEventType } from 'maplibre-gl';
+import type { MapLayerEventType, MapLibreEvent, MapMouseEvent, MapTouchEvent } from 'maplibre-gl';
 
 // NOTE: these types mustn't be used outside the maplibre adapter directory!
 
@@ -19,3 +19,7 @@ export const maplibrePointerEvents: ReadonlyArray<keyof MapLayerEventType> = [
 ] as const;
 
 export type MaplibrePointerEventName = (typeof maplibrePointerEvents)[number];
+
+export type BaseMapAnyEvent = MapLibreEvent;
+
+export type BaseMapPointerEvent = MapMouseEvent | MapTouchEvent;

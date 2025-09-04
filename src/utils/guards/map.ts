@@ -1,12 +1,12 @@
 import type {
   AnyEvent,
   BaseMapEventName,
-  MapPointerEvent,
   MapWithOnceMethod,
   PartialLayerStyle,
   PointerEventName,
 } from '@/main.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 
 export function isPointerEventName(key: string): key is PointerEventName {
@@ -29,7 +29,7 @@ export const hasMapOnceMethod = (map: unknown): map is MapWithOnceMethod => {
 export const isMapPointerEvent = (
   event: AnyEvent,
   options: { warning: boolean } = { warning: false },
-): event is MapPointerEvent => {
+): event is BaseMapPointerEvent => {
   if (!event) {
     if (options.warning) {
       log.warn('Empty event', event);

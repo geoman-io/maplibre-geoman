@@ -11,7 +11,6 @@ import {
   type HelperModeName,
   type LngLat,
   type MapHandlerReturnData,
-  type MapPointerEvent,
   type MarkerData,
   type PositionData,
   type ScreenPoint,
@@ -25,6 +24,7 @@ import { getFeatureFirstPoint } from '@/utils/features.ts';
 import { eachSegmentWithPath, findCoordinateWithPath, isEqualPosition } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { isGmDrawEvent, isGmEditEvent } from '@/utils/guards/modes.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { cloneDeep, intersection } from 'lodash-es';
 import log from 'loglevel';
 import type { SharedMarker } from '@/types/interfaces.ts';
@@ -582,7 +582,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
   }
 
-  sendMarkerMoveEvent(event: MapPointerEvent) {
+  sendMarkerMoveEvent(event: BaseMapPointerEvent) {
     const markerLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.activeMarker && this.activeFeatureData) {
