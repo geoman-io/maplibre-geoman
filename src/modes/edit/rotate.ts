@@ -23,7 +23,7 @@ type RotateShapeHandler = (event: GMEditMarkerMoveEvent) => GeoJsonShapeFeature 
 
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
-  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon'];
+  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon', 'ellipse'];
   convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
 
   shapeRotateHandlers: { [key in FeatureShape]?: RotateShapeHandler } = {
@@ -80,7 +80,6 @@ export class EditRotate extends BaseDrag {
 
   moveVertex(event: GMEditMarkerMoveEvent) {
     const featureData = event.featureData;
-
     const updatedGeoJson = this.shapeRotateHandlers[featureData.shape]?.(event) || null;
 
     if (updatedGeoJson) {
@@ -132,14 +131,12 @@ export class EditRotate extends BaseDrag {
       false,
     );
 
-    const ellipsePolygon = getGeoJsonEllipse({
+    return getGeoJsonEllipse({
       center,
       xSemiAxis,
       ySemiAxis,
       angle: angle + deltaAngle,
     });
-
-    return ellipsePolygon;
   }
 
   rotateFeature(event: GMEditMarkerMoveEvent) {

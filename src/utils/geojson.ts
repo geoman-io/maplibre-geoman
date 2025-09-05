@@ -1,3 +1,4 @@
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 import type {
   CoordinateIndices,
   GeoJsonShapeFeature,
@@ -652,12 +653,12 @@ export const getGeoJsonEllipse = ({
   const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis, {
     ...options,
     properties: {
-      shape: 'ellipse',
-      _gm_shape_center: center,
-      _gm_shape_xSemiAxis: xSemiAxis,
-      _gm_shape_ySemiAxis: ySemiAxis,
-      _gm_shape_angle: angle,
       ...properties,
+      [`${FEATURE_PROPERTY_PREFIX}shape`]: 'ellipse',
+      [`${FEATURE_PROPERTY_PREFIX}center`]: center,
+      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: xSemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: ySemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
     },
   });
 

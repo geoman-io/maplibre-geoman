@@ -18,6 +18,7 @@ import {
 } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { Feature, Polygon } from 'geojson';
+import { isEqual } from 'lodash-es';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
@@ -163,6 +164,9 @@ export abstract class BaseDrag extends BaseEdit {
         featureGeoJson: updatedGeoJson,
         forceMode: 'drag',
       });
+      if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
+        featureData.updateGeoJsonProperties(updatedGeoJson.properties);
+      }
 
       if (isUpdated) {
         this.previousLngLat = newLngLat;

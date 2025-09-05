@@ -24,7 +24,11 @@ import { isLngLat } from '@/utils/guards/geojson.ts';
 import centroid from '@turf/centroid';
 import log from 'loglevel';
 
-export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
+export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
+  'circle',
+  'ellipse',
+  'rectangle',
+];
 
 export class FeatureData {
   gm: Geoman;
@@ -115,7 +119,7 @@ export class FeatureData {
       angle: this.getShapeProperty('angle', geoJson),
     };
 
-    log.debug('parseGmShapeProperties', JSON.stringify(properties, null, 2));
+    // log.debug('parseGmShapeProperties', JSON.stringify(properties, null, 2));
 
     return Object.fromEntries(
       typedKeys(properties)
@@ -162,7 +166,7 @@ export class FeatureData {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    delete this._geoJson.properties[name];
+    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
   }
 
   getGeoJson(): GeoJsonShapeFeature {
@@ -261,7 +265,7 @@ export class FeatureData {
   }
 
   isConvertableToPolygon(): boolean {
-    return conversionAllowedShapes.includes(this.shape);
+    return toPolygonAllowedShapes.includes(this.shape);
   }
 
   changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {

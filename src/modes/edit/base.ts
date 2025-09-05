@@ -20,6 +20,7 @@ import {
 import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
+import { isEqual } from 'lodash-es';
 
 export abstract class BaseEdit extends BaseAction {
   actionType: ActionType = 'edit';
@@ -86,6 +87,9 @@ export abstract class BaseEdit extends BaseAction {
     }
 
     featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
+    if (!isEqual(featureData.getGeoJson().properties, featureGeoJson.properties)) {
+      featureData.updateGeoJsonProperties(featureGeoJson.properties);
+    }
 
     this.fireFeatureUpdatedEvent({
       sourceFeatures: [featureData],

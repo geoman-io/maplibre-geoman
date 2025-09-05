@@ -29,7 +29,7 @@ type PolygonFeature = Feature<Polygon | MultiPolygon>;
 export class EditCut extends BaseEdit {
   mode: EditModeName = 'cut';
   lineDrawer = new LineDrawer(this.gm, { snappingMarkers: 'first', targetShape: 'polygon' });
-  cutShapesAllowed: Array<FeatureShape> = ['ellipse', 'circle', 'line', 'rectangle', 'polygon'];
+  cutShapesAllowed: Array<FeatureShape> = ['circle', 'ellipse', 'line', 'rectangle', 'polygon'];
   eventHandlers = {
     [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
@@ -159,6 +159,7 @@ export class EditCut extends BaseEdit {
         targetFeatures: [featureData],
       });
     }
+    log.debug('props', JSON.stringify(featureData.getGeoJson().properties, null, 2));
   }
 
   getGeoJsonDifference(
