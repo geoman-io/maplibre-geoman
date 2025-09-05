@@ -73,6 +73,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     }
 
     const mlDiff = this.convertGeoJsonDiffToMlDiff(updateStorage);
+    log.debug(`mldiff for "${this.sourceInstance?.id}"`, mlDiff);
     this.sourceInstance.updateData(mlDiff);
   }
 
