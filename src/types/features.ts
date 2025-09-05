@@ -4,35 +4,17 @@ import { FEATURE_ID_PROPERTY, type Geoman, SOURCES } from '@/main.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
+import type { WithPrefixedKeys } from '@/types/utils.ts';
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export type FeatureId = number | string;
 
-export type ShapeGeoJsonProperties =
-  | {
-      shape: Exclude<FeatureShape, 'ellipse'>;
-      [FEATURE_ID_PROPERTY]?: FeatureId;
-      center?: LngLat;
-      text?: string;
-      [key: string]: unknown;
-    }
-  | EllipseGeoJsonProperties;
+export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';
 
-export type EllipseGeoJsonInternalProperties = {
-  _gm_shape_center: LngLat;
-  _gm_shape_xSemiAxis: number;
-  _gm_shape_ySemiAxis: number;
-  _gm_shape_angle: number;
-};
-
-export interface EllipseProperties {
-  shape: 'ellipse';
+export type ShapeGeoJsonProperties = {
+  [FEATURE_ID_PROPERTY]?: FeatureId;
   [key: string]: unknown;
-}
-
-export type EllipseGeoJsonProperties = EllipseProperties &
-  Partial<EllipseGeoJsonInternalProperties> & {
-    [FEATURE_ID_PROPERTY]?: FeatureId;
-  };
+};
 
 export type FeatureDataParameters = {
   gm: Geoman;
@@ -42,7 +24,6 @@ export type FeatureDataParameters = {
   geoJsonShapeFeature: GeoJsonShapeFeature;
 };
 
-export type FeatureOrder = number | null;
 export type FeatureSourceName = (typeof SOURCES)[keyof typeof SOURCES];
 export type SourcesStorage = { [key in FeatureSourceName]: BaseSource | null };
 export type FeatureStore = Map<FeatureId, FeatureData>;
@@ -51,12 +32,18 @@ export type ForEachFeatureDataCallbackFn = (
   key: FeatureId,
   map: FeatureStore,
 ) => void;
-export type FeatureOrders = Record<FeatureSourceName, FeatureOrder>;
+
 export type FeatureShapeProperties = {
-  center: LngLat | null;
+  id?: FeatureId;
+  shape?: FeatureShape;
+  center?: LngLat;
   xSemiAxis?: number;
   ySemiAxis?: number;
   angle?: number;
+  text?: string;
 };
 
-export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';
+export type PrefixedFeatureShapeProperties = WithPrefixedKeys<
+  FeatureShapeProperties,
+  typeof FEATURE_PROPERTY_PREFIX
+>;

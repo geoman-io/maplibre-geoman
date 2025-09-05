@@ -1,4 +1,7 @@
+import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
+import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
 import {
@@ -23,7 +26,7 @@ import {
   type ShapeName,
   type SourcesStorage,
 } from '@/main.ts';
-import { exportShapeProperties, fixGeoJsonFeature } from '@/utils/features.ts';
+import { fixGeoJsonFeature } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
@@ -38,9 +41,6 @@ import type {
 } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
-import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
-import { SOURCES } from '@/core/features/constants.ts';
 
 export class Features {
   gm: Geoman;
@@ -294,18 +294,9 @@ export class Features {
       return null;
     }
 
-    const featureId = shapeGeoJson.id || this.getNewFeatureId();
-
     return this.createFeature({
       featureId: shapeGeoJson.id as FeatureId | undefined,
-      shapeGeoJson: {
-        ...shapeGeoJson,
-        properties: {
-          ...shapeGeoJson.properties,
-          [FEATURE_ID_PROPERTY]: featureId,
-          shape,
-        },
-      },
+      shapeGeoJson,
       sourceName,
       imported: true,
     });
@@ -365,21 +356,20 @@ export class Features {
         sourceFeatureCollection.features
           .filter((feature) => !!feature)
           .forEach((feature) => {
-            if (shapeTypes === undefined || shapeTypes.includes(feature.properties.shape)) {
-              const shapeProperties = this.featureStore.has(
-                feature.properties[FEATURE_ID_PROPERTY] ?? '',
-              )
-                ? exportShapeProperties(
-                    this.featureStore.get(feature.properties[FEATURE_ID_PROPERTY]!)!,
-                  )
-                : {};
+            const featureData = this.get(sourceName, feature.id as FeatureId);
+            if (!featureData) {
+              log.warn("Can't find featureData for the feature", feature);
+              return;
+            }
+
+            if (shapeTypes === undefined || shapeTypes.includes(featureData.shape)) {
               resultFeatureCollection.features.push({
                 ...feature,
+                id: feature.properties[FEATURE_ID_PROPERTY],
                 properties: {
                   ...feature.properties,
-                  ...shapeProperties,
+                  ...featureData?.exportGmShapeProperties(),
                 },
-                id: feature.properties[FEATURE_ID_PROPERTY],
               });
             }
           });
@@ -496,7 +486,7 @@ export class Features {
       ...partialStyle,
       id: layerId,
       source: sourceName,
-      filter: ['in', ['get', 'shape'], ['literal', shapeNames]],
+      filter: ['in', ['get', `${FEATURE_PROPERTY_PREFIX}shape`], ['literal', shapeNames]],
     };
 
     return this.gm.mapAdapter.addLayer(layerOptions);
@@ -528,7 +518,7 @@ export class Features {
     return null;
   }
 
-  getFeatureShapeByGeoJson(shapeGeoJson: GeoJsonImportFeature): ShapeName | null {
+  getFeatureShapeByGeoJson(shapeGeoJson: Feature): ShapeName | null {
     const SHAPE_MAP: { [key in Geometry['type']]?: ShapeName } = {
       Point: 'marker',
       LineString: 'line',

@@ -50,19 +50,14 @@ export const getMovedGeoJson = (featureData: FeatureData, lngLatDiff: LngLatDiff
 
 export const moveFeatureData = (featureData: FeatureData, lngLatDiff: LngLatDiff): void => {
   const featureGeoJson = getMovedGeoJson(featureData, lngLatDiff);
-  if (featureData.shapeProperties.center) {
-    featureData.shapeProperties.center[0] += lngLatDiff.lng;
-    featureData.shapeProperties.center[1] += lngLatDiff.lat;
+  const shapeCenter = featureData.getShapeProperty('center');
+  if (shapeCenter) {
+    featureData.setShapeProperty('center', shapeCenter[0] + lngLatDiff.lng);
+    featureData.setShapeProperty('center', shapeCenter[1] + lngLatDiff.lat);
   }
   // Set the updated data back to the source
   featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
 };
-
-export const exportShapeProperties = (featureData: FeatureData) => {
-  return Object.fromEntries(
-    Object.entries(featureData.getShapeProperties()).filter(([, value]) => value !== null).map(([key, value]) => ([`_gm_shape_${key}`, value]))
-  )
-}
 
 export const getAllFeatureCoordinates = (featureData: FeatureData): Array<Position> => {
   const shapeGeoJson = featureData.getGeoJson() as GeoJSON;

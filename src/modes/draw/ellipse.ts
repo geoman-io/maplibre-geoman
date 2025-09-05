@@ -108,8 +108,8 @@ export class DrawEllipse extends BaseCircle {
     this.featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
 
     this.featureData.updateGeoJsonProperties({
-      shape: featureGeoJson.properties.shape
-    })
+      shape: featureGeoJson.properties.shape,
+    });
 
     const markerData = this.getControlMarkerData();
     if (markerData) {
@@ -142,8 +142,8 @@ export class DrawEllipse extends BaseCircle {
         // because in this way the shapeParameters are already assigned.
         // I did not understand the point of deleting and then recreating
         // an identical featureData.
-        this.featureData.changeSource({sourceName: "gm_main", atomic: true})
-        this.gm.features.fireFeatureCreatedEvent(this.featureData)
+        this.featureData.changeSource({ sourceName: 'gm_main', atomic: true });
+        this.gm.features.fireFeatureCreatedEvent(this.featureData);
         this.featureData = null;
       } else {
         this.removeTmpFeature();

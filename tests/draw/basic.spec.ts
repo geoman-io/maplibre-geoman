@@ -1,6 +1,6 @@
 import test, { expect, type Page } from '@playwright/test';
-import { getWindowDimensions, mouseMoveAndClick, waitForGeoman } from '../utils/basic.ts';
-import { type FeatureCustomData, getRenderedFeaturesData } from '../utils/features.ts';
+import { getWindowDimensions, mouseMoveAndClick, waitForGeoman } from '@tests/utils/basic.ts';
+import { type FeatureCustomData, getRenderedFeaturesData } from '@tests/utils/features.ts';
 import type { ShapeName } from '@/types';
 
 const checkFeatureCreated = async (page: Page, featureType: ShapeName) => {
@@ -126,7 +126,7 @@ test('Draw an ellipse', async ({ page }) => {
   await page.click('#id_draw_ellipse');
 
   await checkFeatureCreated(page, 'ellipse');
-})
+});
 
 test('Draw a rectangle', async ({ page }) => {
   await page.click('#id_draw_rectangle');

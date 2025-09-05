@@ -210,12 +210,12 @@ export class EditChange extends BaseDrag {
   }
 
   updateCircle({ featureData, lngLatEnd }: GMEditMarkerMoveEvent): GeoJsonShapeFeature | null {
-    if (featureData.shape !== 'circle' || featureData.shapeProperties.center === null) {
+    const shapeCenter = featureData.getShapeProperty('center');
+
+    if (featureData.shape !== 'circle' || !shapeCenter) {
       log.error('BaseDrag.moveCircle: invalid shape type / missing center', featureData);
       return null;
     }
-
-    const shapeCenter = featureData.shapeProperties.center;
 
     const circlePolygon = getGeoJsonCircle({
       center: shapeCenter,
@@ -226,14 +226,13 @@ export class EditChange extends BaseDrag {
       type: 'Feature',
       properties: {
         shape: 'circle',
-        center: shapeCenter,
       },
       geometry: circlePolygon.geometry,
     };
   }
 
   updateEllipse(args: GMEditMarkerMoveEvent): GeoJsonShapeFeature | null {
-    const { featureData, lngLatEnd, markerData } = args
+    const { featureData, lngLatEnd, markerData } = args;
     if (featureData.shape !== 'ellipse') {
       log.error('EditChange.updateEllipse: invalid shape type', featureData);
       return null;
@@ -257,16 +256,16 @@ export class EditChange extends BaseDrag {
       return null;
     }
 
-    const distance = this.gm.mapAdapter.getDistance(center, lngLatEnd)
-    
+    const distance = this.gm.mapAdapter.getDistance(center, lngLatEnd);
+
     const vertexIdx = markerData.position.path[3] as number;
-    const vertexRatio = Math.floor((vertexIdx / ellipseSteps) * 4)
-    
-    const axe = (vertexRatio === 0 || vertexRatio === 2) ? "x" : "y"
-    if (axe === "x") {
-      xSemiAxis = distance
+    const vertexRatio = Math.floor((vertexIdx / ellipseSteps) * 4);
+
+    const axe = vertexRatio === 0 || vertexRatio === 2 ? 'x' : 'y';
+    if (axe === 'x') {
+      xSemiAxis = distance;
     } else {
-      ySemiAxis = distance
+      ySemiAxis = distance;
     }
 
     const ellipsePolygon = getGeoJsonEllipse({

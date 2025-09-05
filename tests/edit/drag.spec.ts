@@ -9,14 +9,14 @@ import {
   enableMode,
   type ScreenCoordinates,
   waitForGeoman,
-} from '../utils/basic.ts';
+} from '@tests/utils/basic.ts';
 import {
   getRenderedFeaturesData,
   loadGeoJsonFeatures,
   waitForRenderedFeatureData,
-} from '../utils/features.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+} from '@tests/utils/features.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 
 test.beforeEach(async ({ page }) => {
   await configurePageTimeouts(page);

@@ -1,11 +1,14 @@
 import type { FeatureRemovedFwdEvent } from '@/types/index.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
-import { enableMode, mouseMoveAndClick } from '../utils/basic.ts';
-import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from '../utils/events.ts';
-import { getRenderedFeaturesData, waitForFeatureRemoval } from '../utils/features.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
+import { enableMode, mouseMoveAndClick } from '@tests/utils/basic.ts';
+import {
+  getGeomanEventResultById,
+  saveGeomanEventResultToCustomData,
+} from '@tests/utils/events.ts';
+import { getRenderedFeaturesData, waitForFeatureRemoval } from '@tests/utils/features.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
 test.describe('`gm:remove` Event', () => {
   test.beforeEach(async ({ page }) => {

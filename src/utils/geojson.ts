@@ -628,7 +628,7 @@ export const getGeoJsonEllipse = ({
   xSemiAxis,
   ySemiAxis,
   angle,
-  properties = {}
+  properties = {},
 }: {
   center: LngLat;
   xSemiAxis: number;
@@ -645,33 +645,27 @@ export const getGeoJsonEllipse = ({
   if (ySemiAxis === undefined || ySemiAxis === 0) {
     const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
     return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
-      shape: 'line'
-    })
+      shape: 'line',
+    });
   }
 
-  const ellipseGeoJson = turfEllipse(
-    center,
-    xSemiAxis,
-    ySemiAxis,
-    {
-      ...options,
-      properties: {
-        shape: 'ellipse',
-        _gm_shape_center: center,
-        _gm_shape_xSemiAxis: xSemiAxis,
-        _gm_shape_ySemiAxis: ySemiAxis,
-        _gm_shape_angle: angle,
-        ...properties
-      }
-    }
-  );
+  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis, {
+    ...options,
+    properties: {
+      shape: 'ellipse',
+      _gm_shape_center: center,
+      _gm_shape_xSemiAxis: xSemiAxis,
+      _gm_shape_ySemiAxis: ySemiAxis,
+      _gm_shape_angle: angle,
+      ...properties,
+    },
+  });
 
   // remove link between first and last coordinates
   ellipseGeoJson.geometry.coordinates[0][0] = [...ellipseGeoJson.geometry.coordinates[0][0]];
 
   return ellipseGeoJson as GeoJsonShapeFeature;
 };
-
 
 export const getCoordinateByPath = (
   geoJson: GeoJSON,

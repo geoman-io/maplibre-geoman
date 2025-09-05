@@ -1,17 +1,20 @@
 import type { FeatureEditEndFwdEvent } from '@/types/index.ts';
 import type { Page } from '@playwright/test';
 import test, { expect } from '@playwright/test';
-import { pointBasedGeometryType } from '../types.ts';
-import { disableMode, enableMode } from '../utils/basic.ts';
-import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from '../utils/events.ts';
+import { pointBasedGeometryType } from '@tests/types.ts';
+import { disableMode, enableMode } from '@tests/utils/basic.ts';
+import {
+  getGeomanEventResultById,
+  saveGeomanEventResultToCustomData,
+} from '@tests/utils/events.ts';
 import {
   type FeatureCustomData,
   getFeatureMarkersData,
   getRenderedFeaturesData,
   type MarkerCustomData,
   performDragAndVerify,
-} from '../utils/features.ts';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
+} from '@tests/utils/features.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
 const getDraggableVertexForShape = async (
   page: Page,

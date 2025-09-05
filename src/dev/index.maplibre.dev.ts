@@ -79,14 +79,8 @@ const buttonHandlers = {
     if (!geoman) {
       log.warn('Geoman is not initialized');
     }
-
     const geojson = geoman.features.exportGeoJson();
-
     log.debug('total features count: ', geojson?.features?.length);
-    geojson.features.forEach((feature) => {
-      delete feature.properties._gmid;
-    });
-
     log.debug('geojson', JSON.stringify(geojson, null, 2));
   },
   // '#b05': async () => {
@@ -173,7 +167,7 @@ const initGeoman = async () => {
     // }
   });
 
-  // map.on('gm:create', (event: GMEvent) => {
+  // geoman.mapAdapter.on('gm:create', (event) => {
   //   log.debug('gm:create', event);
   // });
 

@@ -12,6 +12,16 @@ export const SHAPE_NAMES = [
   'polygon',
 ] as const;
 
+export const SPECIAL_SHAPE_NAMES = [
+  'dom_marker',
+  'vertex_marker',
+  'center_marker',
+  'edge_marker',
+  'snap_guide',
+] as const;
+
+export const ALL_SHAPE_NAMES = [...SHAPE_NAMES, ...SPECIAL_SHAPE_NAMES] as const;
+
 export const EXTRA_DRAW_MODES = ['freehand', 'custom_shape'] as const;
 
 export const DRAW_MODES = [...SHAPE_NAMES, ...EXTRA_DRAW_MODES] as const;

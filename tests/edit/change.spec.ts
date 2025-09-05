@@ -9,10 +9,15 @@ import {
   type MarkerCustomData,
   waitForFeatureGeoJsonUpdate,
   waitForRenderedFeatureData,
-} from 'tests/utils/features.ts';
-import { configurePageTimeouts, dragAndDrop, enableMode, waitForGeoman } from '../utils/basic.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+} from '@tests/utils/features.ts';
+import {
+  configurePageTimeouts,
+  dragAndDrop,
+  enableMode,
+  waitForGeoman,
+} from '@tests/utils/basic.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 
 const TOLERANCE = 2;
 

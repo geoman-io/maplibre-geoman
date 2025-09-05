@@ -1,8 +1,4 @@
-import type {
-  EllipseGeoJsonInternalProperties,
-  EllipseProperties,
-  ShapeGeoJsonProperties,
-} from '@/types/features.ts';
+import type { ShapeGeoJsonProperties } from '@/types/features.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
 import type {
@@ -15,19 +11,13 @@ import type {
   Point,
   Polygon,
 } from 'geojson';
-import type { SetRequired } from 'type-fest';
 
-export type ImportGeoJsonProperties =
-  | {
-      shape?: Exclude<ShapeName, 'ellipse'>;
-      center?: LngLat;
-      radius?: number;
-      text?: string;
-      [key: string]: unknown;
-    }
-  | ImportEllipseGeoJsonProperties;
-
-export type ImportEllipseGeoJsonProperties = EllipseProperties & EllipseGeoJsonInternalProperties;
+export type ImportGeoJsonProperties = {
+  shape?: ShapeName;
+  center?: LngLat;
+  text?: string;
+  [key: string]: unknown;
+};
 
 export type PointBasedGeometry = Point | MultiPoint;
 
@@ -50,10 +40,6 @@ export type GeoJsonImportFeatureCollection = FeatureCollection<
   BasicGeometry,
   ImportGeoJsonProperties
 >;
-
-export type GeoJsonShapeFeatureWithGmProperties = Omit<GeoJsonShapeFeature, 'properties'> & {
-  properties: SetRequired<GeoJsonShapeFeature['properties'], '_gmid'>;
-};
 
 export type LngLatDiff = {
   lng: number;

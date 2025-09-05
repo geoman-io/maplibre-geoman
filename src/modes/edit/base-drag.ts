@@ -208,14 +208,12 @@ export abstract class BaseDrag extends BaseEdit {
 
     const newCenterCoords: LngLat = [oldCenter[0] + lngLatDiff.lng, oldCenter[1] + lngLatDiff.lat];
 
-    const ellipsePolygon = getGeoJsonEllipse({
+    return getGeoJsonEllipse({
       center: newCenterCoords,
       xSemiAxis,
       ySemiAxis,
       angle,
     });
-
-    return ellipsePolygon;
   }
 
   moveCircle(
@@ -246,6 +244,7 @@ export abstract class BaseDrag extends BaseEdit {
       shapeCenter[0] + lngLatDiff.lng,
       shapeCenter[1] + lngLatDiff.lat,
     ];
+    featureData.setShapeProperty('center', newCenterCoords);
 
     const circlePolygon = getGeoJsonCircle({
       center: newCenterCoords,
@@ -256,7 +255,6 @@ export abstract class BaseDrag extends BaseEdit {
       type: 'Feature',
       properties: {
         shape: 'circle',
-        center: newCenterCoords,
       },
       geometry: circlePolygon.geometry,
     };

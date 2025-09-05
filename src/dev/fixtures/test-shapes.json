@@ -224,10 +224,10 @@
     "type": "Feature",
     "properties": {
       "shape": "ellipse",
-      "_gm_shape_center": [-14.985351562499517, 49.752952973474294],
-      "_gm_shape_xSemiAxis": 234838,
-      "_gm_shape_ySemiAxis": 91807,
-      "_gm_shape_angle": 45
+      "center": [-14.985351562499517, 49.752952973474294],
+      "xSemiAxis": 234838,
+      "ySemiAxis": 91807,
+      "angle": 45
     },
     "geometry": {
       "type": "Polygon",

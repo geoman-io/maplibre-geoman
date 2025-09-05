@@ -7,11 +7,14 @@ import type {
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
-import { dragAndDrop, enableMode, type ScreenCoordinates } from '../utils/basic.ts';
-import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from '../utils/events.ts';
-import { getRenderedFeaturesData } from '../utils/features.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
+import { dragAndDrop, enableMode, type ScreenCoordinates } from '@tests/utils/basic.ts';
+import {
+  getGeomanEventResultById,
+  saveGeomanEventResultToCustomData,
+} from '@tests/utils/events.ts';
+import { getRenderedFeaturesData } from '@tests/utils/features.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
 test.describe('Drag Events', () => {
   test.beforeEach(async ({ page }) => {
