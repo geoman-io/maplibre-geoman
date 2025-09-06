@@ -9,6 +9,7 @@ import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export type FeatureId = number | string;
 
+// TODO/ELLIPSE verify if needed L12 -> L38
 // export type ShapeGeoJsonProperties =
 //   | {
 //       shape: Exclude<FeatureShape, 'ellipse'>;
@@ -19,22 +20,22 @@ export type FeatureId = number | string;
 //     }
 //   | EllipseGeoJsonProperties;
 
-// export type EllipseGeoJsonInternalProperties = {
-//   _gm_shape_center: LngLat;
-//   _gm_shape_xSemiAxis: number;
-//   _gm_shape_ySemiAxis: number;
-//   _gm_shape_angle: number;
-// };
+export type EllipseGeoJsonInternalProperties = {
+  _gm_shape_center: LngLat;
+  _gm_shape_xSemiAxis: number;
+  _gm_shape_ySemiAxis: number;
+  _gm_shape_angle: number;
+};
 
-// export interface EllipseProperties {
-//   shape: 'ellipse';
-//   [key: string]: unknown;
-// }
+export interface EllipseProperties {
+  shape: 'ellipse';
+  [key: string]: unknown;
+}
 
-// export type EllipseGeoJsonProperties = EllipseProperties &
-//   Partial<EllipseGeoJsonInternalProperties> & {
-//     [FEATURE_ID_PROPERTY]?: FeatureId;
-//   };
+export type EllipseGeoJsonProperties = EllipseProperties &
+  Partial<EllipseGeoJsonInternalProperties> & {
+    [FEATURE_ID_PROPERTY]?: FeatureId;
+  };
 
 export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_guide';
 

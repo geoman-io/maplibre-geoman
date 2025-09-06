@@ -85,7 +85,7 @@ export abstract class BaseEdit extends BaseAction {
       return false;
     }
 
-    // TODO verify if needed L88 -> L100
+    // TODO/ELLIPSE verify if needed L88 -> L100
     const properties = featureGeoJson.properties;
 
     // when moving the feature, shape properties are saved in properties

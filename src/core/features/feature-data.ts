@@ -18,7 +18,6 @@ import {
   type ShapeGeoJsonProperties,
   typedKeys,
 } from '@/main.ts';
-import { exportShapeProperties } from '@/utils/features.ts';
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import { isLngLat } from '@/utils/guards/geojson.ts';
@@ -171,7 +170,7 @@ export class FeatureData {
             ...this._geoJson,
             properties: {
               ...this._geoJson.properties,
-              ...exportShapeProperties(this),
+              ...this.exportGmShapeProperties(),
             },
           }
         : this._geoJson;
@@ -281,7 +280,7 @@ export class FeatureData {
       this.deleteShapeProperty('angle');
       this.deleteShapeProperty('xSemiAxis');
       this.deleteShapeProperty('ySemiAxis');
-      
+
       return true;
     }
 
