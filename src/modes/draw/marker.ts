@@ -7,12 +7,12 @@ import {
   type GMEvent,
   type LngLat,
   type MapHandlerReturnData,
-  type MapPointerEvent,
   type ShapeName,
   SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
 export class DrawMarker extends BaseDraw {
   mode: DrawModeName = 'marker';
@@ -51,7 +51,7 @@ export class DrawMarker extends BaseDraw {
     return { next: true };
   }
 
-  createFeature(event: MapPointerEvent): FeatureData | null {
+  createFeature(event: BaseMapPointerEvent): FeatureData | null {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
     const geoJson = this.getFeatureGeoJson(lngLat);
 

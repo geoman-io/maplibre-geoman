@@ -9,7 +9,6 @@ import {
   type LineEventHandlerArguments,
   type LngLat,
   type MapHandlerReturnData,
-  type MapPointerEvent,
   type MarkerData,
   type MarkerId,
   type ShapeName,
@@ -22,6 +21,7 @@ import { createMarkerElement } from '@/utils/dom.ts';
 import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import lineToPolygon from '@turf/line-to-polygon';
 import type { Position } from 'geojson';
 import log from 'loglevel';
@@ -281,7 +281,7 @@ export class LineDrawer extends BaseDraw {
     this.snappingHelper.clearCustomSnappingCoordinates(this.snappingKey);
   }
 
-  getClickedMarkerInfo(event: MapPointerEvent): MarkerInfo {
+  getClickedMarkerInfo(event: BaseMapPointerEvent): MarkerInfo {
     if (!this.featureData) {
       return { index: -1, path: null };
     }

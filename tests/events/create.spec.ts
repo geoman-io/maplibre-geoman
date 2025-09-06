@@ -1,7 +1,7 @@
 import test, { expect } from '@playwright/test';
-import { getWindowDimensions } from '../utils/basic.ts';
-import { getRenderedFeaturesData } from '../utils/features.ts';
-import { setupGeomanTest, testShapeCreation } from '../utils/test-helpers.ts';
+import { getWindowDimensions } from '@tests/utils/basic.ts';
+import { getRenderedFeaturesData } from '@tests/utils/features.ts';
+import { setupGeomanTest, testShapeCreation } from '@tests/utils/test-helpers.ts';
 
 test.beforeEach(async ({ page }) => {
   await setupGeomanTest(page);

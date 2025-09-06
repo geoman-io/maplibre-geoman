@@ -246,6 +246,7 @@ export abstract class BaseDrag extends BaseEdit {
       shapeCenter[0] + lngLatDiff.lng,
       shapeCenter[1] + lngLatDiff.lat,
     ];
+    featureData.setShapeProperty('center', newCenterCoords);
 
     const circlePolygon = getGeoJsonCircle({
       center: newCenterCoords,
@@ -256,7 +257,6 @@ export abstract class BaseDrag extends BaseEdit {
       type: 'Feature',
       properties: {
         shape: 'circle',
-        center: newCenterCoords,
       },
       geometry: circlePolygon.geometry,
     };

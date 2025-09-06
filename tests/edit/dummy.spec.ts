@@ -1,7 +1,7 @@
 import test, { expect } from '@playwright/test';
 import { loadGeoJsonFeatures } from 'tests/utils/features.ts';
-import { enableMode, waitForGeoman } from '../utils/basic.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
+import { enableMode, waitForGeoman } from '@tests/utils/basic.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');

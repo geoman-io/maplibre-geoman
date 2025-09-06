@@ -1,6 +1,6 @@
 import { BaseLayer } from '@/core/map/base/layer.ts';
-import type { MaplibreAnyLayer } from '@/core/map/maplibre/types.ts';
 import type { Geoman } from '@/main.ts';
+import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
 import ml from 'maplibre-gl';
 import log from 'loglevel';
 

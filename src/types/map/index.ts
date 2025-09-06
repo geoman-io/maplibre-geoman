@@ -6,6 +6,7 @@ import type {
 import type { GmEventName, GmPrefix } from '@/types/events/index.ts';
 import type { FeatureId, FeatureSourceName } from '@/types/features.ts';
 import type { GeoJsonImportFeature, GMEvent } from '@/types/index.ts';
+import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
 import type { Feature } from 'geojson';
 
 export type LngLat = [number, number];
@@ -47,25 +48,9 @@ export type AnyEventName =
   | GmFwdSystemEventNameWithPrefix
   | GmServiceEventNameWithPrefix;
 
-export type AnyEvent = MapEvent | GMEvent;
+export type AnyEvent = BaseMapAnyEvent | GMEvent;
 
 export type BaseEventListener = (event: AnyEvent) => void;
-
-export type MapEvent = unknown;
-
-export type MapPointerEvent = {
-  type: PointerEventName;
-  originalEvent: MouseEvent;
-  point: {
-    x: number;
-    y: number;
-  };
-  lngLat: {
-    lng: number;
-    lat: number;
-    toArray(): LngLat;
-  };
-};
 
 export type GeoJsonFeatureData = {
   id: FeatureId | undefined;

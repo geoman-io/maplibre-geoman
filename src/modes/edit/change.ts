@@ -210,12 +210,12 @@ export class EditChange extends BaseDrag {
   }
 
   updateCircle({ featureData, lngLatEnd }: GMEditMarkerMoveEvent): GeoJsonShapeFeature | null {
-    if (featureData.shape !== 'circle' || featureData.shapeProperties.center === null) {
+    const shapeCenter = featureData.getShapeProperty('center');
+
+    if (featureData.shape !== 'circle' || !shapeCenter) {
       log.error('BaseDrag.moveCircle: invalid shape type / missing center', featureData);
       return null;
     }
-
-    const shapeCenter = featureData.shapeProperties.center;
 
     const circlePolygon = getGeoJsonCircle({
       center: shapeCenter,
@@ -226,7 +226,6 @@ export class EditChange extends BaseDrag {
       type: 'Feature',
       properties: {
         shape: 'circle',
-        center: shapeCenter,
       },
       geometry: circlePolygon.geometry,
     };

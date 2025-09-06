@@ -4,10 +4,13 @@ import type {
   FeatureUpdatedFwdEvent,
 } from '@/types/index.ts';
 import test, { expect } from '@playwright/test';
-import { dragAndDrop, enableMode, type ScreenCoordinates } from '../utils/basic.ts';
-import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from '../utils/events.ts';
-import { getFeatureMarkersData, getRenderedFeaturesData } from '../utils/features.ts';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
+import { dragAndDrop, enableMode, type ScreenCoordinates } from '@tests/utils/basic.ts';
+import {
+  getGeomanEventResultById,
+  saveGeomanEventResultToCustomData,
+} from '@tests/utils/events.ts';
+import { getFeatureMarkersData, getRenderedFeaturesData } from '@tests/utils/features.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
 test.describe('Rotate Events', () => {
   test.beforeEach(async ({ page }) => {

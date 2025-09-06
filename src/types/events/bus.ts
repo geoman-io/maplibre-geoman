@@ -1,8 +1,9 @@
 import type { GMEvent, GmEventName } from '@/types/events/index.ts';
-import type { AnyEvent, AnyEventName, MapEvent, MapEventName } from '@/types/map/index.ts';
+import type { AnyEvent, AnyEventName, MapEventName } from '@/types/map/index.ts';
+import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
 
 export type MapHandlerReturnData = { next: boolean };
-export type MapEventHadler = (event: MapEvent) => MapHandlerReturnData;
+export type MapEventHadler = (event: BaseMapAnyEvent) => MapHandlerReturnData;
 export type GmEventHadler = (event: GMEvent) => MapHandlerReturnData;
 
 export type EventHandlers = {

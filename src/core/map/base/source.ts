@@ -7,6 +7,8 @@ export abstract class BaseSource<TSourceInstance = unknown> {
 
   abstract get id(): string;
 
+  abstract get loaded(): boolean;
+
   abstract createSource({
     geoJson,
     sourceId,
