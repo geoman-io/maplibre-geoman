@@ -34,6 +34,14 @@ export const systemControls: SystemControls = {
         exclusive: true,
       },
     },
+    ellipse: {
+      type: 'draw',
+      eventType: 'toggle',
+      targetMode: 'ellipse',
+      settings: {
+        exclusive: true,
+      },
+    },
     line: {
       type: 'draw',
       eventType: 'toggle',

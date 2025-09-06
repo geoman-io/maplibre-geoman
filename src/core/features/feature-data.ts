@@ -10,6 +10,7 @@ import {
   type FeatureSourceName,
   type GeoJsonShapeFeature,
   type Geoman,
+  type LngLat,
   includesWithType,
   type MarkerData,
   type MarkerId,
@@ -24,7 +25,11 @@ import centroid from '@turf/centroid';
 import log from 'loglevel';
 import { propertyValidators } from '@/core/features/validators.ts';
 
-export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
+export const conversionAllowedShapes: Array<FeatureData['shape']> = [
+  'circle',
+  'ellipse',
+  'rectangle',
+];
 
 export class FeatureData {
   gm: Geoman;
@@ -155,12 +160,20 @@ export class FeatureData {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    delete this._geoJson.properties[name];
+    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
   }
 
-  getGeoJson(): GeoJsonShapeFeature {
+  getGeoJson(includeShapeProperties = false): GeoJsonShapeFeature {
     if (this._geoJson) {
-      return this._geoJson;
+      return includeShapeProperties
+        ? {
+            ...this._geoJson,
+            properties: {
+              ...this._geoJson.properties,
+              ...this.exportGmShapeProperties(),
+            },
+          }
+        : this._geoJson;
     } else {
       throw new Error(`Missing GeoJSON for feature: "${this.shape}:${this.id}"`);
     }
@@ -240,6 +253,23 @@ export class FeatureData {
     if (this.shape === 'circle') {
       const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
       this.setShapeProperty('center', shapeCentroid);
+    } else if (this.shape === 'ellipse' && geoJson.properties._gm_shape_center) {
+      this.setShapeProperty('center', geoJson.properties._gm_shape_center as LngLat);
+      this.setShapeProperty('xSemiAxis', geoJson.properties._gm_shape_xSemiAxis as number);
+      this.setShapeProperty('ySemiAxis', geoJson.properties._gm_shape_ySemiAxis as number);
+      this.setShapeProperty('angle', geoJson.properties._gm_shape_angle as number);
+
+      /** we need to delete because they are used only when FeatureData is instanciated
+       *
+       * when featureData is translated
+       * > src/modes/edit/base -> updateFeatureGeoJson
+       *  temp properties._gm_shape_* properties are assignated
+       * and only featureData.updateGeoJsonGeometry is called
+       */
+      delete geoJson.properties._gm_shape_center;
+      delete geoJson.properties._gm_shape_xSemiAxis;
+      delete geoJson.properties._gm_shape_ySemiAxis;
+      delete geoJson.properties._gm_shape_angle;
     }
   }
 
@@ -247,6 +277,10 @@ export class FeatureData {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
       this.deleteShapeProperty('center');
+      this.deleteShapeProperty('angle');
+      this.deleteShapeProperty('xSemiAxis');
+      this.deleteShapeProperty('ySemiAxis');
+
       return true;
     }
 

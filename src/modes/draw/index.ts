@@ -7,6 +7,7 @@ import { DrawMarker } from '@/modes/draw/marker.ts';
 import { DrawPolygon } from '@/modes/draw/polygon.ts';
 import { DrawRectangle } from '@/modes/draw/rectangle.ts';
 import { DrawTextMarker } from '@/modes/draw/text-marker.ts';
+import { DrawEllipse } from '@/modes/draw/ellipse.ts';
 import log from 'loglevel';
 
 type DrawClassConstructor = new (gm: Geoman) => BaseDraw;
@@ -16,6 +17,7 @@ type DrawClassMap = {
 
 export const drawClassMap: DrawClassMap = {
   marker: DrawMarker,
+  ellipse: DrawEllipse,
   circle: DrawCircle,
   circle_marker: DrawCircleMarker,
   text_marker: DrawTextMarker,
