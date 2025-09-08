@@ -46,7 +46,6 @@ export class FeatureData {
     this.markers = new Map();
 
     this.addGeoJson({
-      id: this.id,
       ...parameters.geoJsonShapeFeature,
       properties: {
         ...this.parseExtraProperties(parameters.geoJsonShapeFeature),
