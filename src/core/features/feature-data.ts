@@ -109,14 +109,14 @@ export class FeatureData {
       log.error(`FeatureData.importGmShapeProperties(): unknown shape: ${shape}`);
     }
 
+    const allProperties: FeatureShapeProperties = Object.fromEntries(
+      typedKeys(propertyValidators).map((name) => [name, this.getShapeProperty(name, geoJson)]),
+    );
+
     const properties: FeatureShapeProperties = {
+      ...allProperties,
       id: this.id,
       shape: shape || undefined,
-      center: this.getShapeProperty('center', geoJson),
-      text: this.getShapeProperty('text', geoJson),
-      xSemiAxis: this.getShapeProperty('xSemiAxis', geoJson),
-      ySemiAxis: this.getShapeProperty('ySemiAxis', geoJson),
-      angle: this.getShapeProperty('angle', geoJson),
     };
 
     // log.debug('parseGmShapeProperties', JSON.stringify(properties, null, 2));
