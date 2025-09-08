@@ -159,7 +159,6 @@ export class EditCut extends BaseEdit {
         targetFeatures: [featureData],
       });
     }
-    log.debug('props', JSON.stringify(featureData.getGeoJson().properties, null, 2));
   }
 
   getGeoJsonDifference(
