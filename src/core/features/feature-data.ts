@@ -21,6 +21,7 @@ import {
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
+import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
 export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
@@ -47,7 +48,7 @@ export class FeatureData {
     this.addGeoJson({
       ...parameters.geoJsonShapeFeature,
       properties: {
-        ...parameters.geoJsonShapeFeature.properties,
+        ...this.parseExtraProperties(parameters.geoJsonShapeFeature),
         ...this.parseGmShapeProperties(parameters.geoJsonShapeFeature),
       },
     });
@@ -127,15 +128,13 @@ export class FeatureData {
     );
   }
 
-  exportGmShapeProperties() {
-    if (this._geoJson) {
-      return Object.fromEntries(
-        Object.keys(this._geoJson.properties)
-          .filter((name) => name.startsWith(FEATURE_PROPERTY_PREFIX))
-          .map((name) => [name, this._geoJson?.properties[name]]),
-      );
-    }
-    return {};
+  parseExtraProperties(geoJson: GeoJsonShapeFeature) {
+    const extraProperties = cloneDeep(geoJson.properties) || {};
+    typedKeys(propertyValidators).forEach((name) => {
+      delete extraProperties[name];
+      delete extraProperties[`${FEATURE_PROPERTY_PREFIX}${name}`];
+    });
+    return extraProperties;
   }
 
   deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
