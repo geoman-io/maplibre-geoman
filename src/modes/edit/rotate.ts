@@ -1,4 +1,3 @@
-import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyEvent,
   type EditModeName,
@@ -12,7 +11,7 @@ import {
   SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
-import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
+import { geoJsonPointToLngLat, getGeoJsonEllipse } from '@/utils/geojson.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import bearing from '@turf/bearing';
 import centroid from '@turf/centroid';
@@ -20,10 +19,23 @@ import transformRotate from '@turf/transform-rotate';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
+type RotateShapeHandler = (event: GMEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
+
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
-  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon'];
+  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon', 'ellipse'];
   convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
+
+  shapeRotateHandlers: { [key in FeatureShape]?: RotateShapeHandler } = {
+    marker: this.rotateFeature.bind(this),
+    circle: this.rotateFeature.bind(this),
+    circle_marker: this.rotateFeature.bind(this),
+    text_marker: this.rotateFeature.bind(this),
+    line: this.rotateFeature.bind(this),
+    rectangle: this.rotateFeature.bind(this),
+    polygon: this.rotateFeature.bind(this),
+    ellipse: this.rotateEllipse.bind(this),
+  };
 
   onStartAction(): void {
     // ...
@@ -67,33 +79,84 @@ export class EditRotate extends BaseDrag {
   }
 
   moveVertex(event: GMEditMarkerMoveEvent) {
-    this.rotateFeature(event.featureData, event);
+    const featureData = event.featureData;
+    const updatedGeoJson = this.shapeRotateHandlers[featureData.shape]?.(event) || null;
+
+    if (updatedGeoJson) {
+      this.fireBeforeFeatureUpdate({
+        features: [featureData],
+        geoJsonFeatures: [updatedGeoJson],
+      });
+
+      const isUpdated = this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
+
+      if (isUpdated && this.convertFeaturesTypes.includes(featureData.shape)) {
+        featureData.convertToPolygon(); // if possible
+      }
+    } else {
+      log.error('EditRotate.moveVertex: invalid geojson', updatedGeoJson, event);
+    }
   }
 
-  rotateFeature(featureData: FeatureData, event: GMEditMarkerMoveEvent) {
+  rotateEllipse(event: GMEditMarkerMoveEvent) {
+    const { featureData } = event;
+
+    if (featureData.shape !== 'ellipse') {
+      log.error('EditRotate.rotateEllipse: invalid shape type', featureData);
+      return null;
+    }
+
+    const center = featureData.getShapeProperty('center');
+    const xSemiAxis = featureData.getShapeProperty('xSemiAxis');
+    const ySemiAxis = featureData.getShapeProperty('ySemiAxis');
+    const angle = featureData.getShapeProperty('angle');
+
+    if (
+      !Array.isArray(center) ||
+      typeof xSemiAxis !== 'number' ||
+      typeof ySemiAxis !== 'number' ||
+      typeof angle !== 'number'
+    ) {
+      log.error(
+        'rotateEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
+        featureData,
+      );
+      return null;
+    }
+
+    const deltaAngle = this.calculateRotationAngle(
+      center,
+      event.lngLatStart,
+      event.lngLatEnd,
+      false,
+    );
+
+    return getGeoJsonEllipse({
+      center,
+      xSemiAxis,
+      ySemiAxis,
+      angle: angle + deltaAngle,
+    });
+  }
+
+  rotateFeature(event: GMEditMarkerMoveEvent) {
+    const featureData = event.featureData;
+
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
     const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
 
     const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
 
     geoJson.geometry = transformRotate(geoJson, angle, { pivot: shapeCentroid }).geometry;
-    this.fireBeforeFeatureUpdate({
-      features: [featureData],
-      geoJsonFeatures: [geoJson],
-    });
 
-    const isUpdated = this.updateFeatureGeoJson({ featureData, featureGeoJson: geoJson });
-
-    if (isUpdated) {
-      featureData.convertToPolygon(); // if possible
-    }
+    return geoJson;
   }
 
-  calculateRotationAngle(pivot: LngLat, start: LngLat, end: LngLat) {
+  calculateRotationAngle(pivot: LngLat, start: LngLat, end: LngLat, normalize = true) {
     const bearingStart = bearing(pivot, start);
     const bearingEnd = bearing(pivot, end);
 
     const rotationAngle = bearingEnd - bearingStart;
-    return (rotationAngle + 360) % 360;
+    return normalize ? (rotationAngle + 360) % 360 : rotationAngle;
   }
 }

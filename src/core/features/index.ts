@@ -358,7 +358,7 @@ export class Features {
           .forEach((feature) => {
             const featureData = this.get(sourceName, feature.id as FeatureId);
             if (!featureData) {
-              log.warn("Can't find featureData for the feature", feature);
+              // log.warn("Can't find featureData for the feature", feature);
               return;
             }
 
@@ -366,10 +366,6 @@ export class Features {
               resultFeatureCollection.features.push({
                 ...feature,
                 id: feature.properties[FEATURE_ID_PROPERTY],
-                properties: {
-                  ...feature.properties,
-                  ...featureData?.exportGmShapeProperties(),
-                },
               });
             }
           });
@@ -555,7 +551,7 @@ export class Features {
           coordinates: coordinate,
         },
         properties: {
-          shape: `${type}_marker`,
+          [`${FEATURE_PROPERTY_PREFIX}shape`]: `${type}_marker`,
         },
       },
     });

@@ -1,4 +1,5 @@
 import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
+import { propertyValidators } from '@/core/features/validators.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import {
@@ -19,12 +20,15 @@ import {
 } from '@/main.ts';
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
-import { isLngLat } from '@/utils/guards/geojson.ts';
 import centroid from '@turf/centroid';
+import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-import { propertyValidators } from '@/core/features/validators.ts';
 
-export const conversionAllowedShapes: Array<FeatureData['shape']> = ['circle', 'rectangle'];
+export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
+  'circle',
+  'ellipse',
+  'rectangle',
+];
 
 export class FeatureData {
   gm: Geoman;
@@ -44,7 +48,7 @@ export class FeatureData {
     this.addGeoJson({
       ...parameters.geoJsonShapeFeature,
       properties: {
-        ...parameters.geoJsonShapeFeature.properties,
+        ...this.parseExtraProperties(parameters.geoJsonShapeFeature),
         ...this.parseGmShapeProperties(parameters.geoJsonShapeFeature),
       },
     });
@@ -72,9 +76,11 @@ export class FeatureData {
 
   getShapeProperty<T extends keyof FeatureShapeProperties>(
     name: T,
+    inputGeoJson?: GeoJsonShapeFeature,
   ): FeatureShapeProperties[T] | undefined {
+    const geoJsonProperties = inputGeoJson?.properties || this._geoJson?.properties || {};
     const validator = propertyValidators[name];
-    const value = this._geoJson?.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
+    const value = geoJsonProperties[`${FEATURE_PROPERTY_PREFIX}${name}`] ?? geoJsonProperties[name];
 
     if (validator && validator(value)) {
       return value;
@@ -97,18 +103,23 @@ export class FeatureData {
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
     const shape =
-      this.getGmShapeTypeProperty(geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
+      this.getShapeProperty('shape', geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
 
     if (!shape) {
       log.error(`FeatureData.importGmShapeProperties(): unknown shape: ${shape}`);
     }
 
+    const allProperties: FeatureShapeProperties = Object.fromEntries(
+      typedKeys(propertyValidators).map((name) => [name, this.getShapeProperty(name, geoJson)]),
+    );
+
     const properties: FeatureShapeProperties = {
+      ...allProperties,
       id: this.id,
       shape: shape || undefined,
-      center: this.getGmCenterProperty(geoJson),
-      text: this.getGmTextProperty(geoJson),
     };
+
+    // log.debug('parseGmShapeProperties', JSON.stringify(properties, null, 2));
 
     return Object.fromEntries(
       typedKeys(properties)
@@ -117,37 +128,13 @@ export class FeatureData {
     );
   }
 
-  getGmShapeTypeProperty(geoJson: GeoJsonShapeFeature) {
-    const value = geoJson.properties[`${FEATURE_PROPERTY_PREFIX}shape`] || geoJson.properties.shape;
-    if (value && typeof value === 'string' && includesWithType(value, ALL_SHAPE_NAMES)) {
-      return value;
-    }
-  }
-
-  getGmCenterProperty(geoJson: GeoJsonShapeFeature) {
-    const value =
-      geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] || geoJson.properties.center;
-    if (isLngLat(value)) {
-      return value;
-    }
-  }
-
-  getGmTextProperty(geoJson: GeoJsonShapeFeature) {
-    const value = geoJson.properties[`${FEATURE_PROPERTY_PREFIX}text`] || geoJson.properties.text;
-    if (typeof value === 'string') {
-      return value;
-    }
-  }
-
-  exportGmShapeProperties() {
-    if (this._geoJson) {
-      return Object.fromEntries(
-        Object.keys(this._geoJson.properties)
-          .filter((name) => name.startsWith(FEATURE_PROPERTY_PREFIX))
-          .map((name) => [name, this._geoJson?.properties[name]]),
-      );
-    }
-    return {};
+  parseExtraProperties(geoJson: GeoJsonShapeFeature) {
+    const extraProperties = cloneDeep(geoJson.properties) || {};
+    typedKeys(propertyValidators).forEach((name) => {
+      delete extraProperties[name];
+      delete extraProperties[`${FEATURE_PROPERTY_PREFIX}${name}`];
+    });
+    return extraProperties;
   }
 
   deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
@@ -155,7 +142,7 @@ export class FeatureData {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    delete this._geoJson.properties[name];
+    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
   }
 
   getGeoJson(): GeoJsonShapeFeature {
@@ -247,6 +234,9 @@ export class FeatureData {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
       this.deleteShapeProperty('center');
+      this.deleteShapeProperty('angle');
+      this.deleteShapeProperty('xSemiAxis');
+      this.deleteShapeProperty('ySemiAxis');
       return true;
     }
 
@@ -254,7 +244,7 @@ export class FeatureData {
   }
 
   isConvertableToPolygon(): boolean {
-    return conversionAllowedShapes.includes(this.shape);
+    return toPolygonAllowedShapes.includes(this.shape);
   }
 
   changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {

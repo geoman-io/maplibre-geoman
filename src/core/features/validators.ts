@@ -6,7 +6,9 @@ import { isLngLat } from '@/utils/guards/geojson.ts';
 import type { PropertyValidator } from '@/types/utils.ts';
 
 export const propertyValidators: {
-  [K in keyof FeatureShapeProperties]: PropertyValidator<NonNullable<FeatureShapeProperties[K]>>;
+  [K in keyof Required<FeatureShapeProperties>]: PropertyValidator<
+    NonNullable<FeatureShapeProperties[K]>
+  >;
 } = {
   id: (value: unknown): value is FeatureId =>
     typeof value === 'string' || typeof value === 'number',
@@ -15,6 +17,12 @@ export const propertyValidators: {
     typeof value === 'string' && includesWithType(value, ALL_SHAPE_NAMES),
 
   center: (value: unknown): value is LngLat => isLngLat(value),
+
+  xSemiAxis: (value: unknown): value is number => typeof value === 'number',
+
+  ySemiAxis: (value: unknown): value is number => typeof value === 'number',
+
+  angle: (value: unknown): value is number => typeof value === 'number',
 
   text: (value: unknown): value is string => typeof value === 'string',
 };

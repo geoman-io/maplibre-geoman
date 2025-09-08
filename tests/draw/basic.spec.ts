@@ -107,6 +107,27 @@ test('Draw a circle', async ({ page }) => {
   await checkFeatureCreated(page, 'circle');
 });
 
+test('Draw an ellipse', async ({ page }) => {
+  await page.click('#id_draw_ellipse');
+
+  const { innerWidth, innerHeight } = await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+  }));
+  const centerX = innerWidth / 2;
+  const centerY = innerHeight / 2;
+
+  const points: Array<[number, number]> = [
+    [centerX, centerY],
+    [centerX + 100, centerY],
+    [centerX, centerY + 20],
+  ];
+  await mouseMoveAndClick(page, points);
+  await page.click('#id_draw_ellipse');
+
+  await checkFeatureCreated(page, 'ellipse');
+});
+
 test('Draw a rectangle', async ({ page }) => {
   await page.click('#id_draw_rectangle');
 

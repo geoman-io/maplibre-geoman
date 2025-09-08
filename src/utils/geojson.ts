@@ -1,3 +1,4 @@
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 import type {
   CoordinateIndices,
   GeoJsonShapeFeature,
@@ -13,6 +14,9 @@ import type {
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
 import turfCircle from '@turf/circle';
+import turfEllipse from '@/turf/ellipse.ts';
+import turfBearing from '@turf/bearing';
+
 import { distance as turfDistance } from '@turf/distance';
 import { coordEach as turfCoordEach } from '@turf/meta';
 import { multiPolygonToLine, singlePolygonToLine } from '@turf/polygon-to-line';
@@ -30,6 +34,7 @@ import type {
 } from 'geojson';
 import { get, isEqual } from 'lodash-es';
 import log from 'loglevel';
+import { lineString } from '@turf/helpers';
 
 export const isEqualPosition = (position1: LngLat, position2: LngLat): boolean => {
   return position1[0] === position2[0] && position1[1] === position2[1];
@@ -567,6 +572,100 @@ export const getGeoJsonCircle = ({
   circleGeoJson.geometry.coordinates[0][0] = [...circleGeoJson.geometry.coordinates[0][0]];
 
   return circleGeoJson;
+};
+
+export const getEllipseParameters = ({
+  center,
+  xSemiAxisLngLat,
+  rimLngLat,
+}: {
+  center: LngLat;
+  xSemiAxisLngLat: LngLat;
+  rimLngLat?: LngLat;
+}) => {
+  let xSemiAxis = turfDistance(center, xSemiAxisLngLat, { units: 'meters' });
+  if (xSemiAxis === 0) {
+    xSemiAxis = 1;
+  }
+
+  const cwAngle = turfBearing(center, xSemiAxisLngLat) - 90;
+
+  let ySemiAxis = 0;
+
+  if (rimLngLat) {
+    const ccwAngle = -cwAngle;
+    const ccwAngleRad = (ccwAngle * Math.PI) / 180;
+    const ccwRimAngle = -(turfBearing(center, rimLngLat) - 90);
+    const ccwRimAngleRad = (ccwRimAngle * Math.PI) / 180;
+
+    const dRim = turfDistance(center, rimLngLat, { units: 'meters' });
+
+    const px = dRim * Math.cos(ccwRimAngleRad);
+    const py = dRim * Math.sin(ccwRimAngleRad);
+
+    const pxReproj = px * Math.cos(ccwAngleRad) + py * Math.sin(ccwAngleRad);
+    const pyReproj = px * -Math.sin(ccwAngleRad) + py * Math.cos(ccwAngleRad);
+
+    const xPart = (pxReproj * pxReproj) / (xSemiAxis * xSemiAxis);
+    ySemiAxis = Math.abs(pyReproj) / Math.sqrt(1 - xPart);
+
+    // if xPart === 1
+    if (isNaN(ySemiAxis)) {
+      ySemiAxis = 0;
+    }
+  }
+
+  return {
+    xSemiAxis,
+    ySemiAxis,
+    angle: cwAngle,
+  };
+};
+
+export const ellipseSteps = 80;
+
+export const getGeoJsonEllipse = ({
+  center,
+  xSemiAxis,
+  ySemiAxis,
+  angle,
+  properties = {},
+}: {
+  center: LngLat;
+  xSemiAxis: number;
+  ySemiAxis?: number;
+  angle: number;
+  properties?: GeoJsonProperties;
+}): GeoJsonShapeFeature => {
+  const options = {
+    steps: ellipseSteps,
+    angle,
+    units: 'meters',
+  } as const;
+
+  if (ySemiAxis === undefined || ySemiAxis === 0) {
+    const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
+    return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
+      shape: 'line',
+    });
+  }
+
+  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis, {
+    ...options,
+    properties: {
+      ...properties,
+      [`${FEATURE_PROPERTY_PREFIX}shape`]: 'ellipse',
+      [`${FEATURE_PROPERTY_PREFIX}center`]: center,
+      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: xSemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: ySemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
+    },
+  });
+
+  // remove link between first and last coordinates
+  ellipseGeoJson.geometry.coordinates[0][0] = [...ellipseGeoJson.geometry.coordinates[0][0]];
+
+  return ellipseGeoJson as GeoJsonShapeFeature;
 };
 
 export const getCoordinateByPath = (

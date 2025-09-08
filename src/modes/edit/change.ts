@@ -13,9 +13,11 @@ import {
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { getFeatureFirstPoint } from '@/utils/features.ts';
 import {
+  ellipseSteps,
   findCoordinateIndices,
   getGeoJsonCircle,
   getGeoJsonCoordinatesCount,
+  getGeoJsonEllipse,
   isLineStringFeature,
   isMultiPolygonFeature,
   isPolygonFeature,
@@ -40,6 +42,7 @@ export class EditChange extends BaseDrag {
     marker: this.updateSingleVertex.bind(this),
     circle: this.updateCircle.bind(this),
     circle_marker: this.updateSingleVertex.bind(this),
+    ellipse: this.updateEllipse.bind(this),
     text_marker: this.updateSingleVertex.bind(this),
     line: this.updateSingleVertex.bind(this),
     rectangle: this.updateRectangle.bind(this),
@@ -226,6 +229,53 @@ export class EditChange extends BaseDrag {
       },
       geometry: circlePolygon.geometry,
     };
+  }
+
+  updateEllipse(args: GMEditMarkerMoveEvent): GeoJsonShapeFeature | null {
+    const { featureData, lngLatEnd, markerData } = args;
+    if (featureData.shape !== 'ellipse') {
+      log.error('EditChange.updateEllipse: invalid shape type', featureData);
+      return null;
+    }
+
+    const center = featureData.getShapeProperty('center');
+    let xSemiAxis = featureData.getShapeProperty('xSemiAxis');
+    let ySemiAxis = featureData.getShapeProperty('ySemiAxis');
+    const angle = featureData.getShapeProperty('angle');
+
+    if (
+      !Array.isArray(center) ||
+      typeof xSemiAxis !== 'number' ||
+      typeof ySemiAxis !== 'number' ||
+      typeof angle !== 'number'
+    ) {
+      log.error(
+        'updateEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
+        featureData,
+      );
+      return null;
+    }
+
+    const distance = this.gm.mapAdapter.getDistance(center, lngLatEnd);
+
+    const vertexIdx = markerData.position.path[3] as number;
+    const vertexRatio = Math.floor((vertexIdx / ellipseSteps) * 4);
+
+    const axe = vertexRatio === 0 || vertexRatio === 2 ? 'x' : 'y';
+    if (axe === 'x') {
+      xSemiAxis = distance;
+    } else {
+      ySemiAxis = distance;
+    }
+
+    const ellipsePolygon = getGeoJsonEllipse({
+      center,
+      xSemiAxis,
+      ySemiAxis,
+      angle,
+    });
+
+    return ellipsePolygon;
   }
 
   updateRectangle({ featureData, lngLatStart, lngLatEnd }: GMEditMarkerMoveEvent) {

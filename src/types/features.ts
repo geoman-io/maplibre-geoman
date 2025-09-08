@@ -37,6 +37,9 @@ export type FeatureShapeProperties = {
   id?: FeatureId;
   shape?: FeatureShape;
   center?: LngLat;
+  xSemiAxis?: number;
+  ySemiAxis?: number;
+  angle?: number;
   text?: string;
 };
 

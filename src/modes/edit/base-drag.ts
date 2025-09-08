@@ -10,9 +10,15 @@ import type {
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { getFeatureFirstPoint, getMovedGeoJson } from '@/utils/features.ts';
-import { getGeoJsonCircle, getGeoJsonFirstPoint, getLngLatDiff } from '@/utils/geojson.ts';
+import {
+  getGeoJsonCircle,
+  getGeoJsonEllipse,
+  getGeoJsonFirstPoint,
+  getLngLatDiff,
+} from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { Feature, Polygon } from 'geojson';
+import { isEqual } from 'lodash-es';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
@@ -53,6 +59,7 @@ export abstract class BaseDrag extends BaseEdit {
 
   getUpdatedGeoJsonHandlers: { [key in FeatureShape]?: UpdateShapeHandler } = {
     marker: this.moveSource.bind(this),
+    ellipse: this.moveEllipse.bind(this),
     circle: this.moveCircle.bind(this),
     circle_marker: this.moveSource.bind(this),
     text_marker: this.moveSource.bind(this),
@@ -157,6 +164,9 @@ export abstract class BaseDrag extends BaseEdit {
         featureGeoJson: updatedGeoJson,
         forceMode: 'drag',
       });
+      if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
+        featureData.updateGeoJsonProperties(updatedGeoJson.properties);
+      }
 
       if (isUpdated) {
         this.previousLngLat = newLngLat;
@@ -170,6 +180,46 @@ export abstract class BaseDrag extends BaseEdit {
     return getMovedGeoJson(featureData, lngLatDiff);
   }
 
+  moveEllipse(
+    featureData: FeatureData,
+    oldLngLat: LngLat,
+    newLngLat: LngLat,
+  ): GeoJsonShapeFeature | null {
+    if (featureData.shape !== 'ellipse') {
+      log.error('BaseDrag.moveCircle: invalid shape type', featureData);
+      return null;
+    }
+
+    const oldCenter = featureData.getShapeProperty('center');
+    const xSemiAxis = featureData.getShapeProperty('xSemiAxis');
+    const ySemiAxis = featureData.getShapeProperty('ySemiAxis');
+    const angle = featureData.getShapeProperty('angle');
+
+    if (
+      !Array.isArray(oldCenter) ||
+      typeof xSemiAxis !== 'number' ||
+      typeof ySemiAxis !== 'number' ||
+      typeof angle !== 'number'
+    ) {
+      log.error(
+        'BaseDrag.moveEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
+        featureData,
+      );
+      return null;
+    }
+
+    const lngLatDiff = getLngLatDiff(oldLngLat, newLngLat);
+
+    const newCenterCoords: LngLat = [oldCenter[0] + lngLatDiff.lng, oldCenter[1] + lngLatDiff.lat];
+
+    return getGeoJsonEllipse({
+      center: newCenterCoords,
+      xSemiAxis,
+      ySemiAxis,
+      angle,
+    });
+  }
+
   moveCircle(
     featureData: FeatureData,
     oldLngLat: LngLat,
@@ -181,7 +231,7 @@ export abstract class BaseDrag extends BaseEdit {
     }
 
     const shapeCenter = featureData.getShapeProperty('center');
-    if (!shapeCenter) {
+    if (!Array.isArray(shapeCenter)) {
       log.error('BaseDrag.moveCircle: missing center in the featureData', featureData);
       return null;
     }

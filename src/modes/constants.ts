@@ -5,6 +5,7 @@ export const SHAPE_NAMES = [
   'marker',
   'circle',
   'circle_marker',
+  'ellipse',
   'text_marker',
   'line',
   'rectangle',
