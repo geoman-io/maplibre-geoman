@@ -46,6 +46,7 @@ export class FeatureData {
     this.markers = new Map();
 
     this.addGeoJson({
+      id: this.id,
       ...parameters.geoJsonShapeFeature,
       properties: {
         ...this.parseExtraProperties(parameters.geoJsonShapeFeature),
@@ -234,6 +235,9 @@ export class FeatureData {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
       this.deleteShapeProperty('center');
+      this.deleteShapeProperty('angle');
+      this.deleteShapeProperty('xSemiAxis');
+      this.deleteShapeProperty('ySemiAxis');
       return true;
     }
 
