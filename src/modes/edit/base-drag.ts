@@ -69,12 +69,13 @@ export abstract class BaseDrag extends BaseEdit {
   };
 
   onMouseDown(event: AnyEvent): MapHandlerReturnData {
-    this.featureData = this.gm.features.getFeatureByMouseEvent({
+    const featureData = this.gm.features.getFeatureByMouseEvent({
       event,
       sourceNames: [SOURCES.main],
     });
 
-    if (this.featureData && this.getUpdatedGeoJsonHandlers[this.featureData.shape]) {
+    if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
+      this.featureData = featureData;
       this.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.gm.mapAdapter.setDragPan(false);
       this.isDragging = true;

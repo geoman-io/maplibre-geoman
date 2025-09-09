@@ -21,7 +21,12 @@ export const waitForGeoman = async (page: Page) => {
 export const waitForMapIdle = async (page: Page) => {
   await page.waitForFunction(
     () => {
-      return !Object.values(window.geoman.features.sources).some((source) => !source?.loaded);
+      const sources = window.geoman?.features?.sources || null;
+      if (!sources) {
+        return null;
+      }
+
+      return !Object.values(sources).some((source) => !source?.loaded);
     },
     {
       timeout: isCI ? 30000 : 10000,
