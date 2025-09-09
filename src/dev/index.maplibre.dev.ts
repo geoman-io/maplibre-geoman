@@ -42,7 +42,12 @@ const gmOptions: PartialDeep<GmOptionsData> = {
       },
     },
     draw: {},
-    helper: {},
+    helper: {
+      shape_markers: {
+        active: false,
+        uiEnabled: true,
+      },
+    },
   },
 };
 

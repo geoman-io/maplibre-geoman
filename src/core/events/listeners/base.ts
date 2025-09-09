@@ -55,12 +55,18 @@ export abstract class BaseEventListener {
 
     this.gm.control.eachControlWithOptions((item) => {
       const control = item.control;
+      const { type: actionType, targetMode: modeName } = control;
 
       if (control.settings.enabledBy?.includes(payload.mode)) {
         if (payload.action === 'mode_start') {
-          this.gm.options.enableMode(control.type, control.targetMode);
+          if (this.gm.options.isModeEnabled(actionType, modeName)) {
+            // disable a mode if it's enabled already
+            // log.debug(`force disable ${actionType}:${modeName}`);
+            this.gm.options.disableMode(actionType, modeName);
+          }
+          this.gm.options.enableMode(actionType, modeName);
         } else if (payload.action === 'mode_end') {
-          this.gm.options.disableMode(control.type, control.targetMode);
+          this.gm.options.disableMode(actionType, modeName);
         } else {
           log.error('Unknown mode action', payload.action);
         }

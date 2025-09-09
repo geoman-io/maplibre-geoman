@@ -408,7 +408,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       return { next: true };
     }
 
-    if (event.action === 'feature_created') {
+    if (['feature_created', 'mode_start'].includes(event.action)) {
       this.debouncedMethods.refreshMarkers();
     }
 
