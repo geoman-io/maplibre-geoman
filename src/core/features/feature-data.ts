@@ -101,6 +101,15 @@ export class FeatureData {
     this.updateGeoJsonProperties(this._geoJson.properties);
   }
 
+  deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
+    if (!this._geoJson) {
+      log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
+      return;
+    }
+    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
+    this.updateGeoJsonProperties(this._geoJson.properties);
+  }
+
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
     const shape =
       this.getShapeProperty('shape', geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
@@ -119,8 +128,6 @@ export class FeatureData {
       shape: shape || undefined,
     };
 
-    // log.debug('parseGmShapeProperties', JSON.stringify(properties, null, 2));
-
     return Object.fromEntries(
       typedKeys(properties)
         .filter((fieldName) => properties[fieldName] !== undefined)
@@ -137,14 +144,6 @@ export class FeatureData {
     return extraProperties;
   }
 
-  deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
-    if (!this._geoJson) {
-      log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
-      return;
-    }
-    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-  }
-
   getGeoJson(): GeoJsonShapeFeature {
     if (this._geoJson) {
       return this._geoJson;
@@ -154,7 +153,10 @@ export class FeatureData {
   }
 
   addGeoJson(geoJson: GeoJsonShapeFeature) {
-    this._geoJson = geoJson;
+    this._geoJson = {
+      ...geoJson,
+      id: this.id,
+    };
     this.updateGeoJsonCenter(this._geoJson);
 
     this.gm.features.updateManager.updateSource({
@@ -172,7 +174,6 @@ export class FeatureData {
       diff: { remove: [this.id] },
       sourceName: this.sourceName,
     });
-    // this._geoJson = null;
   }
 
   removeMarkers() {
@@ -247,17 +248,17 @@ export class FeatureData {
     return toPolygonAllowedShapes.includes(this.shape);
   }
 
-  changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
-    if (atomic) {
-      this.gm.features.updateManager.withAtomicSourcesUpdate(() =>
-        this.actualChangeSource({ sourceName, atomic }),
-      );
-    } else {
-      this.actualChangeSource({ sourceName, atomic });
-    }
-  }
+  // changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
+  //   if (atomic) {
+  //     this.gm.features.updateManager.withAtomicSourcesUpdate(() =>
+  //       this.actualChangeSource({ sourceName, atomic }),
+  //     );
+  //   } else {
+  //     this.actualChangeSource({ sourceName, atomic });
+  //   }
+  // }
 
-  actualChangeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
+  changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
     if (this.source.id === sourceName) {
       log.error(
         `FeatureData.changeSource: feature "${this.id}" already has the source "${sourceName}"`,

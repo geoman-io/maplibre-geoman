@@ -1,9 +1,9 @@
-import type { FeatureSourceName, GeoJsonSourceDiff } from '@/types';
+import { SOURCES } from '@/core/features/constants.ts';
 import { FEATURE_ID_PROPERTY, type Geoman } from '@/main.ts';
+import type { FeatureSourceName, GeoJsonSourceDiff } from '@/types';
 import { typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
 import { debounce, throttle } from 'lodash-es';
-import { SOURCES } from '@/core/features/constants.ts';
 
 type SourceUpdateMethods = {
   [key in FeatureSourceName]: {
@@ -84,11 +84,10 @@ export class SourceUpdateManager {
   updateSourceActual(sourceName: FeatureSourceName) {
     if (this.autoUpdatesEnabled) {
       const source = this.gm.features.sources[sourceName];
-      // log.debug(`source: ${sourceName}, diffs count: ${this.updateStorage[sourceName].length}`);
       const combinedDiff = this.getCombinedDiff(sourceName);
+
       if (source && combinedDiff) {
-        // log.debug(`source: ${sourceName}, combined diff counts`, Object.values(combinedDiff));
-        // log.debug(`source: ${sourceName}, combined diff`, JSON.stringify(combinedDiff, null, 2));
+        // applies non empty diff
         source.updateData(combinedDiff);
       }
     }

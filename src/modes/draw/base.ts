@@ -21,6 +21,8 @@ export abstract class BaseDraw extends BaseAction {
   featureData: FeatureData | null = null;
 
   saveFeature() {
+    // todo: check is it possible to avoid recreating a feature
+    // todo: check ellipse to fit all the rest shapes
     if (this.featureData) {
       const featureGeoJson = this.featureData.getGeoJson();
       this.removeTmpFeature();

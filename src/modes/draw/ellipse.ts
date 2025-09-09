@@ -138,13 +138,7 @@ export class DrawEllipse extends BaseCircle {
       this.featureData.setShapeProperty('angle', angle);
 
       if (this.isFeatureGeoJsonValid()) {
-        // Note for Reviewers, I'm not using saveFeature() method to
-        // because in this way the shapeParameters are already assigned.
-        // I did not understand the point of deleting and then recreating
-        // an identical featureData.
-        this.featureData.changeSource({ sourceName: 'gm_main', atomic: true });
-        this.gm.features.fireFeatureCreatedEvent(this.featureData);
-        this.featureData = null;
+        this.saveFeature();
       } else {
         this.removeTmpFeature();
       }
