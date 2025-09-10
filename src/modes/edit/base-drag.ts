@@ -90,8 +90,8 @@ export abstract class BaseDrag extends BaseEdit {
     return { next: true };
   }
 
-  onMouseUp(): MapHandlerReturnData {
-    if (!this.featureData) {
+  onMouseUp(event: AnyEvent): MapHandlerReturnData {
+    if (!this.featureData || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 

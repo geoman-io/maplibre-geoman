@@ -22,7 +22,7 @@ import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';
 import { findInCollection } from '@/utils/collections.ts';
 import { getFeatureFirstPoint } from '@/utils/features.ts';
 import { eachSegmentWithPath, findCoordinateWithPath, isEqualPosition } from '@/utils/geojson.ts';
-import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import { isMapPointerEvent, isPointerEventWithModifiers } from '@/utils/guards/map.ts';
 import { isGmDrawEvent, isGmEditEvent } from '@/utils/guards/modes.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { cloneDeep, intersection } from 'lodash-es';
@@ -115,7 +115,11 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   onMouseDown(event: AnyEvent): MapHandlerReturnData {
     const allowedEventNames = ['mousedown', 'touchstart'];
-    if (!isMapPointerEvent(event, { warning: true }) || !allowedEventNames.includes(event.type)) {
+    if (
+      !isMapPointerEvent(event, { warning: true }) ||
+      !allowedEventNames.includes(event.type) ||
+      isPointerEventWithModifiers(event)
+    ) {
       return { next: true };
     }
     if (event.type === 'mousedown' && event.originalEvent.button !== 0) {

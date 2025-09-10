@@ -67,6 +67,15 @@ export const isMapTouchEvent = (
   return isMapPointerEvent(event, options) && event.type.startsWith('touch');
 };
 
+export const isPointerEventWithModifiers = (event: BaseMapPointerEvent) => {
+  return (
+    event.originalEvent.ctrlKey ||
+    event.originalEvent.shiftKey ||
+    event.originalEvent.altKey ||
+    event.originalEvent.metaKey
+  );
+};
+
 export const isPartialLayer = (object: unknown): object is PartialLayerStyle => {
   const allowedTypes = ['symbol', 'fill', 'line', 'circle'] as const satisfies Array<
     PartialLayerStyle['type']
