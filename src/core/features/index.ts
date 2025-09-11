@@ -90,7 +90,14 @@ export class Features {
 
   getNewFeatureId(): FeatureId {
     this.featureCounter += 1;
-    return `feature-${this.featureCounter}`;
+    let newFeatureId: FeatureId | null = `feature-${this.featureCounter}`;
+
+    while (this.featureStore.has(newFeatureId)) {
+      this.featureCounter += 1;
+      newFeatureId = `feature-${this.featureCounter}`;
+    }
+
+    return newFeatureId;
   }
 
   filteredForEach(filterFn: (featureData: FeatureData) => boolean) {
