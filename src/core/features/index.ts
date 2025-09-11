@@ -26,7 +26,7 @@ import {
   type ShapeName,
   type SourcesStorage,
 } from '@/main.ts';
-import { fixGeoJsonFeature } from '@/utils/features.ts';
+import { fixGeoJsonFeature, getCustomFeatureId } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
@@ -234,7 +234,7 @@ export class Features {
       return null;
     }
 
-    const id = featureId || shapeGeoJson.properties[FEATURE_ID_PROPERTY] || this.getNewFeatureId();
+    const id = featureId ?? shapeGeoJson.properties[FEATURE_ID_PROPERTY] ?? this.getNewFeatureId();
 
     if (this.featureStore.get(id)) {
       log.error(
@@ -260,7 +260,10 @@ export class Features {
     return featureData;
   }
 
-  importGeoJson(geoJson: GeoJsonImportFeatureCollection | GeoJsonImportFeature) {
+  importGeoJson(
+    geoJson: GeoJsonImportFeatureCollection | GeoJsonImportFeature,
+    idPropertyName?: string,
+  ) {
     const features = 'features' in geoJson ? geoJson.features : [geoJson];
     const result = {
       stats: {
@@ -275,9 +278,15 @@ export class Features {
       let featureData: FeatureData | null = null;
       result.stats.total += 1;
 
-      const fixedFeature = fixGeoJsonFeature(feature);
-      if (fixedFeature) {
-        featureData = this.importGeoJsonFeature(fixedFeature);
+      const featureGeoJson = fixGeoJsonFeature(feature);
+      if (featureGeoJson) {
+        if (idPropertyName) {
+          const customId = getCustomFeatureId(featureGeoJson, idPropertyName);
+          if (customId) {
+            featureGeoJson.id = customId;
+          }
+        }
+        featureData = this.importGeoJsonFeature(featureGeoJson);
       }
 
       if (featureData) {

@@ -2,6 +2,7 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyMapInstance,
   BaseMapAdapter,
+  type FeatureId,
   type GeoJsonImportFeature,
   type GeoJsonShapeFeature,
   type LngLat,
@@ -13,13 +14,13 @@ import {
   getGeoJsonFirstPoint,
 } from '@/utils/geojson.ts';
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
+import buffer from '@turf/buffer';
+import distance from '@turf/distance';
 import lineIntersect from '@turf/line-intersect';
 import rewind from '@turf/rewind';
 import type { Feature, GeoJSON, MultiPolygon, Polygon, Position } from 'geojson';
 import { cloneDeep } from 'lodash-es';
-import { isLineBasedGeoJsonFeature, isPointBasedGeoJsonFeature } from '../../tests/types.ts';
-import buffer from '@turf/buffer';
-import distance from '@turf/distance';
+import { isLineBasedGeoJsonFeature, isPointBasedGeoJsonFeature } from '@tests/types.ts';
 
 export const moveGeoJson = (geoJson: GeoJsonShapeFeature, lngLatDiff: LngLatDiff) => {
   eachCoordinateWithPath(geoJson, (position) => {
@@ -121,5 +122,16 @@ export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportF
     return feature;
   }
 
+  return null;
+};
+
+export const getCustomFeatureId = (
+  featureGeoJson: Feature,
+  idPropertyName: string,
+): FeatureId | null => {
+  const featureId = featureGeoJson.properties?.[idPropertyName];
+  if (typeof featureId === 'string' || typeof featureId === 'number') {
+    return featureId;
+  }
   return null;
 };
