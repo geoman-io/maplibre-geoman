@@ -240,6 +240,35 @@ export class Geoman {
     this.events.bus.forwarder.globalEventsListener = callback;
   }
 
+  createSvgMarkerElement(
+    type: keyof GmOptions['settings']['markerIcons'],
+    style: Partial<CSSStyleDeclaration> | undefined = undefined,
+  ): HTMLElement {
+    const markerIcons = this.options.settings.markerIcons;
+
+    if (!markerIcons[type]) {
+      log.error(`createMarkerElement: marker type "${type}" not found`);
+    }
+
+    const element = document.createElement('div');
+    element.classList.add('marker-wrapper');
+    element.style.lineHeight = '0';
+
+    element.innerHTML = markerIcons[type] || 'NO_ICON';
+    const svgElement = element.firstChild as HTMLElement;
+
+    if (typeof svgElement !== 'object') {
+      log.error(`createMarkerElement: no icon "${type}" found`);
+      throw new Error(`No icon "${type}" found`);
+    }
+
+    if (style) {
+      Object.assign(svgElement.style, style);
+    }
+
+    return element;
+  }
+
   enableMode(actionType: ActionType, modeName: ModeName) {
     this.options.enableMode(actionType, modeName);
   }
@@ -460,11 +489,14 @@ export { ShapeMarkersHelper } from '@/modes/helpers/shape-markers.ts';
 export { LineDrawer } from '@/utils/draw/line-drawer.ts';
 export { MarkerPointer } from '@/utils/draw/marker-pointer.ts';
 
-export { GM_PREFIX } from '@/core/constants.ts';
+export { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
 export { DRAW_MODES } from '@/modes/constants.ts';
 export { EXTRA_DRAW_MODES } from '@/modes/constants.ts';
 export { SHAPE_NAMES } from '@/modes/constants.ts';
-export { SOURCES } from '@/core/features/constants.ts';
-export { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
+export {
+  FEATURE_PROPERTY_PREFIX,
+  FEATURE_ID_PROPERTY,
+  SOURCES,
+} from '@/core/features/constants.ts';
 export { HELPER_MODES } from '@/modes/constants.ts';
 export { EDIT_MODES } from '@/modes/constants.ts';

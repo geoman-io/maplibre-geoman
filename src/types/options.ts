@@ -37,6 +37,10 @@ export type GmOptionsData = {
     controlsUiEnabledByDefault: boolean;
     controlsCollapsible: boolean;
     controlsStyles: ControlStyles;
+    markerIcons: {
+      default: string;
+      control: string;
+    };
   };
   layerStyles: typeof defaultLayerStyles;
   controls: {

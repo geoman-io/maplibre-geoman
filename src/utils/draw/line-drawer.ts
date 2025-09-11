@@ -17,7 +17,6 @@ import {
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { createMarkerElement } from '@/utils/dom.ts';
 import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -403,7 +402,7 @@ export class LineDrawer extends BaseDraw {
   createMarker(lngLat: LngLat) {
     return this.gm.mapAdapter.createDomMarker(
       {
-        element: createMarkerElement('dom', {
+        element: this.gm.createSvgMarkerElement('control', {
           pointerEvents: 'auto',
           cursor: 'pointer',
         }),

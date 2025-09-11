@@ -9,7 +9,6 @@ import type {
 } from '@/main.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
-import { createMarkerElement } from '@/utils/dom.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import log from 'loglevel';
 
@@ -124,7 +123,7 @@ export class MarkerPointer {
     return this.gm.mapAdapter.createDomMarker(
       {
         anchor: 'center',
-        element: createMarkerElement('dom', { pointerEvents: 'none' }),
+        element: this.gm.createSvgMarkerElement('control', { pointerEvents: 'none' }),
       },
       lngLat,
     ) as BaseDomMarker; // todo: create a marker abstraction

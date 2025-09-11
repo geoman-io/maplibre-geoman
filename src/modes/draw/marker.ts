@@ -1,4 +1,3 @@
-import defaultMarker from '@/assets/images/markers/default-marker.png';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyEvent,
@@ -82,12 +81,11 @@ export class DrawMarker extends BaseDraw {
   }
 
   protected createMarker() {
-    const iconElement = document.createElement('div');
-    iconElement.style.backgroundImage = `url("${defaultMarker}")`;
-    iconElement.style.width = '36px';
-    iconElement.style.height = '36px';
-    iconElement.style.backgroundSize = 'cover';
-    iconElement.style.pointerEvents = 'none';
+    const iconElement = this.gm.createSvgMarkerElement('default', {
+      width: '36px',
+      height: '36px',
+      pointerEvents: 'none',
+    });
 
     return this.gm.mapAdapter.createDomMarker(
       {
