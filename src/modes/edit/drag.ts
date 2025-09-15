@@ -28,9 +28,9 @@ export class EditDrag extends BaseDrag {
       return { next: false };
     } else if (event.action === 'marker_captured') {
       event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      this.flags.actionInProgress = true;
       this.fireFeatureEditStartEvent({ feature: event.featureData });
       this.setCursorToPointer();
-      this.flags.actionInProgress = true;
     } else if (event.action === 'marker_released') {
       this.previousLngLat = null;
       event.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });

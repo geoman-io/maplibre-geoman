@@ -83,10 +83,10 @@ export class EditChange extends BaseDrag {
     } else if (event.action === 'edge_marker_click') {
       this.insertVertex(event);
     } else if (event.action === 'marker_captured') {
-      event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
-      this.fireFeatureEditStartEvent({ feature: event.featureData });
       this.setCursorToPointer();
+      event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.flags.actionInProgress = true;
+      this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {
       this.markerData = null;
       this.snapGuidesInstance?.removeSnapGuides();
