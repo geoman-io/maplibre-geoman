@@ -30,6 +30,7 @@ export abstract class BaseAction {
   flags = {
     featureCreateAllowed: true,
     featureUpdateAllowed: true,
+    actionInProgress: false,
   };
 
   abstract eventHandlers: EventHandlers;

@@ -85,11 +85,14 @@ export class EditChange extends BaseDrag {
     } else if (event.action === 'marker_captured') {
       event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.fireFeatureEditStartEvent({ feature: event.featureData });
+      this.setCursorToPointer();
+      this.flags.actionInProgress = true;
     } else if (event.action === 'marker_released') {
       this.markerData = null;
       this.snapGuidesInstance?.removeSnapGuides();
       event.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
       this.fireFeatureEditEndEvent({ feature: event.featureData });
+      this.flags.actionInProgress = false;
     }
 
     return { next: true };

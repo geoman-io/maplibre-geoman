@@ -45,10 +45,16 @@ export abstract class BaseEdit extends BaseAction {
   }
 
   setCursorToPointer() {
+    if (this.flags.actionInProgress) {
+      return;
+    }
     this.gm.mapAdapter.setCursor('pointer');
   }
 
   setCursorToEmpty() {
+    if (this.flags.actionInProgress) {
+      return;
+    }
     this.gm.mapAdapter.setCursor('');
   }
 

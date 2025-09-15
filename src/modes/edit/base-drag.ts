@@ -31,7 +31,6 @@ type UpdateShapeHandler = (
 
 export abstract class BaseDrag extends BaseEdit {
   mode: EditModeName = 'drag';
-  isDragging: boolean = false;
   previousLngLat: LngLat | null = null;
 
   pointBasedShapes: Array<FeatureShape> = ['marker', 'circle_marker', 'text_marker'];
@@ -78,13 +77,13 @@ export abstract class BaseDrag extends BaseEdit {
       this.featureData = featureData;
       this.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.gm.mapAdapter.setDragPan(false);
-      this.isDragging = true;
 
       this.snappingHelper?.addExcludedFeature(this.featureData);
       if (this.isPointBasedShape()) {
         this.alignShapeCenterWithControlMarker(this.featureData, event);
       }
       this.fireFeatureEditStartEvent({ feature: this.featureData, forceMode: 'drag' });
+      this.flags.actionInProgress = true;
       return { next: false };
     }
     return { next: true };
@@ -98,16 +97,16 @@ export abstract class BaseDrag extends BaseEdit {
     this.snappingHelper?.clearExcludedFeatures();
     this.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
 
-    this.isDragging = false;
     this.previousLngLat = null;
     this.gm.mapAdapter.setDragPan(true);
     this.fireFeatureEditEndEvent({ feature: this.featureData, forceMode: 'drag' });
+    this.flags.actionInProgress = false;
     this.featureData = null;
     return { next: true };
   }
 
   onMouseMove(event: AnyEvent): MapHandlerReturnData {
-    if (!this.isDragging || !isMapPointerEvent(event, { warning: true })) {
+    if (!this.flags.actionInProgress || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
@@ -137,7 +136,7 @@ export abstract class BaseDrag extends BaseEdit {
   }
 
   moveFeature(featureData: FeatureData, newLngLat: LngLat) {
-    if (!this.isDragging) {
+    if (!this.flags.actionInProgress) {
       return;
     }
 
