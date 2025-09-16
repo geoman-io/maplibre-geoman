@@ -4,7 +4,7 @@ import { isGmEvent } from '@/utils/guards/events/index.ts';
 import { includesWithType } from '@/utils/typing.ts';
 
 export const isGmHelperEvent = (payload: unknown): payload is GMHelperModeEvent => {
-  return isGmEvent(payload) && payload.type === 'helper';
+  return isGmEvent(payload) && payload.actionType === 'helper';
 };
 
 export const isGmGeofencingViolationEvent = (

@@ -5,6 +5,7 @@ import type { GMFeatureEvent } from '@/types/events/feature.ts';
 import type { GMHelperEvent } from '@/types/events/helper.ts';
 import type { ActionType } from '@/types/options.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
+import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
 
 export type EventType = ActionType | 'control';
 export type EventLevel = 'system' | 'user';
@@ -12,11 +13,12 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type GMBaseEvent = {
   level: EventLevel;
-  type: EventType;
+  actionType: EventType;
   action: string;
 };
 
 export type GMEvent = GMDrawEvent | GMEditEvent | GMHelperEvent | GMControlEvent | GMFeatureEvent;
+export type AnyEvent = GMEvent | BaseMapAnyEvent;
 
 export type GmPrefix = typeof GM_PREFIX;
 export type GmEventNameWithoutPrefix = EventType;

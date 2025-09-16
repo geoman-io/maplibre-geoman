@@ -119,7 +119,7 @@ export abstract class BaseEdit extends BaseAction {
   }) {
     const payload: GMEditFeatureUpdatedEvent = {
       level: 'system',
-      type: 'edit',
+      actionType: 'edit',
       action: 'feature_updated',
       mode: forceMode || this.mode,
       sourceFeatures,
@@ -139,7 +139,7 @@ export abstract class BaseEdit extends BaseAction {
   }) {
     const payload: GMEditFeatureEditStartEvent = {
       level: 'system',
-      type: 'edit',
+      actionType: 'edit',
       action: 'feature_edit_start',
       mode: forceMode || this.mode,
       feature,
@@ -157,7 +157,7 @@ export abstract class BaseEdit extends BaseAction {
   }) {
     const payload: GMEditFeatureEditEndEvent = {
       level: 'system',
-      type: 'edit',
+      actionType: 'edit',
       action: 'feature_edit_end',
       mode: forceMode || this.mode,
       feature,
@@ -175,7 +175,7 @@ export abstract class BaseEdit extends BaseAction {
     const payload: GMDrawShapeEventWithData = {
       level: 'system',
       variant: null,
-      type: 'draw',
+      actionType: 'draw',
       mode: this.getLineDrawerMode(),
       action: 'update',
       markerData: {
@@ -199,7 +199,7 @@ export abstract class BaseEdit extends BaseAction {
     if (payload.action === 'start' || payload.action === 'update') {
       const eventData: GMDrawShapeEventWithData = {
         level: 'system',
-        type: 'draw',
+        actionType: 'draw',
         mode: this.getLineDrawerMode(),
         variant: null,
         action: payload.action,
@@ -210,7 +210,7 @@ export abstract class BaseEdit extends BaseAction {
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
       const eventData: GMDrawShapeEvent = {
         level: 'system',
-        type: 'draw',
+        actionType: 'draw',
         mode: this.getLineDrawerMode(),
         variant: null,
         action: payload.action,
@@ -225,7 +225,7 @@ export abstract class BaseEdit extends BaseAction {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GMEditFeatureRemovedEvent = {
         level: 'system',
-        type: 'edit',
+        actionType: 'edit',
         mode: featureData.shape,
         action: 'feature_removed',
         featureData,

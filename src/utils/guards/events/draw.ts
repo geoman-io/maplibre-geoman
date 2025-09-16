@@ -10,7 +10,7 @@ import type {
 import { isGmEvent } from '@/utils/guards/events/index.ts';
 
 export const isGmDrawEvent = (payload: unknown): payload is GMDrawEvent => {
-  return isGmEvent(payload) && payload.type === 'draw';
+  return isGmEvent(payload) && payload.actionType === 'draw';
 };
 
 export const isGmDrawShapeEvent = (
@@ -18,7 +18,7 @@ export const isGmDrawShapeEvent = (
 ): payload is GMDrawShapeEvent | GMDrawShapeEventWithData => {
   return (
     isGmEvent(payload) &&
-    payload.type === 'draw' &&
+    payload.actionType === 'draw' &&
     'variant' in payload &&
     payload.variant === null
   );
@@ -29,7 +29,7 @@ export const isGmDrawLineDrawerEvent = (
 ): payload is GMDrawLineDrawerEvent | GMDrawLineDrawerEventWithData => {
   return (
     isGmEvent(payload) &&
-    payload.type === 'draw' &&
+    payload.actionType === 'draw' &&
     'variant' in payload &&
     payload.variant === 'line_drawer'
   );
@@ -40,7 +40,7 @@ export const isGmDrawFreehandDrawerEvent = (
 ): payload is GMDrawFreehandDrawerEvent | GMDrawFreehandDrawerEventWithData => {
   return (
     isGmEvent(payload) &&
-    payload.type === 'draw' &&
+    payload.actionType === 'draw' &&
     'variant' in payload &&
     payload.variant === 'freehand_drawer'
   );

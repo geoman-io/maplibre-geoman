@@ -584,7 +584,7 @@ export class Features {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GMDrawShapeCreatedEvent = {
         level: 'system',
-        type: 'draw',
+        actionType: 'draw',
         mode: featureData.shape,
         action: 'feature_created',
         featureData,

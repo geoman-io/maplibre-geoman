@@ -70,7 +70,7 @@ export class EventForwarder {
     const enabled = payload.action === 'mode_start';
     let eventData: GlobalModeToggledFwdEvent;
 
-    if (payload.type === 'draw') {
+    if (payload.actionType === 'draw') {
       // global draw mode toggled
       const eventName = 'globaldrawmodetoggled';
       eventData = { enabled, shape: payload.mode, map: this.map };
@@ -79,11 +79,11 @@ export class EventForwarder {
       // drawstart, drawend
       eventData = { shape: payload.mode, map: this.map };
       this.fireToMap('converted', enabled ? 'drawstart' : 'drawend', eventData);
-    } else if (payload.type === 'edit') {
+    } else if (payload.actionType === 'edit') {
       const modeName = this.getConvertedEditModeName(payload.mode);
       eventData = { enabled, map: this.map };
       this.fireToMap('converted', `global${modeName}modetoggled`, eventData);
-    } else if (payload.type === 'helper') {
+    } else if (payload.actionType === 'helper') {
       eventData = { enabled, map: this.map };
       this.fireToMap('converted', `global${payload.mode}modetoggled`, eventData);
     }

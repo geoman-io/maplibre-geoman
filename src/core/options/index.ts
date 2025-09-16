@@ -5,6 +5,7 @@ import {
   DRAW_MODES,
   type GenericControlsOptions,
   type Geoman,
+  type GmBaseModeEvent,
   type GMControlSwitchEvent,
   type GmOptionsData,
   type ModeAction,
@@ -157,9 +158,9 @@ export class GmOptions {
   }
 
   fireModeEvent(sectionName: ActionType, modeName: ModeName, action: ModeAction) {
-    const payload = {
+    const payload: GmBaseModeEvent & { mode: ModeName } = {
       level: 'system',
-      type: sectionName,
+      actionType: sectionName,
       mode: modeName,
       action,
     };
@@ -182,7 +183,7 @@ export class GmOptions {
   ) {
     const payload: GMControlSwitchEvent = {
       level: 'system',
-      type: 'control',
+      actionType: 'control',
       section: sectionName,
       target: modeName,
       action,

@@ -22,7 +22,7 @@ export class EditEventListener extends BaseEventListener {
       return { next: true };
     }
 
-    const actionInstanceKey: ActionInstanceKey = `${payload.type}__${payload.mode}`;
+    const actionInstanceKey: ActionInstanceKey = `${payload.actionType}__${payload.mode}`;
     if (payload.action === 'mode_start') {
       this.trackExclusiveModes(payload);
       this.start(actionInstanceKey, payload);

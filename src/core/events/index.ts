@@ -26,8 +26,8 @@ export default class GMEvents {
   }
 
   fire(eventName: GmEventName, payload: GMEvent) {
-    if (!this.listeners[payload.type]) {
-      log.error(`Can't find event listener for "${payload.type}" event type`);
+    if (!this.listeners[payload.actionType]) {
+      log.error(`Can't find event listener for "${payload.actionType}" event type`);
     }
 
     // events are sent to the bus and then are handler by the listeners

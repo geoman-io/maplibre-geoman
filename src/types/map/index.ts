@@ -1,12 +1,11 @@
-import type { Geoman } from '@/main.ts';
+import type { AnyEvent, Geoman } from '@/main.ts';
 import type {
   GmFwdEventNameWithPrefix,
   GmFwdSystemEventNameWithPrefix,
 } from '@/types/events/forwarder/index.ts';
 import type { GmEventName, GmPrefix } from '@/types/events/index.ts';
 import type { FeatureId, FeatureSourceName } from '@/types/features.ts';
-import type { GeoJsonImportFeature, GMEvent } from '@/types/index.ts';
-import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
+import type { GeoJsonImportFeature } from '@/types/index.ts';
 import type { Feature } from 'geojson';
 
 export type LngLat = [number, number];
@@ -47,8 +46,6 @@ export type AnyEventName =
   | GmFwdEventNameWithPrefix
   | GmFwdSystemEventNameWithPrefix
   | GmServiceEventNameWithPrefix;
-
-export type AnyEvent = BaseMapAnyEvent | GMEvent;
 
 export type BaseEventListener = (event: AnyEvent) => void;
 

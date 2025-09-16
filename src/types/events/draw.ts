@@ -5,19 +5,19 @@ import type { DrawModeName, MarkerData } from '@/types/modes/index.ts';
 import type { GeoJsonLineFeature } from '@/types';
 
 export interface GMDrawModeEvent extends GmBaseModeEvent {
-  type: 'draw';
+  actionType: 'draw';
   mode: DrawModeName;
 }
 
 export interface GMDrawShapeEvent extends GMBaseEvent {
-  type: 'draw';
+  actionType: 'draw';
   mode: DrawModeName;
   variant: null;
   action: 'finish' | 'cancel';
 }
 
 export interface GMDrawShapeEventWithData extends GMBaseEvent {
-  type: 'draw';
+  actionType: 'draw';
   mode: DrawModeName;
   variant: null;
   action: 'start' | 'update' | 'finish';
@@ -26,7 +26,7 @@ export interface GMDrawShapeEventWithData extends GMBaseEvent {
 }
 
 export interface GMDrawShapeCreatedEvent extends GMBaseEvent {
-  type: 'draw';
+  actionType: 'draw';
   mode: DrawModeName;
   action: 'feature_created';
   featureData: FeatureData;

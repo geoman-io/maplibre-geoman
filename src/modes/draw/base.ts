@@ -54,7 +54,7 @@ export abstract class BaseDraw extends BaseAction {
     const payload: GMDrawShapeEventWithData = {
       level: 'system',
       variant: null,
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       action: 'start',
       markerData: {
@@ -79,7 +79,7 @@ export abstract class BaseDraw extends BaseAction {
     const payload: GMDrawShapeEventWithData = {
       level: 'system',
       variant: null,
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       action: 'update',
       markerData: {
@@ -103,7 +103,7 @@ export abstract class BaseDraw extends BaseAction {
     const payload: GMDrawShapeEvent = {
       level: 'system',
       variant: null,
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       action: 'finish',
     };
@@ -118,7 +118,7 @@ export abstract class BaseDraw extends BaseAction {
     if (payload.action === 'start' || payload.action === 'update') {
       const eventData: GMDrawShapeEventWithData = {
         level: 'system',
-        type: 'draw',
+        actionType: 'draw',
         mode: this.shape,
         variant: null,
         action: payload.action,
@@ -129,7 +129,7 @@ export abstract class BaseDraw extends BaseAction {
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
       const eventData: GMDrawShapeEvent = {
         level: 'system',
-        type: 'draw',
+        actionType: 'draw',
         mode: this.shape,
         variant: null,
         action: payload.action,
@@ -147,7 +147,7 @@ export abstract class BaseDraw extends BaseAction {
 
     const event: GMDrawShapeEventWithData = {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'start',
@@ -164,7 +164,7 @@ export abstract class BaseDraw extends BaseAction {
 
     const event: GMDrawShapeEventWithData = {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'update',
@@ -181,7 +181,7 @@ export abstract class BaseDraw extends BaseAction {
 
     const event: GMDrawShapeEvent = {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'finish',

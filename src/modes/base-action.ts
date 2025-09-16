@@ -134,7 +134,7 @@ export abstract class BaseAction {
 
     const payload: GMBeforeFeatureCreateEvent = {
       level: 'system',
-      type: this.actionType,
+      actionType: this.actionType,
       mode: forceMode || this.mode,
       action: 'before_create',
       geoJsonFeatures,
@@ -155,7 +155,7 @@ export abstract class BaseAction {
 
     const payload: GMBeforeFeatureUpdateEvent = {
       level: 'system',
-      type: this.actionType,
+      actionType: this.actionType,
       mode: forceMode || this.mode,
       action: 'before_update',
       features,

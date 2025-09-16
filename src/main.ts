@@ -181,7 +181,7 @@ export class Geoman {
 
     this.events.fire(`${GM_PREFIX}:control`, {
       level: 'system',
-      type: 'control',
+      actionType: 'control',
       action: 'loaded',
     });
     this.loaded = true;

@@ -5,7 +5,7 @@ import { isGmEvent } from '@/utils/guards/events/index.ts';
 export const isGmControlEvent = (payload: unknown): payload is GMControlSwitchEvent => {
   return (
     isGmEvent(payload) &&
-    payload.type === 'control' &&
+    payload.actionType === 'control' &&
     controlActions.includes(payload.action as GMControlSwitchEvent['action'])
   );
 };

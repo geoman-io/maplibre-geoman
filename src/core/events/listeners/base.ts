@@ -105,7 +105,7 @@ export abstract class BaseEventListener {
     let modeName: ModeName | null = null;
 
     if (payload.action === 'mode_start') {
-      sectionName = payload.type;
+      sectionName = payload.actionType;
       modeName = payload.mode;
     } else if (isGmControlEvent(payload)) {
       sectionName = payload.section;

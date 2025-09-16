@@ -3,12 +3,12 @@ import { modeActions } from '@/types/events/mode.ts';
 import { includesWithType } from '@/utils/typing.ts';
 
 export const isGmEvent = (payload: unknown): payload is GMEvent => {
+  const fields: Array<keyof GMEvent> = ['level', 'actionType', 'action'];
+
   return !!(
     payload &&
     typeof payload === 'object' &&
-    'level' in payload &&
-    'type' in payload &&
-    'action' in payload
+    fields.every((fieldName) => fieldName in payload)
   );
 };
 

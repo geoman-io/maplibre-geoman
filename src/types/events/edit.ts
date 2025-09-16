@@ -6,12 +6,12 @@ import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index
 
 // Edit events
 export interface GMEditModeEvent extends GmBaseModeEvent {
-  type: 'edit';
+  actionType: 'edit';
   mode: EditModeName;
 }
 
 export interface GMEditMarkerMoveEvent extends GMBaseEvent {
-  type: 'edit';
+  actionType: 'edit';
   mode: EditModeName;
   action: 'marker_move';
   featureData: FeatureData;
@@ -21,7 +21,7 @@ export interface GMEditMarkerMoveEvent extends GMBaseEvent {
 }
 
 export interface GMEditMarkerEvent extends GMBaseEvent {
-  type: 'edit';
+  actionType: 'edit';
   mode: EditModeName;
   action: 'edge_marker_click' | 'marker_right_click' | 'marker_captured' | 'marker_released';
   featureData: FeatureData;
@@ -29,14 +29,14 @@ export interface GMEditMarkerEvent extends GMBaseEvent {
 }
 
 export interface GMEditFeatureRemovedEvent extends GMBaseEvent {
-  type: 'edit';
+  actionType: 'edit';
   mode: DrawModeName;
   action: 'feature_removed';
   featureData: FeatureData;
 }
 
 export interface GMEditFeatureUpdatedEvent extends GMBaseEvent {
-  type: 'edit';
+  actionType: 'edit';
   mode: EditModeName;
   action: 'feature_updated';
 
@@ -58,7 +58,7 @@ export interface GMEditFeatureUpdatedEvent extends GMBaseEvent {
 export interface GMEditFeatureEditStartEvent extends GMBaseEvent {
   // fired when a long action is supposed for a mode
   // examples: edit:change, edit:rotate, edit: scale
-  type: 'edit';
+  actionType: 'edit';
   mode: EditModeName;
   action: 'feature_edit_start';
   feature: FeatureData;
@@ -67,7 +67,7 @@ export interface GMEditFeatureEditStartEvent extends GMBaseEvent {
 export interface GMEditFeatureEditEndEvent extends GMBaseEvent {
   // fired when a long action is supposed for a mode
   // examples: edit:change, edit:rotate, edit: scale
-  type: 'edit';
+  actionType: 'edit';
   mode: EditModeName;
   action: 'feature_edit_end';
   feature: FeatureData;

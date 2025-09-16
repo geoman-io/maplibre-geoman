@@ -5,14 +5,14 @@ import type { ActionType } from '@/types/options.ts';
 export const controlActions = ['on', 'off'] as const;
 
 export interface GMControlSwitchEvent extends GMBaseEvent {
-  type: 'control';
+  actionType: 'control';
   action: (typeof controlActions)[number];
   section: ActionType;
   target: ModeName;
 }
 
 export interface GMControlLoadEvent extends GMBaseEvent {
-  type: 'control';
+  actionType: 'control';
   action: 'loaded' | 'unloaded';
 }
 

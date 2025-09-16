@@ -189,7 +189,7 @@ export class DrawRectangle extends BaseDraw {
   fireStartEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GMDrawShapeEventWithData = {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'start',
@@ -202,7 +202,7 @@ export class DrawRectangle extends BaseDraw {
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GMDrawShapeEventWithData = {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'update',
@@ -215,7 +215,7 @@ export class DrawRectangle extends BaseDraw {
   fireFinishEvent() {
     const event: GMDrawShapeEvent = {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'finish',

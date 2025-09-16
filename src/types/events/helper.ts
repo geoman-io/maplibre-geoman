@@ -5,7 +5,7 @@ import type { HelperModeName } from '@/types/modes/index.ts';
 import type { ActionType } from '@/types/options.ts';
 
 export interface GMHelperModeEvent extends GmBaseModeEvent {
-  type: 'helper';
+  actionType: 'helper';
   mode: HelperModeName;
 }
 

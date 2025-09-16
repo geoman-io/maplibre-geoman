@@ -565,7 +565,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   ) {
     const payload: GMEditMarkerEvent = {
       level: 'system',
-      type: 'edit',
+      actionType: 'edit',
       mode: 'change',
       action,
       featureData,
@@ -577,7 +577,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   sendMarkerRightClickEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GMEditEvent = {
       level: 'system',
-      type: 'edit',
+      actionType: 'edit',
       mode: 'change',
       action: 'marker_right_click',
       featureData,
@@ -603,7 +603,7 @@ export class ShapeMarkersHelper extends BaseHelper {
         if (this.previousPosition) {
           const payload: GMEditEvent = {
             level: 'system',
-            type: 'edit',
+            actionType: 'edit',
             mode: 'drag',
             action: 'marker_move',
             featureData: item.featureData,

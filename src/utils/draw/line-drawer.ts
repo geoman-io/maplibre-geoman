@@ -488,7 +488,7 @@ export class LineDrawer extends BaseDraw {
   fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
     this.gm.events.fire(`${GM_PREFIX}:draw`, {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: 'line',
       variant: 'line_drawer',
       action: 'start',
@@ -500,7 +500,7 @@ export class LineDrawer extends BaseDraw {
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
     this.gm.events.fire(`${GM_PREFIX}:draw`, {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: 'line',
       variant: 'line_drawer',
       action: 'update',
@@ -512,7 +512,7 @@ export class LineDrawer extends BaseDraw {
   fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
     this.gm.events.fire(`${GM_PREFIX}:draw`, {
       level: 'system',
-      type: 'draw',
+      actionType: 'draw',
       mode: 'line',
       action: 'finish',
       variant: 'line_drawer',
