@@ -2,6 +2,7 @@
  * Copyright (C) Geoman.io - All Rights Reserved
  */
 import defaultMarker from '@/assets/images/markers/default-marker.png';
+import { GM_PREFIX } from '@/core/constants.ts';
 import GMControl from '@/core/controls/index.ts';
 import { type EventForwarder } from '@/core/events/forwarder.ts';
 import GMEvents from '@/core/events/index.ts';
@@ -10,8 +11,14 @@ import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import { getMapAdapter } from '@/core/map/index.ts';
 import { GmOptions } from '@/core/options/index.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
+
+import { drawClassMap } from '@/modes/draw/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
+import { editClassMap } from '@/modes/edit/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
+import { helperClassMap } from '@/modes/helpers/index.ts';
+import '@/styles/map/maplibre.css';
+import '@/styles/style.css';
 import type { ModeName } from '@/types/controls.ts';
 import { type AnyMapInstance, type LngLat, type MapInstanceWithGeoman } from '@/types/map/index.ts';
 import {
@@ -21,20 +28,13 @@ import {
   type EditModeName,
   type HelperModeName,
 } from '@/types/modes/index.ts';
-
-import { drawClassMap } from '@/modes/draw/index.ts';
-import { editClassMap } from '@/modes/edit/index.ts';
-import { helperClassMap } from '@/modes/helpers/index.ts';
-import '@/styles/map/maplibre.css';
-import '@/styles/style.css';
-import type { ActionType, GmOptionsData } from '@/types/options.ts';
+import type { GmOptionsData, ModeType } from '@/types/options.ts';
 import { MarkerPointer } from '@/utils/draw/marker-pointer.ts';
 import { hasMapOnceMethod } from '@/utils/guards/map.ts';
-import { isActionType, isGmDrawEvent, isModeName } from '@/utils/guards/modes.ts';
+import { isGmDrawEvent, isModeName, isModeType } from '@/utils/guards/modes.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 // declare module 'maplibre-gl' {
 //   interface Map {
@@ -191,7 +191,7 @@ export class Geoman {
     typedKeys(this.actionInstances).forEach((key) => {
       const [actionType, mode] = key.split('__');
 
-      if (isActionType(actionType) && isModeName(mode)) {
+      if (isModeType(actionType) && isModeName(mode)) {
         this.options.disableMode(actionType, mode);
       }
     });
@@ -269,19 +269,19 @@ export class Geoman {
     return element;
   }
 
-  enableMode(actionType: ActionType, modeName: ModeName) {
+  enableMode(actionType: ModeType, modeName: ModeName) {
     this.options.enableMode(actionType, modeName);
   }
 
-  disableMode(actionType: ActionType, modeName: ModeName) {
+  disableMode(actionType: ModeType, modeName: ModeName) {
     this.options.disableMode(actionType, modeName);
   }
 
-  toggleMode(actionType: ActionType, modeName: ModeName) {
+  toggleMode(actionType: ModeType, modeName: ModeName) {
     this.options.toggleMode(actionType, modeName);
   }
 
-  isModeEnabled(actionType: ActionType, modeName: ModeName) {
+  isModeEnabled(actionType: ModeType, modeName: ModeName) {
     return this.options.isModeEnabled(actionType, modeName);
   }
 

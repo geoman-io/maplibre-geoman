@@ -80,7 +80,7 @@ export abstract class BaseEventListener {
     const { modeName, sectionName } = this.getControlIds(payload) || {};
 
     if (modeName && sectionName) {
-      return this.gm.control.getControl({ actionType: sectionName, modeName });
+      return this.gm.control.getControl({ modeType: sectionName, modeName });
     }
 
     return null;
@@ -92,7 +92,7 @@ export abstract class BaseEventListener {
     const { modeName, sectionName } = this.getControlIds(payload) || {};
 
     if (modeName && sectionName) {
-      return this.gm.options.getControlOptions({ actionType: sectionName, modeName });
+      return this.gm.options.getControlOptions({ modeType: sectionName, modeName });
     }
 
     return null;

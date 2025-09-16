@@ -1,4 +1,5 @@
-export const ACTION_TYPES = ['draw', 'edit', 'helper'] as const;
+export const MODE_TYPES = ['draw', 'edit', 'helper'] as const;
+export const ACTION_TYPES = [...MODE_TYPES, 'control'] as const;
 
 export const SHAPE_NAMES = [
   // shapes

@@ -1,25 +1,25 @@
+import { GM_PREFIX } from '@/core/constants.ts';
 import { controlsStore } from '@/core/controls/components/controls-store.ts';
 import GmReactiveControls from '@/core/controls/components/gm-controls.svelte';
 import { systemControls } from '@/core/controls/defaults.ts';
 import { BaseControl } from '@/core/map/base/control.ts';
-import type {
-  ActionType,
-  AnyEvent,
-  BaseControlsPosition,
-  ControlOptions,
-  EventHandlers,
-  GenericSystemControl,
-  GenericSystemControls,
-  ModeAction,
-  ModeName,
-  SystemControls,
+import {
+  type AnyEvent,
+  type BaseControlsPosition,
+  type ControlOptions,
+  type EventHandlers,
+  type GenericSystemControl,
+  type GenericSystemControls,
+  type ModeAction,
+  type ModeName,
+  type ModeType,
+  type SystemControls,
 } from '@/main.ts';
 import { isGmModeEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 import { mount, unmount } from 'svelte';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 export default class GMControl extends BaseControl {
   controls: SystemControls = cloneDeep(systemControls);
@@ -133,13 +133,16 @@ export default class GMControl extends BaseControl {
       controlOptions: ControlOptions;
     }) => void,
   ) {
-    return typedKeys(this.controls).forEach((actionType) => {
-      const section = this.controls[actionType];
+    return typedKeys(this.controls).forEach((modeType) => {
+      const section = this.controls[modeType];
 
       return Object.keys(section).forEach((modeName) => {
         const mode = modeName as ModeName;
-        const control = this.getControl({ actionType, modeName: mode });
-        const controlOptions = this.gm.options.getControlOptions({ actionType, modeName: mode });
+        const control = this.getControl({ modeType: modeType, modeName: mode });
+        const controlOptions = this.gm.options.getControlOptions({
+          modeType: modeType,
+          modeName: mode,
+        });
 
         if (control && controlOptions) {
           callback({ control, controlOptions });
@@ -152,14 +155,14 @@ export default class GMControl extends BaseControl {
   }
 
   getControl({
-    actionType,
+    modeType,
     modeName,
   }: {
-    actionType: ActionType;
+    modeType: ModeType;
     modeName: ModeName;
   }): GenericSystemControl | null {
-    if (actionType && modeName) {
-      const section = this.controls[actionType] as GenericSystemControls;
+    if (modeType && modeName) {
+      const section = this.controls[modeType] as GenericSystemControls;
       return (section[modeName] || null) as GenericSystemControl | null;
     }
 

@@ -1,5 +1,5 @@
 import type { DrawModeName, EditModeName, HelperModeName } from '@/types/modes/index.ts';
-import type { ActionType } from '@/types/options.ts';
+import type { ActionType, ModeType } from '@/types/options.ts';
 
 export interface ControlSettings {
   exclusive: boolean;
@@ -20,7 +20,7 @@ export interface SystemControls {
 }
 
 export type ModeName = DrawModeName | EditModeName | HelperModeName;
-export type GenericSystemControl = SystemControl<ActionType, ModeName>;
+export type GenericSystemControl = SystemControl<ModeType, ModeName>;
 export type GenericSystemControls = {
   [key in ModeName]?: GenericSystemControl;
 };

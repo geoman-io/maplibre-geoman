@@ -1,4 +1,6 @@
+import { GM_PREFIX } from '@/core/constants.ts';
 import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/defaults/index.ts';
+import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
 import {
   type ActionType,
   type ControlOptions,
@@ -10,16 +12,15 @@ import {
   type GmOptionsData,
   type ModeAction,
   type ModeName,
+  type ModeType,
 } from '@/main.ts';
+import { EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
 import { isGmModeEvent } from '@/utils/guards/events/index.ts';
 import { isGmDrawEvent, isGmEditEvent, isGmHelperEvent } from '@/utils/guards/modes.ts';
 import { includesWithType } from '@/utils/typing.ts';
 import mergeWith from 'lodash-es/mergeWith';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
-import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
-import { GM_PREFIX } from '@/core/constants.ts';
-import { EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
 
 export class GmOptions {
   gm: Geoman;
@@ -49,78 +50,78 @@ export class GmOptions {
     return mergeWith(defaultOptions, options, mergeByTypeCustomizer);
   }
 
-  enableMode(actionType: ActionType, modeName: ModeName) {
-    const isModeEnabled = this.isModeEnabled(actionType, modeName);
-    const isModeAvailable = this.isModeAvailable(actionType, modeName);
+  enableMode(modeType: ModeType, modeName: ModeName) {
+    const isModeEnabled = this.isModeEnabled(modeType, modeName);
+    const isModeAvailable = this.isModeAvailable(modeType, modeName);
 
     if (!isModeAvailable) {
-      log.warn(`Unable to enable mode, "${actionType}:${modeName}" is not available`);
+      log.warn(`Unable to enable mode, "${modeType}:${modeName}" is not available`);
     }
 
     if (isModeEnabled || !isModeAvailable) {
       return;
     }
 
-    const sectionOptions = this.controls[actionType] as GenericControlsOptions;
+    const sectionOptions = this.controls[modeType] as GenericControlsOptions;
     const controlOptions = sectionOptions[modeName];
     if (controlOptions) {
       controlOptions.active = true;
-      this.fireModeEvent(actionType, modeName, 'mode_start');
-      this.fireControlEvent(actionType, modeName, 'on');
-      this.fireModeEvent(actionType, modeName, 'mode_started');
+      this.fireModeEvent(modeType, modeName, 'mode_start');
+      this.fireControlEvent(modeType, modeName, 'on');
+      this.fireModeEvent(modeType, modeName, 'mode_started');
     } else {
-      log.error("Can't find control section for", actionType, modeName);
+      log.error("Can't find control section for", modeType, modeName);
     }
   }
 
-  disableMode(actionType: ActionType, modeName: ModeName) {
-    const isModeEnabled = this.isModeEnabled(actionType, modeName);
-    const isModeAvailable = this.isModeAvailable(actionType, modeName);
+  disableMode(modeType: ModeType, modeName: ModeName) {
+    const isModeEnabled = this.isModeEnabled(modeType, modeName);
+    const isModeAvailable = this.isModeAvailable(modeType, modeName);
 
     if (!isModeEnabled || !isModeAvailable) {
       return;
     }
 
-    const sectionOptions = this.controls[actionType] as GenericControlsOptions;
+    const sectionOptions = this.controls[modeType] as GenericControlsOptions;
     const controlOptions = sectionOptions[modeName];
     if (controlOptions) {
       controlOptions.active = false;
-      this.fireModeEvent(actionType, modeName, 'mode_end');
-      this.fireControlEvent(actionType, modeName, 'off');
-      this.fireModeEvent(actionType, modeName, 'mode_ended');
+      this.fireModeEvent(modeType, modeName, 'mode_end');
+      this.fireControlEvent(modeType, modeName, 'off');
+      this.fireModeEvent(modeType, modeName, 'mode_ended');
     } else {
-      log.error("Can't find control section for", actionType, modeName);
+      log.error("Can't find control section for", modeType, modeName);
     }
   }
 
-  syncModeState(actionType: ActionType, modeName: ModeName) {
+  syncModeState(modeType: ModeType, modeName: ModeName) {
     // align options with current state
     // it' possible to have "active" mode in options
     // when it's not available (in free version for example)
-    const sectionOptions = this.controls[actionType] as GenericControlsOptions;
+    const sectionOptions = this.controls[modeType] as GenericControlsOptions;
     const controlOptions = sectionOptions[modeName];
-    const isModeAvailable = this.isModeAvailable(actionType, modeName);
+    const isModeAvailable = this.isModeAvailable(modeType, modeName);
 
     if (controlOptions) {
       if (isModeAvailable) {
         if (controlOptions.active) {
-          this.enableMode(actionType, modeName);
+          this.enableMode(modeType, modeName);
         } else {
-          this.disableMode(actionType, modeName);
+          this.disableMode(modeType, modeName);
         }
       } else {
-        console.log(`Not available mode: ${actionType}:${modeName}`);
+        console.log(`Not available mode: ${modeType}:${modeName}`);
         controlOptions.active = false;
         controlOptions.uiEnabled = false;
       }
     }
   }
 
-  toggleMode(actionType: ActionType, modeName: ModeName) {
-    if (this.isModeEnabled(actionType, modeName)) {
-      this.disableMode(actionType, modeName);
+  toggleMode(modeType: ModeType, modeName: ModeName) {
+    if (this.isModeEnabled(modeType, modeName)) {
+      this.disableMode(modeType, modeName);
     } else {
-      this.enableMode(actionType, modeName);
+      this.enableMode(modeType, modeName);
     }
   }
 
@@ -143,14 +144,14 @@ export class GmOptions {
   }
 
   getControlOptions({
-    actionType,
+    modeType,
     modeName,
   }: {
-    actionType: ActionType;
+    modeType: ModeType;
     modeName: ModeName;
   }): ControlOptions | null {
-    if (actionType && modeName) {
-      const sectionOptions = this.controls[actionType] as GenericControlsOptions;
+    if (modeType && modeName) {
+      const sectionOptions = this.controls[modeType] as GenericControlsOptions;
       return sectionOptions[modeName] || null;
     }
 
@@ -177,7 +178,7 @@ export class GmOptions {
   }
 
   fireControlEvent(
-    sectionName: ActionType,
+    sectionName: ModeType,
     modeName: ModeName,
     action: GMControlSwitchEvent['action'],
   ) {

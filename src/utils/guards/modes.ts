@@ -5,9 +5,14 @@ import {
   type EditModeName,
   type HelperModeName,
   type ModeName,
+  type ModeType,
 } from '@/main.ts';
 
-import { ACTION_TYPES, EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
+import { ACTION_TYPES, EDIT_MODES, HELPER_MODES, MODE_TYPES } from '@/modes/constants.ts';
+
+export const isModeType = (name: string): name is ModeType => {
+  return MODE_TYPES.includes(name as ModeType);
+};
 
 export const isActionType = (name: string): name is ActionType => {
   return ACTION_TYPES.includes(name as ActionType);

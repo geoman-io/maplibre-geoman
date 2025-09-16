@@ -10,8 +10,9 @@ import type {
 } from '@/types/modes/index.ts';
 import type { PartialDeep } from 'type-fest';
 
-import { ACTION_TYPES } from '@/modes/constants.ts';
+import { ACTION_TYPES, MODE_TYPES } from '@/modes/constants.ts';
 
+export type ModeType = (typeof MODE_TYPES)[number];
 export type ActionType = (typeof ACTION_TYPES)[number];
 
 export interface ControlOptions {

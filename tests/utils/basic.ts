@@ -1,4 +1,4 @@
-import type { ActionType, ModeName } from '@/main.ts';
+import type { ModeName, ModeType } from '@/main.ts';
 import { expect, type Page } from '@playwright/test';
 
 export type ScreenCoordinates = [number, number];
@@ -52,27 +52,27 @@ export const waitForLocalFunction = async (callback: () => boolean) => {
   });
 };
 
-export const enableMode = async (page: Page, actionType: ActionType, modeName: ModeName) => {
+export const enableMode = async (page: Page, modeType: ModeType, modeName: ModeName) => {
   const isModeEnabled = await page.evaluate(
     (context) => {
       const geoman = window.geoman;
-      geoman.options.enableMode(context.actionType, context.modeName);
-      return geoman.options.isModeEnabled(context.actionType, context.modeName);
+      geoman.options.enableMode(context.modeType, context.modeName);
+      return geoman.options.isModeEnabled(context.modeType, context.modeName);
     },
-    { actionType, modeName },
+    { modeType, modeName },
   );
   expect(isModeEnabled).toBeTruthy();
   await waitForMapIdle(page);
 };
 
-export const disableMode = async (page: Page, actionType: ActionType, modeName: ModeName) => {
+export const disableMode = async (page: Page, modeType: ModeType, modeName: ModeName) => {
   const isModeDisabled = await page.evaluate(
     (context) => {
       const geoman = window.geoman;
-      geoman.options.disableMode(context.actionType, context.modeName);
-      return !geoman.options.isModeEnabled(context.actionType, context.modeName);
+      geoman.options.disableMode(context.modeType, context.modeName);
+      return !geoman.options.isModeEnabled(context.modeType, context.modeName);
     },
-    { actionType, modeName },
+    { modeType, modeName },
   );
   expect(isModeDisabled).toBeTruthy();
   await waitForMapIdle(page);
