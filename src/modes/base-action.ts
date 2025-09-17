@@ -1,18 +1,12 @@
-import type { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionOptions,
   ActionSettings,
   ActionType,
   AnyEvent,
-  EditModeName,
   EventHandlers,
-  GeoJsonShapeFeature,
   Geoman,
-  GmBeforeFeatureCreateEvent,
-  GmBeforeFeatureUpdateEvent,
   GmGeofencingViolationEvent,
   ModeName,
-  NonEmptyArray,
   SubActions,
 } from '@/main.ts';
 import type { SnappingHelper } from '@/modes/helpers/snapping.ts';
@@ -121,46 +115,5 @@ export abstract class BaseAction {
       this.flags.featureUpdateAllowed = false;
     }
     return { next: true };
-  }
-
-  fireBeforeFeatureCreate({
-    geoJsonFeatures,
-    forceMode = undefined,
-  }: {
-    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
-    forceMode?: EditModeName;
-  }) {
-    this.flags.featureCreateAllowed = true;
-
-    const payload: GmBeforeFeatureCreateEvent = {
-      level: 'system',
-      actionType: this.actionType,
-      mode: forceMode || this.mode,
-      action: 'before_create',
-      geoJsonFeatures,
-    };
-    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
-  }
-
-  fireBeforeFeatureUpdate({
-    features,
-    geoJsonFeatures,
-    forceMode = undefined,
-  }: {
-    features: NonEmptyArray<FeatureData>;
-    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
-    forceMode?: EditModeName;
-  }) {
-    this.flags.featureUpdateAllowed = true;
-
-    const payload: GmBeforeFeatureUpdateEvent = {
-      level: 'system',
-      actionType: this.actionType,
-      mode: forceMode || this.mode,
-      action: 'before_update',
-      features,
-      geoJsonFeatures,
-    };
-    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 }

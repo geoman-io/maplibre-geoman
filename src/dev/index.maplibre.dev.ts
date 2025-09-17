@@ -177,7 +177,9 @@ const initGeoman = async () => {
   });
 
   // geoman.mapAdapter.on('gm:create', (event) => {
-  //   log.debug('gm:create', event);
+  //   if ('actionType' in event && event.actionType === 'edit') {
+  //     log.debug('gm:create', event);
+  //   }
   // });
 
   // map.on('idle', () => {

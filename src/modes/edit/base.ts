@@ -5,6 +5,7 @@ import {
   type EditModeName,
   type GeoJsonShapeFeature,
   GM_PREFIX,
+  type GmBeforeFeatureUpdateEvent,
   type GmDrawShapeEvent,
   type GmDrawShapeEventWithData,
   type GmEditFeatureEditEndEvent,
@@ -104,6 +105,28 @@ export abstract class BaseEdit extends BaseAction {
     });
 
     return true;
+  }
+
+  fireBeforeFeatureUpdate({
+    features,
+    geoJsonFeatures,
+    forceMode = undefined,
+  }: {
+    features: NonEmptyArray<FeatureData>;
+    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
+    forceMode?: EditModeName;
+  }) {
+    this.flags.featureUpdateAllowed = true;
+
+    const payload: GmBeforeFeatureUpdateEvent = {
+      level: 'system',
+      actionType: 'edit',
+      mode: forceMode || this.mode,
+      action: 'before_update',
+      features,
+      geoJsonFeatures,
+    };
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 
   fireFeatureUpdatedEvent({

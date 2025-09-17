@@ -2,10 +2,14 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionType,
   DrawModeName,
+  EditModeName,
+  GeoJsonShapeFeature,
+  GmBeforeFeatureCreateEvent,
   GmDrawShapeEvent,
   GmDrawShapeEventWithData,
   GmEvent,
   MarkerData,
+  NonEmptyArray,
   ShapeName,
 } from '@/main.ts';
 import { BaseAction } from '@/modes/base-action.ts';
@@ -43,6 +47,25 @@ export abstract class BaseDraw extends BaseAction {
       this.gm.features.delete(this.featureData);
       this.featureData = null;
     }
+  }
+
+  fireBeforeFeatureCreate({
+    geoJsonFeatures,
+    forceMode = undefined,
+  }: {
+    geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
+    forceMode?: EditModeName;
+  }) {
+    this.flags.featureCreateAllowed = true;
+
+    const payload: GmBeforeFeatureCreateEvent = {
+      level: 'system',
+      actionType: 'draw',
+      mode: forceMode || this.mode,
+      action: 'before_create',
+      geoJsonFeatures,
+    };
+    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
   }
 
   fireMarkerPointerStartEvent() {
