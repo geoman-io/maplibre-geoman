@@ -162,7 +162,11 @@ const initGeoman = async () => {
     });
   });
 
-  geoman.setGlobalEventsListener(() => {
+  geoman.setGlobalEventsListener((event) => {
+    if (event.name === 'gm:create') {
+      log.debug('event', event);
+    }
+
     // if (event.name === 'gm:create' && 'feature' in event.payload) {
     //   log.debug('event', JSON.stringify(event.payload.feature?.getGeoJson(), null, 2));
     // }

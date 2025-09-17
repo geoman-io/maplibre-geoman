@@ -5,13 +5,13 @@ import {
   type EditModeName,
   type GeoJsonShapeFeature,
   GM_PREFIX,
-  type GMDrawShapeEvent,
-  type GMDrawShapeEventWithData,
-  type GMEditFeatureEditEndEvent,
-  type GMEditFeatureEditStartEvent,
-  type GMEditFeatureRemovedEvent,
-  type GMEditFeatureUpdatedEvent,
-  type GMEvent,
+  type GmDrawShapeEvent,
+  type GmDrawShapeEventWithData,
+  type GmEditFeatureEditEndEvent,
+  type GmEditFeatureEditStartEvent,
+  type GmEditFeatureRemovedEvent,
+  type GmEditFeatureUpdatedEvent,
+  type GmEvent,
   type MarkerData,
   type NonEmptyArray,
   type PointerEventName,
@@ -117,7 +117,7 @@ export abstract class BaseEdit extends BaseAction {
     markerData?: MarkerData;
     forceMode?: EditModeName;
   }) {
-    const payload: GMEditFeatureUpdatedEvent = {
+    const payload: GmEditFeatureUpdatedEvent = {
       level: 'system',
       actionType: 'edit',
       action: 'feature_updated',
@@ -137,7 +137,7 @@ export abstract class BaseEdit extends BaseAction {
     feature: FeatureData;
     forceMode?: EditModeName;
   }) {
-    const payload: GMEditFeatureEditStartEvent = {
+    const payload: GmEditFeatureEditStartEvent = {
       level: 'system',
       actionType: 'edit',
       action: 'feature_edit_start',
@@ -155,7 +155,7 @@ export abstract class BaseEdit extends BaseAction {
     feature: FeatureData;
     forceMode?: EditModeName;
   }) {
-    const payload: GMEditFeatureEditEndEvent = {
+    const payload: GmEditFeatureEditEndEvent = {
       level: 'system',
       actionType: 'edit',
       action: 'feature_edit_end',
@@ -172,7 +172,7 @@ export abstract class BaseEdit extends BaseAction {
     }
 
     const marker = this.gm.markerPointer.marker;
-    const payload: GMDrawShapeEventWithData = {
+    const payload: GmDrawShapeEventWithData = {
       level: 'system',
       variant: null,
       actionType: 'draw',
@@ -191,13 +191,13 @@ export abstract class BaseEdit extends BaseAction {
     this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
-  forwardLineDrawerEvent(payload: GMEvent) {
+  forwardLineDrawerEvent(payload: GmEvent) {
     if (!isGmDrawLineDrawerEvent(payload) || !['cut', 'split'].includes(this.mode)) {
       return { next: true };
     }
 
     if (payload.action === 'start' || payload.action === 'update') {
-      const eventData: GMDrawShapeEventWithData = {
+      const eventData: GmDrawShapeEventWithData = {
         level: 'system',
         actionType: 'draw',
         mode: this.getLineDrawerMode(),
@@ -208,7 +208,7 @@ export abstract class BaseEdit extends BaseAction {
       };
       this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
-      const eventData: GMDrawShapeEvent = {
+      const eventData: GmDrawShapeEvent = {
         level: 'system',
         actionType: 'draw',
         mode: this.getLineDrawerMode(),
@@ -223,7 +223,7 @@ export abstract class BaseEdit extends BaseAction {
 
   fireFeatureRemovedEvent(featureData: FeatureData) {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
-      const payload: GMEditFeatureRemovedEvent = {
+      const payload: GmEditFeatureRemovedEvent = {
         level: 'system',
         actionType: 'edit',
         mode: featureData.shape,

@@ -1,19 +1,19 @@
 import type { ModeName } from '@/types/controls.ts';
-import { type GMBaseEvent } from '@/types/events/index.ts';
+import { type GmBaseEvent } from '@/types/events/index.ts';
 import type { ModeType } from '@/types/options.ts';
 
 export const controlActions = ['on', 'off'] as const;
 
-export interface GMControlSwitchEvent extends GMBaseEvent {
+export interface GmControlSwitchEvent extends GmBaseEvent {
   actionType: 'control';
   action: (typeof controlActions)[number];
   section: ModeType;
   target: ModeName;
 }
 
-export interface GMControlLoadEvent extends GMBaseEvent {
+export interface GmControlLoadEvent extends GmBaseEvent {
   actionType: 'control';
   action: 'loaded' | 'unloaded';
 }
 
-export type GMControlEvent = GMControlSwitchEvent | GMControlLoadEvent;
+export type GmControlEvent = GmControlSwitchEvent | GmControlLoadEvent;

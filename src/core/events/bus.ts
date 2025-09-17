@@ -5,7 +5,7 @@ import type {
   EventControls,
   EventHandlers,
   Geoman,
-  GMEvent,
+  GmEvent,
   GmEventHadler,
   GmEventHandlersWithControl,
   GmEventName,
@@ -29,7 +29,7 @@ export class EventBus {
     this.forwarder = new EventForwarder(gm);
   }
 
-  fireEvent(eventName: GmEventName, payload: GMEvent) {
+  fireEvent(eventName: GmEventName, payload: GmEvent) {
     const eventHandler = this.gmEventHandlers[eventName];
     if (!eventHandler) {
       return;

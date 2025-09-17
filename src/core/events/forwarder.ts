@@ -9,21 +9,21 @@ import type {
   GlobalEventsListener,
   GlobalEventsListenerParameters,
   GlobalModeToggledFwdEvent,
-  GMControlLoadEvent,
-  GMDrawModeEvent,
-  GMDrawShapeCreatedEvent,
-  GMEditFeatureEditEndEvent,
-  GMEditFeatureEditStartEvent,
-  GMEditFeatureRemovedEvent,
-  GMEditFeatureUpdatedEvent,
-  GMEditModeEvent,
-  GMEvent,
+  GmControlLoadEvent,
+  GmDrawModeEvent,
+  GmDrawShapeCreatedEvent,
+  GmEditFeatureEditEndEvent,
+  GmEditFeatureEditStartEvent,
+  GmEditFeatureRemovedEvent,
+  GmEditFeatureUpdatedEvent,
+  GmEditModeEvent,
+  GmEvent,
   GmEventName,
   GmEventNameWithoutPrefix,
   GmFwdEventName,
   GmFwdEventNameWithPrefix,
   GmFwdSystemEventNameWithPrefix,
-  GMHelperModeEvent,
+  GmHelperModeEvent,
   ModeName,
 } from '@/main.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
@@ -42,7 +42,7 @@ export class EventForwarder {
     return this.gm.mapAdapter.getMapInstance();
   }
 
-  processEvent(eventName: GmEventName, payload: GMEvent) {
+  processEvent(eventName: GmEventName, payload: GmEvent) {
     // repeat the events to the map to allow end users to listen
     this.fireToMap('system', eventName.split(':')[1] as GmEventNameWithoutPrefix, {
       ...payload,
@@ -66,7 +66,7 @@ export class EventForwarder {
     }
   }
 
-  forwardModeToggledEvent(payload: GMDrawModeEvent | GMEditModeEvent | GMHelperModeEvent) {
+  forwardModeToggledEvent(payload: GmDrawModeEvent | GmEditModeEvent | GmHelperModeEvent) {
     const enabled = payload.action === 'mode_start';
     let eventData: GlobalModeToggledFwdEvent;
 
@@ -89,7 +89,7 @@ export class EventForwarder {
     }
   }
 
-  forwardFeatureCreated(payload: GMDrawShapeCreatedEvent) {
+  forwardFeatureCreated(payload: GmDrawShapeCreatedEvent) {
     const eventData: FeatureCreatedFwdEvent = {
       shape: payload.mode,
       feature: payload.featureData,
@@ -98,7 +98,7 @@ export class EventForwarder {
     this.fireToMap('converted', 'create', eventData);
   }
 
-  forwardFeatureRemoved(payload: GMEditFeatureRemovedEvent) {
+  forwardFeatureRemoved(payload: GmEditFeatureRemovedEvent) {
     const eventData: FeatureRemovedFwdEvent = {
       shape: payload.mode,
       feature: payload.featureData,
@@ -107,7 +107,7 @@ export class EventForwarder {
     this.fireToMap('converted', 'remove', eventData);
   }
 
-  forwardFeatureUpdated(payload: GMEditFeatureUpdatedEvent) {
+  forwardFeatureUpdated(payload: GmEditFeatureUpdatedEvent) {
     const multiFeatureMode: Array<ModeName> = ['lasso'];
     const featuresPayload: FeatureUpdatedFwdEvent = {
       map: this.map,
@@ -130,7 +130,7 @@ export class EventForwarder {
     this.fireToMap('converted', `${modeName}`, featuresPayload);
   }
 
-  forwardFeatureEditStart(payload: GMEditFeatureEditStartEvent) {
+  forwardFeatureEditStart(payload: GmEditFeatureEditStartEvent) {
     const modeName = this.getConvertedEditModeName(payload.mode);
     const eventData: FeatureEditStartFwdEvent = {
       shape: payload.feature.shape,
@@ -140,7 +140,7 @@ export class EventForwarder {
     this.fireToMap('converted', `${modeName}start`, eventData);
   }
 
-  forwardFeatureEditEnd(payload: GMEditFeatureEditEndEvent) {
+  forwardFeatureEditEnd(payload: GmEditFeatureEditEndEvent) {
     const modeName = this.getConvertedEditModeName(payload.mode);
     const eventData: FeatureEditStartFwdEvent = {
       shape: payload.feature.shape,
@@ -150,7 +150,7 @@ export class EventForwarder {
     this.fireToMap('converted', `${modeName}end`, eventData);
   }
 
-  forwardGeomanLoaded(payload: GMControlLoadEvent) {
+  forwardGeomanLoaded(payload: GmControlLoadEvent) {
     this.fireToMap('converted', `${payload.action}`, { map: this.map, [GM_PREFIX]: this.gm });
   }
 

@@ -1,4 +1,4 @@
-import GMControl from '@/core/controls/index.ts';
+import GmControl from '@/core/controls/index.ts';
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import type { BaseDomMarker } from '@/core/map/base/marker.ts';
@@ -45,9 +45,9 @@ export abstract class BaseMapAdapter<
 
   abstract getCanvas(): HTMLCanvasElement;
 
-  abstract addControl(control: GMControl): void;
+  abstract addControl(control: GmControl): void;
 
-  abstract removeControl(control: GMControl): void;
+  abstract removeControl(control: GmControl): void;
 
   abstract loadImage({ id, image }: { id: string; image: string }): Promise<void>;
 

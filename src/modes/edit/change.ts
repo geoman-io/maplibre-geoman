@@ -3,8 +3,8 @@ import {
   type EditModeName,
   type FeatureShape,
   type GeoJsonShapeFeature,
-  type GMEditMarkerEvent,
-  type GMEditMarkerMoveEvent,
+  type GmEditMarkerEvent,
+  type GmEditMarkerMoveEvent,
   type LngLat,
   type MapHandlerReturnData,
   type MarkerData,
@@ -31,7 +31,7 @@ import { cloneDeep, get } from 'lodash-es';
 import log from 'loglevel';
 import { isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
 
-type UpdateShapeHandler = (event: GMEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
+type UpdateShapeHandler = (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
 
 export class EditChange extends BaseDrag {
   mode: EditModeName = 'change';
@@ -98,7 +98,7 @@ export class EditChange extends BaseDrag {
     return { next: true };
   }
 
-  moveVertex(event: GMEditMarkerMoveEvent) {
+  moveVertex(event: GmEditMarkerMoveEvent) {
     if (!this.markerData) {
       this.markerData = event.markerData || null;
       this.snapGuidesInstance?.updateSnapGuides(event.featureData.getGeoJson(), event.lngLatStart);
@@ -120,7 +120,7 @@ export class EditChange extends BaseDrag {
     }
   }
 
-  cutVertex(event: GMEditMarkerEvent) {
+  cutVertex(event: GmEditMarkerEvent) {
     const featureData = event.featureData;
     if (event.markerData.type !== 'vertex') {
       return;
@@ -170,7 +170,7 @@ export class EditChange extends BaseDrag {
     }
   }
 
-  insertVertex(event: GMEditMarkerEvent) {
+  insertVertex(event: GmEditMarkerEvent) {
     if (event.markerData.type !== 'edge') {
       return;
     }
@@ -194,7 +194,7 @@ export class EditChange extends BaseDrag {
     }
   }
 
-  updateSingleVertex({ featureData, lngLatEnd, markerData }: GMEditMarkerMoveEvent) {
+  updateSingleVertex({ featureData, lngLatEnd, markerData }: GmEditMarkerMoveEvent) {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
     const coordPath = cloneDeep(markerData.position.path);
     const coordIndex = coordPath.pop();
@@ -212,7 +212,7 @@ export class EditChange extends BaseDrag {
     return geoJson;
   }
 
-  updateCircle({ featureData, lngLatEnd }: GMEditMarkerMoveEvent): GeoJsonShapeFeature | null {
+  updateCircle({ featureData, lngLatEnd }: GmEditMarkerMoveEvent): GeoJsonShapeFeature | null {
     const shapeCenter = featureData.getShapeProperty('center');
 
     if (featureData.shape !== 'circle' || !shapeCenter) {
@@ -234,7 +234,7 @@ export class EditChange extends BaseDrag {
     };
   }
 
-  updateEllipse(args: GMEditMarkerMoveEvent): GeoJsonShapeFeature | null {
+  updateEllipse(args: GmEditMarkerMoveEvent): GeoJsonShapeFeature | null {
     const { featureData, lngLatEnd, markerData } = args;
     if (featureData.shape !== 'ellipse') {
       log.error('EditChange.updateEllipse: invalid shape type', featureData);
@@ -281,7 +281,7 @@ export class EditChange extends BaseDrag {
     return ellipsePolygon;
   }
 
-  updateRectangle({ featureData, lngLatStart, lngLatEnd }: GMEditMarkerMoveEvent) {
+  updateRectangle({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {
     const totalCoordsCount = 4;
     const geoJson = featureData.getGeoJson() as GeoJsonShapeFeature;
     const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLat>;

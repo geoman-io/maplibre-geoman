@@ -1,10 +1,10 @@
 import { gmSystemPrefix } from '@/core/events/forwarder.ts';
-import type { GMControlLoadEvent } from '@/types/events/control.ts';
+import type { GmControlLoadEvent } from '@/types/events/control.ts';
 import type { FeatureEditFwdEvent, FwdEditModeName } from '@/types/events/forwarder/edit.ts';
 import type { FeatureFwdEvent } from '@/types/events/forwarder/features.ts';
 import type { GlobalModeToggledFwdEvent } from '@/types/events/forwarder/mode.ts';
 import type { SystemFwdEvent } from '@/types/events/forwarder/system.ts';
-import type { GMEvent, GmEventNameWithoutPrefix, GmPrefix } from '@/types/events/index.ts';
+import type { GmEvent, GmEventNameWithoutPrefix, GmPrefix } from '@/types/events/index.ts';
 import type { HelperModeName } from '@/types/modes/index.ts';
 
 export type GmSystemPrefix = typeof gmSystemPrefix;
@@ -13,7 +13,7 @@ export type GmFwdSystemEventNameWithPrefix = `${GmSystemPrefix}:${GmEventNameWit
 export type GlobalEventsListenerParameters = {
   type: 'system' | 'converted';
   name: GmFwdEventNameWithPrefix | GmFwdSystemEventNameWithPrefix;
-  payload: GmFwdEvent | GMEvent;
+  payload: GmFwdEvent | GmEvent;
 };
 export type GlobalEventsListener = (parameters: GlobalEventsListenerParameters) => void;
 
@@ -28,7 +28,7 @@ export type GmFwdEventName =
   | FwdEditModeName
   | `${FwdEditModeName}start`
   | `${FwdEditModeName}end`
-  | GMControlLoadEvent['action'];
+  | GmControlLoadEvent['action'];
 
 export type GmFwdEvent =
   | SystemFwdEvent

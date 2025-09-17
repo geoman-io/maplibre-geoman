@@ -1,9 +1,9 @@
-import type { GmBaseModeEvent, GMEvent } from '@/main.ts';
+import type { GmBaseModeEvent, GmEvent } from '@/main.ts';
 import { modeActions } from '@/types/events/mode.ts';
 import { includesWithType } from '@/utils/typing.ts';
 
-export const isGmEvent = (payload: unknown): payload is GMEvent => {
-  const fields: Array<keyof GMEvent> = ['level', 'actionType', 'action'];
+export const isGmEvent = (payload: unknown): payload is GmEvent => {
+  const fields: Array<keyof GmEvent> = ['level', 'actionType', 'action'];
 
   return !!(
     payload &&

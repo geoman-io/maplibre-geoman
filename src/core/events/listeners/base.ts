@@ -3,11 +3,11 @@ import type {
   ControlOptions,
   GenericSystemControl,
   Geoman,
-  GMControlSwitchEvent,
-  GMDrawModeEvent,
-  GMEditModeEvent,
-  GMEvent,
-  GMHelperModeEvent,
+  GmControlSwitchEvent,
+  GmDrawModeEvent,
+  GmEditModeEvent,
+  GmEvent,
+  GmHelperModeEvent,
   ModeName,
 } from '@/main.ts';
 import { isGmControlEvent, isGmModeEvent } from '@/utils/guards/events/index.ts';
@@ -20,7 +20,7 @@ export abstract class BaseEventListener {
     this.gm = gm;
   }
 
-  trackExclusiveModes(payload: GMEvent) {
+  trackExclusiveModes(payload: GmEvent) {
     // if an exclusive mode is started, turn off all other exclusive modes
     if (payload.action !== 'mode_start') {
       return;
@@ -48,7 +48,7 @@ export abstract class BaseEventListener {
     });
   }
 
-  trackRelatedModes(payload: GMEvent) {
+  trackRelatedModes(payload: GmEvent) {
     if (!isGmModeEvent(payload)) {
       return;
     }
@@ -75,7 +75,7 @@ export abstract class BaseEventListener {
   }
 
   getControl(
-    payload: GMDrawModeEvent | GMEditModeEvent | GMHelperModeEvent | GMControlSwitchEvent,
+    payload: GmDrawModeEvent | GmEditModeEvent | GmHelperModeEvent | GmControlSwitchEvent,
   ): GenericSystemControl | null {
     const { modeName, sectionName } = this.getControlIds(payload) || {};
 
@@ -87,7 +87,7 @@ export abstract class BaseEventListener {
   }
 
   getControlOptions(
-    payload: GMDrawModeEvent | GMEditModeEvent | GMHelperModeEvent | GMControlSwitchEvent,
+    payload: GmDrawModeEvent | GmEditModeEvent | GmHelperModeEvent | GmControlSwitchEvent,
   ): ControlOptions | null {
     const { modeName, sectionName } = this.getControlIds(payload) || {};
 
@@ -99,7 +99,7 @@ export abstract class BaseEventListener {
   }
 
   getControlIds(
-    payload: GMDrawModeEvent | GMEditModeEvent | GMHelperModeEvent | GMControlSwitchEvent,
+    payload: GmDrawModeEvent | GmEditModeEvent | GmHelperModeEvent | GmControlSwitchEvent,
   ) {
     let sectionName: ActionType | null = null;
     let modeName: ModeName | null = null;

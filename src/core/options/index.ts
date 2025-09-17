@@ -8,7 +8,7 @@ import {
   type GenericControlsOptions,
   type Geoman,
   type GmBaseModeEvent,
-  type GMControlSwitchEvent,
+  type GmControlSwitchEvent,
   type GmOptionsData,
   type ModeAction,
   type ModeName,
@@ -180,9 +180,9 @@ export class GmOptions {
   fireControlEvent(
     sectionName: ModeType,
     modeName: ModeName,
-    action: GMControlSwitchEvent['action'],
+    action: GmControlSwitchEvent['action'],
   ) {
-    const payload: GMControlSwitchEvent = {
+    const payload: GmControlSwitchEvent = {
       level: 'system',
       actionType: 'control',
       section: sectionName,

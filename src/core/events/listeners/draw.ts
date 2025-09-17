@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, EventHandlers, Geoman, GMDrawEvent, GMEvent } from '@/main.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GmDrawEvent, GmEvent } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { createDrawInstance } from '@/modes/draw/index.ts';
 import { isGmDrawEvent } from '@/utils/guards/modes.ts';
@@ -17,7 +17,7 @@ export class DrawEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleDrawEvent(payload: GMEvent) {
+  handleDrawEvent(payload: GmEvent) {
     if (!isGmDrawEvent(payload)) {
       return { next: true };
     }
@@ -36,7 +36,7 @@ export class DrawEventListener extends BaseEventListener {
     return { next: true };
   }
 
-  start(actionInstanceKey: ActionInstanceKey, payload: GMDrawEvent) {
+  start(actionInstanceKey: ActionInstanceKey, payload: GmDrawEvent) {
     const actionInstance = createDrawInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;

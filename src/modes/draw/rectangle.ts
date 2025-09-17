@@ -3,8 +3,8 @@ import type {
   AnyEvent,
   DrawModeName,
   GeoJsonShapeFeature,
-  GMDrawShapeEvent,
-  GMDrawShapeEventWithData,
+  GmDrawShapeEvent,
+  GmDrawShapeEventWithData,
   LngLat,
   MapHandlerReturnData,
   MarkerData,
@@ -187,7 +187,7 @@ export class DrawRectangle extends BaseDraw {
   }
 
   fireStartEvent(featureData: FeatureData, markerData: MarkerData | null) {
-    const event: GMDrawShapeEventWithData = {
+    const event: GmDrawShapeEventWithData = {
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -200,7 +200,7 @@ export class DrawRectangle extends BaseDraw {
   }
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null) {
-    const event: GMDrawShapeEventWithData = {
+    const event: GmDrawShapeEventWithData = {
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -213,7 +213,7 @@ export class DrawRectangle extends BaseDraw {
   }
 
   fireFinishEvent() {
-    const event: GMDrawShapeEvent = {
+    const event: GmDrawShapeEvent = {
       level: 'system',
       actionType: 'draw',
       mode: this.shape,

@@ -17,7 +17,7 @@ import {
   type GeoJsonShapeFeature,
   type GeoJsonShapeFeatureCollection,
   type Geoman,
-  type GMDrawShapeCreatedEvent,
+  type GmDrawShapeCreatedEvent,
   type LngLat,
   type MarkerData,
   type PartialLayerStyle,
@@ -582,7 +582,7 @@ export class Features {
 
   fireFeatureCreatedEvent(featureData: FeatureData) {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
-      const payload: GMDrawShapeCreatedEvent = {
+      const payload: GmDrawShapeCreatedEvent = {
         level: 'system',
         actionType: 'draw',
         mode: featureData.shape,

@@ -6,9 +6,9 @@ import { EditEventListener } from '@/core/events/listeners/edit.ts';
 import { HelperEventListener } from '@/core/events/listeners/helper.ts';
 import type { Geoman } from '@/main.ts';
 import log from 'loglevel';
-import type { EventType, GMEvent, GmEventName } from 'src/types/events';
+import type { EventType, GmEvent, GmEventName } from 'src/types/events';
 
-export default class GMEvents {
+export default class GmEvents {
   gm: Geoman;
   bus: EventBus;
   listeners: { [key in EventType]?: BaseEventListener } = {};
@@ -25,7 +25,7 @@ export default class GMEvents {
     };
   }
 
-  fire(eventName: GmEventName, payload: GMEvent) {
+  fire(eventName: GmEventName, payload: GmEvent) {
     if (!this.listeners[payload.actionType]) {
       log.error(`Can't find event listener for "${payload.actionType}" event type`);
     }

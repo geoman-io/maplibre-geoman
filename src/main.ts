@@ -3,9 +3,9 @@
  */
 import defaultMarker from '@/assets/images/markers/default-marker.png';
 import { GM_PREFIX } from '@/core/constants.ts';
-import GMControl from '@/core/controls/index.ts';
+import GmControl from '@/core/controls/index.ts';
 import { type EventForwarder } from '@/core/events/forwarder.ts';
-import GMEvents from '@/core/events/index.ts';
+import GmEvents from '@/core/events/index.ts';
 import { Features } from '@/core/features/index.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import { getMapAdapter } from '@/core/map/index.ts';
@@ -49,8 +49,8 @@ export class Geoman {
   loaded: boolean = false;
 
   options: GmOptions;
-  events: GMEvents;
-  control: GMControl;
+  events: GmEvents;
+  control: GmControl;
 
   actionInstances: { [key in ActionInstanceKey]?: ActionInstance } = {};
   markerPointer: MarkerPointer;
@@ -100,7 +100,7 @@ export class Geoman {
   }
 
   initCoreEvents() {
-    return new GMEvents(this);
+    return new GmEvents(this);
   }
 
   initCoreFeatures() {
@@ -108,7 +108,7 @@ export class Geoman {
   }
 
   initCoreControls() {
-    return new GMControl(this);
+    return new GmControl(this);
   }
 
   initMarkerPointer() {

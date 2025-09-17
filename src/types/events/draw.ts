@@ -1,22 +1,22 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { type GMBaseEvent } from '@/types/events/index.ts';
+import { type GmBaseEvent } from '@/types/events/index.ts';
 import type { GmBaseModeEvent } from '@/types/events/mode.ts';
 import type { DrawModeName, MarkerData } from '@/types/modes/index.ts';
 import type { GeoJsonLineFeature } from '@/types';
 
-export interface GMDrawModeEvent extends GmBaseModeEvent {
+export interface GmDrawModeEvent extends GmBaseModeEvent {
   actionType: 'draw';
   mode: DrawModeName;
 }
 
-export interface GMDrawShapeEvent extends GMBaseEvent {
+export interface GmDrawShapeEvent extends GmBaseEvent {
   actionType: 'draw';
   mode: DrawModeName;
   variant: null;
   action: 'finish' | 'cancel';
 }
 
-export interface GMDrawShapeEventWithData extends GMBaseEvent {
+export interface GmDrawShapeEventWithData extends GmBaseEvent {
   actionType: 'draw';
   mode: DrawModeName;
   variant: null;
@@ -25,43 +25,43 @@ export interface GMDrawShapeEventWithData extends GMBaseEvent {
   featureData: FeatureData | null;
 }
 
-export interface GMDrawShapeCreatedEvent extends GMBaseEvent {
+export interface GmDrawShapeCreatedEvent extends GmBaseEvent {
   actionType: 'draw';
   mode: DrawModeName;
   action: 'feature_created';
   featureData: FeatureData;
 }
 
-export type GMDrawLineDrawerEvent = Omit<GMDrawShapeEvent, 'mode' | 'variant'> & {
+export type GmDrawLineDrawerEvent = Omit<GmDrawShapeEvent, 'mode' | 'variant'> & {
   mode: 'line';
   variant: 'line_drawer';
 };
 
-export type GMDrawFreehandDrawerEvent = Omit<GMDrawShapeEvent, 'mode' | 'variant'> & {
+export type GmDrawFreehandDrawerEvent = Omit<GmDrawShapeEvent, 'mode' | 'variant'> & {
   mode: 'line' | 'polygon';
   variant: 'freehand_drawer';
 };
 
-export type GMDrawLineDrawerEventWithData = Omit<GMDrawShapeEventWithData, 'mode' | 'variant'> & {
+export type GmDrawLineDrawerEventWithData = Omit<GmDrawShapeEventWithData, 'mode' | 'variant'> & {
   mode: 'line';
   variant: 'line_drawer';
   geoJsonFeature?: GeoJsonLineFeature;
 };
 
-export type GMDrawFreehandDrawerEventWithData = Omit<
-  GMDrawShapeEventWithData,
+export type GmDrawFreehandDrawerEventWithData = Omit<
+  GmDrawShapeEventWithData,
   'mode' | 'variant'
 > & {
   mode: 'line' | 'polygon';
   variant: 'freehand_drawer';
 };
 
-export type GMDrawEvent =
-  | GMDrawModeEvent
-  | GMDrawShapeEvent
-  | GMDrawShapeEventWithData
-  | GMDrawLineDrawerEvent
-  | GMDrawLineDrawerEventWithData
-  | GMDrawFreehandDrawerEvent
-  | GMDrawFreehandDrawerEventWithData
-  | GMDrawShapeCreatedEvent;
+export type GmDrawEvent =
+  | GmDrawModeEvent
+  | GmDrawShapeEvent
+  | GmDrawShapeEventWithData
+  | GmDrawLineDrawerEvent
+  | GmDrawLineDrawerEventWithData
+  | GmDrawFreehandDrawerEvent
+  | GmDrawFreehandDrawerEventWithData
+  | GmDrawShapeCreatedEvent;

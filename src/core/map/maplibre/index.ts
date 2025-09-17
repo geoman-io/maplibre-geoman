@@ -1,4 +1,4 @@
-import GMControl from '@/core/controls/index.ts';
+import GmControl from '@/core/controls/index.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
@@ -63,11 +63,11 @@ export class MaplibreAdapter extends BaseMapAdapter<
     return this.mapInstance.getCanvas();
   }
 
-  addControl(control: GMControl) {
+  addControl(control: GmControl) {
     this.mapInstance.addControl(control);
   }
 
-  removeControl(control: GMControl) {
+  removeControl(control: GmControl) {
     this.mapInstance.removeControl(control);
   }
 

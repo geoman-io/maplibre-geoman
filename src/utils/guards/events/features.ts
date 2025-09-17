@@ -1,14 +1,14 @@
-import type { GMBeforeFeatureCreateEvent, GMBeforeFeatureUpdateEvent } from '@/main.ts';
+import type { GmBeforeFeatureCreateEvent, GmBeforeFeatureUpdateEvent } from '@/main.ts';
 import { isGmEvent } from '@/utils/guards/events/index.ts';
 
 export const isGmFeatureBeforeCreateEvent = (
   payload: unknown,
-): payload is GMBeforeFeatureCreateEvent => {
+): payload is GmBeforeFeatureCreateEvent => {
   return isGmEvent(payload) && payload.action === 'before_create';
 };
 
 export const isGmFeatureBeforeUpdateEvent = (
   payload: unknown,
-): payload is GMBeforeFeatureUpdateEvent => {
+): payload is GmBeforeFeatureUpdateEvent => {
   return isGmEvent(payload) && payload.action === 'before_update';
 };

@@ -2,9 +2,9 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   ActionType,
   DrawModeName,
-  GMDrawShapeEvent,
-  GMDrawShapeEventWithData,
-  GMEvent,
+  GmDrawShapeEvent,
+  GmDrawShapeEventWithData,
+  GmEvent,
   MarkerData,
   ShapeName,
 } from '@/main.ts';
@@ -51,7 +51,7 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     const marker = this.gm.markerPointer.marker;
-    const payload: GMDrawShapeEventWithData = {
+    const payload: GmDrawShapeEventWithData = {
       level: 'system',
       variant: null,
       actionType: 'draw',
@@ -76,7 +76,7 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     const marker = this.gm.markerPointer.marker;
-    const payload: GMDrawShapeEventWithData = {
+    const payload: GmDrawShapeEventWithData = {
       level: 'system',
       variant: null,
       actionType: 'draw',
@@ -100,7 +100,7 @@ export abstract class BaseDraw extends BaseAction {
       return;
     }
 
-    const payload: GMDrawShapeEvent = {
+    const payload: GmDrawShapeEvent = {
       level: 'system',
       variant: null,
       actionType: 'draw',
@@ -110,13 +110,13 @@ export abstract class BaseDraw extends BaseAction {
     this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
-  forwardLineDrawerEvent(payload: GMEvent) {
+  forwardLineDrawerEvent(payload: GmEvent) {
     if (!isGmDrawLineDrawerEvent(payload) || !this.shape) {
       return { next: true };
     }
 
     if (payload.action === 'start' || payload.action === 'update') {
-      const eventData: GMDrawShapeEventWithData = {
+      const eventData: GmDrawShapeEventWithData = {
         level: 'system',
         actionType: 'draw',
         mode: this.shape,
@@ -127,7 +127,7 @@ export abstract class BaseDraw extends BaseAction {
       };
       this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
-      const eventData: GMDrawShapeEvent = {
+      const eventData: GmDrawShapeEvent = {
         level: 'system',
         actionType: 'draw',
         mode: this.shape,
@@ -145,7 +145,7 @@ export abstract class BaseDraw extends BaseAction {
       return;
     }
 
-    const event: GMDrawShapeEventWithData = {
+    const event: GmDrawShapeEventWithData = {
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -162,7 +162,7 @@ export abstract class BaseDraw extends BaseAction {
       return;
     }
 
-    const event: GMDrawShapeEventWithData = {
+    const event: GmDrawShapeEventWithData = {
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -179,7 +179,7 @@ export abstract class BaseDraw extends BaseAction {
       return;
     }
 
-    const event: GMDrawShapeEvent = {
+    const event: GmDrawShapeEvent = {
       level: 'system',
       actionType: 'draw',
       mode: this.shape,

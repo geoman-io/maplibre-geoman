@@ -1,6 +1,6 @@
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, EventHandlers, Geoman, GMEditEvent, GMEvent } from '@/main.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GmEditEvent, GmEvent } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
@@ -17,7 +17,7 @@ export class EditEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleEditEvent(payload: GMEvent) {
+  handleEditEvent(payload: GmEvent) {
     if (!isGmEditEvent(payload)) {
       return { next: true };
     }
@@ -35,7 +35,7 @@ export class EditEventListener extends BaseEventListener {
     return { next: true };
   }
 
-  start(actionInstanceKey: ActionInstanceKey, payload: GMEditEvent) {
+  start(actionInstanceKey: ActionInstanceKey, payload: GmEditEvent) {
     if (payload.action !== 'mode_start') {
       return;
     }

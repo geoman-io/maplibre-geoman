@@ -1,8 +1,8 @@
-import type { GMControlEvent } from '@/types/events/control.ts';
-import type { GMDrawEvent } from '@/types/events/draw.ts';
-import { type GMEditEvent } from '@/types/events/edit.ts';
-import type { GMFeatureEvent } from '@/types/events/feature.ts';
-import type { GMHelperEvent } from '@/types/events/helper.ts';
+import type { GmControlEvent } from '@/types/events/control.ts';
+import type { GmDrawEvent } from '@/types/events/draw.ts';
+import { type GmEditEvent } from '@/types/events/edit.ts';
+import type { GmFeatureEvent } from '@/types/events/feature.ts';
+import type { GmHelperEvent } from '@/types/events/helper.ts';
 import type { ActionType } from '@/types/options.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
 import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
@@ -11,14 +11,14 @@ export type EventType = ActionType | 'control';
 export type EventLevel = 'system' | 'user';
 export type NonEmptyArray<T> = [T, ...T[]];
 
-export type GMBaseEvent = {
+export type GmBaseEvent = {
   level: EventLevel;
   actionType: EventType;
   action: string;
 };
 
-export type GMEvent = GMDrawEvent | GMEditEvent | GMHelperEvent | GMControlEvent | GMFeatureEvent;
-export type AnyEvent = GMEvent | BaseMapAnyEvent;
+export type GmEvent = GmDrawEvent | GmEditEvent | GmHelperEvent | GmControlEvent | GmFeatureEvent;
+export type AnyEvent = GmEvent | BaseMapAnyEvent;
 
 export type GmPrefix = typeof GM_PREFIX;
 export type GmEventNameWithoutPrefix = EventType;

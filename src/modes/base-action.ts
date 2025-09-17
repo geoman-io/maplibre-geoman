@@ -8,9 +8,9 @@ import type {
   EventHandlers,
   GeoJsonShapeFeature,
   Geoman,
-  GMBeforeFeatureCreateEvent,
-  GMBeforeFeatureUpdateEvent,
-  GMGeofencingViolationEvent,
+  GmBeforeFeatureCreateEvent,
+  GmBeforeFeatureUpdateEvent,
+  GmGeofencingViolationEvent,
   ModeName,
   NonEmptyArray,
   SubActions,
@@ -114,7 +114,7 @@ export abstract class BaseAction {
     return { next: true };
   }
 
-  handleGeofencingViolationEvent(event: GMGeofencingViolationEvent) {
+  handleGeofencingViolationEvent(event: GmGeofencingViolationEvent) {
     if (event.actionType === 'draw') {
       this.flags.featureCreateAllowed = false;
     } else if (event.actionType === 'edit') {
@@ -132,7 +132,7 @@ export abstract class BaseAction {
   }) {
     this.flags.featureCreateAllowed = true;
 
-    const payload: GMBeforeFeatureCreateEvent = {
+    const payload: GmBeforeFeatureCreateEvent = {
       level: 'system',
       actionType: this.actionType,
       mode: forceMode || this.mode,
@@ -153,7 +153,7 @@ export abstract class BaseAction {
   }) {
     this.flags.featureUpdateAllowed = true;
 
-    const payload: GMBeforeFeatureUpdateEvent = {
+    const payload: GmBeforeFeatureUpdateEvent = {
       level: 'system',
       actionType: this.actionType,
       mode: forceMode || this.mode,

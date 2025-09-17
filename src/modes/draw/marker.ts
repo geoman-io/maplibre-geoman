@@ -3,7 +3,7 @@ import {
   type AnyEvent,
   type DrawModeName,
   type GeoJsonShapeFeature,
-  type GMEvent,
+  type GmEvent,
   type LngLat,
   type MapHandlerReturnData,
   type ShapeName,
@@ -42,7 +42,7 @@ export class DrawMarker extends BaseDraw {
     return { next: false };
   }
 
-  onMouseMove(event: GMEvent): MapHandlerReturnData {
+  onMouseMove(event: GmEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event) || !this.gm.markerPointer.marker) {
       return { next: true };
     }

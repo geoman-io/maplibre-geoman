@@ -3,8 +3,8 @@ import {
   type EditModeName,
   type FeatureShape,
   type GeoJsonShapeFeature,
-  type GMEditEvent,
-  type GMEditMarkerMoveEvent,
+  type GmEditEvent,
+  type GmEditMarkerMoveEvent,
   type LngLat,
   type MapHandlerReturnData,
   type ShapeName,
@@ -19,7 +19,7 @@ import transformRotate from '@turf/transform-rotate';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
-type RotateShapeHandler = (event: GMEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
+type RotateShapeHandler = (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
 
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
@@ -75,13 +75,13 @@ export class EditRotate extends BaseDrag {
     return { next: true };
   }
 
-  isFeatureAllowed(event: GMEditEvent): boolean {
+  isFeatureAllowed(event: GmEditEvent): boolean {
     return (
       'featureData' in event && !this.allowedShapes.includes(event.featureData.shape as ShapeName)
     );
   }
 
-  moveVertex(event: GMEditMarkerMoveEvent) {
+  moveVertex(event: GmEditMarkerMoveEvent) {
     const featureData = event.featureData;
     const updatedGeoJson = this.shapeRotateHandlers[featureData.shape]?.(event) || null;
 
@@ -101,7 +101,7 @@ export class EditRotate extends BaseDrag {
     }
   }
 
-  rotateEllipse(event: GMEditMarkerMoveEvent) {
+  rotateEllipse(event: GmEditMarkerMoveEvent) {
     const { featureData } = event;
 
     if (featureData.shape !== 'ellipse') {
@@ -142,7 +142,7 @@ export class EditRotate extends BaseDrag {
     });
   }
 
-  rotateFeature(event: GMEditMarkerMoveEvent) {
+  rotateFeature(event: GmEditMarkerMoveEvent) {
     const featureData = event.featureData;
 
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
