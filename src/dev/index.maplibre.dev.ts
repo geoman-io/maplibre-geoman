@@ -163,7 +163,7 @@ const initGeoman = async () => {
   });
 
   geoman.setGlobalEventsListener((event) => {
-    if (event.name === 'gm:create') {
+    if (event.name === '_gm:draw') {
       log.debug('event', event);
     }
 

@@ -1,4 +1,6 @@
+import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import type {
+  AnyEventName,
   EditModeName,
   FeatureCreatedFwdEvent,
   FeatureEditEndFwdEvent,
@@ -8,7 +10,6 @@ import type {
   FwdEditModeName,
   Geoman,
   GlobalEventsListener,
-  GlobalEventsListenerParameters,
   GlobalModeToggledFwdEvent,
   GmControlLoadEvent,
   GmDrawModeEvent,
@@ -21,15 +22,11 @@ import type {
   GmEvent,
   GmEventName,
   GmEventNameWithoutPrefix,
+  GmFwdEvent,
   GmFwdEventName,
-  GmFwdEventNameWithPrefix,
-  GmFwdSystemEventNameWithPrefix,
   GmHelperModeEvent,
   ModeName,
 } from '@/main.ts';
-import { GM_PREFIX } from '@/core/constants.ts';
-
-export const gmSystemPrefix = `_${GM_PREFIX}`;
 
 export class EventForwarder {
   gm: Geoman;
@@ -45,9 +42,13 @@ export class EventForwarder {
 
   processEvent(eventName: GmEventName, payload: GmEvent) {
     // repeat the events to the map to allow end users to listen
-    this.fireToMap('system', eventName.split(':')[1] as GmEventNameWithoutPrefix, {
-      ...payload,
-      level: 'user',
+    this.fireToMap({
+      type: 'system',
+      eventName: eventName.split(':')[1] as GmEventNameWithoutPrefix,
+      payload: {
+        ...payload,
+        level: 'user',
+      },
     });
 
     if (payload.action === 'mode_start' || payload.action === 'mode_end') {
@@ -81,7 +82,7 @@ export class EventForwarder {
         shape: payload.mode,
         map: this.map,
       };
-      this.fireToMap('converted', eventName, eventData);
+      this.fireToMap({ type: 'converted', eventName, payload: eventData });
 
       // drawstart, drawend
       eventData = {
@@ -90,7 +91,11 @@ export class EventForwarder {
         shape: payload.mode,
         map: this.map,
       };
-      this.fireToMap('converted', enabled ? 'drawstart' : 'drawend', eventData);
+      this.fireToMap({
+        type: 'converted',
+        eventName: enabled ? 'drawstart' : 'drawend',
+        payload: eventData,
+      });
     } else if (payload.actionType === 'edit') {
       const modeName = this.getConvertedEditModeName(payload.mode);
       eventData = {
@@ -99,7 +104,11 @@ export class EventForwarder {
         enabled,
         map: this.map,
       };
-      this.fireToMap('converted', `global${modeName}modetoggled`, eventData);
+      this.fireToMap({
+        type: 'converted',
+        eventName: `global${modeName}modetoggled`,
+        payload: eventData,
+      });
     } else if (payload.actionType === 'helper') {
       eventData = {
         actionType: payload.actionType,
@@ -107,7 +116,11 @@ export class EventForwarder {
         enabled,
         map: this.map,
       };
-      this.fireToMap('converted', `global${payload.mode}modetoggled`, eventData);
+      this.fireToMap({
+        type: 'converted',
+        eventName: `global${payload.mode}modetoggled`,
+        payload: eventData,
+      });
     }
   }
 
@@ -119,7 +132,7 @@ export class EventForwarder {
       feature: payload.featureData,
       map: this.map,
     };
-    this.fireToMap('converted', 'create', eventData);
+    this.fireToMap({ type: 'converted', eventName: 'create', payload: eventData });
   }
 
   forwardFeatureRemoved(payload: GmEditFeatureRemovedEvent) {
@@ -130,7 +143,7 @@ export class EventForwarder {
       feature: payload.featureData,
       map: this.map,
     };
-    this.fireToMap('converted', 'remove', eventData);
+    this.fireToMap({ type: 'converted', eventName: 'remove', payload: eventData });
   }
 
   forwardFeatureUpdated(payload: GmEditFeatureUpdatedEvent) {
@@ -155,7 +168,7 @@ export class EventForwarder {
     }
 
     const modeName = this.getConvertedEditModeName(payload.mode);
-    this.fireToMap('converted', `${modeName}`, featuresPayload);
+    this.fireToMap({ type: 'converted', eventName: `${modeName}`, payload: featuresPayload });
   }
 
   forwardFeatureEditStart(payload: GmEditFeatureEditStartEvent) {
@@ -167,7 +180,7 @@ export class EventForwarder {
       feature: payload.feature,
       map: this.map,
     };
-    this.fireToMap('converted', `${modeName}start`, eventData);
+    this.fireToMap({ type: 'converted', eventName: `${modeName}start`, payload: eventData });
   }
 
   forwardFeatureEditEnd(payload: GmEditFeatureEditEndEvent) {
@@ -179,32 +192,48 @@ export class EventForwarder {
       feature: payload.feature,
       map: this.map,
     };
-    this.fireToMap('converted', `${modeName}end`, eventData);
+    this.fireToMap({ type: 'converted', eventName: `${modeName}end`, payload: eventData });
   }
 
   forwardGeomanLoaded(payload: GmControlLoadEvent) {
-    this.fireToMap('converted', `${payload.action}`, {
-      actionType: payload.actionType,
-      action: payload.action,
-      map: this.map,
-      [GM_PREFIX]: this.gm,
+    this.fireToMap({
+      type: 'converted',
+      eventName: `${payload.action}`,
+      payload: {
+        actionType: payload.actionType,
+        action: payload.action,
+        map: this.map,
+        [GM_PREFIX]: this.gm,
+      },
     });
   }
 
-  fireToMap(
-    type: GlobalEventsListenerParameters['type'],
-    eventName: GmEventNameWithoutPrefix | GmFwdEventName,
-    payload: GlobalEventsListenerParameters['payload'],
-  ) {
-    const prefix = type === 'system' ? gmSystemPrefix : GM_PREFIX;
-    const eventNameWithPrefix = `${prefix}:${eventName}` as
-      | GmFwdEventNameWithPrefix
-      | GmFwdSystemEventNameWithPrefix;
+  fireToMap({
+    type,
+    eventName,
+    payload,
+  }:
+    | { type: 'system'; eventName: GmEventNameWithoutPrefix; payload: GmEvent }
+    | { type: 'converted'; eventName: GmFwdEventName; payload: GmFwdEvent }): void {
+    const prefix = type === 'system' ? GM_SYSTEM_PREFIX : GM_PREFIX;
+    const eventNameWithPrefix = `${prefix}:${eventName}`;
 
     if (this.globalEventsListener) {
-      this.globalEventsListener({ type, name: eventNameWithPrefix, payload });
+      if (type === 'system') {
+        this.globalEventsListener({
+          type,
+          name: `${GM_SYSTEM_PREFIX}:${eventName}`,
+          payload,
+        });
+      } else if (type === 'converted') {
+        this.globalEventsListener({
+          type,
+          name: `${GM_PREFIX}:${eventName}`,
+          payload,
+        });
+      }
     }
-    this.gm.mapAdapter.fire(eventNameWithPrefix, payload);
+    this.gm.mapAdapter.fire(eventNameWithPrefix as AnyEventName, payload);
   }
 
   getConvertedEditModeName(mode: EditModeName): FwdEditModeName {
