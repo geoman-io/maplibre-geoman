@@ -12,10 +12,11 @@ dist
 dist-ssr
 *.local
 llm-prompt.txt
+llm-prompt.pdf
 pub
 
 # env
-.env
+#.env
 
 # Editor directories and files
 .vscode/*

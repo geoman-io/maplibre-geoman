@@ -1,47 +1,47 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type {
-  AnyEvent,
-  DrawModeName,
-  GeoJsonLineFeature,
-  GeoJsonShapeFeature,
-  Geoman,
-  LineEventHandlerArguments,
-  LngLat,
-  MapHandlerReturnData,
-  MapPointerEvent,
-  MarkerData,
-  MarkerId,
-  ShapeName,
+import {
+  type AnyEvent,
+  type DrawModeName,
+  type GeoJsonLineFeature,
+  type GeoJsonShapeFeature,
+  type Geoman,
+  type LineEventHandlerArguments,
+  type LngLat,
+  type MapHandlerReturnData,
+  type MarkerData,
+  type MarkerId,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { createMarkerElement } from '@/utils/dom.ts';
 import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import lineToPolygon from '@turf/line-to-polygon';
 import type { Position } from 'geojson';
 import log from 'loglevel';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 type LineDrawerOptions = {
-  snappingMarkers: 'first' | 'last' | 'all' | 'none',
-  targetShape: Extract<ShapeName, 'line' | 'polygon'>,
+  snappingMarkers: 'first' | 'last' | 'all' | 'none';
+  targetShape: Extract<ShapeName, 'line' | 'polygon'>;
 };
 
 type MarkerInfo = {
-  index: number,
-  path: MarkerId | null,
+  index: number;
+  path: MarkerId | null;
 };
 
-type MarkerHandler = (
-  { markerIndex, shapeCoordinates, geoJson }: LineEventHandlerArguments,
-) => void;
+type MarkerHandler = ({
+  markerIndex,
+  shapeCoordinates,
+  geoJson,
+}: LineEventHandlerArguments) => void;
 
 interface DrawerHandlers {
   // when the line is closed to its beginning (polygon is finished)
@@ -58,12 +58,16 @@ export class LineDrawer extends BaseDraw {
   drawOptions: LineDrawerOptions;
   shapeLngLats: Array<LngLat> = [];
 
-  throttledMethods = convertToThrottled({
-    onMouseMove: this.onMouseMove,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      onMouseMove: this.onMouseMove,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
-  mapEventHandlers = {
-    [`${gmPrefix}:helper`]: this.handleGmHelperEvent.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:helper`]: this.handleGmHelperEvent.bind(this),
     click: this.onMouseClick.bind(this),
     mousemove: this.throttledMethods.onMouseMove.bind(this),
   };
@@ -230,10 +234,7 @@ export class LineDrawer extends BaseDraw {
     };
 
     if (this.featureData) {
-      this.featureData.markers.set(
-        markerData.position.path.join('.'),
-        markerData,
-      );
+      this.featureData.markers.set(markerData.position.path.join('.'), markerData);
 
       this.setSnapping();
       this.fireStartEvent(this.featureData, markerData);
@@ -264,10 +265,9 @@ export class LineDrawer extends BaseDraw {
     } else if (snappingMarkers === 'first' && this.shapeLngLats.length) {
       this.snappingHelper.setCustomSnappingCoordinates(this.snappingKey, [this.shapeLngLats[0]]);
     } else if (snappingMarkers === 'last' && this.shapeLngLats.length) {
-      this.snappingHelper.setCustomSnappingCoordinates(
-        this.snappingKey,
-        [this.shapeLngLats[this.shapeLngLats.length - 1]],
-      );
+      this.snappingHelper.setCustomSnappingCoordinates(this.snappingKey, [
+        this.shapeLngLats[this.shapeLngLats.length - 1],
+      ]);
     } else {
       log.error('LineDrawer.setSnapping: invalid data', snappingMarkers, this.shapeLngLats);
     }
@@ -280,7 +280,7 @@ export class LineDrawer extends BaseDraw {
     this.snappingHelper.clearCustomSnappingCoordinates(this.snappingKey);
   }
 
-  getClickedMarkerInfo(event: MapPointerEvent): MarkerInfo {
+  getClickedMarkerInfo(event: BaseMapPointerEvent): MarkerInfo {
     if (!this.featureData) {
       return { index: -1, path: null };
     }
@@ -353,19 +353,13 @@ export class LineDrawer extends BaseDraw {
     const targetLngLat = this.getMarkerInfoLngLat(existingMarkerInfo) || newLngLat;
     const pathPositions = this.getAutoTracePath(targetLngLat);
 
-    return [
-      ...(pathPositions?.slice(1, -1) || []),
-      targetLngLat,
-    ];
+    return [...(pathPositions?.slice(1, -1) || []), targetLngLat];
   }
 
   getAutoTracePath(finishLngLat: LngLat): Array<LngLat> | null {
     const previousLngLat = this.shapeLngLats.at(-1);
     if (this.autoTraceEnabled && this.autoTraceHelperInstance && previousLngLat) {
-      const path = this.autoTraceHelperInstance.getShortestPath(
-        previousLngLat,
-        finishLngLat,
-      );
+      const path = this.autoTraceHelperInstance.getShortestPath(previousLngLat, finishLngLat);
       return path || null;
     }
     return null;
@@ -393,29 +387,29 @@ export class LineDrawer extends BaseDraw {
       },
     };
 
-    featureData.markers.set(
-      markerData.position.path.join('.'),
-      {
-        type: 'dom',
-        instance: markerData.instance,
-        position: {
-          coordinate: lngLat,
-          path: [],
-        },
+    featureData.markers.set(markerData.position.path.join('.'), {
+      type: 'dom',
+      instance: markerData.instance,
+      position: {
+        coordinate: lngLat,
+        path: [],
       },
-    );
+    });
 
     return markerData;
   }
 
   createMarker(lngLat: LngLat) {
-    return this.gm.mapAdapter.createDomMarker({
-      element: createMarkerElement('dom', {
-        pointerEvents: 'auto',
-        cursor: 'pointer',
-      }),
-      anchor: 'center',
-    }, lngLat);
+    return this.gm.mapAdapter.createDomMarker(
+      {
+        element: this.gm.createSvgMarkerElement('control', {
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+        }),
+        anchor: 'center',
+      },
+      lngLat,
+    );
   }
 
   updateFeatureSource() {
@@ -441,9 +435,12 @@ export class LineDrawer extends BaseDraw {
     }
   }
 
-  getFeatureGeoJson({ withControlMarker, coordinates = undefined }: {
-    withControlMarker: boolean,
-    coordinates?: Array<Position>,
+  getFeatureGeoJson({
+    withControlMarker,
+    coordinates = undefined,
+  }: {
+    withControlMarker: boolean;
+    coordinates?: Array<Position>;
   }): GeoJsonLineFeature {
     return {
       type: 'Feature',
@@ -457,25 +454,28 @@ export class LineDrawer extends BaseDraw {
     };
   }
 
-  getFeatureGeoJsonWithType({ withControlMarker, coordinates = undefined }: {
-    withControlMarker: boolean,
-    coordinates?: Array<Position>,
+  getFeatureGeoJsonWithType({
+    withControlMarker,
+    coordinates = undefined,
+  }: {
+    withControlMarker: boolean;
+    coordinates?: Array<Position>;
   }) {
     const featureGeoJson = this.getFeatureGeoJson({ withControlMarker, coordinates });
 
-    if (this.drawOptions.targetShape === 'polygon' && featureGeoJson.geometry.coordinates.length > 3) {
-      return lineToPolygon(
-        featureGeoJson,
-        { properties: featureGeoJson.properties },
-      ) as GeoJsonShapeFeature;
+    if (
+      this.drawOptions.targetShape === 'polygon' &&
+      featureGeoJson.geometry.coordinates.length > 3
+    ) {
+      return lineToPolygon(featureGeoJson, {
+        properties: featureGeoJson.properties,
+      }) as GeoJsonShapeFeature;
     }
 
     return featureGeoJson;
   }
 
-  getShapeCoordinates({ withControlMarker }: {
-    withControlMarker: boolean
-  }): Array<LngLat> {
+  getShapeCoordinates({ withControlMarker }: { withControlMarker: boolean }): Array<LngLat> {
     const coordinates = [...this.shapeLngLats];
 
     if (withControlMarker && this.gm.markerPointer.marker) {
@@ -486,37 +486,31 @@ export class LineDrawer extends BaseDraw {
   }
 
   fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
-    this.gm.events.fire(
-      `${gmPrefix}:draw`,
-      {
-        level: 'system',
-        type: 'draw',
-        mode: 'line',
-        variant: 'line_drawer',
-        action: 'start',
-        featureData,
-        markerData,
-      },
-    );
+    this.gm.events.fire(`${GM_PREFIX}:draw`, {
+      level: 'system',
+      type: 'draw',
+      mode: 'line',
+      variant: 'line_drawer',
+      action: 'start',
+      featureData,
+      markerData,
+    });
   }
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
-    this.gm.events.fire(
-      `${gmPrefix}:draw`,
-      {
-        level: 'system',
-        type: 'draw',
-        mode: 'line',
-        variant: 'line_drawer',
-        action: 'update',
-        featureData,
-        markerData,
-      },
-    );
+    this.gm.events.fire(`${GM_PREFIX}:draw`, {
+      level: 'system',
+      type: 'draw',
+      mode: 'line',
+      variant: 'line_drawer',
+      action: 'update',
+      featureData,
+      markerData,
+    });
   }
 
   fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
-    this.gm.events.fire(`${gmPrefix}:draw`, {
+    this.gm.events.fire(`${GM_PREFIX}:draw`, {
       level: 'system',
       type: 'draw',
       mode: 'line',

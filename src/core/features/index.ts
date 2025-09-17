@@ -1,50 +1,46 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
+import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
+import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
-import type {
-  AnyEvent,
-  FeatureGMProperties,
-  FeatureId,
-  FeatureShape,
-  FeatureSourceName,
-  FeatureStore,
-  ForEachFeatureDataCallbackFn,
-  GeoJsonDiffStorage,
-  GeoJsonImportFeature,
-  GeoJsonImportFeatureCollection,
-  GeoJsonShapeFeature,
-  GeoJsonShapeFeatureCollection,
-  GeoJsonSourceDiff,
-  Geoman,
-  GMDrawShapeCreatedEvent,
-  LngLat,
-  MarkerData,
-  PartialLayerStyle,
-  ScreenPoint,
-  ShapeName,
-  SourcesStorage,
-  SourceUpdateMethods,
-  UpdateStorage,
+import {
+  type AnyEvent,
+  FEATURE_ID_PROPERTY,
+  type FeatureId,
+  type FeatureShape,
+  type FeatureSourceName,
+  type FeatureStore,
+  type ForEachFeatureDataCallbackFn,
+  type GeoJsonImportFeature,
+  type GeoJsonImportFeatureCollection,
+  type GeoJsonShapeFeature,
+  type GeoJsonShapeFeatureCollection,
+  type Geoman,
+  type GMDrawShapeCreatedEvent,
+  type LngLat,
+  type MarkerData,
+  type PartialLayerStyle,
+  type ScreenPoint,
+  SHAPE_NAMES,
+  type ShapeName,
+  type SourcesStorage,
 } from '@/main.ts';
-import { shapeNames } from '@/modes/draw/base.ts';
-import { fixGeoJsonFeature } from '@/utils/features.ts';
+import { fixGeoJsonFeature, getCustomFeatureId } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
-import type { Feature, FeatureCollection, GeoJSON, Geometry, LineString, MultiPolygon, Polygon } from 'geojson';
-import { cloneDeep, debounce, throttle } from 'lodash-es';
+import type {
+  Feature,
+  FeatureCollection,
+  GeoJSON,
+  Geometry,
+  LineString,
+  MultiPolygon,
+  Polygon,
+} from 'geojson';
+import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-
-
-export const SOURCES = {
-  main: `${gmPrefix}_main`,
-  temporary: `${gmPrefix}_temporary`,
-  standby: `${gmPrefix}_standby`,
-} as const;
-
-export const FEATURE_ID_PROPERTY = '_gmid' as const;
-export const GM_FEATURE_KEY = '_gm' as const;
 
 export class Features {
   gm: Geoman;
@@ -52,46 +48,29 @@ export class Features {
   featureCounter: number = 0;
   featureStore: FeatureStore = new Map<FeatureId, FeatureData>();
   featureStoreAllowedSources: Array<FeatureSourceName> = [SOURCES.main, SOURCES.temporary];
-  autoUpdatesEnabled: boolean = true;
-  diffUpdatesEnabled: boolean = true;
 
   sources: SourcesStorage;
   defaultSourceName: FeatureSourceName = SOURCES.main;
-  updateStorage: UpdateStorage;
-  delayedSourceUpdateMethods: SourceUpdateMethods;
+  updateManager: SourceUpdateManager;
   layers: Array<BaseLayer>;
 
   constructor(gm: Geoman) {
     this.gm = gm;
+    this.updateManager = new SourceUpdateManager(gm);
 
     this.sources = Object.fromEntries(
       typedValues(SOURCES).map((name) => [name, null]),
     ) as SourcesStorage;
 
-    this.updateStorage = Object.fromEntries(
-      typedValues(SOURCES).map((name) => [
-        name,
-        { add: [] as Array<Feature>, remove: [] as Array<FeatureId>, update: [] as Array<Feature> },
-      ]),
-    ) as UpdateStorage;
-
-    this.delayedSourceUpdateMethods = Object.fromEntries(
-      typedValues(SOURCES).map((sourceName) => [
-        sourceName,
-        {
-          throttled: this.getDelayedSourceUpdateMethod({
-            sourceName,
-            type: 'throttled',
-          }),
-          debounced: this.getDelayedSourceUpdateMethod({
-            sourceName,
-            type: 'debounced',
-          }),
-        } as { debounced: () => void, throttled: () => void },
-      ]),
-    ) as SourceUpdateMethods;
-
     this.layers = [];
+  }
+
+  get forEach() {
+    return this.filteredForEach((featureData) => !featureData.temporary);
+  }
+
+  get tmpForEach() {
+    return this.filteredForEach((featureData) => featureData.temporary);
   }
 
   init() {
@@ -104,20 +83,21 @@ export class Features {
       this.sources[sourceName] = this.createSource(sourceName);
     });
 
-    this.layers = this.createLayers();
-  }
-
-  get forEach() {
-    return this.filteredForEach((featureData) => !featureData.temporary);
-  }
-
-  get tmpForEach() {
-    return this.filteredForEach((featureData) => featureData.temporary);
+    if (this.gm.options.settings.useDefaultLayers) {
+      this.layers = this.createLayers();
+    }
   }
 
   getNewFeatureId(): FeatureId {
     this.featureCounter += 1;
-    return `feature-${this.featureCounter}`;
+    let newFeatureId: FeatureId | null = `feature-${this.featureCounter}`;
+
+    while (this.featureStore.has(newFeatureId)) {
+      this.featureCounter += 1;
+      newFeatureId = `feature-${this.featureCounter}`;
+    }
+
+    return newFeatureId;
   }
 
   filteredForEach(filterFn: (featureData: FeatureData) => boolean) {
@@ -159,112 +139,11 @@ export class Features {
     this.defaultSourceName = sourceName;
   }
 
-  getDelayedSourceUpdateMethod(
-    { sourceName, type }: {
-      sourceName: FeatureSourceName,
-      type: 'throttled' | 'debounced',
-    },
-  ) {
-    if (type === 'throttled') {
-      return throttle(
-        () => this.updateSourceByStorage(sourceName),
-        2 * this.gm.options.settings.throttlingDelay,
-        { leading: false, trailing: true },
-      );
-    } else if (type === 'debounced') {
-      return debounce(
-        () => this.updateSourceByStorage(sourceName),
-        2 * this.gm.options.settings.throttlingDelay,
-        { leading: true, trailing: false },
-      );
-    } else {
-      throw new Error('Features: getDelayedSourceUpdateMethod: invalid type');
-    }
-  }
-
-  updateSourceByStorage(sourceName: FeatureSourceName) {
-    const source = this.sources[sourceName];
-    const updateStorage = this.updateStorage[sourceName];
-
-    const updatesAvailable = Object.values(updateStorage).some((item) => item.length);
-
-    if (source && updatesAvailable) {
-      source.updateData(updateStorage);
-      this.resetDiffStorage(sourceName);
-    }
-  }
-
-  resetDiffStorage(sourceName: FeatureSourceName) {
-    const updateStorage = this.updateStorage[sourceName];
-
-    updateStorage.add = [];
-    updateStorage.remove = [];
-    updateStorage.update = [];
-  }
-
-  withAtomicSourcesUpdate<T>(callback: () => T): T {
-    try {
-      this.autoUpdatesEnabled = false;
-      return callback();
-    } finally {
-      typedValues(SOURCES).forEach((sourceName) => {
-        this.updateSourceByStorage(sourceName);
-      });
-      this.autoUpdatesEnabled = true;
-    }
-  }
-
-  updateSourceData({ diff, sourceName }: {
-    diff: GeoJsonSourceDiff,
-    sourceName: FeatureSourceName,
-  }) {
-    if (this.gm.features.diffUpdatesEnabled) {
-      this.updateSourceDataWithDiff({ diff, sourceName });
-    } else {
-      this.setSourceData({ diff, sourceName });
-    }
-  }
-
-  updateSourceDataWithDiff({ diff, sourceName }: {
-    diff: GeoJsonSourceDiff,
-    sourceName: FeatureSourceName
-  }) {
-    const updateStorage: GeoJsonDiffStorage = this.updateStorage[sourceName];
-
-    if (diff.add) {
-      updateStorage.add = updateStorage.add.concat(diff.add);
-    }
-    if (diff.update) {
-      updateStorage.update = updateStorage.update.concat(diff.update);
-    }
-    if (diff.remove) {
-      updateStorage.remove = updateStorage.remove.concat(diff.remove);
-    }
-
-    if (this.gm.features.autoUpdatesEnabled) {
-      this.delayedSourceUpdateMethods[sourceName].throttled();
-      this.delayedSourceUpdateMethods[sourceName].debounced();
-    }
-  }
-
-  setSourceData({ sourceName }: {
-    diff: GeoJsonSourceDiff,
-    sourceName: FeatureSourceName,
-  }) {
-    log.warn('Review this Features.setSourceData() method');
-    const fcGeoJson = this.getSourceGeoJson(sourceName);
-    fcGeoJson.features = fcGeoJson.features.filter((feature) => !!feature);
-    this.setSourceGeoJson({ geoJson: fcGeoJson, sourceName });
-  }
-
   createSource(sourceName: FeatureSourceName) {
-    const source = this.gm.mapAdapter.addSource(
-      sourceName,
-      {
-        type: 'FeatureCollection',
-        features: [],
-      },
-    );
+    const source = this.gm.mapAdapter.addSource(sourceName, {
+      type: 'FeatureCollection',
+      features: [],
+    });
 
     if (source) {
       return source;
@@ -283,17 +162,20 @@ export class Features {
     }
 
     if (featureData) {
-      featureData.removeMarkers();
-      featureData.removeGeoJson();
       this.featureStore.delete(featureData.id);
+      featureData.delete();
+      // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
     }
   }
 
-  getFeatureByMouseEvent({ event, sourceNames }: {
-    event: AnyEvent,
-    sourceNames: Array<FeatureSourceName>,
+  getFeatureByMouseEvent({
+    event,
+    sourceNames,
+  }: {
+    event: AnyEvent;
+    sourceNames: Array<FeatureSourceName>;
   }): FeatureData | null {
     if (!isMapPointerEvent(event, { warning: true })) {
       return null;
@@ -312,9 +194,12 @@ export class Features {
     return feature
   }
 
-  getFeaturesByGeoJsonBounds({ geoJson, sourceNames }: {
-    geoJson: Feature<Polygon | MultiPolygon | LineString>,
-    sourceNames: Array<FeatureSourceName>,
+  getFeaturesByGeoJsonBounds({
+    geoJson,
+    sourceNames,
+  }: {
+    geoJson: Feature<Polygon | MultiPolygon | LineString>;
+    sourceNames: Array<FeatureSourceName>;
   }): Array<FeatureData> {
     const coordBounds = getGeoJsonBounds(geoJson);
     const polygonScreenBounds = this.gm.mapAdapter.coordBoundsToScreenBounds(coordBounds);
@@ -322,9 +207,12 @@ export class Features {
     return this.getFeaturesByScreenBounds({ bounds: polygonScreenBounds, sourceNames });
   }
 
-  getFeaturesByScreenBounds({ bounds, sourceNames }: {
-    bounds: [ScreenPoint, ScreenPoint],
-    sourceNames: Array<FeatureSourceName>,
+  getFeaturesByScreenBounds({
+    bounds,
+    sourceNames,
+  }: {
+    bounds: [ScreenPoint, ScreenPoint];
+    sourceNames: Array<FeatureSourceName>;
   }) {
     return this.gm.mapAdapter.queryFeaturesByScreenCoordinates({
       queryCoordinates: bounds,
@@ -332,24 +220,26 @@ export class Features {
     });
   }
 
-  createFeature(
-    { featureId, shapeGeoJson, parent, sourceName, imported }: {
-      featureId?: FeatureId,
-      shapeGeoJson: GeoJsonShapeFeature,
-      parent?: FeatureData,
-      sourceName: FeatureSourceName,
-      imported?: boolean
-    },
-  ): FeatureData | null {
+  createFeature({
+    featureId,
+    shapeGeoJson,
+    parent,
+    sourceName,
+    imported,
+  }: {
+    featureId?: FeatureId;
+    shapeGeoJson: GeoJsonShapeFeature;
+    parent?: FeatureData;
+    sourceName: FeatureSourceName;
+    imported?: boolean;
+  }): FeatureData | null {
     const source = this.sources[sourceName];
     if (!source) {
       log.error('Features.createFeature Missing source for feature creation');
       return null;
     }
 
-    const id = featureId
-      || shapeGeoJson.properties[FEATURE_ID_PROPERTY]
-      || this.getNewFeatureId();
+    const id = featureId ?? shapeGeoJson.properties[FEATURE_ID_PROPERTY] ?? this.getNewFeatureId();
 
     if (this.featureStore.get(id)) {
       log.error(
@@ -380,7 +270,10 @@ export class Features {
     return featureData;
   }
 
-  importGeoJson(geoJson: GeoJsonImportFeatureCollection | GeoJsonImportFeature) {
+  importGeoJson(
+    geoJson: GeoJsonImportFeatureCollection | GeoJsonImportFeature,
+    idPropertyName?: string,
+  ) {
     const features = 'features' in geoJson ? geoJson.features : [geoJson];
     const result = {
       stats: {
@@ -395,9 +288,15 @@ export class Features {
       let featureData: FeatureData | null = null;
       result.stats.total += 1;
 
-      const fixedFeature = fixGeoJsonFeature(feature);
-      if (fixedFeature) {
-        featureData = this.importGeoJsonFeature(fixedFeature);
+      const featureGeoJson = fixGeoJsonFeature(feature);
+      if (featureGeoJson) {
+        if (idPropertyName) {
+          const customId = getCustomFeatureId(featureGeoJson, idPropertyName);
+          if (customId) {
+            featureGeoJson.id = customId;
+          }
+        }
+        featureData = this.importGeoJsonFeature(featureGeoJson);
       }
 
       if (featureData) {
@@ -421,18 +320,9 @@ export class Features {
       return null;
     }
 
-    const featureId = shapeGeoJson.id || `${sourceName}-feature-${this.featureCounter}`;
-
     return this.createFeature({
       featureId: shapeGeoJson.id as FeatureId | undefined,
-      shapeGeoJson: {
-        ...shapeGeoJson,
-        properties: {
-          ...shapeGeoJson.properties,
-          [FEATURE_ID_PROPERTY]: featureId,
-          shape,
-        },
-      },
+      shapeGeoJson,
       sourceName,
       imported: true,
     });
@@ -443,13 +333,15 @@ export class Features {
   }
 
   exportGeoJson(
-    { allowedShapes }: {
-      allowedShapes?: Array<FeatureShape>
+    {
+      allowedShapes,
+    }: {
+      allowedShapes?: Array<FeatureShape>;
     } = { allowedShapes: undefined },
   ): GeoJsonShapeFeatureCollection {
     return this.asGeoJsonFeatureCollection({
-      sourceNames: [SOURCES.main, SOURCES.standby],
-      shapeTypes: allowedShapes ? allowedShapes : [...shapeNames],
+      sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
+      shapeTypes: allowedShapes ? allowedShapes : [...SHAPE_NAMES],
     });
   }
 
@@ -461,10 +353,7 @@ export class Features {
     return source.getGeoJson();
   }
 
-  setSourceGeoJson({ geoJson, sourceName }: {
-    geoJson: GeoJSON,
-    sourceName: FeatureSourceName,
-  }) {
+  setSourceGeoJson({ geoJson, sourceName }: { geoJson: GeoJSON; sourceName: FeatureSourceName }) {
     const source = this.sources[sourceName];
     if (!source) {
       throw new Error(`setSourceGeoJson: missing source "${sourceName}"`);
@@ -472,12 +361,13 @@ export class Features {
     source.setGeoJson(geoJson);
   }
 
-  asGeoJsonFeatureCollection(
-    { shapeTypes, sourceNames }: {
-      shapeTypes?: Array<FeatureShape>,
-      sourceNames: Array<FeatureSourceName>,
-    },
-  ): GeoJsonShapeFeatureCollection {
+  asGeoJsonFeatureCollection({
+    shapeTypes,
+    sourceNames,
+  }: {
+    shapeTypes?: Array<FeatureShape>;
+    sourceNames: Array<FeatureSourceName>;
+  }): GeoJsonShapeFeatureCollection {
     const resultFeatureCollection: GeoJsonShapeFeatureCollection = {
       type: 'FeatureCollection',
       features: [],
@@ -492,8 +382,17 @@ export class Features {
         sourceFeatureCollection.features
           .filter((feature) => !!feature)
           .forEach((feature) => {
-            if (shapeTypes === undefined || shapeTypes.includes(feature.properties.shape)) {
-              resultFeatureCollection.features.push(feature);
+            const featureData = this.get(sourceName, feature.id as FeatureId);
+            if (!featureData) {
+              // log.warn("Can't find featureData for the feature", feature);
+              return;
+            }
+
+            if (shapeTypes === undefined || shapeTypes.includes(featureData.shape)) {
+              resultFeatureCollection.features.push({
+                ...feature,
+                id: feature.properties[FEATURE_ID_PROPERTY],
+              });
             }
           });
       }
@@ -509,9 +408,10 @@ export class Features {
 
     const features: Array<FeatureData> = [];
     const shapeGeoJson = inputSource.getGeoJson();
-    const sourceGeoJsonFeatures = 'features' in shapeGeoJson ? shapeGeoJson.features : [shapeGeoJson];
+    const sourceGeoJsonFeatures =
+      'features' in shapeGeoJson ? shapeGeoJson.features : [shapeGeoJson];
     const baseSource = this.gm.mapAdapter.getSource(inputSource.id);
-    baseSource.remove({ removeLayers: false });
+    baseSource.remove();
 
     sourceGeoJsonFeatures.forEach((sourceFeature) => {
       const featureData = this.addGeoJsonFeature({
@@ -526,10 +426,14 @@ export class Features {
     return features;
   }
 
-  addGeoJsonFeature({ shapeGeoJson, sourceName, defaultSource }: {
-    shapeGeoJson: GeoJsonImportFeature,
-    sourceName?: FeatureSourceName,
-    defaultSource?: boolean,
+  addGeoJsonFeature({
+    shapeGeoJson,
+    sourceName,
+    defaultSource,
+  }: {
+    shapeGeoJson: GeoJsonImportFeature;
+    sourceName?: FeatureSourceName;
+    defaultSource?: boolean;
   }): FeatureData | null {
     let targetSourceName: FeatureSourceName | null;
     if (defaultSource) {
@@ -566,15 +470,14 @@ export class Features {
   createLayers(): Array<BaseLayer> {
     const layers: Array<BaseLayer> = [];
 
-    typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
-      typedKeys(this.gm.options.layerStyles[shapeName]).forEach((sourceName) => {
+    typedKeys(this.sources).forEach((sourceName) => {
+      typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
         styles.forEach((partialStyle) => {
           const layer = this.createGenericLayer({
-            layerId: `${sourceName}-${shapeName}-${partialStyle.type}-layer`,
-            partialStyle,
-            shape: shapeName,
             sourceName,
+            shapeNames: [shapeName],
+            partialStyle,
           });
 
           if (layer) {
@@ -587,27 +490,57 @@ export class Features {
     return layers;
   }
 
-  createGenericLayer({ layerId, sourceName, partialStyle, shape }: {
-    layerId: string,
-    partialStyle: PartialLayerStyle,
-    shape: FeatureShape,
-    sourceName: FeatureSourceName,
+  createGenericLayer({
+    sourceName,
+    shapeNames,
+    partialStyle,
+  }: {
+    sourceName: FeatureSourceName;
+    shapeNames: Array<FeatureShape>;
+    partialStyle: PartialLayerStyle;
   }): BaseLayer | null {
+    const layerId = this.getGenericLayerName({ sourceName, shapeNames, partialStyle });
+    if (!layerId) {
+      throw new Error(`Can't create a layer, for ${{ sourceName, shapeNames, partialStyle }}`);
+    }
+
     const layerOptions = {
       ...partialStyle,
       id: layerId,
       source: sourceName,
-      filter: [
-        'in',
-        ['get', 'shape'],
-        ['literal', [shape]],
-      ],
+      filter: ['in', ['get', `${FEATURE_PROPERTY_PREFIX}shape`], ['literal', shapeNames]],
     };
 
     return this.gm.mapAdapter.addLayer(layerOptions);
   }
 
-  getFeatureShapeByGeoJson(shapeGeoJson: GeoJsonImportFeature): ShapeName | null {
+  getGenericLayerName({
+    sourceName,
+    shapeNames,
+    partialStyle,
+  }: {
+    sourceName: FeatureSourceName;
+    shapeNames: Array<FeatureShape>;
+    partialStyle: PartialLayerStyle;
+  }): string | null {
+    const MAX_LAYERS = 100;
+    const shapeName = shapeNames.length === 1 ? shapeNames[0] : 'mixed';
+    const getLayerId = (index: number) =>
+      `${sourceName}-${shapeName}__${partialStyle.type}-layer-${index}`;
+    let layerId: string | null = null;
+
+    for (let i = 0; i < MAX_LAYERS; i += 1) {
+      const tmpLayerId = getLayerId(i);
+      if (!this.gm.mapAdapter.getLayer(tmpLayerId)) {
+        layerId = tmpLayerId;
+        return layerId;
+      }
+    }
+
+    return null;
+  }
+
+  getFeatureShapeByGeoJson(shapeGeoJson: Feature): ShapeName | null {
     const SHAPE_MAP: { [key in Geometry['type']]?: ShapeName } = {
       Point: 'marker',
       LineString: 'line',
@@ -616,21 +549,24 @@ export class Features {
     };
 
     const properties = shapeGeoJson.properties;
-    if (properties?.shape && shapeNames.includes(properties?.shape)) {
+    if (properties?.shape && SHAPE_NAMES.includes(properties?.shape)) {
       return properties?.shape;
     }
 
     return SHAPE_MAP[shapeGeoJson.geometry.type] || null;
   }
 
-  createMarkerFeature(
-    { parentFeature, coordinate, type, sourceName }: {
-      type: MarkerData['type'],
-      coordinate: LngLat,
-      parentFeature: FeatureData,
-      sourceName: FeatureSourceName,
-    },
-  ) {
+  createMarkerFeature({
+    parentFeature,
+    coordinate,
+    type,
+    sourceName,
+  }: {
+    type: MarkerData['type'];
+    coordinate: LngLat;
+    parentFeature: FeatureData;
+    sourceName: FeatureSourceName;
+  }) {
     return this.createFeature({
       sourceName,
       parent: parentFeature,
@@ -641,7 +577,7 @@ export class Features {
           coordinates: coordinate,
         },
         properties: {
-          shape: `${type}_marker`,
+          [`${FEATURE_PROPERTY_PREFIX}shape`]: `${type}_marker`,
         },
       },
     });
@@ -655,7 +591,7 @@ export class Features {
   }
 
   fireFeatureCreatedEvent(featureData: FeatureData) {
-    if (includesWithType(featureData.shape, shapeNames)) {
+    if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GMDrawShapeCreatedEvent = {
         level: 'system',
         type: 'draw',
@@ -663,7 +599,7 @@ export class Features {
         action: 'feature_created',
         featureData,
       };
-      this.gm.events.fire(`${gmPrefix}:draw`, payload);
+      this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
     }
   }
 }

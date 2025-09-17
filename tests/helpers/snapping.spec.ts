@@ -1,8 +1,8 @@
 import test, { expect, type Page } from '@playwright/test';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
-import { enableMode } from '../utils/basic.ts';
-import { getRenderedFeaturesData, getMarkerPointerLngLat } from '../utils/features.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
+import { enableMode } from '@tests/utils/basic.ts';
+import { getRenderedFeaturesData, getMarkerPointerLngLat } from '@tests/utils/features.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import { eachCoordinateWithPath, eachSegmentWithPath } from '@/utils/geojson.ts';
 import type { LngLat } from '@/types';
 import type { Feature } from 'geojson';
@@ -30,7 +30,7 @@ test.describe('Snapping Helper', () => {
     // Iterate through each feature
     for (const feature of features) {
       // Extract all vertices from the feature using eachCoordinateWithPath
-      const coordinates: Array<{ coordinate: LngLat, path: Array<string | number> }> = [];
+      const coordinates: Array<{ coordinate: LngLat; path: Array<string | number> }> = [];
 
       eachCoordinateWithPath(feature.geoJson, (position) => {
         coordinates.push({ coordinate: position.coordinate, path: position.path });
@@ -39,9 +39,15 @@ test.describe('Snapping Helper', () => {
       // Test each vertex
       for (const { coordinate } of coordinates) {
         // Skip invalid coordinates
-        if (!coordinate || !Array.isArray(coordinate) || coordinate.length !== 2 || 
-            typeof coordinate[0] !== 'number' || typeof coordinate[1] !== 'number' ||
-            isNaN(coordinate[0]) || isNaN(coordinate[1])) {
+        if (
+          !coordinate ||
+          !Array.isArray(coordinate) ||
+          coordinate.length !== 2 ||
+          typeof coordinate[0] !== 'number' ||
+          typeof coordinate[1] !== 'number' ||
+          isNaN(coordinate[0]) ||
+          isNaN(coordinate[1])
+        ) {
           continue;
         }
 
@@ -77,31 +83,40 @@ test.describe('Snapping Helper', () => {
 
     // Get all rendered features and filter to include only line-based shapes
     const allFeatures = await getRenderedFeaturesData({ page, temporary: false });
-    const features = allFeatures.filter(feature => lineBasedShapes.includes(feature.shape));
+    const features = allFeatures.filter((feature) => lineBasedShapes.includes(feature.shape));
     expect(features.length).toBeGreaterThan(0);
 
     // Iterate through each feature
     for (const feature of features) {
       // Extract all segments from the feature using eachSegmentWithPath
-      const segments: Array<{ start: LngLat, end: LngLat }> = [];
+      const segments: Array<{ start: LngLat; end: LngLat }> = [];
 
       eachSegmentWithPath(feature.geoJson, (segment) => {
         segments.push({
           start: segment.start.coordinate,
-          end: segment.end.coordinate
+          end: segment.end.coordinate,
         });
       });
 
       // Test each segment
       for (const segment of segments) {
         // Skip invalid segments
-        if (!segment.start || !segment.end || 
-            !Array.isArray(segment.start) || !Array.isArray(segment.end) ||
-            segment.start.length !== 2 || segment.end.length !== 2 ||
-            typeof segment.start[0] !== 'number' || typeof segment.start[1] !== 'number' ||
-            typeof segment.end[0] !== 'number' || typeof segment.end[1] !== 'number' ||
-            isNaN(segment.start[0]) || isNaN(segment.start[1]) ||
-            isNaN(segment.end[0]) || isNaN(segment.end[1])) {
+        if (
+          !segment.start ||
+          !segment.end ||
+          !Array.isArray(segment.start) ||
+          !Array.isArray(segment.end) ||
+          segment.start.length !== 2 ||
+          segment.end.length !== 2 ||
+          typeof segment.start[0] !== 'number' ||
+          typeof segment.start[1] !== 'number' ||
+          typeof segment.end[0] !== 'number' ||
+          typeof segment.end[1] !== 'number' ||
+          isNaN(segment.start[0]) ||
+          isNaN(segment.start[1]) ||
+          isNaN(segment.end[0]) ||
+          isNaN(segment.end[1])
+        ) {
           continue;
         }
 
@@ -126,13 +141,16 @@ test.describe('Snapping Helper', () => {
         }
 
         // Calculate the expected snap point using the same logic as the helper
-        const expectedSnapPoint = await page.evaluate(({ featureGeoJson, mouseLngLat }) => {
-          // Type assertion to ensure the feature is treated as a LineBasedGeometry
-          return window.geoman.mapAdapter.getEuclideanNearestLngLat(
-            featureGeoJson as Feature<LineBasedGeometry>, // Cast to the expected type
-            mouseLngLat
-          );
-        }, { featureGeoJson: feature.geoJson, mouseLngLat: midpoint });
+        const expectedSnapPoint = await page.evaluate(
+          ({ featureGeoJson, mouseLngLat }) => {
+            // Type assertion to ensure the feature is treated as a LineBasedGeometry
+            return window.geoman.mapAdapter.getEuclideanNearestLngLat(
+              featureGeoJson as Feature<LineBasedGeometry>, // Cast to the expected type
+              mouseLngLat,
+            );
+          },
+          { featureGeoJson: feature.geoJson, mouseLngLat: midpoint },
+        );
 
         if (!expectedSnapPoint) {
           continue;

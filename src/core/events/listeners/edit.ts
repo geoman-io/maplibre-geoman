@@ -1,19 +1,20 @@
 import { EventBus } from '@/core/events/bus.ts';
-import { BaseEventListener, gmPrefix } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, Geoman, GMEditEvent, GMEvent, MapEventHandlers } from '@/main.ts';
+import { BaseEventListener } from '@/core/events/listeners/base.ts';
+import type { ActionInstanceKey, EventHandlers, Geoman, GMEditEvent, GMEvent } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
+import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export class EditEventListener extends BaseEventListener {
-  mapEventHandlers: MapEventHandlers = {
-    [`${gmPrefix}:edit`]: this.handleEditEvent.bind(this),
+  eventHandlers: EventHandlers = {
+    [`${GM_PREFIX}:edit`]: this.handleEditEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {
     super(gm);
-    bus.attachEvents(this.mapEventHandlers);
+    bus.attachEvents(this.eventHandlers);
   }
 
   handleEditEvent(payload: GMEvent) {
@@ -39,7 +40,7 @@ export class EditEventListener extends BaseEventListener {
       return;
     }
 
-    const actionInstance = this.gm.createEditInstance(payload.mode);
+    const actionInstance = createEditInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
     }

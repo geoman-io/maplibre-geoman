@@ -1,24 +1,22 @@
-import defaultMarker from '@/assets/images/markers/default-marker.png';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  DrawModeName,
-  GeoJsonShapeFeature,
-  GMEvent,
-  LngLat,
-  MapHandlerReturnData,
-  MapPointerEvent,
-  ShapeName,
+import {
+  type AnyEvent,
+  type DrawModeName,
+  type GeoJsonShapeFeature,
+  type GMEvent,
+  type LngLat,
+  type MapHandlerReturnData,
+  type ShapeName,
+  SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
-
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
 export class DrawMarker extends BaseDraw {
   mode: DrawModeName = 'marker';
   shape: ShapeName = 'marker';
-  mapEventHandlers = {
+  eventHandlers = {
     click: this.onMouseClick.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
@@ -52,22 +50,7 @@ export class DrawMarker extends BaseDraw {
     return { next: true };
   }
 
-  protected createMarker() {
-    const iconElement = document.createElement('div');
-    iconElement.style.backgroundImage = `url("${defaultMarker}")`;
-    iconElement.style.width = '36px';
-    iconElement.style.height = '36px';
-    iconElement.style.backgroundSize = 'cover';
-    iconElement.style.pointerEvents = 'none';
-
-    return this.gm.mapAdapter.createDomMarker({
-      draggable: false,
-      anchor: 'bottom',
-      element: iconElement,
-    }, [0, 0]);
-  }
-
-  createFeature(event: MapPointerEvent): FeatureData | null {
+  createFeature(event: BaseMapPointerEvent): FeatureData | null {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
     const geoJson = this.getFeatureGeoJson(lngLat);
 
@@ -95,5 +78,22 @@ export class DrawMarker extends BaseDraw {
         coordinates: lngLat,
       },
     };
+  }
+
+  protected createMarker() {
+    const iconElement = this.gm.createSvgMarkerElement('default', {
+      width: '36px',
+      height: '36px',
+      pointerEvents: 'none',
+    });
+
+    return this.gm.mapAdapter.createDomMarker(
+      {
+        draggable: false,
+        anchor: 'bottom',
+        element: iconElement,
+      },
+      [0, 0],
+    );
   }
 }

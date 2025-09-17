@@ -6,22 +6,19 @@ import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 
 import type { ActionType } from '@/types/options.ts';
 
-
 export interface GMBeforeFeatureCreateEvent extends GMBaseEvent {
-  type: ActionType,
-  mode: ModeName,
-  action: 'before_create',
-  geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>,
+  type: ActionType;
+  mode: ModeName;
+  action: 'before_create';
+  geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
 }
 
 export interface GMBeforeFeatureUpdateEvent extends GMBaseEvent {
-  type: ActionType,
-  mode: ModeName,
-  action: 'before_update',
-  features: NonEmptyArray<FeatureData>,
-  geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>,
+  type: ActionType;
+  mode: ModeName;
+  action: 'before_update';
+  features: NonEmptyArray<FeatureData>;
+  geoJsonFeatures: NonEmptyArray<GeoJsonShapeFeature>;
 }
 
-export type GMFeatureEvent =
-  GMBeforeFeatureUpdateEvent
-  | GMBeforeFeatureCreateEvent;
+export type GMFeatureEvent = GMBeforeFeatureUpdateEvent | GMBeforeFeatureCreateEvent;

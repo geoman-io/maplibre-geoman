@@ -1,15 +1,20 @@
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect, type Page } from '@playwright/test';
-import { enableMode, mouseMoveAndClick, waitForGeoman, waitForMapIdle } from '../utils/basic.ts';
+import {
+  enableMode,
+  mouseMoveAndClick,
+  waitForGeoman,
+  waitForMapIdle,
+} from '@tests/utils/basic.ts';
 import {
   type FeatureCustomData,
   getRenderedFeatureData,
   getRenderedFeaturesData,
   loadGeoJsonFeatures,
   waitForFeatureRemoval,
-} from '../utils/features.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+} from '@tests/utils/features.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 
 const performDeleteAndVerify = async (page: Page, feature: FeatureCustomData) => {
   const featureId = feature.id;
@@ -21,7 +26,10 @@ const performDeleteAndVerify = async (page: Page, feature: FeatureCustomData) =>
   }
 
   const clickPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
-  expect(clickPoint, `Screen coordinates for feature ${featureId} should be calculable`).not.toBeNull();
+  expect(
+    clickPoint,
+    `Screen coordinates for feature ${featureId} should be calculable`,
+  ).not.toBeNull();
 
   if (!clickPoint) {
     return;
@@ -53,7 +61,7 @@ test.beforeEach(async ({ page }) => {
   }
 });
 
-test('should correctly \'delete\' each shape type', async ({ page }) => {
+test("should correctly 'delete' each shape type", async ({ page }) => {
   const features = await getRenderedFeaturesData({ page, temporary: false });
   expect(features.length).toBeGreaterThan(0);
 

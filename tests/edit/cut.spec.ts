@@ -5,15 +5,19 @@ import {
   type ScreenCoordinates,
   waitForGeoman,
   waitForMapIdle,
-} from '../utils/basic.ts';
-import { type FeatureCustomData, getRenderedFeaturesData, loadGeoJsonFeatures } from '../utils/features.ts';
-import { compareGeoJsonGeometries } from '../utils/geojson.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
+} from '@tests/utils/basic.ts';
+import {
+  type FeatureCustomData,
+  getRenderedFeaturesData,
+  loadGeoJsonFeatures,
+} from '@tests/utils/features.ts';
+import { compareGeoJsonGeometries } from '@tests/utils/geojson.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import type { GeoJsonImportFeature, GeoJsonShapeFeature } from '@/types/geojson';
 import { eachCoordinateWithPath } from '@/utils/geojson.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import type { LngLat } from '@/types';
-
+import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
 
 const GEOJSON_COMPARE_PRECISION = 1; // digits after comma
 const POLLIING_TIMEOUT = 10 * 1000;
@@ -40,22 +44,29 @@ async function getScreenCoordinatesForPolygon(
 }
 
 // Helper function to draw the cutting polygon on the map
-async function drawCuttingPolygon(
-  { page, cuttingPolygonScreenCoords, expectedResultFeaturesCount }: {
-    page: Page,
-    cuttingPolygonScreenCoords: ScreenCoordinates[],
-    expectedResultFeaturesCount: number
-  },
-): Promise<void> {
+async function drawCuttingPolygon({
+  page,
+  cuttingPolygonScreenCoords,
+  expectedResultFeaturesCount,
+}: {
+  page: Page;
+  cuttingPolygonScreenCoords: ScreenCoordinates[];
+  expectedResultFeaturesCount: number;
+}): Promise<void> {
   await mouseMoveAndClick(page, cuttingPolygonScreenCoords);
   await waitForMapIdle(page);
-  await expect.poll(
-    async () => {
-      const features = await getRenderedFeaturesData({ page, temporary: false });
-      return features.length;
-    },
-    { timeout: POLLIING_TIMEOUT, message: `Features count never reached ${expectedResultFeaturesCount}` },
-  ).toEqual(expectedResultFeaturesCount);
+  await expect
+    .poll(
+      async () => {
+        const features = await getRenderedFeaturesData({ page, temporary: false });
+        return features.length;
+      },
+      {
+        timeout: POLLIING_TIMEOUT,
+        message: `Features count never reached ${expectedResultFeaturesCount}`,
+      },
+    )
+    .toEqual(expectedResultFeaturesCount);
 }
 
 async function verifyCutResultById(
@@ -89,18 +100,20 @@ async function verifyCutResultById(
     ).toBeDefined();
 
     const actualFeatureData = actualFeatures.find(
-      (f) => (f.id ?? f.geoJson.properties?._gmid) === expectedId,
+      (f) => (f.id ?? f.geoJson.properties[`${FEATURE_ID_PROPERTY}`]) === expectedId,
     );
 
     expect(
       actualFeatureData,
       `Feature with ID '${expectedId}' not found in actual results.` +
-      `Expected: ${JSON.stringify(expectedFeature.geometry)}` +
-      `Actual features: ${JSON.stringify(actualFeatures.map(f => ({
-        id: f.id,
-        props: f.geoJson.properties,
-        geom: f.geoJson.geometry,
-      })))}`,
+        `Expected: ${JSON.stringify(expectedFeature.geometry)}` +
+        `Actual features: ${JSON.stringify(
+          actualFeatures.map((f) => ({
+            id: f.id,
+            props: f.geoJson.properties,
+            geom: f.geoJson.geometry,
+          })),
+        )}`,
     ).toBeDefined();
 
     if (actualFeatureData) {
@@ -113,8 +126,8 @@ async function verifyCutResultById(
       expect(
         geometriesMatch,
         `Geometry mismatch for feature ID '${expectedId}'` +
-        `Expected: ${JSON.stringify(expectedFeature.geometry, null, 2)}` +
-        `Actual: ${JSON.stringify(actualFeatureData.geoJson.geometry, null, 2)}`,
+          `Expected: ${JSON.stringify(expectedFeature.geometry, null, 2)}` +
+          `Actual: ${JSON.stringify(actualFeatureData.geoJson.geometry, null, 2)}`,
       ).toBe(true);
     }
   }

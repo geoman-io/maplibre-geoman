@@ -2,7 +2,8 @@
   import type { ActionInstance, SubAction } from '@/main.ts';
   import log from 'loglevel';
 
-  const { actionInstance, subAction }: {
+  const { name, actionInstance, subAction }: {
+    name: string,
     actionInstance: ActionInstance | null,
     subAction: SubAction | null,
   } = $props();
@@ -19,6 +20,7 @@
 
 {#if subAction}
   <button
+    id={`subaction-${name}`}
     type="submit"
     class="sub-action"
     title={subAction.label}

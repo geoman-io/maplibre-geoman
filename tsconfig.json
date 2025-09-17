@@ -4,6 +4,12 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ],
+      "@mapLib/*": [
+        "src/core/map/maplibre/*"
       ]
     },
     "declaration": true,
@@ -23,6 +29,7 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     /* Linting */

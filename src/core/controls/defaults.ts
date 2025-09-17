@@ -1,6 +1,5 @@
 import type { SystemControls } from '@/main.ts';
 
-
 export const systemControls: SystemControls = {
   draw: {
     marker: {
@@ -31,6 +30,14 @@ export const systemControls: SystemControls = {
       type: 'draw',
       eventType: 'toggle',
       targetMode: 'circle',
+      settings: {
+        exclusive: true,
+      },
+    },
+    ellipse: {
+      type: 'draw',
+      eventType: 'toggle',
+      targetMode: 'ellipse',
       settings: {
         exclusive: true,
       },
@@ -181,13 +188,7 @@ export const systemControls: SystemControls = {
       targetMode: 'shape_markers',
       settings: {
         exclusive: false,
-        enabledBy: [
-          'drag',
-          'change',
-          'rotate',
-          'scale',
-          'line_simplification',
-        ],
+        enabledBy: ['drag', 'change', 'rotate', 'scale', 'line_simplification'],
       },
     },
     snapping: {

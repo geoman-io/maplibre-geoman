@@ -1,4 +1,3 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type {
   EditModeName,
   FeatureCreatedFwdEvent,
@@ -27,9 +26,9 @@ import type {
   GMHelperModeEvent,
   ModeName,
 } from '@/main.ts';
+import { GM_PREFIX } from '@/core/constants.ts';
 
-
-export const gmSystemPrefix = `_${gmPrefix}`;
+export const gmSystemPrefix = `_${GM_PREFIX}`;
 
 export class EventForwarder {
   gm: Geoman;
@@ -45,11 +44,10 @@ export class EventForwarder {
 
   processEvent(eventName: GmEventName, payload: GMEvent) {
     // repeat the events to the map to allow end users to listen
-    this.fireToMap(
-      'system',
-      eventName.split(':')[1] as GmEventNameWithoutPrefix,
-      { ...payload, level: 'user' },
-    );
+    this.fireToMap('system', eventName.split(':')[1] as GmEventNameWithoutPrefix, {
+      ...payload,
+      level: 'user',
+    });
 
     if (payload.action === 'mode_start' || payload.action === 'mode_end') {
       this.forwardModeToggledEvent(payload);
@@ -153,11 +151,7 @@ export class EventForwarder {
   }
 
   forwardGeomanLoaded(payload: GMControlLoadEvent) {
-    this.fireToMap(
-      'converted',
-      `${payload.action}`,
-      { map: this.map, [gmPrefix]: this.gm },
-    );
+    this.fireToMap('converted', `${payload.action}`, { map: this.map, [GM_PREFIX]: this.gm });
   }
 
   fireToMap(
@@ -165,8 +159,10 @@ export class EventForwarder {
     eventName: GmEventNameWithoutPrefix | GmFwdEventName,
     payload: GlobalEventsListenerParameters['payload'],
   ) {
-    const prefix = type === 'system' ? gmSystemPrefix : gmPrefix;
-    const eventNameWithPrefix = `${prefix}:${eventName}` as GmFwdEventNameWithPrefix | GmFwdSystemEventNameWithPrefix;
+    const prefix = type === 'system' ? gmSystemPrefix : GM_PREFIX;
+    const eventNameWithPrefix = `${prefix}:${eventName}` as
+      | GmFwdEventNameWithPrefix
+      | GmFwdSystemEventNameWithPrefix;
 
     if (this.globalEventsListener) {
       this.globalEventsListener({ type, name: eventNameWithPrefix, payload });

@@ -1,13 +1,12 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type {
-  AnyEvent,
-  EditModeName,
-  FeatureId,
-  FeatureShape,
-  GeoJsonShapeFeature,
-  LineEventHandlerArguments,
+import {
+  type AnyEvent,
+  type EditModeName,
+  type FeatureId,
+  type FeatureShape,
+  type GeoJsonShapeFeature,
+  type LineEventHandlerArguments,
+  SOURCES,
 } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
@@ -23,28 +22,22 @@ import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
 import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 type PolygonFeature = Feature<Polygon | MultiPolygon>;
 
 export class EditCut extends BaseEdit {
   mode: EditModeName = 'cut';
-  lineDrawer = new LineDrawer(
-    this.gm,
-    { snappingMarkers: 'first', targetShape: 'polygon' },
-  );
-  cutShapesAllowed: Array<FeatureShape> = ['circle', 'line', 'rectangle', 'polygon'];
-  mapEventHandlers = {
-    [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
+  lineDrawer = new LineDrawer(this.gm, { snappingMarkers: 'first', targetShape: 'polygon' });
+  cutShapesAllowed: Array<FeatureShape> = ['circle', 'ellipse', 'line', 'rectangle', 'polygon'];
+  eventHandlers = {
+    [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
 
   onStartAction() {
     this.lineDrawer.startAction();
-    this.lineDrawer.on(
-      'firstMarkerClick',
-      this.cutPolygonFinished.bind(this),
-    );
+    this.lineDrawer.on('firstMarkerClick', this.cutPolygonFinished.bind(this));
   }
 
   onEndAction() {
@@ -147,7 +140,6 @@ export class EditCut extends BaseEdit {
       sourceName: SOURCES.main,
     });
   }
-
 
   cutPolygonFeatureByPolygon(featureId: FeatureId, cutGeoJson: PolygonFeature) {
     const featureData = this.gm.features.get(SOURCES.main, featureId);

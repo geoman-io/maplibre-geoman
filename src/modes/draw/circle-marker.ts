@@ -1,6 +1,6 @@
-import type { DrawModeName, LngLat, MapHandlerReturnData, MapPointerEvent, ShapeName } from '@/main.ts';
+import type { DrawModeName, LngLat, MapHandlerReturnData, ShapeName } from '@/main.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
-
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
 export class DrawCircleMarker extends BaseCircle {
   mode: DrawModeName = 'circle_marker';
@@ -22,7 +22,7 @@ export class DrawCircleMarker extends BaseCircle {
     return { next: true };
   }
 
-  onMouseClick(event: MapPointerEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapPointerEvent): MapHandlerReturnData {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
     this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 

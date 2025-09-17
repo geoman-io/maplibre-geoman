@@ -1,6 +1,4 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { SOURCES } from '@/core/features/index.ts';
 import type {
   AnyEvent,
   EditModeName,
@@ -12,11 +10,18 @@ import type {
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { getFeatureFirstPoint, getMovedGeoJson } from '@/utils/features.ts';
-import { getGeoJsonCircle, getGeoJsonFirstPoint, getLngLatDiff } from '@/utils/geojson.ts';
+import {
+  getGeoJsonCircle,
+  getGeoJsonEllipse,
+  getGeoJsonFirstPoint,
+  getLngLatDiff,
+} from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { Feature, Polygon } from 'geojson';
+import { isEqual } from 'lodash-es';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 type UpdateShapeHandler = (
   featureData: FeatureData,
@@ -26,21 +31,20 @@ type UpdateShapeHandler = (
 
 export abstract class BaseDrag extends BaseEdit {
   mode: EditModeName = 'drag';
-  isDragging: boolean = false;
   previousLngLat: LngLat | null = null;
 
-  pointBasedShapes: Array<FeatureShape> = [
-    'marker',
-    'circle_marker',
-    'text_marker',
-  ];
+  pointBasedShapes: Array<FeatureShape> = ['marker', 'circle_marker', 'text_marker'];
 
-  throttledMethods = convertToThrottled({
-    onMouseMove: this.onMouseMove,
-  }, this, this.gm.options.settings.throttlingDelay);
+  throttledMethods = convertToThrottled(
+    {
+      onMouseMove: this.onMouseMove,
+    },
+    this,
+    this.gm.options.settings.throttlingDelay,
+  );
 
-  mapEventHandlers = {
-    [`${gmPrefix}:edit`]: this.handleGmEdit.bind(this),
+  eventHandlers = {
+    [`${GM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
 
     mousedown: this.onMouseDown.bind(this),
     touchstart: this.onMouseDown.bind(this),
@@ -54,6 +58,7 @@ export abstract class BaseDrag extends BaseEdit {
 
   getUpdatedGeoJsonHandlers: { [key in FeatureShape]?: UpdateShapeHandler } = {
     marker: this.moveSource.bind(this),
+    ellipse: this.moveEllipse.bind(this),
     circle: this.moveCircle.bind(this),
     circle_marker: this.moveSource.bind(this),
     text_marker: this.moveSource.bind(this),
@@ -63,15 +68,16 @@ export abstract class BaseDrag extends BaseEdit {
   };
 
   onMouseDown(event: AnyEvent): MapHandlerReturnData {
-    this.featureData = this.gm.features.getFeatureByMouseEvent({
+    const featureData = this.gm.features.getFeatureByMouseEvent({
       event,
       sourceNames: [SOURCES.main],
     });
 
-    if (this.featureData && this.getUpdatedGeoJsonHandlers[this.featureData.shape]) {
+    if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
+      this.featureData = featureData;
       this.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.gm.mapAdapter.setDragPan(false);
-      this.isDragging = true;
+      this.flags.actionInProgress = true;
 
       this.snappingHelper?.addExcludedFeature(this.featureData);
       if (this.isPointBasedShape()) {
@@ -83,24 +89,24 @@ export abstract class BaseDrag extends BaseEdit {
     return { next: true };
   }
 
-  onMouseUp(): MapHandlerReturnData {
-    if (!this.featureData) {
+  onMouseUp(event: AnyEvent): MapHandlerReturnData {
+    if (!this.featureData || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
     this.snappingHelper?.clearExcludedFeatures();
     this.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
 
-    this.isDragging = false;
     this.previousLngLat = null;
     this.gm.mapAdapter.setDragPan(true);
     this.fireFeatureEditEndEvent({ feature: this.featureData, forceMode: 'drag' });
+    this.flags.actionInProgress = false;
     this.featureData = null;
     return { next: true };
   }
 
   onMouseMove(event: AnyEvent): MapHandlerReturnData {
-    if (!this.isDragging || !isMapPointerEvent(event, { warning: true })) {
+    if (!this.flags.actionInProgress || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
@@ -130,7 +136,7 @@ export abstract class BaseDrag extends BaseEdit {
   }
 
   moveFeature(featureData: FeatureData, newLngLat: LngLat) {
-    if (!this.isDragging) {
+    if (!this.flags.actionInProgress) {
       return;
     }
 
@@ -158,6 +164,9 @@ export abstract class BaseDrag extends BaseEdit {
         featureGeoJson: updatedGeoJson,
         forceMode: 'drag',
       });
+      if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
+        featureData.updateGeoJsonProperties(updatedGeoJson.properties);
+      }
 
       if (isUpdated) {
         this.previousLngLat = newLngLat;
@@ -171,6 +180,46 @@ export abstract class BaseDrag extends BaseEdit {
     return getMovedGeoJson(featureData, lngLatDiff);
   }
 
+  moveEllipse(
+    featureData: FeatureData,
+    oldLngLat: LngLat,
+    newLngLat: LngLat,
+  ): GeoJsonShapeFeature | null {
+    if (featureData.shape !== 'ellipse') {
+      log.error('BaseDrag.moveCircle: invalid shape type', featureData);
+      return null;
+    }
+
+    const oldCenter = featureData.getShapeProperty('center');
+    const xSemiAxis = featureData.getShapeProperty('xSemiAxis');
+    const ySemiAxis = featureData.getShapeProperty('ySemiAxis');
+    const angle = featureData.getShapeProperty('angle');
+
+    if (
+      !Array.isArray(oldCenter) ||
+      typeof xSemiAxis !== 'number' ||
+      typeof ySemiAxis !== 'number' ||
+      typeof angle !== 'number'
+    ) {
+      log.error(
+        'BaseDrag.moveEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
+        featureData,
+      );
+      return null;
+    }
+
+    const lngLatDiff = getLngLatDiff(oldLngLat, newLngLat);
+
+    const newCenterCoords: LngLat = [oldCenter[0] + lngLatDiff.lng, oldCenter[1] + lngLatDiff.lat];
+
+    return getGeoJsonEllipse({
+      center: newCenterCoords,
+      xSemiAxis,
+      ySemiAxis,
+      angle,
+    });
+  }
+
   moveCircle(
     featureData: FeatureData,
     oldLngLat: LngLat,
@@ -182,7 +231,7 @@ export abstract class BaseDrag extends BaseEdit {
     }
 
     const shapeCenter = featureData.getShapeProperty('center');
-    if (!shapeCenter) {
+    if (!Array.isArray(shapeCenter)) {
       log.error('BaseDrag.moveCircle: missing center in the featureData', featureData);
       return null;
     }
@@ -199,6 +248,7 @@ export abstract class BaseDrag extends BaseEdit {
       shapeCenter[0] + lngLatDiff.lng,
       shapeCenter[1] + lngLatDiff.lat,
     ];
+    featureData.setShapeProperty('center', newCenterCoords);
 
     const circlePolygon = getGeoJsonCircle({
       center: newCenterCoords,
@@ -209,7 +259,6 @@ export abstract class BaseDrag extends BaseEdit {
       type: 'Feature',
       properties: {
         shape: 'circle',
-        center: newCenterCoords,
       },
       geometry: circlePolygon.geometry,
     };

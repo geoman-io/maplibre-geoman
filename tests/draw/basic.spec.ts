@@ -1,20 +1,24 @@
 import test, { expect, type Page } from '@playwright/test';
-import { getWindowDimensions, mouseMoveAndClick, waitForGeoman } from '../utils/basic.ts';
-import { type FeatureCustomData, getRenderedFeaturesData } from '../utils/features.ts';
+import { getWindowDimensions, mouseMoveAndClick, waitForGeoman } from '@tests/utils/basic.ts';
+import { type FeatureCustomData, getRenderedFeaturesData } from '@tests/utils/features.ts';
 import type { ShapeName } from '@/types';
-
 
 const checkFeatureCreated = async (page: Page, featureType: ShapeName) => {
   let renderedFeatures: Array<FeatureCustomData> = [];
 
-  await expect.poll(async () => {
-    renderedFeatures = await getRenderedFeaturesData({
-      page,
-      temporary: false,
-      allowedTypes: [featureType],
-    });
-    return renderedFeatures.length;
-  }, { timeout: 10 * 1000, message: 'Feature never created' }).toEqual(1);
+  await expect
+    .poll(
+      async () => {
+        renderedFeatures = await getRenderedFeaturesData({
+          page,
+          temporary: false,
+          allowedTypes: [featureType],
+        });
+        return renderedFeatures.length;
+      },
+      { timeout: 10 * 1000, message: 'Feature never created' },
+    )
+    .toEqual(1);
 
   expect(renderedFeatures).toHaveLength(1);
   if (renderedFeatures?.length !== 1) {
@@ -24,7 +28,6 @@ const checkFeatureCreated = async (page: Page, featureType: ShapeName) => {
   expect(renderedFeatures[0].shape).toBe(featureType);
   expect(renderedFeatures[0].temporary).toEqual(false);
 };
-
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -58,9 +61,7 @@ test('Draw a circle marker', async ({ page }) => {
   const centerX = innerWidth / 2;
   const centerY = innerHeight / 2;
 
-  const points: Array<[number, number]> = [
-    [centerX, centerY],
-  ];
+  const points: Array<[number, number]> = [[centerX, centerY]];
   await mouseMoveAndClick(page, points);
   await page.click('#id_draw_circle_marker');
 
@@ -76,9 +77,7 @@ test('Draw a text marker', async ({ page }) => {
   }));
   const centerX = innerWidth / 2;
   const centerY = innerHeight / 2;
-  const points: Array<[number, number]> = [
-    [centerX, centerY],
-  ];
+  const points: Array<[number, number]> = [[centerX, centerY]];
   await mouseMoveAndClick(page, points);
 
   await page.keyboard.type('Text marker');
@@ -106,6 +105,27 @@ test('Draw a circle', async ({ page }) => {
   await page.click('#id_draw_circle');
 
   await checkFeatureCreated(page, 'circle');
+});
+
+test('Draw an ellipse', async ({ page }) => {
+  await page.click('#id_draw_ellipse');
+
+  const { innerWidth, innerHeight } = await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+  }));
+  const centerX = innerWidth / 2;
+  const centerY = innerHeight / 2;
+
+  const points: Array<[number, number]> = [
+    [centerX, centerY],
+    [centerX + 100, centerY],
+    [centerX, centerY + 20],
+  ];
+  await mouseMoveAndClick(page, points);
+  await page.click('#id_draw_ellipse');
+
+  await checkFeatureCreated(page, 'ellipse');
 });
 
 test('Draw a rectangle', async ({ page }) => {

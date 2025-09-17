@@ -1,12 +1,25 @@
 import { controlIcons } from '@/core/options/icons.ts';
 import defaultLayerStyles from '@/core/options/layers/style.ts';
 import type { GmOptionsData } from '@/main.ts';
-
+import defaultMarker from '@/assets/images/markers/default-marker.svg';
+import defaultShapeMarker from '@/assets/images/markers/default-shape-marker.svg';
 
 export const defaultOptions: GmOptionsData = {
   settings: {
     throttlingDelay: 10,
+    useDefaultLayers: true,
     controlsPosition: 'top-left',
+    controlsUiEnabledByDefault: true,
+    controlsCollapsible: false,
+    controlsStyles: {
+      controlGroupClass: 'maplibregl-ctrl maplibregl-ctrl-group',
+      controlContainerClass: 'gm-control-container',
+      controlButtonClass: 'gm-control-button',
+    },
+    markerIcons: {
+      default: defaultMarker,
+      control: defaultShapeMarker,
+    },
   },
   layerStyles: defaultLayerStyles,
   controls: {
@@ -32,6 +45,12 @@ export const defaultOptions: GmOptionsData = {
       circle: {
         title: 'Circle',
         icon: controlIcons.circle,
+        uiEnabled: true,
+        active: false,
+      },
+      ellipse: {
+        title: 'Ellipse',
+        icon: controlIcons.ellipse,
         uiEnabled: true,
         active: false,
       },
@@ -92,7 +111,7 @@ export const defaultOptions: GmOptionsData = {
       shape_markers: {
         title: 'Shape markers',
         icon: null,
-        uiEnabled: true,
+        uiEnabled: false,
         active: false,
       },
       snapping: {

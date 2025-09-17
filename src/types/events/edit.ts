@@ -6,79 +6,78 @@ import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index
 
 // Edit events
 export interface GMEditModeEvent extends GmBaseModeEvent {
-  type: 'edit',
-  mode: EditModeName,
+  type: 'edit';
+  mode: EditModeName;
 }
 
 export interface GMEditMarkerMoveEvent extends GMBaseEvent {
-  type: 'edit',
-  mode: EditModeName,
-  action: 'marker_move',
-  featureData: FeatureData,
-  markerData: MarkerData,
-  lngLatStart: LngLat,
-  lngLatEnd: LngLat,
+  type: 'edit';
+  mode: EditModeName;
+  action: 'marker_move';
+  featureData: FeatureData;
+  markerData: MarkerData;
+  lngLatStart: LngLat;
+  lngLatEnd: LngLat;
 }
 
 export interface GMEditMarkerEvent extends GMBaseEvent {
-  type: 'edit',
-  mode: EditModeName,
-  action: 'edge_marker_click' | 'marker_right_click' | 'marker_captured' | 'marker_released',
-  featureData: FeatureData,
-  markerData: MarkerData,
+  type: 'edit';
+  mode: EditModeName;
+  action: 'edge_marker_click' | 'marker_right_click' | 'marker_captured' | 'marker_released';
+  featureData: FeatureData;
+  markerData: MarkerData;
 }
 
 export interface GMEditFeatureRemovedEvent extends GMBaseEvent {
-  type: 'edit',
-  mode: DrawModeName,
-  action: 'feature_removed',
-  featureData: FeatureData,
+  type: 'edit';
+  mode: DrawModeName;
+  action: 'feature_removed';
+  featureData: FeatureData;
 }
 
 export interface GMEditFeatureUpdatedEvent extends GMBaseEvent {
-  type: 'edit',
-  mode: EditModeName,
-  action: 'feature_updated',
+  type: 'edit';
+  mode: EditModeName;
+  action: 'feature_updated';
 
   // source could be a single feature or a group
   // edit:change, - single feature, edit:union, - group
-  sourceFeatures: NonEmptyArray<FeatureData>,
+  sourceFeatures: NonEmptyArray<FeatureData>;
 
   // target could be a single feature or a group
   // edit:rotate, - single feature, edit:split, - group
-  targetFeatures: NonEmptyArray<FeatureData>,
+  targetFeatures: NonEmptyArray<FeatureData>;
 
   // a feature could be updated with or without a marker
   // for example:
   // edit:change -> with a marker
   // edit:drag -> without a marker
-  markerData: MarkerData | null,
+  markerData: MarkerData | null;
 }
 
 export interface GMEditFeatureEditStartEvent extends GMBaseEvent {
   // fired when a long action is supposed for a mode
   // examples: edit:change, edit:rotate, edit: scale
-  type: 'edit',
-  mode: EditModeName,
-  action: 'feature_edit_start',
-  feature: FeatureData,
+  type: 'edit';
+  mode: EditModeName;
+  action: 'feature_edit_start';
+  feature: FeatureData;
 }
 
 export interface GMEditFeatureEditEndEvent extends GMBaseEvent {
   // fired when a long action is supposed for a mode
   // examples: edit:change, edit:rotate, edit: scale
-  type: 'edit',
-  mode: EditModeName,
-  action: 'feature_edit_end',
-  feature: FeatureData,
+  type: 'edit';
+  mode: EditModeName;
+  action: 'feature_edit_end';
+  feature: FeatureData;
 }
 
 export type GMEditEvent =
-  GMEditModeEvent |
-  GMEditMarkerEvent |
-  GMEditMarkerMoveEvent |
-  GMEditFeatureUpdatedEvent |
-  GMEditFeatureEditStartEvent |
-  GMEditFeatureEditEndEvent |
-  GMEditFeatureRemovedEvent;
-
+  | GMEditModeEvent
+  | GMEditMarkerEvent
+  | GMEditMarkerMoveEvent
+  | GMEditFeatureUpdatedEvent
+  | GMEditFeatureEditStartEvent
+  | GMEditFeatureEditEndEvent
+  | GMEditFeatureRemovedEvent;

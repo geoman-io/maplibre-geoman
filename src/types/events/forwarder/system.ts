@@ -1,11 +1,10 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type { Geoman } from '@/main.ts';
 import type { AnyMapInstance } from '@/types/map/index.ts';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export interface GmLoadedFwdEvent {
-  map: AnyMapInstance,
-  [gmPrefix]: Geoman,
+  map: AnyMapInstance;
+  [GM_PREFIX]: Geoman;
 }
 
 export type SystemFwdEvent = GmLoadedFwdEvent;

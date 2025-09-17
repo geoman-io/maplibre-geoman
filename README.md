@@ -103,10 +103,10 @@ Don't have a license key yet? [Purchase one here](https://geoman.io/pricing).
 
 ```typescript
 import ml from "maplibre-gl";
-import { type GmOptionsPartial } from "@geoman-io/maplibre-geoman-pro";
+import { type GmOptionsPartial } from "@geoman-io/maplibre-geoman-free";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import "@geoman-io/maplibre-geoman-pro/dist/maplibre-geoman.css";
+import "@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css";
 
 const mapStyle: ml.StyleSpecification = {
   version: 8,

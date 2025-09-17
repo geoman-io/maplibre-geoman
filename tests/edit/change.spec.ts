@@ -9,11 +9,15 @@ import {
   type MarkerCustomData,
   waitForFeatureGeoJsonUpdate,
   waitForRenderedFeatureData,
-} from 'tests/utils/features.ts';
-import { configurePageTimeouts, dragAndDrop, enableMode, waitForGeoman } from '../utils/basic.ts';
-import { loadGeoJson } from '../utils/fixtures.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
-
+} from '@tests/utils/features.ts';
+import {
+  configurePageTimeouts,
+  dragAndDrop,
+  enableMode,
+  waitForGeoman,
+} from '@tests/utils/basic.ts';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 
 const TOLERANCE = 2;
 
@@ -45,10 +49,7 @@ const performDragAndVerifyVertex = async (
 
   const originalGeoJson = feature.geoJson;
   const initialPoint = vertexMarker.point;
-  const targetPoint: [number, number] = [
-    initialPoint[0] + offsetX,
-    initialPoint[1] + offsetY,
-  ];
+  const targetPoint: [number, number] = [initialPoint[0] + offsetX, initialPoint[1] + offsetY];
 
   await dragAndDrop(page, initialPoint, targetPoint);
   await waitForFeatureGeoJsonUpdate({ feature, originalGeoJson, page });
@@ -62,7 +63,10 @@ const performDragAndVerifyVertex = async (
 
   if (updatedFeature) {
     const updatedLngLat = getCoordinateByPath(updatedFeature.geoJson, vertexMarker.path);
-    expect(updatedLngLat, `Updated LngLat for path ${vertexMarker.path.join('.')} should exist`).not.toBeNull();
+    expect(
+      updatedLngLat,
+      `Updated LngLat for path ${vertexMarker.path.join('.')} should exist`,
+    ).not.toBeNull();
 
     if (updatedLngLat) {
       const newScreenPos = await getScreenCoordinatesByLngLat({ page, position: updatedLngLat });
@@ -90,7 +94,10 @@ const performDragAndVerifyFeatureBody = async (
   if (!initialLngLat) return;
 
   const initialPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
-  expect(initialPoint, `Initial screen point for feature ${feature.id} should exist`).not.toBeNull();
+  expect(
+    initialPoint,
+    `Initial screen point for feature ${feature.id} should exist`,
+  ).not.toBeNull();
   if (!initialPoint) return;
 
   const targetPoint: [number, number] = [initialPoint[0] + offsetX, initialPoint[1] + offsetY];
@@ -111,7 +118,10 @@ const performDragAndVerifyFeatureBody = async (
 
     if (newLngLat) {
       const newScreenPos = await getScreenCoordinatesByLngLat({ page, position: newLngLat });
-      expect(newScreenPos, 'New screen position after body drag should be calculable').not.toBeNull();
+      expect(
+        newScreenPos,
+        'New screen position after body drag should be calculable',
+      ).not.toBeNull();
 
       if (newScreenPos) {
         expect(newScreenPos[0]).toBeGreaterThanOrEqual(targetPoint[0] - TOLERANCE);

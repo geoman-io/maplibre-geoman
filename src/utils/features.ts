@@ -2,26 +2,27 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyMapInstance,
   BaseMapAdapter,
+  type FeatureId,
   type GeoJsonImportFeature,
   type GeoJsonShapeFeature,
   type LngLat,
   type LngLatDiff,
 } from '@/main.ts';
-import { eachCoordinateWithPath, getAllGeoJsonCoordinates, getGeoJsonFirstPoint } from '@/utils/geojson.ts';
+import {
+  eachCoordinateWithPath,
+  getAllGeoJsonCoordinates,
+  getGeoJsonFirstPoint,
+} from '@/utils/geojson.ts';
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
+import buffer from '@turf/buffer';
+import distance from '@turf/distance';
 import lineIntersect from '@turf/line-intersect';
 import rewind from '@turf/rewind';
 import type { Feature, GeoJSON, MultiPolygon, Polygon, Position } from 'geojson';
 import { cloneDeep } from 'lodash-es';
-import { isLineBasedGeoJsonFeature, isPointBasedGeoJsonFeature } from '../../tests/types.ts';
-import buffer from '@turf/buffer';
-import distance from '@turf/distance';
+import { isLineBasedGeoJsonFeature, isPointBasedGeoJsonFeature } from '@tests/types.ts';
 
-
-export const moveGeoJson = (
-  geoJson: GeoJsonShapeFeature,
-  lngLatDiff: LngLatDiff,
-) => {
+export const moveGeoJson = (geoJson: GeoJsonShapeFeature, lngLatDiff: LngLatDiff) => {
   eachCoordinateWithPath(geoJson, (position) => {
     const lngLat = position.coordinate;
     lngLat[0] += lngLatDiff.lng;
@@ -50,9 +51,10 @@ export const getMovedGeoJson = (featureData: FeatureData, lngLatDiff: LngLatDiff
 
 export const moveFeatureData = (featureData: FeatureData, lngLatDiff: LngLatDiff): void => {
   const featureGeoJson = getMovedGeoJson(featureData, lngLatDiff);
-  if (featureData.shapeProperties.center) {
-    featureData.shapeProperties.center[0] += lngLatDiff.lng;
-    featureData.shapeProperties.center[1] += lngLatDiff.lat;
+  const shapeCenter = featureData.getShapeProperty('center');
+  if (shapeCenter) {
+    featureData.setShapeProperty('center', shapeCenter[0] + lngLatDiff.lng);
+    featureData.setShapeProperty('center', shapeCenter[1] + lngLatDiff.lat);
   }
   // Set the updated data back to the source
   featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
@@ -90,11 +92,8 @@ export const isGeoJsonFeatureInPolygon = (
   }
 
   if (allPointsInPolygon && isLineBasedGeoJsonFeature(featureGeoJson)) {
-    return !lineIntersect(
-      featureGeoJson,
-      containerGeoJson,
-      { ignoreSelfIntersections: true },
-    ).features.length;
+    return !lineIntersect(featureGeoJson, containerGeoJson, { ignoreSelfIntersections: true })
+      .features.length;
   }
   return false;
 };
@@ -108,9 +107,7 @@ export const getFeatureFirstPoint = (featureData: FeatureData): LngLat | null =>
   return getGeoJsonFirstPoint(shapeGeoJson);
 };
 
-export const fixGeoJsonFeature = (
-  feature: GeoJsonImportFeature,
-): GeoJsonImportFeature | null => {
+export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportFeature | null => {
   if (isLineBasedGeoJsonFeature(feature)) {
     const resultFeature = rewind(feature, { mutate: false });
     if (resultFeature.type === 'Feature' && isLineBasedGeoJsonFeature(resultFeature)) {
@@ -125,5 +122,16 @@ export const fixGeoJsonFeature = (
     return feature;
   }
 
+  return null;
+};
+
+export const getCustomFeatureId = (
+  featureGeoJson: Feature,
+  idPropertyName: string,
+): FeatureId | null => {
+  const featureId = featureGeoJson.properties?.[idPropertyName];
+  if (typeof featureId === 'string' || typeof featureId === 'number') {
+    return featureId;
+  }
   return null;
 };

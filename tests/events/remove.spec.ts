@@ -1,10 +1,14 @@
-import test, { expect } from '@playwright/test';
-import { setupGeomanTest } from '../utils/test-helpers.ts';
-import { enableMode, mouseMoveAndClick } from '../utils/basic.ts';
-import { getRenderedFeaturesData, waitForFeatureRemoval } from '../utils/features.ts';
+import type { FeatureRemovedFwdEvent } from '@/types/index.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
-import { getScreenCoordinatesByLngLat } from '../utils/shapes.ts';
-import { getGeomanEventPromise } from '../utils/events.ts';
+import test, { expect } from '@playwright/test';
+import { enableMode, mouseMoveAndClick } from '@tests/utils/basic.ts';
+import {
+  getGeomanEventResultById,
+  saveGeomanEventResultToCustomData,
+} from '@tests/utils/events.ts';
+import { getRenderedFeaturesData, waitForFeatureRemoval } from '@tests/utils/features.ts';
+import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
+import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
 test.describe('`gm:remove` Event', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,7 +23,7 @@ test.describe('`gm:remove` Event', () => {
 
     for (const feature of features) {
       // Set up the event listener
-      const eventPromise = getGeomanEventPromise(page, 'remove');
+      const resultId = await saveGeomanEventResultToCustomData(page, 'remove');
 
       // Find a point to click
       const initialLngLat = getGeoJsonFirstPoint(feature.geoJson);
@@ -30,7 +34,10 @@ test.describe('`gm:remove` Event', () => {
 
       // Convert to screen coordinates
       const clickPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
-      expect(clickPoint, `Screen coordinates for feature ${feature.id} should be calculable`).not.toBeNull();
+      expect(
+        clickPoint,
+        `Screen coordinates for feature ${feature.id} should be calculable`,
+      ).not.toBeNull();
       if (!clickPoint) {
         continue;
       }
@@ -38,10 +45,14 @@ test.describe('`gm:remove` Event', () => {
       // Simulate the deletion
       await mouseMoveAndClick(page, clickPoint);
 
-      // Wait for the event to fire and verify its payload
-      const removeEvent = await eventPromise;
-      expect(removeEvent.shape).toBe(feature.shape);
-      expect(removeEvent.featureId).toBe(feature.id);
+      const event = (await getGeomanEventResultById(page, resultId)) as
+        | FeatureRemovedFwdEvent
+        | undefined;
+      expect(event, 'Retrieved event result must be defined').toBeDefined();
+      if (event) {
+        expect(event.shape, `Shape should be ${feature.shape}`).toBe(feature.shape);
+        expect(event.feature.id, `Id should be ${feature.id}`).toBe(feature.id);
+      }
 
       // Verify the feature is gone from the data store
       await waitForFeatureRemoval({ page, featureId: feature.id, temporary: false });

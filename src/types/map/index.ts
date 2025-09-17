@@ -1,8 +1,12 @@
 import type { Geoman } from '@/main.ts';
-import type { GmFwdEventNameWithPrefix, GmFwdSystemEventNameWithPrefix } from '@/types/events/forwarder/index.ts';
+import type {
+  GmFwdEventNameWithPrefix,
+  GmFwdSystemEventNameWithPrefix,
+} from '@/types/events/forwarder/index.ts';
 import type { GmEventName, GmPrefix } from '@/types/events/index.ts';
 import type { FeatureId, FeatureSourceName } from '@/types/features.ts';
 import type { GeoJsonImportFeature, GMEvent } from '@/types/index.ts';
+import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
 import type { Feature } from 'geojson';
 
 export type LngLat = [number, number];
@@ -25,20 +29,15 @@ export const pointerEvents = [
   'touchcancel',
 ] as const;
 
-export type PointerEventName = typeof pointerEvents[number];
+export type PointerEventName = (typeof pointerEvents)[number];
 
-export const baseMapEventNames = [
-  'load',
-] as const;
+export const baseMapEventNames = ['load'] as const;
 
-export type BaseMapEventName = typeof baseMapEventNames[number];
+export type BaseMapEventName = (typeof baseMapEventNames)[number];
 
-export const gmServiceEventNames = [
-  'loaded',
-] as const;
-export type GmServiceEventName = typeof gmServiceEventNames[number];
+export const gmServiceEventNames = ['loaded'] as const;
+export type GmServiceEventName = (typeof gmServiceEventNames)[number];
 export type GmServiceEventNameWithPrefix = `${GmPrefix}:${GmServiceEventName}`;
-
 
 export type MapEventName = PointerEventName | BaseMapEventName;
 
@@ -49,30 +48,14 @@ export type AnyEventName =
   | GmFwdSystemEventNameWithPrefix
   | GmServiceEventNameWithPrefix;
 
-export type AnyEvent = MapEvent | GMEvent;
+export type AnyEvent = BaseMapAnyEvent | GMEvent;
 
 export type BaseEventListener = (event: AnyEvent) => void;
 
-export type MapEvent = unknown;
-
-export type MapPointerEvent = {
-  type: PointerEventName;
-  originalEvent: MouseEvent;
-  point: {
-    x: number;
-    y: number;
-  };
-  lngLat: {
-    lng: number;
-    lat: number;
-    toArray(): LngLat;
-  };
-};
-
 export type GeoJsonFeatureData = {
-  id: FeatureId | undefined,
-  sourceName: FeatureSourceName,
-  geoJson: GeoJsonImportFeature,
+  id: FeatureId | undefined;
+  sourceName: FeatureSourceName;
+  geoJson: GeoJsonImportFeature;
 };
 
 export type MapTypes = {
@@ -92,12 +75,6 @@ export type GeoJsonSourceDiff = {
   remove?: Array<FeatureId>;
   add?: Array<Feature>;
   update?: Array<Feature>;
-};
-
-export type GeoJsonDiffStorage = {
-  add: Array<Feature>;
-  update: Array<Feature>;
-  remove: Array<FeatureId>;
 };
 
 export type BaseFitBoundsOptions = {
@@ -131,10 +108,7 @@ export type BasePopupOptions = {
 };
 
 export interface MapWithOnceMethod {
-  once(
-    type: string,
-    listener: (ev: unknown) => void,
-  ): this;
+  once(type: string, listener: (ev: unknown) => void): this;
 }
 
 export const mapInteractions = [
@@ -148,6 +122,6 @@ export const mapInteractions = [
   'touchPitch',
 ] as const;
 
-export type MapInteraction = typeof mapInteractions[number];
+export type MapInteraction = (typeof mapInteractions)[number];
 
 export type * from '@/types/map/layers.ts';

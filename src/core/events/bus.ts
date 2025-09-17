@@ -1,23 +1,22 @@
 import { EventForwarder } from '@/core/events/forwarder.ts';
-import { gmPrefix } from '@/core/events/listeners/base.ts';
 import type {
   AnyEvent,
   AnyEventName,
   EventControls,
+  EventHandlers,
   Geoman,
   GMEvent,
   GmEventHadler,
   GmEventHandlersWithControl,
   GmEventName,
   MapEventHadler,
-  MapEventHandlers,
   MapEventHandlersWithControl,
   MapEventName,
 } from '@/main.ts';
 import { isGmEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
-
+import { GM_PREFIX } from '@/core/constants.ts';
 
 export class EventBus {
   gm: Geoman;
@@ -43,7 +42,7 @@ export class EventBus {
     this.forwarder.processEvent(eventName, payload);
   }
 
-  attachEvents(handlers: MapEventHandlers) {
+  attachEvents(handlers: EventHandlers) {
     typedKeys(handlers).forEach((eventName) => {
       const handler = handlers[eventName];
       if (handler) {
@@ -52,7 +51,7 @@ export class EventBus {
     });
   }
 
-  detachEvents(handlers: MapEventHandlers) {
+  detachEvents(handlers: EventHandlers) {
     typedKeys(handlers).forEach((eventName) => {
       const handler = handlers[eventName];
       if (handler) {
@@ -78,7 +77,7 @@ export class EventBus {
   }
 
   on(eventName: AnyEventName, handler: MapEventHadler | GmEventHadler) {
-    if (eventName.startsWith(gmPrefix)) {
+    if (eventName.startsWith(GM_PREFIX)) {
       this.onGmEvent(eventName as GmEventName, handler as GmEventHadler);
     } else {
       this.onMapEvent(eventName as MapEventName, handler as MapEventHadler);
@@ -102,7 +101,7 @@ export class EventBus {
   }
 
   off(eventName: AnyEventName, handler: GmEventHadler | MapEventHadler) {
-    if (eventName.startsWith(`${gmPrefix}`)) {
+    if (eventName.startsWith(`${GM_PREFIX}`)) {
       this.offGmEvent(eventName as GmEventName, handler as GmEventHadler);
     } else {
       this.offMapEvent(eventName as MapEventName, handler as MapEventHadler);
@@ -111,9 +110,7 @@ export class EventBus {
 
   offGmEvent(eventName: GmEventName, handler: GmEventHadler) {
     const eventHandlers = this.gmEventHandlers[eventName]?.handlers || [];
-    const handlerIndex = eventHandlers.findIndex(
-      (handlerItem) => handler === handlerItem,
-    );
+    const handlerIndex = eventHandlers.findIndex((handlerItem) => handler === handlerItem);
 
     if (handlerIndex === -1) {
       log.warn('MapEvents: handler not found', eventName, handler);
@@ -127,9 +124,7 @@ export class EventBus {
 
   offMapEvent(eventName: MapEventName, handler: MapEventHadler) {
     const eventHandlers = this.mapEventHandlers[eventName]?.handlers || [];
-    const handlerIndex = eventHandlers.findIndex(
-      (handlerItem) => handler === handlerItem,
-    );
+    const handlerIndex = eventHandlers.findIndex((handlerItem) => handler === handlerItem);
 
     if (handlerIndex === -1) {
       log.warn('MapEvents: handler not found', eventName, handler);
@@ -150,7 +145,7 @@ export class EventBus {
       handlers: [],
       controlHandler: (event: AnyEvent) => {
         let eventHandler: EventControls;
-        if (isGmEvent(event) && eventName.startsWith(`${gmPrefix}`)) {
+        if (isGmEvent(event) && eventName.startsWith(`${GM_PREFIX}`)) {
           eventHandler = this.gmEventHandlers[eventName as GmEventName];
         } else {
           eventHandler = this.mapEventHandlers[eventName as MapEventName];

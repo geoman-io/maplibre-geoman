@@ -1,6 +1,11 @@
-import { gmPrefix } from '@/core/events/listeners/base.ts';
-import { SOURCES } from '@/core/features/index.ts';
-import type { AnyEvent, DrawModeName, LineEventHandlerArguments, ShapeName } from '@/main.ts';
+import {
+  type AnyEvent,
+  type DrawModeName,
+  GM_PREFIX,
+  type LineEventHandlerArguments,
+  type ShapeName,
+  SOURCES,
+} from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -10,16 +15,12 @@ import lineToPolygon from '@turf/line-to-polygon';
 import unkinkPolygon from '@turf/unkink-polygon';
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 
-
 export class DrawPolygon extends BaseDraw {
   mode: DrawModeName = 'polygon';
   shape: ShapeName = 'polygon';
-  lineDrawer = new LineDrawer(
-    this.gm,
-    { snappingMarkers: 'first', targetShape: 'polygon' },
-  );
-  mapEventHandlers = {
-    [`${gmPrefix}:draw`]: this.forwardLineDrawerEvent.bind(this),
+  lineDrawer = new LineDrawer(this.gm, { snappingMarkers: 'first', targetShape: 'polygon' });
+  eventHandlers = {
+    [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
 
@@ -29,10 +30,7 @@ export class DrawPolygon extends BaseDraw {
 
   onStartAction(): void {
     this.lineDrawer.startAction();
-    this.lineDrawer.on(
-      'firstMarkerClick',
-      this.polygonFinished.bind(this),
-    );
+    this.lineDrawer.on('firstMarkerClick', this.polygonFinished.bind(this));
   }
 
   onMouseMove(event: AnyEvent) {
@@ -63,7 +61,8 @@ export class DrawPolygon extends BaseDraw {
       shapeGeoJson: {
         ...geoJsonPolygon,
         properties: {
-          ...geoJsonPolygon.properties,
+          // we don't need to have collected properties for a new polygon
+          // ...geoJsonPolygon.properties,
           shape: this.shape,
         },
       },

@@ -1,7 +1,7 @@
+import type { FeatureCreatedFwdEvent, ModeName } from '@/main.ts';
 import { expect, type Page } from '@playwright/test';
-import type { ModeName } from '@/main.ts';
 import { enableMode, mouseMoveAndClick, waitForGeoman } from './basic.ts';
-import { getGeomanEventPromise } from './events.ts';
+import { getGeomanEventResultById, saveGeomanEventResultToCustomData } from './events.ts';
 import { loadGeoJsonFeatures } from './features.ts';
 import { loadGeoJson } from './fixtures.ts';
 
@@ -12,12 +12,12 @@ export const testShapeCreation = async (
     points: Array<[number, number]> | [number, number];
     additionalActions?: () => Promise<void>;
     exitButtonId?: string;
-  }
+  },
 ) => {
   const { shapeName, points, additionalActions, exitButtonId = `#id_draw_${shapeName}` } = options;
 
   // Create event handler promise
-  const eventHandlerPromise = getGeomanEventPromise(page, 'create');
+  const createEventResultId = await saveGeomanEventResultToCustomData(page, 'create');
 
   // Enable drawing mode
   await enableMode(page, 'draw', shapeName);
@@ -31,21 +31,28 @@ export const testShapeCreation = async (
   }
 
   // Wait for and verify the event
-  const result = await eventHandlerPromise;
-  expect(result.shape, `Shape should be ${shapeName}`).toBe(shapeName);
-  expect(result.feature, 'Feature should be created').toBeTruthy();
+  const event = (await getGeomanEventResultById(page, createEventResultId)) as
+    | FeatureCreatedFwdEvent
+    | undefined;
+  expect(event, 'Retrieved event result must be defined').toBeDefined();
 
-  // Exit drawing mode
-  await page.click(exitButtonId);
+  if (event) {
+    expect(event.shape, `Shape should be ${shapeName}`).toBe(shapeName);
+    expect(event.feature, 'Feature should be created').toBeTruthy();
 
-  return result;
+    // Exit drawing mode
+    await page.click(exitButtonId);
+    return event;
+  }
+
+  throw new Error('Event must be defined');
 };
 
 export const setupGeomanTest = async (
-  page: Page, 
-  options: { 
-    loadFixture?: string 
-  } = {}
+  page: Page,
+  options: {
+    loadFixture?: string;
+  } = {},
 ) => {
   await page.goto('/');
   await waitForGeoman(page);
