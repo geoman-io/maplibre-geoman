@@ -176,11 +176,9 @@ const initGeoman = async () => {
     // }
   });
 
-  // geoman.mapAdapter.on('gm:create', (event) => {
-  //   if ('actionType' in event && event.actionType === 'edit') {
-  //     log.debug('gm:create', event);
-  //   }
-  // });
+  geoman.mapAdapter.on('_gm:draw', (event) => {
+    log.debug('mapAdapter.on()', event);
+  });
 
   // map.on('idle', () => {
   //   console.log('Map is fully rendered and idle!');

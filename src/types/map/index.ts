@@ -1,4 +1,4 @@
-import type { AnyEvent, Geoman } from '@/main.ts';
+import { type Geoman } from '@/main.ts';
 import type {
   GmFwdEventNameWithPrefix,
   GmFwdSystemEventNameWithPrefix,
@@ -7,6 +7,7 @@ import type { GmEventName, GmPrefix } from '@/types/events/index.ts';
 import type { FeatureId, FeatureSourceName } from '@/types/features.ts';
 import type { GeoJsonImportFeature } from '@/types/index.ts';
 import type { Feature } from 'geojson';
+import type { EventFor } from '@/types/map/events-map.ts';
 
 export type LngLat = [number, number];
 export type ScreenPoint = [number, number];
@@ -47,7 +48,7 @@ export type AnyEventName =
   | GmFwdSystemEventNameWithPrefix
   | GmServiceEventNameWithPrefix;
 
-export type BaseEventListener = (event: AnyEvent) => void;
+export type BaseEventListener<T extends string = AnyEventName> = (event: EventFor<T>) => void;
 
 export type GeoJsonFeatureData = {
   id: FeatureId | undefined;
