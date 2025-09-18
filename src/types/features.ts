@@ -5,7 +5,7 @@ import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
 import type { WithPrefixedKeys } from '@/types/utils.ts';
-import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, GM_PROPERTIES_PREFIX } from '@/core/features/constants.ts';
 
 export type FeatureId = number | string;
 
@@ -13,6 +13,7 @@ export type FeatureShape = ShapeName | `${MarkerData['type']}_marker` | 'snap_gu
 
 export type ShapeGeoJsonProperties = {
   [FEATURE_ID_PROPERTY]?: FeatureId;
+  [GM_PROPERTIES_PREFIX]?: FeatureGMProperties;
   [key: string]: unknown;
 };
 
@@ -41,6 +42,10 @@ export type FeatureShapeProperties = {
   ySemiAxis?: number;
   angle?: number;
   text?: string;
+};
+
+export type FeatureGMProperties = {
+  disableEdit?: boolean;
 };
 
 export type PrefixedFeatureShapeProperties = WithPrefixedKeys<

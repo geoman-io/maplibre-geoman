@@ -188,10 +188,10 @@ export class Features {
     });
 
     const feature = features[0];
-    if (!feature || feature.editDisabled) {
+    if (!feature || feature.getGmProperty('disableEdit') === true) {
       return null;
     }
-    return feature
+    return feature;
   }
 
   getFeaturesByGeoJsonBounds({
@@ -256,11 +256,6 @@ export class Features {
       source,
       geoJsonShapeFeature: cloneDeep(shapeGeoJson),
     });
-
-    const gmFeature = shapeGeoJson.properties[GM_FEATURE_KEY] as FeatureGMProperties | undefined;
-    if (gmFeature?.disableEdit === true) {
-      featureData.gmProperties.disableEdit = true;
-    }
 
     this.add(featureData);
     if (!featureData.temporary && !imported) {
