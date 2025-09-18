@@ -73,6 +73,9 @@ export class EditCut extends BaseEdit {
 
   cutFeaturesByPolygon(bBoxfeatures: Array<FeatureData>, cutGeoJson: PolygonFeature) {
     bBoxfeatures.forEach((featureData) => {
+      if (featureData.getGmProperty("disableEdit") === true) {
+        return;
+      }
       if (isGeoJsonFeatureInPolygon(featureData.getGeoJson(), cutGeoJson)) {
         this.gm.features.delete(featureData);
         this.fireFeatureRemovedEvent(featureData);
