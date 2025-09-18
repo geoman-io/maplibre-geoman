@@ -176,9 +176,9 @@ const initGeoman = async () => {
     // }
   });
 
-  geoman.mapAdapter.on('_gm:draw', (event) => {
-    log.debug('mapAdapter.on()', event);
-  });
+  // geoman.mapAdapter.on('gm:rotate', (event) => {
+  //   log.debug('mapAdapter.on()', event);
+  // });
 
   // map.on('idle', () => {
   //   console.log('Map is fully rendered and idle!');

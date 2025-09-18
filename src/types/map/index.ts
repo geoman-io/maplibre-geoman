@@ -6,8 +6,8 @@ import type {
 import type { GmEventName, GmPrefix } from '@/types/events/index.ts';
 import type { FeatureId, FeatureSourceName } from '@/types/features.ts';
 import type { GeoJsonImportFeature } from '@/types/index.ts';
-import type { Feature } from 'geojson';
 import type { EventFor } from '@/types/map/events-map.ts';
+import type { Feature } from 'geojson';
 
 export type LngLat = [number, number];
 export type ScreenPoint = [number, number];

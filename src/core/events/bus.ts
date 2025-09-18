@@ -13,7 +13,7 @@ import type {
   MapEventHandlersWithControl,
   MapEventName,
 } from '@/main.ts';
-import { isGmEvent } from '@/utils/guards/events/index.ts';
+import { isBaseMapEvent, isGmEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
 import { GM_PREFIX } from '@/core/constants.ts';
@@ -160,8 +160,10 @@ export class EventBus {
           let result;
           if (isGmEvent(event)) {
             result = (handlerItem as GmEventHadler)(event);
-          } else {
+          } else if (isBaseMapEvent(event)) {
             result = (handlerItem as MapEventHadler)(event);
+          } else {
+            log.error('EventsBus: unknown event type', event);
           }
 
           if (result && typeof result === 'object' && 'next' in result) {

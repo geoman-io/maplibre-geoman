@@ -4,6 +4,7 @@ import type { GmDrawEvent } from '@/types/events/draw.ts';
 import { type GmEditEvent } from '@/types/events/edit.ts';
 import type { GmFeatureEvent } from '@/types/events/feature.ts';
 import type { GmHelperEvent } from '@/types/events/helper.ts';
+import type { GmFwdEvent } from '@/types/index.ts';
 import type { ActionType } from '@/types/options.ts';
 import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
 
@@ -18,7 +19,7 @@ export type GmBaseEvent = {
 };
 
 export type GmEvent = GmDrawEvent | GmEditEvent | GmHelperEvent | GmControlEvent | GmFeatureEvent;
-export type AnyEvent = GmEvent | BaseMapAnyEvent;
+export type AnyEvent = GmEvent | GmFwdEvent | BaseMapAnyEvent;
 
 export type GmPrefix = typeof GM_PREFIX;
 export type GmSystemPrefix = typeof GM_SYSTEM_PREFIX;

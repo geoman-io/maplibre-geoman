@@ -15,6 +15,7 @@ import type {
   GeoJsonFeatureData,
   LineBasedGeometry,
   LngLat,
+  MapEventName,
   MapInstanceWithGeoman,
   MapInteraction,
   MapTypes,
@@ -133,13 +134,13 @@ export abstract class BaseMapAdapter<
   abstract fire(type: AnyEventName, data?: unknown): void;
 
   abstract on<T extends AnyEventName>(type: T, listener: BaseEventListener<T>): void;
-  abstract on(type: AnyEventName, layerId: string, listener: BaseEventListener): void;
+  abstract on(type: MapEventName, layerId: string, listener: BaseEventListener): void;
 
   abstract once<T extends AnyEventName>(type: AnyEventName, listener: BaseEventListener<T>): void;
-  abstract once(type: AnyEventName, layerId: string, listener: BaseEventListener): void;
+  abstract once(type: MapEventName, layerId: string, listener: BaseEventListener): void;
 
   abstract off<T extends AnyEventName>(type: AnyEventName, listener: BaseEventListener<T>): void;
-  abstract off(type: AnyEventName, layerId: string, listener: BaseEventListener): void;
+  abstract off(type: MapEventName, layerId: string, listener: BaseEventListener): void;
 
   getDistance(lngLat1: LngLat, lngLat2: LngLat): number {
     return turfDistance(lngLat1, lngLat2, { units: 'meters' });
