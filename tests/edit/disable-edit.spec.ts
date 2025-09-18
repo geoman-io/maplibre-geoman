@@ -2,7 +2,6 @@ import test, { expect } from '@playwright/test';
 import { configurePageTimeouts, enableMode, waitForGeoman } from '../utils/basic.ts';
 import { getRenderedFeaturesData, loadGeoJsonFeatures } from '../utils/features.ts';
 import type { GeoJsonImportFeature } from '@/types';
-import { GM_PROPERTIES_PREFIX } from '@/core/features/constants.ts';
 
 test.beforeEach(async ({ page }) => {
   await configurePageTimeouts(page);
@@ -19,9 +18,7 @@ test.beforeEach(async ({ page }) => {
       type: 'Feature',
       properties: {
         shape: 'polygon',
-        [GM_PROPERTIES_PREFIX]: {
-          disableEdit: true,
-        },
+        __gm_disableEdit: true,
       },
       geometry: {
         type: 'MultiPolygon',
@@ -79,8 +76,8 @@ test('Feature with disableEdit has correct editDisabled property', async ({ page
     }
 
     return {
-      disabledEditDisabled: disabledFeatureData.getGmProperty('disableEdit'),
-      editableEditDisabled: editableFeatureData.getGmProperty('disableEdit'),
+      disabledEditDisabled: disabledFeatureData.getShapeProperty('disableEdit'),
+      editableEditDisabled: editableFeatureData.getShapeProperty('disableEdit'),
       disabledFeature: disabledFeatureData,
     };
   });

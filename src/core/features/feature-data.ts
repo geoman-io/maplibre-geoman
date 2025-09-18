@@ -1,15 +1,10 @@
-import {
-  FEATURE_PROPERTY_PREFIX,
-  GM_PROPERTIES_PREFIX,
-  SOURCES,
-} from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { propertyValidators } from '@/core/features/validators.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import {
   type BasicGeometry,
   type FeatureDataParameters,
-  type FeatureGMProperties,
   type FeatureId,
   type FeatureShape,
   type FeatureShapeProperties,
@@ -95,17 +90,6 @@ export class FeatureData {
     return undefined;
   }
 
-  getGmProperty<T extends keyof FeatureGMProperties>(
-    name: T,
-    inputGeoJson?: GeoJsonShapeFeature,
-  ): FeatureGMProperties[T] | undefined {
-    const geoJsonProperties: FeatureGMProperties =
-      inputGeoJson?.properties?.[GM_PROPERTIES_PREFIX] ||
-      this._geoJson?.properties?.[GM_PROPERTIES_PREFIX] ||
-      {};
-    return geoJsonProperties[name];
-  }
-
   setShapeProperty<T extends keyof FeatureShapeProperties>(
     name: T,
     value: ShapeGeoJsonProperties[`${typeof FEATURE_PROPERTY_PREFIX}${T}`],
@@ -118,33 +102,12 @@ export class FeatureData {
     this.updateGeoJsonProperties(this._geoJson.properties);
   }
 
-  setGmProperty<T extends keyof FeatureGMProperties>(name: T, value: FeatureGMProperties[T]) {
-    if (!this._geoJson) {
-      log.error(`FeatureData.setGmProperty(): geojson is not set`);
-      return;
-    }
-    if (!this._geoJson.properties[GM_PROPERTIES_PREFIX])
-      this._geoJson.properties[GM_PROPERTIES_PREFIX] = {};
-    this._geoJson.properties[GM_PROPERTIES_PREFIX][name] = value;
-    this.updateGeoJsonProperties(this._geoJson.properties);
-  }
-
   deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
     if (!this._geoJson) {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
     delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-    this.updateGeoJsonProperties(this._geoJson.properties);
-  }
-
-  deleteGmProperty<T extends keyof FeatureGMProperties>(name: T) {
-    if (!this._geoJson) {
-      log.error(`FeatureData.deleteGmProperty(): geojson is not set`);
-      return;
-    }
-    if (!this._geoJson.properties[GM_PROPERTIES_PREFIX]) return;
-    delete this._geoJson.properties[GM_PROPERTIES_PREFIX][name];
     this.updateGeoJsonProperties(this._geoJson.properties);
   }
 

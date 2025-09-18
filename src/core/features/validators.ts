@@ -25,4 +25,6 @@ export const propertyValidators: {
   angle: (value: unknown): value is number => typeof value === 'number',
 
   text: (value: unknown): value is string => typeof value === 'string',
+
+  disableEdit: (value: unknown): value is boolean => typeof value === 'boolean',
 };

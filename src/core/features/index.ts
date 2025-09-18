@@ -188,7 +188,7 @@ export class Features {
     });
 
     const feature = features[0];
-    if (!feature || feature.getGmProperty('disableEdit') === true) {
+    if (!feature || feature.getShapeProperty('disableEdit') === true) {
       return null;
     }
     return feature;
