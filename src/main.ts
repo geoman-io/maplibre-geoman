@@ -132,7 +132,7 @@ export class Geoman {
   }
 
   isMapInstanceLoaded(map: AnyMapInstance) {
-    return '_fullyLoaded' in map && map._fullyLoaded;
+    return '_loaded' in map && map._loaded;
   }
 
   async init(map: MapInstanceWithGeoman) {
