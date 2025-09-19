@@ -35,7 +35,6 @@ export class FeatureData {
   id: FeatureId = 'no-id';
   parent: FeatureData | null = null;
   markers: Map<MarkerId, MarkerData>;
-  shapeProperties: FeatureShapeProperties = { center: undefined };
   source: BaseSource;
   _geoJson: GeoJsonShapeFeature | null = null;
 

@@ -154,7 +154,7 @@
     "type": "Feature",
     "properties": {
       "shape": "rectangle",
-      "__gm_disableEdit": true
+      "disableEdit": true
     },
     "geometry": {
       "type": "Polygon",

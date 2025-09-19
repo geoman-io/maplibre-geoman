@@ -1,3 +1,5 @@
+import { GM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   AnyEvent,
@@ -20,8 +22,6 @@ import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { Feature, Polygon } from 'geojson';
 import { isEqual } from 'lodash-es';
 import log from 'loglevel';
-import { GM_PREFIX } from '@/core/constants.ts';
-import { SOURCES } from '@/core/features/constants.ts';
 
 type UpdateShapeHandler = (
   featureData: FeatureData,
@@ -68,10 +68,7 @@ export abstract class BaseDrag extends BaseEdit {
   };
 
   onMouseDown(event: AnyEvent): MapHandlerReturnData {
-    const featureData = this.gm.features.getFeatureByMouseEvent({
-      event,
-      sourceNames: [SOURCES.main],
-    });
+    const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
       this.featureData = featureData;

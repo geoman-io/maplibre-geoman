@@ -1,7 +1,7 @@
 import test, { expect } from '@playwright/test';
+import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { configurePageTimeouts, enableMode, waitForGeoman } from '../utils/basic.ts';
 import { getRenderedFeaturesData, loadGeoJsonFeatures } from '../utils/features.ts';
-import type { GeoJsonImportFeature } from '@/types';
 
 test.beforeEach(async ({ page }) => {
   await configurePageTimeouts(page);
@@ -13,51 +13,11 @@ test.beforeEach(async ({ page }) => {
   });
 
   // Load test features with one having disableEdit set to true
-  const geoJsonFeatures: GeoJsonImportFeature[] = [
-    {
-      type: 'Feature',
-      properties: {
-        shape: 'polygon',
-        __gm_disableEdit: true,
-      },
-      geometry: {
-        type: 'MultiPolygon',
-        coordinates: [
-          [
-            [
-              [-8.254465626119668, 50.69202634205437],
-              [-6.991107273058219, 51.523564916277934],
-              [-6.734197478886813, 49.916245874621985],
-              [-8.254465626119668, 50.69202634205437],
-            ],
-          ],
-        ],
-      },
-      id: 1,
-    },
-    {
-      type: 'Feature',
-      properties: {
-        shape: 'polygon',
-      },
-      geometry: {
-        type: 'MultiPolygon',
-        coordinates: [
-          [
-            [
-              [-1.932737847551266, 50.61330359263574],
-              [-1.5111016643663788, 49.03146999896059],
-              [1.2390954813033659, 49.01221587878855],
-              [-1.932737847551266, 50.61330359263574],
-            ],
-          ],
-        ],
-      },
-      id: 2,
-    },
-  ];
-
-  await loadGeoJsonFeatures({ page, geoJsonFeatures });
+  const geoJsonFeatures = await loadGeoJson('disable-edit');
+  expect(geoJsonFeatures).not.toBeNull();
+  if (geoJsonFeatures) {
+    await loadGeoJsonFeatures({ page, geoJsonFeatures });
+  }
 });
 
 test('Feature with disableEdit has correct editDisabled property', async ({ page }) => {

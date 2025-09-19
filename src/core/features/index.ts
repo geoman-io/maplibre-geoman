@@ -186,12 +186,7 @@ export class Features {
       queryCoordinates: point,
       sourceNames,
     });
-
-    const feature = features[0];
-    if (!feature || feature.getShapeProperty('disableEdit') === true) {
-      return null;
-    }
-    return feature;
+    return features.length ? features[0] : null;
   }
 
   getFeaturesByGeoJsonBounds({

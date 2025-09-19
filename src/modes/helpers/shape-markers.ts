@@ -1,3 +1,4 @@
+import { GM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyEvent,
@@ -18,18 +19,17 @@ import {
   SOURCES,
 } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
+import type { SharedMarker } from '@/types/interfaces.ts';
 import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';
 import { findInCollection } from '@/utils/collections.ts';
 import { getFeatureFirstPoint } from '@/utils/features.ts';
 import { eachSegmentWithPath, findCoordinateWithPath, isEqualPosition } from '@/utils/geojson.ts';
+import { isPinHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent, isPointerEventWithModifiers } from '@/utils/guards/map.ts';
 import { isGmDrawEvent, isGmEditEvent } from '@/utils/guards/modes.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { cloneDeep, intersection } from 'lodash-es';
 import log from 'loglevel';
-import type { SharedMarker } from '@/types/interfaces.ts';
-import { isPinHelper } from '@/utils/guards/interfaces.ts';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 type SegmentData = {
   segment: SegmentPosition;
@@ -262,7 +262,11 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   addMarkers() {
     this.gm.features.forEach((featureData) => {
-      if (!featureData || !this.allowedShapes.includes(featureData.shape) || featureData.getShapeProperty("disableEdit") === true) {
+      if (
+        !featureData ||
+        !this.allowedShapes.includes(featureData.shape) ||
+        featureData.getShapeProperty('disableEdit') === true
+      ) {
         return;
       }
 

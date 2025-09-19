@@ -1,3 +1,4 @@
+import { GM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyEvent,
@@ -22,7 +23,6 @@ import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
 import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import log from 'loglevel';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 type PolygonFeature = Feature<Polygon | MultiPolygon>;
 
@@ -73,7 +73,7 @@ export class EditCut extends BaseEdit {
 
   cutFeaturesByPolygon(bBoxfeatures: Array<FeatureData>, cutGeoJson: PolygonFeature) {
     bBoxfeatures.forEach((featureData) => {
-      if (featureData.getShapeProperty("disableEdit") === true) {
+      if (featureData.getShapeProperty('disableEdit') === true) {
         return;
       }
       if (isGeoJsonFeatureInPolygon(featureData.getGeoJson(), cutGeoJson)) {
