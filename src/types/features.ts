@@ -41,6 +41,7 @@ export type FeatureShapeProperties = {
   ySemiAxis?: number;
   angle?: number;
   text?: string;
+  disableEdit?: boolean;
 };
 
 export type PrefixedFeatureShapeProperties = WithPrefixedKeys<

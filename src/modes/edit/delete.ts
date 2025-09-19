@@ -32,7 +32,7 @@ export class EditDelete extends BaseEdit {
       return { next: false };
     }
 
-    const feature = this.gm.features.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
+    const feature = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
     if (feature && this.allowedShapes.includes(feature.shape)) {
       this.gm.features.delete(feature);
       this.fireFeatureRemovedEvent(feature);

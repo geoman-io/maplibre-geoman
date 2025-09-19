@@ -82,7 +82,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
     event: AnyEvent;
     sourceNames: Array<FeatureSourceName>;
   }) {
-    const featureData = this.gm.features.getFeatureByMouseEvent({ event, sourceNames });
+    const featureData = this.getFeatureByMouseEvent({ event, sourceNames });
     if (featureData && this.allowedShapeTypes.includes(featureData.shape)) {
       return featureData;
     }

@@ -1,8 +1,10 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type ActionType,
+  type AnyEvent,
   type DrawModeName,
   type EditModeName,
+  type FeatureSourceName,
   type GeoJsonShapeFeature,
   GM_PREFIX,
   type GmBeforeFeatureUpdateEvent,
@@ -57,6 +59,24 @@ export abstract class BaseEdit extends BaseAction {
       return;
     }
     this.gm.mapAdapter.setCursor('');
+  }
+
+  getFeatureByMouseEvent({
+    event,
+    sourceNames,
+  }: {
+    event: AnyEvent;
+    sourceNames: Array<FeatureSourceName>;
+  }): FeatureData | null {
+    const featureData = this.gm.features.getFeatureByMouseEvent({
+      event,
+      sourceNames,
+    });
+
+    if (!featureData || featureData.getShapeProperty('disableEdit') === true) {
+      return null;
+    }
+    return featureData;
   }
 
   setEventsForLayers(eventName: PointerEventName, callback: () => void) {
