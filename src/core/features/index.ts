@@ -325,13 +325,16 @@ export class Features {
   exportGeoJson(
     {
       allowedShapes,
+      idPropertyName,
     }: {
       allowedShapes?: Array<FeatureShape>;
+      idPropertyName?: string;
     } = { allowedShapes: undefined },
   ): GeoJsonShapeFeatureCollection {
     return this.asGeoJsonFeatureCollection({
       sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
       shapeTypes: allowedShapes ? allowedShapes : [...SHAPE_NAMES],
+      idPropertyName,
     });
   }
 
@@ -354,14 +357,18 @@ export class Features {
   asGeoJsonFeatureCollection({
     shapeTypes,
     sourceNames,
+    idPropertyName,
   }: {
     shapeTypes?: Array<FeatureShape>;
     sourceNames: Array<FeatureSourceName>;
+    idPropertyName?: string;
   }): GeoJsonShapeFeatureCollection {
     const resultFeatureCollection: GeoJsonShapeFeatureCollection = {
       type: 'FeatureCollection',
       features: [],
     };
+
+    idPropertyName ??= FEATURE_ID_PROPERTY;
 
     sourceNames.forEach((sourceName) => {
       const source = this.sources[sourceName];
@@ -378,11 +385,15 @@ export class Features {
               return;
             }
 
+            const id = feature.properties[FEATURE_ID_PROPERTY];
+
+            if (idPropertyName !== FEATURE_ID_PROPERTY) {
+              feature.properties[idPropertyName] = id;
+              delete feature.properties[FEATURE_ID_PROPERTY];
+            }
+
             if (shapeTypes === undefined || shapeTypes.includes(featureData.shape)) {
-              resultFeatureCollection.features.push({
-                ...feature,
-                id: feature.properties[FEATURE_ID_PROPERTY],
-              });
+              resultFeatureCollection.features.push({ ...feature, id });
             }
           });
       }
