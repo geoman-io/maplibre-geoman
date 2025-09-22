@@ -84,7 +84,9 @@ const buttonHandlers = {
     if (!geoman) {
       log.warn('Geoman is not initialized');
     }
-    const geojson = geoman.features.exportGeoJson();
+    const geojson = geoman.features.exportGeoJson({
+      idPropertyName: 'uuid',
+    });
     log.debug('total features count: ', geojson?.features?.length);
     log.debug('geojson', JSON.stringify(geojson, null, 2));
   },
