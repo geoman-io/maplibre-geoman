@@ -4,6 +4,7 @@ import type { FeatureSourceName, GeoJsonSourceDiff } from '@/types';
 import { typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
 import { debounce, throttle } from 'lodash-es';
+import log from 'loglevel';
 
 type SourceUpdateMethods = {
   [key in FeatureSourceName]: {
@@ -11,6 +12,9 @@ type SourceUpdateMethods = {
     throttled: () => void;
   };
 };
+
+const MAX_DIFF_ITEMS = 5000;
+
 // this class is here cause playwright fails if it's extracted for unknown reason
 // (possible imports trouble)
 export class SourceUpdateManager {
@@ -82,13 +86,29 @@ export class SourceUpdateManager {
   }
 
   updateSourceActual(sourceName: FeatureSourceName) {
-    if (this.autoUpdatesEnabled) {
-      const source = this.gm.features.sources[sourceName];
-      const combinedDiff = this.getCombinedDiff(sourceName);
+    const source = this.gm.features.sources[sourceName];
 
-      if (source && combinedDiff) {
+    if (this.autoUpdatesEnabled && source) {
+      if (!source.loaded) {
+        setTimeout(() => {
+          this.updateSourceActual(sourceName);
+        }, 30);
+        return;
+      }
+
+      const combinedDiff = this.getCombinedDiff(sourceName);
+      if (combinedDiff) {
         // applies non empty diff
+        log.debug(
+          `source.updateData: A:${combinedDiff.add?.length}, ` +
+            `U:${combinedDiff.update?.length}, ` +
+            `R:${combinedDiff.remove?.length}`,
+        );
         source.updateData(combinedDiff);
+      }
+
+      if (this.updateStorage[sourceName].length > 0) {
+        setTimeout(() => this.updateSourceActual(sourceName), 30);
       }
     }
   }
@@ -112,11 +132,13 @@ export class SourceUpdateManager {
       update: [],
     };
 
-    this.updateStorage[sourceName].forEach((diff) => {
-      combinedDiff = this.mergeGeoJsonDiff(combinedDiff, diff);
-    });
-
-    this.updateStorage[sourceName] = [];
+    for (let i = 0; i < MAX_DIFF_ITEMS; i += 1) {
+      if (this.updateStorage[sourceName][i] === undefined) {
+        break;
+      }
+      combinedDiff = this.mergeGeoJsonDiff(combinedDiff, this.updateStorage[sourceName][i]);
+    }
+    this.updateStorage[sourceName] = this.updateStorage[sourceName].slice(MAX_DIFF_ITEMS);
 
     if (Object.values(combinedDiff).find((item) => item.length)) {
       return combinedDiff;
