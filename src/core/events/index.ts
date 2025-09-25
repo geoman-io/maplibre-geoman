@@ -4,14 +4,14 @@ import { ControlEventListener } from '@/core/events/listeners/controls.ts';
 import { DrawEventListener } from '@/core/events/listeners/draw.ts';
 import { EditEventListener } from '@/core/events/listeners/edit.ts';
 import { HelperEventListener } from '@/core/events/listeners/helper.ts';
-import type { Geoman } from '@/main.ts';
+import type { ActionType, Geoman } from '@/main.ts';
 import log from 'loglevel';
-import type { EventType, GmEvent, GmEventName } from 'src/types/events';
+import type { GmEvent, GmEventName } from 'src/types/events';
 
 export default class GmEvents {
   gm: Geoman;
   bus: EventBus;
-  listeners: { [key in EventType]?: BaseEventListener } = {};
+  listeners: { [key in ActionType]?: BaseEventListener } = {};
 
   constructor(gm: Geoman) {
     this.gm = gm;

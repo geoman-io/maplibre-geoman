@@ -13,7 +13,7 @@ import type {
   GlobalModeToggledFwdEvent,
   GmControlLoadEvent,
   GmDrawModeEvent,
-  GmDrawShapeCreatedEvent,
+  GmDrawFeatureCreatedEvent,
   GmEditFeatureEditEndEvent,
   GmEditFeatureEditStartEvent,
   GmEditFeatureRemovedEvent,
@@ -124,7 +124,7 @@ export class EventForwarder {
     }
   }
 
-  forwardFeatureCreated(payload: GmDrawShapeCreatedEvent) {
+  forwardFeatureCreated(payload: GmDrawFeatureCreatedEvent) {
     const eventData: FeatureCreatedFwdEvent = {
       actionType: payload.actionType,
       action: payload.action,

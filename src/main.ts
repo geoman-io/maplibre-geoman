@@ -180,6 +180,7 @@ export class Geoman {
     });
 
     this.events.fire(`${GM_PREFIX}:control`, {
+      name: 'gm:control:load',
       level: 'system',
       actionType: 'control',
       action: 'loaded',

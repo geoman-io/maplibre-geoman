@@ -160,6 +160,7 @@ export class GmOptions {
 
   fireModeEvent(sectionName: ActionType, modeName: ModeName, action: ModeAction) {
     const payload: GmBaseModeEvent & { mode: ModeName } = {
+      name: `${GM_PREFIX}:${modeName}:mode`,
       level: 'system',
       actionType: sectionName,
       mode: modeName,
@@ -173,6 +174,8 @@ export class GmOptions {
         this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
       } else if (isGmHelperEvent(payload)) {
         this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
+      } else {
+        log.warn('Unknown mode event: ', payload);
       }
     }
   }
@@ -183,6 +186,7 @@ export class GmOptions {
     action: GmControlSwitchEvent['action'],
   ) {
     const payload: GmControlSwitchEvent = {
+      name: 'gm:control:switch',
       level: 'system',
       actionType: 'control',
       section: sectionName,

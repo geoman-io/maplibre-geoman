@@ -1,5 +1,5 @@
 import type { FeatureData } from '@/core/features/feature-data.ts';
-import type { GmDrawShapeCreatedEvent } from '@/types/events/draw.ts';
+import type { GmDrawFeatureCreatedEvent } from '@/types/events/draw.ts';
 import type { GmEditFeatureRemovedEvent, GmEditFeatureUpdatedEvent } from '@/types/events/edit.ts';
 import type { FeatureShape } from '@/types/features.ts';
 import type { AnyMapInstance } from '@/types/map/index.ts';
@@ -7,7 +7,7 @@ import type { AnyMapInstance } from '@/types/map/index.ts';
 import type { DrawModeName } from '@/types/modes/index.ts';
 
 export interface FeatureCreatedFwdEvent
-  extends Pick<GmDrawShapeCreatedEvent, 'actionType' | 'action'> {
+  extends Pick<GmDrawFeatureCreatedEvent, 'actionType' | 'action'> {
   shape: DrawModeName;
   feature: FeatureData;
   map: AnyMapInstance;

@@ -8,13 +8,13 @@ import type { GmFwdEvent } from '@/types/index.ts';
 import type { ActionType } from '@/types/options.ts';
 import type { BaseMapAnyEvent } from '@mapLib/types/events.ts';
 
-export type EventType = ActionType | 'control';
 export type EventLevel = 'system' | 'user';
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type GmBaseEvent = {
   level: EventLevel;
-  actionType: EventType;
+  name: string;
+  actionType: ActionType;
   action: string;
 };
 
@@ -23,7 +23,7 @@ export type AnyEvent = GmEvent | GmFwdEvent | BaseMapAnyEvent;
 
 export type GmPrefix = typeof GM_PREFIX;
 export type GmSystemPrefix = typeof GM_SYSTEM_PREFIX;
-export type GmEventNameWithoutPrefix = EventType;
+export type GmEventNameWithoutPrefix = ActionType;
 export type GmEventName = `${GmPrefix}:${GmEventNameWithoutPrefix}`;
 
 export type * from '@/types/events/forwarder/index.ts';

@@ -1,4 +1,4 @@
-import { type GmBaseEvent } from '@/types/events/index.ts';
+import { type GmBaseEvent, type GmPrefix } from '@/types/events/index.ts';
 import type { GmBaseModeEvent } from '@/types/events/mode.ts';
 import type { HelperModeName } from '@/types/modes/index.ts';
 
@@ -13,6 +13,7 @@ export const geofencingViolationActions = [
 ] as const;
 
 export interface GmGeofencingViolationEvent extends GmBaseEvent {
+  name: `${GmPrefix}:helper:geofencing_violation`;
   mode: 'geofencing';
   actionType: 'draw' | 'edit';
   action: (typeof geofencingViolationActions)[number];

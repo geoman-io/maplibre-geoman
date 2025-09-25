@@ -6,9 +6,9 @@ import {
   type EdgeMarkerData,
   type EditModeName,
   type FeatureShape,
-  type GmEditEvent,
   type GmEditFeatureUpdatedEvent,
   type GmEditMarkerEvent,
+  type GmEditMarkerMoveEvent,
   type HelperModeName,
   type LngLat,
   type MapHandlerReturnData,
@@ -568,6 +568,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     markerData: MarkerData,
   ) {
     const payload: GmEditMarkerEvent = {
+      name: 'gm:edit:marker',
       level: 'system',
       actionType: 'edit',
       mode: 'change',
@@ -579,7 +580,8 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   sendMarkerRightClickEvent(featureData: FeatureData, markerData: MarkerData) {
-    const payload: GmEditEvent = {
+    const payload: GmEditMarkerEvent = {
+      name: 'gm:edit:marker',
       level: 'system',
       actionType: 'edit',
       mode: 'change',
@@ -605,7 +607,8 @@ export class ShapeMarkersHelper extends BaseHelper {
 
       targetMarkers.forEach((item) => {
         if (this.previousPosition) {
-          const payload: GmEditEvent = {
+          const payload: GmEditMarkerMoveEvent = {
+            name: 'gm:edit:marker_move',
             level: 'system',
             actionType: 'edit',
             mode: 'drag',

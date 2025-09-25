@@ -1,3 +1,4 @@
+import { GM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import {
@@ -6,6 +7,7 @@ import {
   type GeoJsonLineFeature,
   type GeoJsonShapeFeature,
   type Geoman,
+  type GmDrawLineDrawerEventWithData,
   type LineEventHandlerArguments,
   type LngLat,
   type MapHandlerReturnData,
@@ -19,13 +21,12 @@ import { BaseDraw } from '@/modes/draw/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
+import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import lineToPolygon from '@turf/line-to-polygon';
 import type { Position } from 'geojson';
 import log from 'loglevel';
-import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 type LineDrawerOptions = {
   snappingMarkers: 'first' | 'last' | 'all' | 'none';
@@ -486,7 +487,8 @@ export class LineDrawer extends BaseDraw {
   }
 
   fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
-    this.gm.events.fire(`${GM_PREFIX}:draw`, {
+    const payload: GmDrawLineDrawerEventWithData = {
+      name: 'gm:draw:shape_with_data',
       level: 'system',
       actionType: 'draw',
       mode: 'line',
@@ -494,11 +496,14 @@ export class LineDrawer extends BaseDraw {
       action: 'start',
       featureData,
       markerData,
-    });
+    };
+
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
-    this.gm.events.fire(`${GM_PREFIX}:draw`, {
+    const payload: GmDrawLineDrawerEventWithData = {
+      name: 'gm:draw:shape_with_data',
       level: 'system',
       actionType: 'draw',
       mode: 'line',
@@ -506,17 +511,23 @@ export class LineDrawer extends BaseDraw {
       action: 'update',
       featureData,
       markerData,
-    });
+    };
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 
   fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
-    this.gm.events.fire(`${GM_PREFIX}:draw`, {
+    const payload: GmDrawLineDrawerEventWithData = {
+      name: 'gm:draw:shape_with_data',
       level: 'system',
       actionType: 'draw',
       mode: 'line',
       action: 'finish',
       variant: 'line_drawer',
       geoJsonFeature: featureGeoJson,
-    });
+      markerData: null,
+      featureData: null,
+    };
+
+    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
   }
 }

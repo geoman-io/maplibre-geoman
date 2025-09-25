@@ -1,16 +1,18 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import { type GmBaseEvent, type NonEmptyArray } from '@/types/events/index.ts';
+import { type GmBaseEvent, type GmPrefix, type NonEmptyArray } from '@/types/events/index.ts';
 import type { GmBaseModeEvent } from '@/types/events/mode.ts';
 import type { LngLat } from '@/types/map/index.ts';
 import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index.ts';
 
 // Edit events
 export interface GmEditModeEvent extends GmBaseModeEvent {
+  name: `${GmPrefix}:edit:mode`;
   actionType: 'edit';
   mode: EditModeName;
 }
 
 export interface GmEditMarkerMoveEvent extends GmBaseEvent {
+  name: `${GmPrefix}:edit:marker_move`;
   actionType: 'edit';
   mode: EditModeName;
   action: 'marker_move';
@@ -21,6 +23,7 @@ export interface GmEditMarkerMoveEvent extends GmBaseEvent {
 }
 
 export interface GmEditMarkerEvent extends GmBaseEvent {
+  name: `${GmPrefix}:edit:marker`;
   actionType: 'edit';
   mode: EditModeName;
   action: 'edge_marker_click' | 'marker_right_click' | 'marker_captured' | 'marker_released';
@@ -29,6 +32,7 @@ export interface GmEditMarkerEvent extends GmBaseEvent {
 }
 
 export interface GmEditFeatureRemovedEvent extends GmBaseEvent {
+  name: `${GmPrefix}:edit:feature_removed`;
   actionType: 'edit';
   mode: DrawModeName;
   action: 'feature_removed';
@@ -36,6 +40,7 @@ export interface GmEditFeatureRemovedEvent extends GmBaseEvent {
 }
 
 export interface GmEditFeatureUpdatedEvent extends GmBaseEvent {
+  name: `${GmPrefix}:edit:feature_updated`;
   actionType: 'edit';
   mode: EditModeName;
   action: 'feature_updated';
@@ -58,6 +63,7 @@ export interface GmEditFeatureUpdatedEvent extends GmBaseEvent {
 export interface GmEditFeatureEditStartEvent extends GmBaseEvent {
   // fired when a long action is supposed for a mode
   // examples: edit:change, edit:rotate, edit: scale
+  name: `${GmPrefix}:edit:feature_edit_start`;
   actionType: 'edit';
   mode: EditModeName;
   action: 'feature_edit_start';
@@ -67,6 +73,7 @@ export interface GmEditFeatureEditStartEvent extends GmBaseEvent {
 export interface GmEditFeatureEditEndEvent extends GmBaseEvent {
   // fired when a long action is supposed for a mode
   // examples: edit:change, edit:rotate, edit: scale
+  name: `${GmPrefix}:edit:feature_edit_end`;
   actionType: 'edit';
   mode: EditModeName;
   action: 'feature_edit_end';
