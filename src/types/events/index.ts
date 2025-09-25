@@ -24,7 +24,7 @@ export type AnyEvent = GmEvent | GmFwdEvent | BaseMapAnyEvent;
 export type GmPrefix = typeof GM_PREFIX;
 export type GmSystemPrefix = typeof GM_SYSTEM_PREFIX;
 export type GmEventNameWithoutPrefix = ActionType;
-export type GmEventName = `${GmPrefix}:${GmEventNameWithoutPrefix}`;
+export type GmEventName = `${GmSystemPrefix}:${GmEventNameWithoutPrefix}`;
 
 export type * from '@/types/events/forwarder/index.ts';
 export type * from '@/types/events/bus.ts';

@@ -2,7 +2,7 @@
  * Copyright (C) Geoman.io - All Rights Reserved
  */
 import defaultMarker from '@/assets/images/markers/default-marker.png';
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import GmControl from '@/core/controls/index.ts';
 import { type EventForwarder } from '@/core/events/forwarder.ts';
 import GmEvents from '@/core/events/index.ts';
@@ -20,6 +20,7 @@ import { helperClassMap } from '@/modes/helpers/index.ts';
 import '@/styles/map/maplibre.css';
 import '@/styles/style.css';
 import type { ModeName } from '@/types/controls.ts';
+import type { GmControlLoadEvent } from '@/types/index.ts';
 import { type AnyMapInstance, type LngLat, type MapInstanceWithGeoman } from '@/types/map/index.ts';
 import {
   type ActionInstance,
@@ -179,12 +180,13 @@ export class Geoman {
       image: defaultMarker,
     });
 
-    this.events.fire(`${GM_PREFIX}:control`, {
-      name: 'gm:control:load',
+    const payload: GmControlLoadEvent = {
+      name: `${GM_SYSTEM_PREFIX}:control:load`,
       level: 'system',
       actionType: 'control',
       action: 'loaded',
-    });
+    };
+    this.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
     this.loaded = true;
   }
 

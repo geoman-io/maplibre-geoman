@@ -1,4 +1,4 @@
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
@@ -44,7 +44,7 @@ export abstract class BaseDrag extends BaseEdit {
   );
 
   eventHandlers = {
-    [`${GM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
+    [`${GM_SYSTEM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
 
     mousedown: this.onMouseDown.bind(this),
     touchstart: this.onMouseDown.bind(this),

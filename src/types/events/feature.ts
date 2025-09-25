@@ -1,11 +1,11 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type { ModeName } from '@/types/controls.ts';
-import { type GmBaseEvent, type GmPrefix, type NonEmptyArray } from '@/types/events/index.ts';
+import { type GmBaseEvent, type GmSystemPrefix, type NonEmptyArray } from '@/types/events/index.ts';
 
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 
 export interface GmFeatureBeforeCreateEvent extends GmBaseEvent {
-  name: `${GmPrefix}:feature:before_create`;
+  name: `${GmSystemPrefix}:feature:before_create`;
   actionType: 'draw';
   mode: ModeName;
   action: 'before_create';
@@ -13,7 +13,7 @@ export interface GmFeatureBeforeCreateEvent extends GmBaseEvent {
 }
 
 export interface GmFeatureBeforeUpdateEvent extends GmBaseEvent {
-  name: `${GmPrefix}:feature:before_update`;
+  name: `${GmSystemPrefix}:feature:before_update`;
   actionType: 'edit';
   mode: ModeName;
   action: 'before_update';

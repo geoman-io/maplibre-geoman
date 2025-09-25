@@ -1,7 +1,7 @@
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import {
   type AnyEvent,
   type DrawModeName,
-  GM_PREFIX,
   type LineEventHandlerArguments,
   type ShapeName,
   SOURCES,
@@ -20,7 +20,7 @@ export class DrawPolygon extends BaseDraw {
   shape: ShapeName = 'polygon';
   lineDrawer = new LineDrawer(this.gm, { snappingMarkers: 'first', targetShape: 'polygon' });
   eventHandlers = {
-    [`${GM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),
   };
 

@@ -1,4 +1,4 @@
-import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX, IS_PRO } from '@/core/constants.ts';
 import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
@@ -594,14 +594,14 @@ export class Features {
   fireFeatureCreatedEvent(featureData: FeatureData) {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GmDrawFeatureCreatedEvent = {
-        name: 'gm:draw:feature_created',
+        name: `${GM_SYSTEM_PREFIX}:draw:feature_created`,
         level: 'system',
         actionType: 'draw',
         mode: featureData.shape,
         action: 'feature_created',
         featureData,
       };
-      this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
     }
   }
 }

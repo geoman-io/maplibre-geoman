@@ -1,4 +1,4 @@
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import {
@@ -68,7 +68,7 @@ export class LineDrawer extends BaseDraw {
   );
 
   eventHandlers = {
-    [`${GM_PREFIX}:helper`]: this.handleGmHelperEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:helper`]: this.handleGmHelperEvent.bind(this),
     click: this.onMouseClick.bind(this),
     mousemove: this.throttledMethods.onMouseMove.bind(this),
   };
@@ -488,7 +488,7 @@ export class LineDrawer extends BaseDraw {
 
   fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GmDrawLineDrawerEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: 'line',
@@ -498,12 +498,12 @@ export class LineDrawer extends BaseDraw {
       markerData,
     };
 
-    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GmDrawLineDrawerEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: 'line',
@@ -512,12 +512,12 @@ export class LineDrawer extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
   fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
     const payload: GmDrawLineDrawerEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: 'line',
@@ -528,6 +528,6 @@ export class LineDrawer extends BaseDraw {
       featureData: null,
     };
 
-    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 }

@@ -1,4 +1,4 @@
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { controlsStore } from '@/core/controls/components/controls-store.ts';
 import GmReactiveControls from '@/core/controls/components/gm-controls.svelte';
 import { systemControls } from '@/core/controls/defaults.ts';
@@ -26,9 +26,9 @@ export default class GMControl extends BaseControl {
   reactiveControls: Record<string, unknown> | null = null;
   container: HTMLElement | undefined = undefined;
   eventHandlers: EventHandlers = {
-    [`${GM_PREFIX}:draw`]: this.handleModeEvent.bind(this),
-    [`${GM_PREFIX}:edit`]: this.handleModeEvent.bind(this),
-    [`${GM_PREFIX}:helper`]: this.handleModeEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:draw`]: this.handleModeEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:edit`]: this.handleModeEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:helper`]: this.handleModeEvent.bind(this),
   };
 
   onAdd(): HTMLElement {

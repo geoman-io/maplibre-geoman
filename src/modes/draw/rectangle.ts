@@ -1,3 +1,5 @@
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   AnyEvent,
@@ -20,8 +22,6 @@ import {
 } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BBox } from 'geojson';
-import { GM_PREFIX } from '@/core/constants.ts';
-import { SOURCES } from '@/core/features/constants.ts';
 
 export class DrawRectangle extends BaseDraw {
   mode: DrawModeName = 'rectangle';
@@ -188,7 +188,7 @@ export class DrawRectangle extends BaseDraw {
 
   fireStartEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GmDrawShapeEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -197,12 +197,12 @@ export class DrawRectangle extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GmDrawShapeEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -211,18 +211,18 @@ export class DrawRectangle extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 
   fireFinishEvent() {
     const event: GmDrawShapeEvent = {
-      name: 'gm:draw:shape',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape`,
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'finish',
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 }

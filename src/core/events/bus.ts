@@ -1,3 +1,4 @@
+import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventForwarder } from '@/core/events/forwarder.ts';
 import type {
   AnyEvent,
@@ -16,7 +17,6 @@ import type {
 import { isBaseMapEvent, isGmEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 export class EventBus {
   gm: Geoman;
@@ -30,6 +30,8 @@ export class EventBus {
   }
 
   fireEvent(eventName: GmEventName, payload: GmEvent) {
+    log.debug('fireEvent', eventName, payload.name);
+
     const eventHandler = this.gmEventHandlers[eventName];
     if (!eventHandler) {
       return;
@@ -101,7 +103,7 @@ export class EventBus {
   }
 
   off(eventName: AnyEventName, handler: GmEventHadler | MapEventHadler) {
-    if (eventName.startsWith(`${GM_PREFIX}`)) {
+    if (eventName.startsWith(`${GM_SYSTEM_PREFIX}`)) {
       this.offGmEvent(eventName as GmEventName, handler as GmEventHadler);
     } else {
       this.offMapEvent(eventName as MapEventName, handler as MapEventHadler);
@@ -145,7 +147,7 @@ export class EventBus {
       handlers: [],
       controlHandler: (event: AnyEvent) => {
         let eventHandler: EventControls;
-        if (isGmEvent(event) && eventName.startsWith(`${GM_PREFIX}`)) {
+        if (isGmEvent(event) && eventName.startsWith(`${GM_SYSTEM_PREFIX}`)) {
           eventHandler = this.gmEventHandlers[eventName as GmEventName];
         } else {
           eventHandler = this.mapEventHandlers[eventName as MapEventName];

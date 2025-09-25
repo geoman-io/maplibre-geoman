@@ -1,4 +1,4 @@
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type AnyEvent,
@@ -56,8 +56,8 @@ export class ShapeMarkersHelper extends BaseHelper {
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
   eventHandlers = {
-    [`${GM_PREFIX}:draw`]: this.handleGmDraw.bind(this),
-    [`${GM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
+    [`${GM_SYSTEM_PREFIX}:draw`]: this.handleGmDraw.bind(this),
+    [`${GM_SYSTEM_PREFIX}:edit`]: this.handleGmEdit.bind(this),
 
     mousedown: this.onMouseDown.bind(this),
     touchstart: this.onMouseDown.bind(this),
@@ -568,7 +568,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     markerData: MarkerData,
   ) {
     const payload: GmEditMarkerEvent = {
-      name: 'gm:edit:marker',
+      name: `${GM_SYSTEM_PREFIX}:edit:marker`,
       level: 'system',
       actionType: 'edit',
       mode: 'change',
@@ -576,12 +576,12 @@ export class ShapeMarkersHelper extends BaseHelper {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
   sendMarkerRightClickEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GmEditMarkerEvent = {
-      name: 'gm:edit:marker',
+      name: `${GM_SYSTEM_PREFIX}:edit:marker`,
       level: 'system',
       actionType: 'edit',
       mode: 'change',
@@ -589,7 +589,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
   sendMarkerMoveEvent(event: BaseMapPointerEvent) {
@@ -608,7 +608,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       targetMarkers.forEach((item) => {
         if (this.previousPosition) {
           const payload: GmEditMarkerMoveEvent = {
-            name: 'gm:edit:marker_move',
+            name: `${GM_SYSTEM_PREFIX}:edit:marker_move`,
             level: 'system',
             actionType: 'edit',
             mode: 'drag',
@@ -618,7 +618,7 @@ export class ShapeMarkersHelper extends BaseHelper {
             lngLatStart: this.previousPosition,
             lngLatEnd: markerLngLat,
           };
-          this.gm.events.fire(`${GM_PREFIX}:edit`, payload);
+          this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
         }
       });
     }

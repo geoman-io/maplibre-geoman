@@ -1,3 +1,4 @@
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import type {
   ActionOptions,
   ActionSettings,
@@ -12,7 +13,6 @@ import type {
 import type { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { isGmGeofencingViolationEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 export abstract class BaseAction {
   gm: Geoman;
@@ -30,7 +30,7 @@ export abstract class BaseAction {
   abstract eventHandlers: EventHandlers;
 
   internalEventHandlers: EventHandlers = {
-    [`${GM_PREFIX}:helper`]: this.handleHelperEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:helper`]: this.handleHelperEvent.bind(this),
   };
 
   constructor(gm: Geoman) {

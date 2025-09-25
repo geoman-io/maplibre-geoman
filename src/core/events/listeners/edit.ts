@@ -1,3 +1,4 @@
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
 import type { ActionInstanceKey, EventHandlers, Geoman, GmEditEvent, GmEvent } from '@/main.ts';
@@ -5,11 +6,10 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 export class EditEventListener extends BaseEventListener {
   eventHandlers: EventHandlers = {
-    [`${GM_PREFIX}:edit`]: this.handleEditEvent.bind(this),
+    [`${GM_SYSTEM_PREFIX}:edit`]: this.handleEditEvent.bind(this),
   };
 
   constructor(gm: Geoman, bus: EventBus) {

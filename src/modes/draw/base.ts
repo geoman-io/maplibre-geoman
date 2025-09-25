@@ -1,4 +1,4 @@
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
@@ -59,14 +59,14 @@ export abstract class BaseDraw extends BaseAction {
     this.flags.featureCreateAllowed = true;
 
     const payload: GmFeatureBeforeCreateEvent = {
-      name: 'gm:feature:before_create',
+      name: `${GM_SYSTEM_PREFIX}:feature:before_create`,
       level: 'system',
       actionType: 'draw',
       mode: forceMode || this.mode,
       action: 'before_create',
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${GM_PREFIX}:${this.actionType}`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${this.actionType}`, payload);
   }
 
   fireMarkerPointerStartEvent() {
@@ -76,7 +76,7 @@ export abstract class BaseDraw extends BaseAction {
 
     const marker = this.gm.markerPointer.marker;
     const payload: GmDrawShapeEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       variant: null,
       actionType: 'draw',
@@ -92,7 +92,7 @@ export abstract class BaseDraw extends BaseAction {
       },
       featureData: this.featureData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
   fireMarkerPointerUpdateEvent() {
@@ -102,7 +102,7 @@ export abstract class BaseDraw extends BaseAction {
 
     const marker = this.gm.markerPointer.marker;
     const payload: GmDrawShapeEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       variant: null,
       actionType: 'draw',
@@ -118,7 +118,7 @@ export abstract class BaseDraw extends BaseAction {
       },
       featureData: this.featureData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
   fireMarkerPointerFinishEvent() {
@@ -127,14 +127,14 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     const payload: GmDrawShapeEvent = {
-      name: 'gm:draw:shape',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape`,
       level: 'system',
       variant: null,
       actionType: 'draw',
       mode: this.shape,
       action: 'finish',
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
   forwardLineDrawerEvent(payload: GmEvent) {
@@ -144,7 +144,7 @@ export abstract class BaseDraw extends BaseAction {
 
     if (payload.action === 'start' || payload.action === 'update') {
       const eventData: GmDrawShapeEventWithData = {
-        name: 'gm:draw:shape_with_data',
+        name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
         level: 'system',
         actionType: 'draw',
         mode: this.shape,
@@ -153,17 +153,17 @@ export abstract class BaseDraw extends BaseAction {
         featureData: payload.featureData,
         markerData: payload.markerData,
       };
-      this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
+      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, eventData);
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
       const eventData: GmDrawShapeEvent = {
-        name: 'gm:draw:shape',
+        name: `${GM_SYSTEM_PREFIX}:draw:shape`,
         level: 'system',
         actionType: 'draw',
         mode: this.shape,
         variant: null,
         action: payload.action,
       };
-      this.gm.events.fire(`${GM_PREFIX}:draw`, eventData);
+      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, eventData);
     }
 
     return { next: true };
@@ -175,7 +175,7 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     const event: GmDrawShapeEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -184,7 +184,7 @@ export abstract class BaseDraw extends BaseAction {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 
   fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null = null) {
@@ -193,7 +193,7 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     const event: GmDrawShapeEventWithData = {
-      name: 'gm:draw:shape_with_data',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
@@ -202,7 +202,7 @@ export abstract class BaseDraw extends BaseAction {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 
   fireFinishEvent() {
@@ -211,13 +211,13 @@ export abstract class BaseDraw extends BaseAction {
     }
 
     const event: GmDrawShapeEvent = {
-      name: 'gm:draw:shape',
+      name: `${GM_SYSTEM_PREFIX}:draw:shape`,
       level: 'system',
       actionType: 'draw',
       mode: this.shape,
       variant: null,
       action: 'finish',
     };
-    this.gm.events.fire(`${GM_PREFIX}:draw`, event);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 }

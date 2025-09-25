@@ -160,6 +160,7 @@ const initGeoman = async () => {
 
   await new Promise((resolve) => {
     map.once(`${GM_PREFIX}:loaded`, async () => {
+      log.debug('Map loaded');
       resolve(geoman);
     });
   });

@@ -1,4 +1,4 @@
-import { GM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/defaults/index.ts';
 import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
 import {
@@ -160,7 +160,7 @@ export class GmOptions {
 
   fireModeEvent(sectionName: ActionType, modeName: ModeName, action: ModeAction) {
     const payload: GmBaseModeEvent & { mode: ModeName } = {
-      name: `${GM_PREFIX}:${modeName}:mode`,
+      name: `${GM_SYSTEM_PREFIX}:${modeName}:mode`,
       level: 'system',
       actionType: sectionName,
       mode: modeName,
@@ -169,11 +169,11 @@ export class GmOptions {
 
     if (isGmModeEvent(payload)) {
       if (isGmDrawEvent(payload)) {
-        this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
+        this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
       } else if (isGmEditEvent(payload)) {
-        this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
+        this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
       } else if (isGmHelperEvent(payload)) {
-        this.gm.events.fire(`${GM_PREFIX}:${sectionName}`, payload);
+        this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
       } else {
         log.warn('Unknown mode event: ', payload);
       }
@@ -186,13 +186,13 @@ export class GmOptions {
     action: GmControlSwitchEvent['action'],
   ) {
     const payload: GmControlSwitchEvent = {
-      name: 'gm:control:switch',
+      name: `${GM_SYSTEM_PREFIX}:control:switch`,
       level: 'system',
       actionType: 'control',
       section: sectionName,
       target: modeName,
       action,
     };
-    this.gm.events.fire(`${GM_PREFIX}:control`, payload);
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
   }
 }
