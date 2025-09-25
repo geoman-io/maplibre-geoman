@@ -16,7 +16,7 @@ import type {
   GmDrawEvent,
   GmEditEvent,
   GmHelperEvent,
-  GmLoadedFwdEvent,
+  GmLoadStateFwdEvent,
   HelperModeName,
 } from '@/types';
 
@@ -35,6 +35,6 @@ type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}`, FeatureUpdatedFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}start`, FeatureEditStartFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}end`, FeatureEditEndFwdEvent> &
-  Record<`${typeof GM_PREFIX}:${GmControlLoadEvent['action']}`, GmLoadedFwdEvent>;
+  Record<`${typeof GM_PREFIX}:${GmControlLoadEvent['action']}`, GmLoadStateFwdEvent>;
 
 export type EventFor<T extends string> = T extends keyof EventsMap ? EventsMap[T] : AnyEvent;

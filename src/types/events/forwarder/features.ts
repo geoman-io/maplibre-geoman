@@ -5,23 +5,25 @@ import type { FeatureShape } from '@/types/features.ts';
 import type { AnyMapInstance } from '@/types/map/index.ts';
 
 import type { DrawModeName } from '@/types/modes/index.ts';
+import type { BaseFwdEvent } from '@/types/events/forwarder/base.ts';
+import type { FwdEditModeName, GmPrefix } from '@/types';
 
-export interface FeatureCreatedFwdEvent
-  extends Pick<GmDrawFeatureCreatedEvent, 'actionType' | 'action'> {
+export interface FeatureCreatedFwdEvent extends BaseFwdEvent<GmDrawFeatureCreatedEvent> {
+  type: `${GmPrefix}:create`;
   shape: DrawModeName;
   feature: FeatureData;
   map: AnyMapInstance;
 }
 
-export interface FeatureRemovedFwdEvent
-  extends Pick<GmEditFeatureRemovedEvent, 'actionType' | 'action'> {
+export interface FeatureRemovedFwdEvent extends BaseFwdEvent<GmEditFeatureRemovedEvent> {
+  type: `${GmPrefix}:remove`;
   shape: DrawModeName;
   feature: FeatureData;
   map: AnyMapInstance;
 }
 
-export interface FeatureUpdatedFwdEvent
-  extends Pick<GmEditFeatureUpdatedEvent, 'actionType' | 'action'> {
+export interface FeatureUpdatedFwdEvent extends BaseFwdEvent<GmEditFeatureUpdatedEvent> {
+  type: `${GmPrefix}:${FwdEditModeName}`;
   map: AnyMapInstance;
   shape?: FeatureShape;
   feature?: FeatureData;

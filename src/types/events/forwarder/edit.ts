@@ -7,18 +7,20 @@ import type { FeatureShape } from '@/types/features.ts';
 import type { AnyMapInstance } from '@/types/map/index.ts';
 
 import type { EditModeName } from '@/types/modes/index.ts';
+import type { BaseFwdEvent } from '@/types/events/forwarder/base.ts';
+import type { GmPrefix } from '@/types';
 
 export type FwdEditModeName = EditModeName | 'edit';
 
-export interface FeatureEditStartFwdEvent
-  extends Pick<GmEditFeatureEditStartEvent, 'actionType' | 'action'> {
+export interface FeatureEditStartFwdEvent extends BaseFwdEvent<GmEditFeatureEditStartEvent> {
+  type: `${GmPrefix}:${FwdEditModeName}start`;
   shape: FeatureShape;
   feature: FeatureData;
   map: AnyMapInstance;
 }
 
-export interface FeatureEditEndFwdEvent
-  extends Pick<GmEditFeatureEditEndEvent, 'actionType' | 'action'> {
+export interface FeatureEditEndFwdEvent extends BaseFwdEvent<GmEditFeatureEditEndEvent> {
+  type: `${GmPrefix}:${FwdEditModeName}end`;
   shape: FeatureShape;
   feature: FeatureData;
   map: AnyMapInstance;

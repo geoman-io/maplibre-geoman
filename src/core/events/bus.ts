@@ -1,4 +1,4 @@
-import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventForwarder } from '@/core/events/forwarder.ts';
 import type {
   AnyEvent,
@@ -30,8 +30,6 @@ export class EventBus {
   }
 
   fireEvent(eventName: GmEventName, payload: GmEvent) {
-    log.debug('fireEvent', eventName, payload.name);
-
     const eventHandler = this.gmEventHandlers[eventName];
     if (!eventHandler) {
       return;
@@ -79,7 +77,7 @@ export class EventBus {
   }
 
   on(eventName: AnyEventName, handler: MapEventHadler | GmEventHadler) {
-    if (eventName.startsWith(GM_PREFIX)) {
+    if (eventName.startsWith(GM_SYSTEM_PREFIX)) {
       this.onGmEvent(eventName as GmEventName, handler as GmEventHadler);
     } else {
       this.onMapEvent(eventName as MapEventName, handler as MapEventHadler);

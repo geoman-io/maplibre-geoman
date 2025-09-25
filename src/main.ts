@@ -67,9 +67,11 @@ export class Geoman {
 
     if (hasMapOnceMethod(map)) {
       if (this.isMapInstanceLoaded(map)) {
+        log.debug('map already loaded');
         this.init(mapWithGeoman).then();
       } else {
         map.once('load', async () => {
+          log.debug('map once loaded');
           await this.init(mapWithGeoman);
         });
       }
