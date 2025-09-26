@@ -1,5 +1,4 @@
 import type {
-  AnyEvent,
   DrawModeName,
   GeoJsonShapeFeature,
   LngLat,
@@ -11,6 +10,7 @@ import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
 import { SOURCES } from '@/core/features/constants.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export class DrawTextMarker extends BaseDraw {
   mode: DrawModeName = 'text_marker';
@@ -33,7 +33,7 @@ export class DrawTextMarker extends BaseDraw {
     this.fireMarkerPointerFinishEvent();
   }
 
-  onMouseMove(event: AnyEvent): MapHandlerReturnData {
+  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -42,7 +42,7 @@ export class DrawTextMarker extends BaseDraw {
     return { next: true };
   }
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }

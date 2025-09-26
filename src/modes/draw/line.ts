@@ -1,7 +1,6 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import type {
-  AnyEvent,
   DrawModeName,
   GeoJsonShapeFeature,
   LineEventHandlerArguments,
@@ -10,6 +9,7 @@ import type {
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { Position } from 'geojson';
 
 export class DrawLine extends BaseDraw {
@@ -30,7 +30,7 @@ export class DrawLine extends BaseDraw {
     this.lineDrawer.endAction();
   }
 
-  onMouseMove(event: AnyEvent) {
+  onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }

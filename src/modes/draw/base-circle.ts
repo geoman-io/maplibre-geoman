@@ -1,7 +1,6 @@
 import circleMarker from '@/assets/images/controls/circle-marker.svg';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
-  AnyEvent,
   DrawModeName,
   GeoJsonShapeFeature,
   LngLat,
@@ -14,6 +13,7 @@ import type {
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { SOURCES } from '@/core/features/constants.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export abstract class BaseCircle extends BaseDraw {
   mode: DrawModeName = 'circle';
@@ -35,9 +35,9 @@ export abstract class BaseCircle extends BaseDraw {
     this.fireFinishEvent();
   }
 
-  abstract onMouseMove(event: AnyEvent): MapHandlerReturnData;
+  abstract onMouseMove(event: BaseMapEvent): MapHandlerReturnData;
 
-  abstract onMouseClick(event: AnyEvent): MapHandlerReturnData;
+  abstract onMouseClick(event: BaseMapEvent): MapHandlerReturnData;
 
   getFeatureGeoJson(position: LngLat): GeoJsonShapeFeature {
     return {

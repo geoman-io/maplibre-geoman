@@ -1,4 +1,9 @@
-import { type AnyEvent, type EditModeName, type MapHandlerReturnData, SOURCES } from '@/main.ts';
+import {
+  type EditModeName,
+  type GmSystemEvent,
+  type MapHandlerReturnData,
+  SOURCES,
+} from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
@@ -14,7 +19,7 @@ export class EditDrag extends BaseDrag {
     // ...
   }
 
-  handleGmEdit(event: AnyEvent): MapHandlerReturnData {
+  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
     if (!isGmEditEvent(event)) {
       log.error('EditDrag.handleGmEdit: not an edit event', event);
       return { next: true };

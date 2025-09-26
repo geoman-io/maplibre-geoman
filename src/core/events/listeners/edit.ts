@@ -1,7 +1,13 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type { ActionInstanceKey, EventHandlers, Geoman, GmEditEvent, GmEvent } from '@/main.ts';
+import type {
+  ActionInstanceKey,
+  EventHandlers,
+  Geoman,
+  GmEditEvent,
+  GmSystemEvent,
+} from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
@@ -17,7 +23,7 @@ export class EditEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleEditEvent(payload: GmEvent) {
+  handleEditEvent(payload: GmSystemEvent) {
     if (!isGmEditEvent(payload)) {
       return { next: true };
     }

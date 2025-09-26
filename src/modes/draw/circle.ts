@@ -1,8 +1,9 @@
-import type { AnyEvent, DrawModeName, LngLat, MapHandlerReturnData, ShapeName } from '@/main.ts';
+import type { DrawModeName, LngLat, MapHandlerReturnData, ShapeName } from '@/main.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { allCoordinatesEqual, getGeoJsonCircle } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
 export class DrawCircle extends BaseCircle {
   mode: DrawModeName = 'circle';
@@ -16,7 +17,7 @@ export class DrawCircle extends BaseCircle {
     this.gm.options.settings.throttlingDelay,
   );
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapPointerEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }

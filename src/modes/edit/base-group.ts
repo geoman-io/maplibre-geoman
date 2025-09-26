@@ -1,13 +1,14 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type {
-  AnyEvent,
-  EditModeName,
-  FeatureShape,
-  FeatureSourceName,
-  MapHandlerReturnData,
+import {
+  type EditModeName,
+  type FeatureShape,
+  type FeatureSourceName,
+  isMapPointerEvent,
+  type MapHandlerReturnData,
 } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
+import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import booleanIntersects from '@turf/boolean-intersects';
 import difference from '@turf/difference';
 import union from '@turf/union';
@@ -36,7 +37,11 @@ export abstract class BaseGroupEdit extends BaseEdit {
     this.features = [];
   }
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+    if (!isMapPointerEvent(event)) {
+      return { next: true };
+    }
+
     // check if a clicked feature temporary, if yes, convert it to regular
     const featureUnselected = this.unselectFeature(event);
     if (featureUnselected) {
@@ -59,7 +64,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
     return { next: true };
   }
 
-  unselectFeature(event: AnyEvent) {
+  unselectFeature(event: BaseMapPointerEvent) {
     const tmpFeatureData = this.getAllowedFeatureByMouseEvent({
       event,
       sourceNames: [SOURCES.temporary],
@@ -79,7 +84,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
     event,
     sourceNames,
   }: {
-    event: AnyEvent;
+    event: BaseMapPointerEvent;
     sourceNames: Array<FeatureSourceName>;
   }) {
     const featureData = this.getFeatureByMouseEvent({ event, sourceNames });

@@ -8,7 +8,7 @@ import type {
   GeoJsonShapeFeature,
   GmDrawShapeEvent,
   GmDrawShapeEventWithData,
-  GmEvent,
+  GmSystemEvent,
   GmFeatureBeforeCreateEvent,
   MarkerData,
   NonEmptyArray,
@@ -137,7 +137,7 @@ export abstract class BaseDraw extends BaseAction {
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
-  forwardLineDrawerEvent(payload: GmEvent) {
+  forwardLineDrawerEvent(payload: GmSystemEvent) {
     if (!isGmDrawLineDrawerEvent(payload) || !this.shape) {
       return { next: true };
     }

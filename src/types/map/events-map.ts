@@ -1,6 +1,5 @@
 import { GM_PREFIX, type GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import type {
-  AnyEvent,
   FeatureCreatedFwdEvent,
   FeatureEditEndFwdEvent,
   FeatureEditStartFwdEvent,
@@ -15,10 +14,13 @@ import type {
   GmControlLoadEvent,
   GmDrawEvent,
   GmEditEvent,
+  GmEvent,
   GmHelperEvent,
   GmLoadStateFwdEvent,
+  GmSystemEvent,
   HelperModeName,
 } from '@/types';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
   Record<`${typeof GM_SYSTEM_PREFIX}:edit`, GmEditEvent> &
@@ -37,4 +39,6 @@ type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}end`, FeatureEditEndFwdEvent> &
   Record<`${typeof GM_PREFIX}:${GmControlLoadEvent['action']}`, GmLoadStateFwdEvent>;
 
-export type EventFor<T extends string> = T extends keyof EventsMap ? EventsMap[T] : AnyEvent;
+export type EventFor<T extends string> = T extends keyof EventsMap
+  ? EventsMap[T]
+  : GmSystemEvent | GmEvent | BaseMapEvent;

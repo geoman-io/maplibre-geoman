@@ -1,12 +1,11 @@
 import type {
-  AnyEvent,
   BaseMapEventName,
   MapWithOnceMethod,
   PartialLayerStyle,
   PointerEventName,
 } from '@/main.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
-import type { BaseMapMouseEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
+import type { BaseMapEvent, BaseMapMouseEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 
 export function isPointerEventName(key: string): key is PointerEventName {
@@ -27,7 +26,7 @@ export const hasMapOnceMethod = (map: unknown): map is MapWithOnceMethod => {
 };
 
 export const isMapPointerEvent = (
-  event: AnyEvent,
+  event: BaseMapEvent,
   options: { warning: boolean } = { warning: false },
 ): event is BaseMapPointerEvent => {
   if (!event) {
@@ -54,14 +53,14 @@ export const isMapPointerEvent = (
 };
 
 export const isMapMouseEvent = (
-  event: AnyEvent,
+  event: BaseMapEvent,
   options: { warning: boolean } = { warning: false },
 ): event is BaseMapMouseEvent => {
   return isMapPointerEvent(event, options) && !event.type.startsWith('touch');
 };
 
 export const isMapTouchEvent = (
-  event: AnyEvent,
+  event: BaseMapEvent,
   options: { warning: boolean } = { warning: false },
 ): event is BaseMapMouseEvent => {
   return isMapPointerEvent(event, options) && event.type.startsWith('touch');

@@ -22,10 +22,10 @@ import type {
   GmEditFeatureRemovedEvent,
   GmEditFeatureUpdatedEvent,
   GmEditModeEvent,
-  GmEvent,
+  GmSystemEvent,
   GmEventName,
   GmEventNameWithoutPrefix,
-  GmFwdEvent,
+  GmEvent,
   GmFwdEventName,
   GmHelperModeEvent,
   ModeName,
@@ -44,7 +44,7 @@ export class EventForwarder {
     return this.gm.mapAdapter.getMapInstance();
   }
 
-  processEvent(eventName: GmEventName, payload: GmEvent) {
+  processEvent(eventName: GmEventName, payload: GmSystemEvent) {
     // repeat the events to the map to allow end users to listen
     this.fireToMap({
       type: 'system',
@@ -231,8 +231,8 @@ export class EventForwarder {
     eventName,
     payload,
   }:
-    | { type: 'system'; eventName: GmEventNameWithoutPrefix; payload: GmEvent }
-    | { type: 'converted'; eventName: GmFwdEventName; payload: GmFwdEvent }): void {
+    | { type: 'system'; eventName: GmEventNameWithoutPrefix; payload: GmSystemEvent }
+    | { type: 'converted'; eventName: GmFwdEventName; payload: GmEvent }): void {
     const prefix = type === 'system' ? GM_SYSTEM_PREFIX : GM_PREFIX;
     const eventNameWithPrefix = `${prefix}:${eventName}`;
 

@@ -1,5 +1,4 @@
 import {
-  type AnyEvent,
   type EditModeName,
   type FeatureShape,
   type MapHandlerReturnData,
@@ -9,6 +8,7 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 
 import { SOURCES } from '@/core/features/constants.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export class EditDelete extends BaseEdit {
   mode: EditModeName = 'delete';
@@ -27,7 +27,7 @@ export class EditDelete extends BaseEdit {
     this.gm.markerPointer.disable();
   }
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: false };
     }

@@ -1,15 +1,9 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type {
-  AnyEvent,
-  EventHandlers,
-  Geoman,
-  LngLat,
-  MapEventHadler,
-  ScreenPoint,
-} from '@/main.ts';
+import type { EventHandlers, Geoman, LngLat, MapEventHadler, ScreenPoint } from '@/main.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 
 type EnableMarkerParameters = {
@@ -143,7 +137,7 @@ export class MarkerPointer {
     ) as BaseDomMarker; // todo: create a marker abstraction
   }
 
-  onMouseMove(event: AnyEvent) {
+  onMouseMove(event: BaseMapEvent) {
     if (isMapPointerEvent(event, { warning: true }) && this.marker) {
       if (this.snapping && this.snappingHelper) {
         const point: ScreenPoint = [event.point.x, event.point.y];

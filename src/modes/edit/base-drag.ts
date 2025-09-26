@@ -2,10 +2,10 @@ import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
-  AnyEvent,
   EditModeName,
   FeatureShape,
   GeoJsonShapeFeature,
+  GmSystemEvent,
   LngLat,
   MapHandlerReturnData,
 } from '@/main.ts';
@@ -19,6 +19,7 @@ import {
   getLngLatDiff,
 } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { Feature, Polygon } from 'geojson';
 import { isEqual } from 'lodash-es';
 import log from 'loglevel';
@@ -67,7 +68,10 @@ export abstract class BaseDrag extends BaseEdit {
     polygon: this.moveSource.bind(this),
   };
 
-  onMouseDown(event: AnyEvent): MapHandlerReturnData {
+  onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
+    if (!isMapPointerEvent(event)) {
+      return { next: true };
+    }
     const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
@@ -86,7 +90,7 @@ export abstract class BaseDrag extends BaseEdit {
     return { next: true };
   }
 
-  onMouseUp(event: AnyEvent): MapHandlerReturnData {
+  onMouseUp(event: BaseMapEvent): MapHandlerReturnData {
     if (!this.featureData || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -102,7 +106,7 @@ export abstract class BaseDrag extends BaseEdit {
     return { next: true };
   }
 
-  onMouseMove(event: AnyEvent): MapHandlerReturnData {
+  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
     if (!this.flags.actionInProgress || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -122,9 +126,9 @@ export abstract class BaseDrag extends BaseEdit {
     return !!this.featureData && this.pointBasedShapes.includes(this.featureData.shape);
   }
 
-  abstract handleGmEdit(event: AnyEvent): MapHandlerReturnData;
+  abstract handleGmEdit(event: GmSystemEvent): MapHandlerReturnData;
 
-  alignShapeCenterWithControlMarker(featureData: FeatureData, event: AnyEvent) {
+  alignShapeCenterWithControlMarker(featureData: FeatureData, event: BaseMapEvent) {
     const shapeLngLat = getFeatureFirstPoint(featureData);
     if (shapeLngLat) {
       this.gm.markerPointer.marker?.setLngLat(shapeLngLat);

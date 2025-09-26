@@ -2,7 +2,6 @@ import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
-  AnyEvent,
   DrawModeName,
   GeoJsonShapeFeature,
   GmDrawShapeEvent,
@@ -21,6 +20,7 @@ import {
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { BBox } from 'geojson';
 
 export class DrawRectangle extends BaseDraw {
@@ -51,7 +51,7 @@ export class DrawRectangle extends BaseDraw {
     this.fireFinishEvent();
   }
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: false };
     }
@@ -80,7 +80,7 @@ export class DrawRectangle extends BaseDraw {
     return { next: false };
   }
 
-  onMouseMove(event: AnyEvent): MapHandlerReturnData {
+  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: false };
     }

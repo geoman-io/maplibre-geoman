@@ -2,7 +2,6 @@ import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type ActionType,
-  type AnyEvent,
   type DrawModeName,
   type EditModeName,
   type FeatureSourceName,
@@ -13,8 +12,8 @@ import {
   type GmEditFeatureEditStartEvent,
   type GmEditFeatureRemovedEvent,
   type GmEditFeatureUpdatedEvent,
-  type GmEvent,
   type GmFeatureBeforeUpdateEvent,
+  type GmSystemEvent,
   type MarkerData,
   type NonEmptyArray,
   type PointerEventName,
@@ -23,6 +22,7 @@ import {
 import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { isEqual } from 'lodash-es';
 
 export abstract class BaseEdit extends BaseAction {
@@ -65,7 +65,7 @@ export abstract class BaseEdit extends BaseAction {
     event,
     sourceNames,
   }: {
-    event: AnyEvent;
+    event: BaseMapPointerEvent;
     sourceNames: Array<FeatureSourceName>;
   }): FeatureData | null {
     const featureData = this.gm.features.getFeatureByMouseEvent({
@@ -239,7 +239,7 @@ export abstract class BaseEdit extends BaseAction {
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
-  forwardLineDrawerEvent(payload: GmEvent) {
+  forwardLineDrawerEvent(payload: GmSystemEvent) {
     if (!isGmDrawLineDrawerEvent(payload) || !['cut', 'split'].includes(this.mode)) {
       return { next: true };
     }

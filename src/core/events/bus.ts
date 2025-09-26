@@ -1,7 +1,6 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventForwarder } from '@/core/events/forwarder.ts';
 import type {
-  AnyEvent,
   AnyEventName,
   EventControls,
   EventHandlers,
@@ -10,12 +9,14 @@ import type {
   GmEventHadler,
   GmEventHandlersWithControl,
   GmEventName,
+  GmSystemEvent,
   MapEventHadler,
   MapEventHandlersWithControl,
   MapEventName,
 } from '@/main.ts';
 import { isBaseMapEvent, isGmEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 
 export class EventBus {
@@ -29,7 +30,7 @@ export class EventBus {
     this.forwarder = new EventForwarder(gm);
   }
 
-  fireEvent(eventName: GmEventName, payload: GmEvent) {
+  fireEvent(eventName: GmEventName, payload: GmSystemEvent) {
     const eventHandler = this.gmEventHandlers[eventName];
     if (!eventHandler) {
       return;
@@ -143,7 +144,7 @@ export class EventBus {
   createEventSection(eventName: MapEventName | GmEventName) {
     return {
       handlers: [],
-      controlHandler: (event: AnyEvent) => {
+      controlHandler: (event: GmSystemEvent | GmEvent | BaseMapEvent) => {
         let eventHandler: EventControls;
         if (isGmEvent(event) && eventName.startsWith(`${GM_SYSTEM_PREFIX}`)) {
           eventHandler = this.gmEventHandlers[eventName as GmEventName];

@@ -1,7 +1,6 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
-  type AnyEvent,
   type DomMarkerData,
   type EdgeMarkerData,
   type EditModeName,
@@ -9,6 +8,7 @@ import {
   type GmEditFeatureUpdatedEvent,
   type GmEditMarkerEvent,
   type GmEditMarkerMoveEvent,
+  type GmSystemEvent,
   type HelperModeName,
   type LngLat,
   type MapHandlerReturnData,
@@ -27,7 +27,7 @@ import { eachSegmentWithPath, findCoordinateWithPath, isEqualPosition } from '@/
 import { isPinHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent, isPointerEventWithModifiers } from '@/utils/guards/map.ts';
 import { isGmDrawEvent, isGmEditEvent } from '@/utils/guards/modes.ts';
-import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
+import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { cloneDeep, intersection } from 'lodash-es';
 import log from 'loglevel';
 
@@ -113,7 +113,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.pinEnabled = enabled;
   }
 
-  onMouseDown(event: AnyEvent): MapHandlerReturnData {
+  onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
     const allowedEventNames = ['mousedown', 'touchstart'];
     if (
       !isMapPointerEvent(event, { warning: true }) ||
@@ -184,7 +184,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     return { next: true };
   }
 
-  onMouseMove(event: AnyEvent): MapHandlerReturnData {
+  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
     if (!this.activeMarker || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -193,7 +193,11 @@ export class ShapeMarkersHelper extends BaseHelper {
     return { next: false };
   }
 
-  onMouseRightButtonClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseRightButtonClick(event: BaseMapEvent): MapHandlerReturnData {
+    if (!isMapPointerEvent(event, { warning: true })) {
+      return { next: true };
+    }
+
     const featureMarkerData = this.getFeatureMarkerByMouseEvent(event);
 
     if (featureMarkerData && featureMarkerData.instance.parent) {
@@ -242,7 +246,9 @@ export class ShapeMarkersHelper extends BaseHelper {
     return markerData;
   }
 
-  getFeatureMarkerByMouseEvent(event: AnyEvent): Exclude<MarkerData, DomMarkerData> | null {
+  getFeatureMarkerByMouseEvent(
+    event: BaseMapPointerEvent,
+  ): Exclude<MarkerData, DomMarkerData> | null {
     const markerFeatureData = this.gm.features.getFeatureByMouseEvent({
       event,
       sourceNames: [SOURCES.main],
@@ -410,7 +416,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
   }
 
-  handleGmDraw(event: AnyEvent): MapHandlerReturnData {
+  handleGmDraw(event: GmSystemEvent): MapHandlerReturnData {
     if (!isGmDrawEvent(event)) {
       log.error('ShapeMarkersHelper.handleGmDraw: not a draw event', event);
       return { next: true };
@@ -428,7 +434,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.addMarkers();
   }
 
-  handleGmEdit(event: AnyEvent): MapHandlerReturnData {
+  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
     if (!isGmEditEvent(event)) {
       log.error('ShapeMarkersHelper.handleGmEdit: not an edit event', event);
       return { next: true };

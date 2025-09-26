@@ -1,10 +1,10 @@
 import {
-  type AnyEvent,
   type EditModeName,
   type FeatureShape,
   type GeoJsonShapeFeature,
   type GmEditMarkerEvent,
   type GmEditMarkerMoveEvent,
+  type GmSystemEvent,
   type LngLat,
   type MapHandlerReturnData,
   type MarkerData,
@@ -62,7 +62,7 @@ export class EditChange extends BaseDrag {
     this.snapGuidesInstance?.removeSnapGuides();
   }
 
-  handleGmEdit(event: AnyEvent): MapHandlerReturnData {
+  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
     if (!isGmEditEvent(event)) {
       return { next: true };
     }

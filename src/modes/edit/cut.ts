@@ -1,7 +1,6 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
-  type AnyEvent,
   type EditModeName,
   type FeatureId,
   type FeatureShape,
@@ -15,6 +14,7 @@ import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/feat
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import booleanIntersects from '@turf/boolean-intersects';
 import turfClone from '@turf/clone';
 import turfDifference from '@turf/difference';
@@ -44,7 +44,7 @@ export class EditCut extends BaseEdit {
     this.lineDrawer.endAction();
   }
 
-  onMouseMove(event: AnyEvent) {
+  onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }

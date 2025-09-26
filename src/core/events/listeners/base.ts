@@ -6,7 +6,7 @@ import type {
   GmControlSwitchEvent,
   GmDrawModeEvent,
   GmEditModeEvent,
-  GmEvent,
+  GmSystemEvent,
   GmHelperModeEvent,
   ModeName,
 } from '@/main.ts';
@@ -20,7 +20,7 @@ export abstract class BaseEventListener {
     this.gm = gm;
   }
 
-  trackExclusiveModes(payload: GmEvent) {
+  trackExclusiveModes(payload: GmSystemEvent) {
     // if an exclusive mode is started, turn off all other exclusive modes
     if (payload.action !== 'mode_start') {
       return;
@@ -48,7 +48,7 @@ export abstract class BaseEventListener {
     });
   }
 
-  trackRelatedModes(payload: GmEvent) {
+  trackRelatedModes(payload: GmSystemEvent) {
     if (!isGmModeEvent(payload)) {
       return;
     }

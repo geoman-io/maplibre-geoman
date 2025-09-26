@@ -4,12 +4,12 @@ import GmReactiveControls from '@/core/controls/components/gm-controls.svelte';
 import { systemControls } from '@/core/controls/defaults.ts';
 import { BaseControl } from '@/core/map/base/control.ts';
 import {
-  type AnyEvent,
   type BaseControlsPosition,
   type ControlOptions,
   type EventHandlers,
   type GenericSystemControl,
   type GenericSystemControls,
+  type GmBaseModeEvent,
   type ModeAction,
   type ModeName,
   type ModeType,
@@ -68,7 +68,7 @@ export default class GMControl extends BaseControl {
     this.container = undefined;
   }
 
-  handleModeEvent(event: AnyEvent) {
+  handleModeEvent(event: GmBaseModeEvent) {
     if (!isGmModeEvent(event)) {
       return { next: true };
     }

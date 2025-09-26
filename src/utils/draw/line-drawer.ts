@@ -2,12 +2,12 @@ import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import {
-  type AnyEvent,
   type DrawModeName,
   type GeoJsonLineFeature,
   type GeoJsonShapeFeature,
   type Geoman,
   type GmDrawLineDrawerEventWithData,
+  type GmSystemEvent,
   type LineEventHandlerArguments,
   type LngLat,
   type MapHandlerReturnData,
@@ -23,7 +23,7 @@ import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
-import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
+import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import lineToPolygon from '@turf/line-to-polygon';
 import type { Position } from 'geojson';
 import log from 'loglevel';
@@ -116,7 +116,7 @@ export class LineDrawer extends BaseDraw {
     this.snapGuidesInstance?.removeSnapGuides();
   }
 
-  handleGmHelperEvent(event: AnyEvent): MapHandlerReturnData {
+  handleGmHelperEvent(event: GmSystemEvent): MapHandlerReturnData {
     if (!isGmHelperEvent(event)) {
       log.error('LineDrawer.handleGmHelperEvent: invalid event', event);
       return { next: true };
@@ -149,7 +149,7 @@ export class LineDrawer extends BaseDraw {
     this.drawerEventHandlers[eventType] = handler;
   }
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -206,7 +206,7 @@ export class LineDrawer extends BaseDraw {
     };
   }
 
-  onMouseMove(event: AnyEvent): MapHandlerReturnData {
+  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }

@@ -1,6 +1,5 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import {
-  type AnyEvent,
   type DrawModeName,
   type LineEventHandlerArguments,
   type ShapeName,
@@ -9,6 +8,7 @@ import {
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import turfClone from '@turf/clone';
 import combine from '@turf/combine';
 import lineToPolygon from '@turf/line-to-polygon';
@@ -33,7 +33,7 @@ export class DrawPolygon extends BaseDraw {
     this.lineDrawer.on('firstMarkerClick', this.polygonFinished.bind(this));
   }
 
-  onMouseMove(event: AnyEvent) {
+  onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }

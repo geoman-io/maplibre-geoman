@@ -5,7 +5,6 @@ import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
 import {
-  type AnyEvent,
   FEATURE_ID_PROPERTY,
   type FeatureId,
   type FeatureShape,
@@ -30,6 +29,7 @@ import { fixGeoJsonFeature, getCustomFeatureId } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
+import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import type {
   Feature,
   FeatureCollection,
@@ -174,7 +174,7 @@ export class Features {
     event,
     sourceNames,
   }: {
-    event: AnyEvent;
+    event: BaseMapPointerEvent;
     sourceNames: Array<FeatureSourceName>;
   }): FeatureData | null {
     if (!isMapPointerEvent(event, { warning: true })) {

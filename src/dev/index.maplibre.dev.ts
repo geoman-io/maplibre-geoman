@@ -1,9 +1,11 @@
+import { GM_PREFIX } from '@/core/constants.ts';
 import {
   loadDevShapes,
   loadExternalGeoJson,
   loadStressTestCircleMarkers,
   loadStressTestFeatureCollection,
 } from '@/dev/fixtures/shapes.ts';
+import testShapes from '@/dev/fixtures/test-shapes.json';
 import mapLibreStyle from '@/dev/maplibre-style.ts';
 import { layerStyles } from '@/dev/styles/layer-styles.ts';
 import {
@@ -16,8 +18,6 @@ import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
-import testShapes from '@/dev/fixtures/test-shapes.json';
-import { GM_PREFIX } from '@/core/constants.ts';
 
 log.setLevel(log.levels.TRACE);
 

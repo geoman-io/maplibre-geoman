@@ -1,11 +1,5 @@
-import type {
-  AnyEvent,
-  DrawModeName,
-  LngLat,
-  MapHandlerReturnData,
-  ScreenPoint,
-  ShapeName,
-} from '@/types';
+import type { DrawModeName, LngLat, MapHandlerReturnData, ScreenPoint, ShapeName } from '@/types';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import { BaseCircle } from './base-circle.ts';
 import { convertToThrottled, isMapPointerEvent } from '@/main.ts';
 import { allCoordinatesEqual, getEllipseParameters, getGeoJsonEllipse } from '@/utils/geojson.ts';
@@ -25,7 +19,7 @@ export class DrawEllipse extends BaseCircle {
     this.gm.options.settings.throttlingDelay,
   );
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }

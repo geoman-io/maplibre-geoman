@@ -4,7 +4,7 @@ import type { FeatureFwdEvent } from '@/types/events/forwarder/features.ts';
 import type { GlobalModeToggledFwdEvent } from '@/types/events/forwarder/mode.ts';
 import type { SystemFwdEvent } from '@/types/events/forwarder/system.ts';
 import type {
-  GmEvent,
+  GmSystemEvent,
   GmEventNameWithoutPrefix,
   GmPrefix,
   GmSystemPrefix,
@@ -17,12 +17,12 @@ export type GlobalEventsListenerParameters =
   | {
       type: 'system';
       name: GmFwdSystemEventNameWithPrefix;
-      payload: GmEvent;
+      payload: GmSystemEvent;
     }
   | {
       type: 'converted';
       name: GmFwdEventNameWithPrefix;
-      payload: GmFwdEvent;
+      payload: GmEvent;
     };
 export type GlobalEventsListener = (parameters: GlobalEventsListenerParameters) => void;
 
@@ -39,7 +39,7 @@ export type GmFwdEventName =
   | `${FwdEditModeName}end`
   | GmControlLoadEvent['action'];
 
-export type GmFwdEvent =
+export type GmEvent =
   | SystemFwdEvent
   | GlobalModeToggledFwdEvent
   | FeatureFwdEvent

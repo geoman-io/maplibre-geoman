@@ -1,9 +1,7 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
-  type AnyEvent,
   type DrawModeName,
   type GeoJsonShapeFeature,
-  type GmEvent,
   type LngLat,
   type MapHandlerReturnData,
   type ShapeName,
@@ -11,7 +9,7 @@ import {
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
-import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
+import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
 export class DrawMarker extends BaseDraw {
   mode: DrawModeName = 'marker';
@@ -32,7 +30,7 @@ export class DrawMarker extends BaseDraw {
     this.fireMarkerPointerFinishEvent();
   }
 
-  onMouseClick(event: AnyEvent): MapHandlerReturnData {
+  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (isMapPointerEvent(event)) {
       this.featureData = this.createFeature(event);
       if (this.featureData) {
@@ -42,7 +40,7 @@ export class DrawMarker extends BaseDraw {
     return { next: false };
   }
 
-  onMouseMove(event: GmEvent): MapHandlerReturnData {
+  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
     if (!isMapPointerEvent(event) || !this.gm.markerPointer.marker) {
       return { next: true };
     }

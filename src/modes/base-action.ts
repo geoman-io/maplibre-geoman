@@ -3,7 +3,6 @@ import type {
   ActionOptions,
   ActionSettings,
   ActionType,
-  AnyEvent,
   EventHandlers,
   Geoman,
   GmGeofencingViolationEvent,
@@ -100,7 +99,7 @@ export abstract class BaseAction {
     }
   }
 
-  handleHelperEvent(event: AnyEvent) {
+  handleHelperEvent(event: GmGeofencingViolationEvent) {
     if (isGmGeofencingViolationEvent(event)) {
       return this.handleGeofencingViolationEvent(event);
     }

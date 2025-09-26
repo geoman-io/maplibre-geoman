@@ -20,7 +20,7 @@ export const maplibrePointerEvents: ReadonlyArray<keyof MapLayerEventType> = [
 
 export type MaplibrePointerEventName = (typeof maplibrePointerEvents)[number];
 
-export type BaseMapAnyEvent = MapLibreEvent;
+export type BaseMapEvent = MapLibreEvent;
 
 export type BaseMapMouseEvent = MapMouseEvent;
 

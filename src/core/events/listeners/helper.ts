@@ -5,7 +5,7 @@ import type {
   ActionInstanceKey,
   EventHandlers,
   Geoman,
-  GmEvent,
+  GmSystemEvent,
   GmHelperModeEvent,
 } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
@@ -23,7 +23,7 @@ export class HelperEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleHelperEvent(payload: GmEvent) {
+  handleHelperEvent(payload: GmSystemEvent) {
     if (!isGmHelperEvent(payload)) {
       return { next: true };
     }

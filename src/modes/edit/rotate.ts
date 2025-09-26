@@ -1,10 +1,10 @@
 import {
-  type AnyEvent,
   type EditModeName,
   type FeatureShape,
   type GeoJsonShapeFeature,
   type GmEditEvent,
   type GmEditMarkerMoveEvent,
+  type GmSystemEvent,
   type LngLat,
   type MapHandlerReturnData,
   type ShapeName,
@@ -45,7 +45,7 @@ export class EditRotate extends BaseDrag {
     // ...
   }
 
-  handleGmEdit(event: AnyEvent): MapHandlerReturnData {
+  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
     if (!isGmEditEvent(event)) {
       log.error('EditChange.handleGmEdit: not an edit event', event);
       return { next: false };
