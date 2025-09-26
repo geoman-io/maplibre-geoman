@@ -8,26 +8,26 @@ import type { BaseFwdEvent } from '@/types/events/forwarder/base.ts';
 import type { FwdEditModeName, GmPrefix } from '@/types';
 
 export interface GlobalDrawToggledFwdEvent extends BaseFwdEvent<GmDrawModeEvent> {
-  type: `${GmPrefix}:globaldrawmodetoggled`;
+  name: `${GmPrefix}:globaldrawmodetoggled`;
   enabled: boolean;
   shape: DrawModeName;
   map: AnyMapInstance;
 }
 
 export interface GlobalDrawEnabledDisabledFwdEvent extends BaseFwdEvent<GmDrawModeEvent> {
-  type: `${GmPrefix}:${'drawstart' | 'drawend'}`;
+  name: `${GmPrefix}:${'drawstart' | 'drawend'}`;
   shape: DrawModeName;
   map: AnyMapInstance;
 }
 
 export interface GlobalEditToggledFwdEvent extends BaseFwdEvent<GmEditModeEvent> {
-  type: `${GmPrefix}:global${FwdEditModeName}modetoggled`;
+  name: `${GmPrefix}:global${FwdEditModeName}modetoggled`;
   enabled: boolean;
   map: AnyMapInstance;
 }
 
 export interface GlobalHelperToggledFwdEvent extends BaseFwdEvent<GmHelperModeEvent> {
-  type: `${GmPrefix}:global${HelperModeName}modetoggled`;
+  name: `${GmPrefix}:global${HelperModeName}modetoggled`;
   enabled: boolean;
   map: AnyMapInstance;
 }

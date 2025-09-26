@@ -1,10 +1,8 @@
-import type { GmBaseModeEvent, GmSystemEvent } from '@/main.ts';
-import { modeActions } from '@/types/events/mode.ts';
-import { includesWithType } from '@/utils/typing.ts';
+import type { GmSystemEvent } from '@/main.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export const isGmEvent = (payload: unknown): payload is GmSystemEvent => {
-  const fields: Array<keyof GmSystemEvent> = ['level', 'actionType', 'action'];
+  const fields: Array<keyof GmSystemEvent> = ['level', 'name', 'actionType', 'action'];
 
   return !!(
     payload &&
@@ -23,7 +21,4 @@ export const isBaseMapEvent = (payload: unknown): payload is BaseMapEvent => {
   );
 };
 
-export const isGmModeEvent = (payload: unknown): payload is GmBaseModeEvent => {
-  return isGmEvent(payload) && includesWithType(payload.action, modeActions);
-};
 export { isGmControlEvent } from '@/utils/guards/events/control.ts';

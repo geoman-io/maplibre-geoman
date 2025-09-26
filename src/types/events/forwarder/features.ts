@@ -9,21 +9,21 @@ import type { BaseFwdEvent } from '@/types/events/forwarder/base.ts';
 import type { FwdEditModeName, GmPrefix } from '@/types';
 
 export interface FeatureCreatedFwdEvent extends BaseFwdEvent<GmDrawFeatureCreatedEvent> {
-  type: `${GmPrefix}:create`;
+  name: `${GmPrefix}:create`;
   shape: DrawModeName;
   feature: FeatureData;
   map: AnyMapInstance;
 }
 
 export interface FeatureRemovedFwdEvent extends BaseFwdEvent<GmEditFeatureRemovedEvent> {
-  type: `${GmPrefix}:remove`;
+  name: `${GmPrefix}:remove`;
   shape: DrawModeName;
   feature: FeatureData;
   map: AnyMapInstance;
 }
 
 export interface FeatureUpdatedFwdEvent extends BaseFwdEvent<GmEditFeatureUpdatedEvent> {
-  type: `${GmPrefix}:${FwdEditModeName}`;
+  name: `${GmPrefix}:${FwdEditModeName}`;
   map: AnyMapInstance;
   shape?: FeatureShape;
   feature?: FeatureData;

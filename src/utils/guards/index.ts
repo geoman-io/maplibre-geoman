@@ -5,7 +5,6 @@ export const isNonEmptyArray = <T>(arr: T[] | readonly T[]): arr is NonEmptyArra
 };
 
 // exports
-export { isGmModeEvent } from '@/utils/guards/events/index.ts';
 export { isGmEvent } from '@/utils/guards/events/index.ts';
 export { isModeName } from '@/utils/guards/modes.ts';
 export { isHelperModeName } from '@/utils/guards/modes.ts';
@@ -16,3 +15,4 @@ export { isMapPointerEvent } from '@/utils/guards/map.ts';
 export { hasMapOnceMethod } from '@/utils/guards/map.ts';
 export { isBaseMapEventName } from '@/utils/guards/map.ts';
 export { isPointerEventName } from '@/utils/guards/map.ts';
+export { isGmModeEvent } from '@/utils/guards/events/mode.ts';

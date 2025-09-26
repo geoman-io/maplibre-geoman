@@ -165,9 +165,11 @@ const initGeoman = async () => {
     });
   });
 
-  // geoman.setGlobalEventsListener((event) => {
-  //   log.debug('setGlobalEventsListener event', event);
-  // });
+  geoman.setGlobalEventsListener((event) => {
+    if (event.name === 'gm:globaldrawmodetoggled') {
+      log.debug('setGlobalEventsListener event', event);
+    }
+  });
   return geoman;
 };
 

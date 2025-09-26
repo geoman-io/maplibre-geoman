@@ -467,7 +467,7 @@ export {
   isGmFeatureBeforeUpdateEvent,
 } from '@/utils/guards/events/features.ts';
 export { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
-export { isGmControlEvent, isGmEvent, isGmModeEvent } from '@/utils/guards/events/index.ts';
+export { isGmControlEvent, isGmEvent } from '@/utils/guards/events/index.ts';
 export * from '@/utils/guards/index.ts';
 export { isGmDrawEvent };
 
@@ -505,3 +505,4 @@ export {
 } from '@/core/features/constants.ts';
 export { HELPER_MODES } from '@/modes/constants.ts';
 export { EDIT_MODES } from '@/modes/constants.ts';
+export { isGmModeEvent } from '@/utils/guards/events/mode.ts';

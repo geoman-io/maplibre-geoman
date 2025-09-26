@@ -10,12 +10,12 @@ import {
   type GenericSystemControl,
   type GenericSystemControls,
   type GmBaseModeEvent,
+  isGmModeEvent,
   type ModeAction,
   type ModeName,
   type ModeType,
   type SystemControls,
 } from '@/main.ts';
-import { isGmModeEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';

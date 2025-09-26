@@ -5,7 +5,7 @@ import { GM_PREFIX } from '@/core/constants.ts';
 import type { BaseFwdEvent } from '@/types/events/forwarder/base.ts';
 
 export interface GmLoadStateFwdEvent extends BaseFwdEvent<GmControlLoadEvent> {
-  type: `${GmPrefix}:${GmControlLoadEvent['action']}`;
+  name: `${GmPrefix}:${GmControlLoadEvent['action']}`;
   map: AnyMapInstance;
   [GM_PREFIX]: Geoman;
 }

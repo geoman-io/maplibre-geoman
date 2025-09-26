@@ -10,12 +10,12 @@ import {
   type GmBaseModeEvent,
   type GmControlSwitchEvent,
   type GmOptionsData,
+  isGmModeEvent,
   type ModeAction,
   type ModeName,
   type ModeType,
 } from '@/main.ts';
 import { EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
-import { isGmModeEvent } from '@/utils/guards/events/index.ts';
 import { isGmDrawEvent, isGmEditEvent, isGmHelperEvent } from '@/utils/guards/modes.ts';
 import { includesWithType } from '@/utils/typing.ts';
 import mergeWith from 'lodash-es/mergeWith';

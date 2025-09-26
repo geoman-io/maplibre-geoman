@@ -79,7 +79,7 @@ export class EventForwarder {
       // global draw mode toggled
       const eventName = 'globaldrawmodetoggled';
       const eventData: GlobalDrawToggledFwdEvent = {
-        type: `${GM_PREFIX}:${eventName}`,
+        name: `${GM_PREFIX}:${eventName}`,
         actionType: payload.actionType,
         action: payload.action,
         enabled,
@@ -91,7 +91,7 @@ export class EventForwarder {
       // drawstart, drawend
       const eventName2 = enabled ? 'drawstart' : 'drawend';
       const eventData2: GlobalDrawEnabledDisabledFwdEvent = {
-        type: `${GM_PREFIX}:${eventName2}`,
+        name: `${GM_PREFIX}:${eventName2}`,
         actionType: payload.actionType,
         action: payload.action,
         shape: payload.mode,
@@ -106,7 +106,7 @@ export class EventForwarder {
       const modeName = this.getConvertedEditModeName(payload.mode);
       const eventName = `global${modeName}modetoggled` as const;
       const eventData: GlobalEditToggledFwdEvent = {
-        type: `${GM_PREFIX}:${eventName}`,
+        name: `${GM_PREFIX}:${eventName}`,
         actionType: payload.actionType,
         action: payload.action,
         enabled,
@@ -120,7 +120,7 @@ export class EventForwarder {
     } else if (payload.actionType === 'helper') {
       const eventName = `global${payload.mode}modetoggled` as const;
       const eventData: GlobalHelperToggledFwdEvent = {
-        type: `${GM_PREFIX}:${eventName}`,
+        name: `${GM_PREFIX}:${eventName}`,
         actionType: payload.actionType,
         action: payload.action,
         enabled,
@@ -136,7 +136,7 @@ export class EventForwarder {
 
   forwardFeatureCreated(payload: GmDrawFeatureCreatedEvent) {
     const eventData: FeatureCreatedFwdEvent = {
-      type: `${GM_PREFIX}:create`,
+      name: `${GM_PREFIX}:create`,
       actionType: payload.actionType,
       action: payload.action,
       shape: payload.mode,
@@ -148,7 +148,7 @@ export class EventForwarder {
 
   forwardFeatureRemoved(payload: GmEditFeatureRemovedEvent) {
     const eventData: FeatureRemovedFwdEvent = {
-      type: `${GM_PREFIX}:remove`,
+      name: `${GM_PREFIX}:remove`,
       actionType: payload.actionType,
       action: payload.action,
       shape: payload.mode,
@@ -162,7 +162,7 @@ export class EventForwarder {
     const modeName = this.getConvertedEditModeName(payload.mode);
     const multiFeatureMode: Array<ModeName> = ['lasso'];
     const featuresPayload: FeatureUpdatedFwdEvent = {
-      type: `${GM_PREFIX}:${modeName}`,
+      name: `${GM_PREFIX}:${modeName}`,
       actionType: payload.actionType,
       action: payload.action,
       map: this.map,
@@ -187,7 +187,7 @@ export class EventForwarder {
   forwardFeatureEditStart(payload: GmEditFeatureEditStartEvent) {
     const modeName = this.getConvertedEditModeName(payload.mode);
     const eventData: FeatureEditStartFwdEvent = {
-      type: `${GM_PREFIX}:${modeName}start`,
+      name: `${GM_PREFIX}:${modeName}start`,
       actionType: payload.actionType,
       action: payload.action,
       shape: payload.feature.shape,
@@ -200,7 +200,7 @@ export class EventForwarder {
   forwardFeatureEditEnd(payload: GmEditFeatureEditEndEvent) {
     const modeName = this.getConvertedEditModeName(payload.mode);
     const eventData: FeatureEditEndFwdEvent = {
-      type: `${GM_PREFIX}:${modeName}end`,
+      name: `${GM_PREFIX}:${modeName}end`,
       actionType: payload.actionType,
       action: payload.action,
       shape: payload.feature.shape,
@@ -212,7 +212,7 @@ export class EventForwarder {
 
   forwardGeomanLoaded(inputPayload: GmControlLoadEvent) {
     const payload: SystemFwdEvent = {
-      type: `${GM_PREFIX}:${inputPayload.action}`,
+      name: `${GM_PREFIX}:${inputPayload.action}`,
       actionType: inputPayload.actionType,
       action: inputPayload.action,
       map: this.map,

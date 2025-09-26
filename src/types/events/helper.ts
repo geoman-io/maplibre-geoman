@@ -3,6 +3,7 @@ import type { GmBaseModeEvent } from '@/types/events/mode.ts';
 import type { HelperModeName } from '@/types/modes/index.ts';
 
 export interface GmHelperModeEvent extends GmBaseModeEvent {
+  name: `${GmSystemPrefix}:helper:mode`;
   actionType: 'helper';
   mode: HelperModeName;
 }

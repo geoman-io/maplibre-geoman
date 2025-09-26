@@ -13,14 +13,14 @@ import type { GmPrefix } from '@/types';
 export type FwdEditModeName = EditModeName | 'edit';
 
 export interface FeatureEditStartFwdEvent extends BaseFwdEvent<GmEditFeatureEditStartEvent> {
-  type: `${GmPrefix}:${FwdEditModeName}start`;
+  name: `${GmPrefix}:${FwdEditModeName}start`;
   shape: FeatureShape;
   feature: FeatureData;
   map: AnyMapInstance;
 }
 
 export interface FeatureEditEndFwdEvent extends BaseFwdEvent<GmEditFeatureEditEndEvent> {
-  type: `${GmPrefix}:${FwdEditModeName}end`;
+  name: `${GmPrefix}:${FwdEditModeName}end`;
   shape: FeatureShape;
   feature: FeatureData;
   map: AnyMapInstance;
