@@ -13,18 +13,7 @@ import type { HelperModeName } from '@/types/modes/index.ts';
 
 export type GmFwdEventNameWithPrefix = `${GmPrefix}:${GmFwdEventName}`;
 export type GmFwdSystemEventNameWithPrefix = `${GmSystemPrefix}:${GmEventNameWithoutPrefix}`;
-export type GlobalEventsListenerParameters =
-  | {
-      type: 'system';
-      name: GmFwdSystemEventNameWithPrefix;
-      payload: GmSystemEvent;
-    }
-  | {
-      type: 'converted';
-      name: GmFwdEventNameWithPrefix;
-      payload: GmEvent;
-    };
-export type GlobalEventsListener = (parameters: GlobalEventsListenerParameters) => void;
+export type GlobalEventsListener = (event: GmSystemEvent | GmEvent) => void;
 
 export type GmFwdEventName =
   | 'globaldrawmodetoggled'

@@ -166,25 +166,7 @@ const initGeoman = async () => {
   });
 
   // geoman.setGlobalEventsListener((event) => {
-  //   if (event.name === '_gm:draw') {
-  //     log.debug('event', event);
-  //   }
-  //
-  //   if (event.name === 'gm:create' && 'feature' in event.payload) {
-  //     log.debug('event', JSON.stringify(event.payload.feature?.getGeoJson(), null, 2));
-  //   }
-  //
-  //   if ('variant' in event.payload && event.payload.variant === 'line_drawer' && event.payload.action === 'finish') {
-  //     console.log('event', JSON.stringify(event, null, 2));
-  //   }
-  // });
-
-  // geoman.mapAdapter.on('gm:rotate', (event) => {
-  //   log.debug('mapAdapter.on()', event);
-  // });
-
-  // map.on('idle', () => {
-  //   console.log('Map is fully rendered and idle!');
+  //   log.debug('setGlobalEventsListener event', event);
   // });
   return geoman;
 };

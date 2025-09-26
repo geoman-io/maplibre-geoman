@@ -236,21 +236,7 @@ export class EventForwarder {
     const prefix = type === 'system' ? GM_SYSTEM_PREFIX : GM_PREFIX;
     const eventNameWithPrefix = `${prefix}:${eventName}`;
 
-    if (this.globalEventsListener) {
-      if (type === 'system') {
-        this.globalEventsListener({
-          type,
-          name: `${GM_SYSTEM_PREFIX}:${eventName}`,
-          payload,
-        });
-      } else if (type === 'converted') {
-        this.globalEventsListener({
-          type,
-          name: `${GM_PREFIX}:${eventName}`,
-          payload,
-        });
-      }
-    }
+    this.globalEventsListener?.(payload);
     this.gm.mapAdapter.fire(eventNameWithPrefix as AnyEventName, payload);
   }
 
