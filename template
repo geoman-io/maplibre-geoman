@@ -1,0 +1,5 @@
+import { EventsMap } from './dist/maplibre-geoman';
+
+declare module 'maplibre-gl' {
+  export interface MapEventType extends EventsMap {}
+}

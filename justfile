@@ -5,6 +5,7 @@ pack:
   mkdir pub
   cp -r dist pub
   cp package.json pub
+  cp template pub/maplibre-env.d.ts
   cp README.md pub
   cp LICENSE pub
   cp CONTRIBUTING.md pub
