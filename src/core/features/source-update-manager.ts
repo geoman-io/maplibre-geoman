@@ -11,6 +11,9 @@ type SourceUpdateMethods = {
     throttled: () => void;
   };
 };
+
+const MAX_DIFF_ITEMS = 5000;
+
 // this class is here cause playwright fails if it's extracted for unknown reason
 // (possible imports trouble)
 export class SourceUpdateManager {
@@ -82,13 +85,27 @@ export class SourceUpdateManager {
   }
 
   updateSourceActual(sourceName: FeatureSourceName) {
-    if (this.autoUpdatesEnabled) {
-      const source = this.gm.features.sources[sourceName];
-      const combinedDiff = this.getCombinedDiff(sourceName);
+    const source = this.gm.features.sources[sourceName];
 
-      if (source && combinedDiff) {
+    if (this.autoUpdatesEnabled && source) {
+      if (!source.loaded) {
+        setTimeout(() => {
+          this.updateSourceActual(sourceName);
+        }, this.gm.options.settings.throttlingDelay);
+        return;
+      }
+
+      const combinedDiff = this.getCombinedDiff(sourceName);
+      if (combinedDiff) {
         // applies non empty diff
         source.updateData(combinedDiff);
+      }
+
+      if (this.updateStorage[sourceName].length > 0) {
+        setTimeout(
+          () => this.updateSourceActual(sourceName),
+          this.gm.options.settings.throttlingDelay,
+        );
       }
     }
   }
@@ -112,11 +129,13 @@ export class SourceUpdateManager {
       update: [],
     };
 
-    this.updateStorage[sourceName].forEach((diff) => {
-      combinedDiff = this.mergeGeoJsonDiff(combinedDiff, diff);
-    });
-
-    this.updateStorage[sourceName] = [];
+    for (let i = 0; i < MAX_DIFF_ITEMS; i += 1) {
+      if (this.updateStorage[sourceName][i] === undefined) {
+        break;
+      }
+      combinedDiff = this.mergeGeoJsonDiff(combinedDiff, this.updateStorage[sourceName][i]);
+    }
+    this.updateStorage[sourceName] = this.updateStorage[sourceName].slice(MAX_DIFF_ITEMS);
 
     if (Object.values(combinedDiff).find((item) => item.length)) {
       return combinedDiff;
