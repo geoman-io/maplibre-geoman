@@ -88,8 +88,13 @@ export class Features {
     }
   }
 
-  getNewFeatureId(): FeatureId {
+  getNewFeatureId(shapeGeoJson: GeoJsonShapeFeature): FeatureId {
     this.featureCounter += 1;
+
+    if (this.gm.options.settings.idGenerator) {
+      return this.gm.options.settings.idGenerator(shapeGeoJson);
+    }
+
     let newFeatureId: FeatureId | null = `feature-${this.featureCounter}`;
 
     while (this.featureStore.has(newFeatureId)) {
@@ -234,7 +239,10 @@ export class Features {
       return null;
     }
 
-    const id = featureId ?? shapeGeoJson.properties[FEATURE_ID_PROPERTY] ?? this.getNewFeatureId();
+    const id =
+      featureId ??
+      shapeGeoJson.properties[FEATURE_ID_PROPERTY] ??
+      this.getNewFeatureId(shapeGeoJson);
 
     if (this.featureStore.get(id)) {
       log.error(

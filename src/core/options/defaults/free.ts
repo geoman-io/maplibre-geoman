@@ -16,6 +16,7 @@ export const defaultOptions: GmOptionsData = {
       controlContainerClass: 'gm-control-container',
       controlButtonClass: 'gm-control-button',
     },
+    idGenerator: null,
     markerIcons: {
       default: defaultMarker,
       control: defaultShapeMarker,
