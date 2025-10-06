@@ -11,6 +11,7 @@ import type {
 import type { PartialDeep } from 'type-fest';
 
 import { ACTION_TYPES, MODE_TYPES } from '@/modes/constants.ts';
+import type { GeoJsonShapeFeature } from './geojson';
 
 export type ModeType = (typeof MODE_TYPES)[number];
 export type ActionType = (typeof ACTION_TYPES)[number];
@@ -38,6 +39,7 @@ export type GmOptionsData = {
     controlsUiEnabledByDefault: boolean;
     controlsCollapsible: boolean;
     controlsStyles: ControlStyles;
+    idGenerator: null | ((shapeGeoJson: GeoJsonShapeFeature) => string);
     markerIcons: {
       default: string;
       control: string;
