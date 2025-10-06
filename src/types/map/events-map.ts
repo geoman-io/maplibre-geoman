@@ -22,7 +22,7 @@ import type {
 } from '@/types';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
-type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
+export type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
   Record<`${typeof GM_SYSTEM_PREFIX}:edit`, GmEditEvent> &
   Record<`${typeof GM_SYSTEM_PREFIX}:helper`, GmHelperEvent> &
   Record<`${typeof GM_SYSTEM_PREFIX}:control`, GmControlEvent> &
