@@ -175,6 +175,13 @@ export class Features {
     }
   }
 
+  deleteAll() {
+    this.featureStore.forEach((featureData) => {
+      featureData.delete();
+    });
+    this.featureStore.clear();
+  }
+
   getFeatureByMouseEvent({
     event,
     sourceNames,
