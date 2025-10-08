@@ -26,6 +26,7 @@ import centroid from '@turf/centroid';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import type { Feature } from 'geojson';
 
 export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
   'circle',
@@ -216,6 +217,28 @@ export class FeatureData {
     this._geoJson = {
       ...featureGeoJson,
       properties: { ...featureGeoJson.properties, ...properties },
+    };
+
+    const diff = {
+      update: [this._geoJson],
+    };
+    this.gm.features.updateManager.updateSource({
+      diff,
+      sourceName: this.sourceName,
+    });
+  }
+
+  setGeoJsonCustomProperties(properties: Feature['properties']) {
+    const featureGeoJson = this.getGeoJson();
+    if (!featureGeoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const mandatoryProperties = this.parseGmShapeProperties(featureGeoJson);
+
+    this._geoJson = {
+      ...featureGeoJson,
+      properties: { ...properties, ...mandatoryProperties },
     };
 
     const diff = {
