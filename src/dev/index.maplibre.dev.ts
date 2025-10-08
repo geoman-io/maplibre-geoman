@@ -78,6 +78,19 @@ const buttonHandlers = {
   },
   '#b03': async () => {
     log.debug('Button #b03 click');
+    const feature = window.geoman.features.get('gm_main', 'custom-feature-29');
+    feature?.updateGeoJsonGeometry({
+      type: 'LineString',
+      coordinates: [
+        [-7.405029296874261, 53.923817511191146],
+        [-6.548095703124517, 53.17977164467473],
+        [-9.843994140625, 52.42259189531441],
+        [-6.240478515624147, 51.52932168465881],
+        [-8.6593980745172985, 50.08551206469775],
+        [-4.1550035432676964, 50.75747515540502],
+      ],
+    });
+    feature?.fireFeatureUpdatedEvent({ mode: 'change' });
   },
   '#b04': async () => {
     const geoman = window.geoman;

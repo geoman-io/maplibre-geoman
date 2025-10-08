@@ -4,6 +4,7 @@ import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import {
   type BasicGeometry,
+  type EditModeName,
   type FeatureDataParameters,
   type FeatureId,
   type FeatureShape,
@@ -11,6 +12,7 @@ import {
   type FeatureSourceName,
   type GeoJsonShapeFeature,
   type Geoman,
+  type GmEditFeatureUpdatedEvent,
   includesWithType,
   type MarkerData,
   type MarkerId,
@@ -23,6 +25,7 @@ import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 
 export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
   'circle',
@@ -287,6 +290,21 @@ export class FeatureData {
         markerData.instance.changeSource({ sourceName, atomic });
       }
     });
+  }
+
+  fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
+    const payload: GmEditFeatureUpdatedEvent = {
+      name: `${GM_SYSTEM_PREFIX}:edit:feature_updated`,
+      level: 'system',
+      actionType: 'edit',
+      action: 'feature_updated',
+      mode,
+      sourceFeatures: [this],
+      targetFeatures: [this],
+      markerData: null,
+    };
+
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
   delete() {
