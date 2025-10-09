@@ -90,16 +90,16 @@ const buttonHandlers = {
         [-4.1550035432676964, 50.75747515540502],
       ],
     });
-    feature?.fireFeatureUpdatedEvent({ mode: 'change' });
+    feature?.updateGeoJsonCustomProperties({ testX: undefined });
+    feature?.setGeoJsonCustomProperties({ testX: 'test-555' });
+    feature?.deleteGeoJsonCustomProperties(['testX', '__gm_shape']);
   },
   '#b04': async () => {
     const geoman = window.geoman;
     if (!geoman) {
       log.warn('Geoman is not initialized');
     }
-    const geojson = geoman.features.exportGeoJson({
-      idPropertyName: 'uuid',
-    });
+    const geojson = geoman.features.exportGeoJson();
     log.debug('total features count: ', geojson?.features?.length);
     log.debug('geojson', JSON.stringify(geojson, null, 2));
   },

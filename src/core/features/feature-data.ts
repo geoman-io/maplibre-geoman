@@ -209,19 +209,13 @@ export class FeatureData {
   }
 
   updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
-    const featureGeoJson = this.getGeoJson();
-    if (!featureGeoJson) {
+    if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
-    this._geoJson = {
-      ...featureGeoJson,
-      properties: { ...featureGeoJson.properties, ...properties },
-    };
+    this._geoJson.properties = { ...this._geoJson.properties, ...properties };
+    const diff = { update: [this._geoJson] };
 
-    const diff = {
-      update: [this._geoJson],
-    };
     this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
@@ -229,21 +223,57 @@ export class FeatureData {
   }
 
   setGeoJsonCustomProperties(properties: Feature['properties']) {
-    const featureGeoJson = this.getGeoJson();
-    if (!featureGeoJson) {
+    if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
-    const mandatoryProperties = this.parseGmShapeProperties(featureGeoJson);
+    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
 
-    this._geoJson = {
-      ...featureGeoJson,
-      properties: { ...properties, ...mandatoryProperties },
+    this._geoJson.properties = { ...properties, ...mandatoryProperties };
+
+    const diff = { update: [this._geoJson] };
+    this.gm.features.updateManager.updateSource({
+      diff,
+      sourceName: this.sourceName,
+    });
+  }
+
+  updateGeoJsonCustomProperties(properties: Feature['properties']) {
+    if (!this._geoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
+
+    this._geoJson.properties = {
+      ...this._geoJson.properties,
+      ...properties,
+      ...mandatoryProperties,
     };
 
-    const diff = {
-      update: [this._geoJson],
-    };
+    const diff = { update: [this._geoJson] };
+    this.gm.features.updateManager.updateSource({
+      diff,
+      sourceName: this.sourceName,
+    });
+  }
+
+  deleteGeoJsonCustomProperties(fieldNames: Array<string>) {
+    if (!this._geoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const deniedKeys = typedKeys(propertyValidators).map(
+      (fieldName) => `${FEATURE_PROPERTY_PREFIX}${fieldName}`,
+    );
+
+    const keysToDelete = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
+
+    keysToDelete.forEach((key) => {
+      delete this._geoJson?.properties[key];
+    });
+
+    const diff = { update: [this._geoJson] };
     this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
