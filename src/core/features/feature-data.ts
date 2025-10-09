@@ -4,6 +4,7 @@ import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import {
   type BasicGeometry,
+  type EditModeName,
   type FeatureDataParameters,
   type FeatureId,
   type FeatureShape,
@@ -11,6 +12,7 @@ import {
   type FeatureSourceName,
   type GeoJsonShapeFeature,
   type Geoman,
+  type GmEditFeatureUpdatedEvent,
   includesWithType,
   type MarkerData,
   type MarkerId,
@@ -23,6 +25,8 @@ import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import type { Feature } from 'geojson';
 
 export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
   'circle',
@@ -224,6 +228,28 @@ export class FeatureData {
     });
   }
 
+  setGeoJsonCustomProperties(properties: Feature['properties']) {
+    const featureGeoJson = this.getGeoJson();
+    if (!featureGeoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const mandatoryProperties = this.parseGmShapeProperties(featureGeoJson);
+
+    this._geoJson = {
+      ...featureGeoJson,
+      properties: { ...properties, ...mandatoryProperties },
+    };
+
+    const diff = {
+      update: [this._geoJson],
+    };
+    this.gm.features.updateManager.updateSource({
+      diff,
+      sourceName: this.sourceName,
+    });
+  }
+
   updateGeoJsonCenter(geoJson: GeoJsonShapeFeature) {
     if (this.shape === 'circle') {
       const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
@@ -287,6 +313,21 @@ export class FeatureData {
         markerData.instance.changeSource({ sourceName, atomic });
       }
     });
+  }
+
+  fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
+    const payload: GmEditFeatureUpdatedEvent = {
+      name: `${GM_SYSTEM_PREFIX}:edit:feature_updated`,
+      level: 'system',
+      actionType: 'edit',
+      action: 'feature_updated',
+      mode,
+      sourceFeatures: [this],
+      targetFeatures: [this],
+      markerData: null,
+    };
+
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
   delete() {
