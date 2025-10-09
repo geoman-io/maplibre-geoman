@@ -2,7 +2,7 @@ import type {
   FeatureEditEndFwdEvent,
   FeatureEditStartFwdEvent,
   FeatureUpdatedFwdEvent,
-  LngLat,
+  LngLatTuple,
 } from '@/main.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
@@ -36,7 +36,7 @@ test.describe('Drag Events', () => {
       // Get the position to drag
       let position;
       if (feature.shape === 'circle') {
-        position = centroid(feature.geoJson).geometry.coordinates as LngLat;
+        position = centroid(feature.geoJson).geometry.coordinates as LngLatTuple;
       } else {
         position = getGeoJsonFirstPoint(feature.geoJson);
       }

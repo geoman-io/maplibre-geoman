@@ -9,7 +9,7 @@ import {
   type GmDrawLineDrawerEventWithData,
   type GmSystemEvent,
   type LineEventHandlerArguments,
-  type LngLat,
+  type LngLatTuple,
   type MapHandlerReturnData,
   type MarkerData,
   type MarkerId,
@@ -57,7 +57,7 @@ export class LineDrawer extends BaseDraw {
   mode: DrawModeName = 'line';
   snappingKey = 'line_drawer';
   drawOptions: LineDrawerOptions;
-  shapeLngLats: Array<LngLat> = [];
+  shapeLngLats: Array<LngLatTuple> = [];
 
   throttledMethods = convertToThrottled(
     {
@@ -167,7 +167,7 @@ export class LineDrawer extends BaseDraw {
     return { next: true };
   }
 
-  handleNextVertex(lngLat: LngLat, clickedMarkerInfo: MarkerInfo) {
+  handleNextVertex(lngLat: LngLatTuple, clickedMarkerInfo: MarkerInfo) {
     if (!this.featureData) {
       log.error('LineDrawer.handleNextVertex: no featureData');
       return;
@@ -217,7 +217,7 @@ export class LineDrawer extends BaseDraw {
     return { next: true };
   }
 
-  startShape(startLngLat: LngLat) {
+  startShape(startLngLat: LngLatTuple) {
     this.shapeLngLats = [startLngLat];
 
     this.featureData = this.gm.features.createFeature({
@@ -312,7 +312,7 @@ export class LineDrawer extends BaseDraw {
     return { index: -1, path: null };
   }
 
-  addPoint(newLngLat: LngLat, existingMarkerInfo: MarkerInfo) {
+  addPoint(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo) {
     const featureData = this.featureData;
     if (!featureData) {
       log.error('LineDrawer.addPoint: no featureData');
@@ -344,7 +344,7 @@ export class LineDrawer extends BaseDraw {
     return true;
   }
 
-  getAddedLngLats(newLngLat: LngLat, existingMarkerInfo: MarkerInfo) {
+  getAddedLngLats(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo) {
     const featureData = this.featureData;
     if (!featureData) {
       log.error('LineDrawer.getCurrentLngLats: no featureData');
@@ -357,7 +357,7 @@ export class LineDrawer extends BaseDraw {
     return [...(pathPositions?.slice(1, -1) || []), targetLngLat];
   }
 
-  getAutoTracePath(finishLngLat: LngLat): Array<LngLat> | null {
+  getAutoTracePath(finishLngLat: LngLatTuple): Array<LngLatTuple> | null {
     const previousLngLat = this.shapeLngLats.at(-1);
     if (this.autoTraceEnabled && this.autoTraceHelperInstance && previousLngLat) {
       const path = this.autoTraceHelperInstance.getShortestPath(previousLngLat, finishLngLat);
@@ -366,7 +366,7 @@ export class LineDrawer extends BaseDraw {
     return null;
   }
 
-  getMarkerInfoLngLat(markerInfo: MarkerInfo): LngLat | null {
+  getMarkerInfoLngLat(markerInfo: MarkerInfo): LngLatTuple | null {
     if (this.featureData && markerInfo.path) {
       const markerData = this.featureData.markers.get(markerInfo.path);
       if (markerData && markerData.type === 'dom') {
@@ -378,7 +378,7 @@ export class LineDrawer extends BaseDraw {
     return null;
   }
 
-  addMarker(lngLat: LngLat, featureData: FeatureData): MarkerData {
+  addMarker(lngLat: LngLatTuple, featureData: FeatureData): MarkerData {
     const markerData: MarkerData = {
       type: 'dom',
       instance: this.createMarker(lngLat),
@@ -400,7 +400,7 @@ export class LineDrawer extends BaseDraw {
     return markerData;
   }
 
-  createMarker(lngLat: LngLat) {
+  createMarker(lngLat: LngLatTuple) {
     return this.gm.mapAdapter.createDomMarker(
       {
         element: this.gm.createSvgMarkerElement('control', {
@@ -476,7 +476,7 @@ export class LineDrawer extends BaseDraw {
     return featureGeoJson;
   }
 
-  getShapeCoordinates({ withControlMarker }: { withControlMarker: boolean }): Array<LngLat> {
+  getShapeCoordinates({ withControlMarker }: { withControlMarker: boolean }): Array<LngLatTuple> {
     const coordinates = [...this.shapeLngLats];
 
     if (withControlMarker && this.gm.markerPointer.marker) {

@@ -1,5 +1,5 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type { FeatureShape, HelperModeName, LngLat, ScreenPoint } from '@/main.ts';
+import type { FeatureShape, HelperModeName, LngLatTuple, ScreenPoint } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { eachCoordinateWithPath, getEuclideanDistance } from '@/utils/geojson.ts';
 import type { Feature, LineString, MultiLineString } from 'geojson';
@@ -9,9 +9,9 @@ import { SOURCES } from '@/core/features/constants.ts';
 
 type ShapeSnappingHandler = (
   featureData: FeatureData,
-  lngLat: LngLat,
+  lngLat: LngLatTuple,
   point: ScreenPoint,
-) => { lngLat: LngLat; distance: number };
+) => { lngLat: LngLatTuple; distance: number };
 
 export class SnappingHelper extends BaseHelper {
   mode: HelperModeName = 'snapping';
@@ -35,7 +35,7 @@ export class SnappingHelper extends BaseHelper {
     snap_guide: this.getLineSnapping.bind(this),
   };
   private excludedFeature = new Set<FeatureData>();
-  private customSnappingLngLats = new Map<string, Array<LngLat>>();
+  private customSnappingLngLats = new Map<string, Array<LngLatTuple>>();
   private customSnappingFeatures = new Set<FeatureData>();
 
   onStartAction() {
@@ -66,7 +66,7 @@ export class SnappingHelper extends BaseHelper {
     this.customSnappingFeatures.clear();
   }
 
-  setCustomSnappingCoordinates(sectionKey: string, lngLats: Array<LngLat>) {
+  setCustomSnappingCoordinates(sectionKey: string, lngLats: Array<LngLatTuple>) {
     this.customSnappingLngLats.set(sectionKey, lngLats);
   }
 
@@ -74,7 +74,7 @@ export class SnappingHelper extends BaseHelper {
     this.customSnappingLngLats.delete(sectionKey);
   }
 
-  getSnappedLngLat(lngLat: LngLat, point: ScreenPoint): LngLat {
+  getSnappedLngLat(lngLat: LngLatTuple, point: ScreenPoint): LngLatTuple {
     let snappingLngLat = this.getCustomLngLatsSnapping(point);
     if (snappingLngLat) {
       return snappingLngLat;
@@ -97,8 +97,8 @@ export class SnappingHelper extends BaseHelper {
     return lngLat;
   }
 
-  getCustomLngLatsSnapping(point: ScreenPoint): LngLat | null {
-    const closestPointData: { distance: number; lngLat: LngLat | null } = {
+  getCustomLngLatsSnapping(point: ScreenPoint): LngLatTuple | null {
+    const closestPointData: { distance: number; lngLat: LngLatTuple | null } = {
       distance: Infinity,
       lngLat: null,
     };
@@ -118,7 +118,7 @@ export class SnappingHelper extends BaseHelper {
     return closestPointData.lngLat;
   }
 
-  getFeaturePointsSnapping(features: Array<FeatureData>, lngLat: LngLat, point: ScreenPoint) {
+  getFeaturePointsSnapping(features: Array<FeatureData>, lngLat: LngLatTuple, point: ScreenPoint) {
     let featuresPointsSnapping = features
       .map((featureData) => ({
         shape: featureData.shape,
@@ -133,7 +133,7 @@ export class SnappingHelper extends BaseHelper {
     return null;
   }
 
-  getFeatureLinesSnapping(features: Array<FeatureData>, lngLat: LngLat, point: ScreenPoint) {
+  getFeatureLinesSnapping(features: Array<FeatureData>, lngLat: LngLatTuple, point: ScreenPoint) {
     type LineSpappingData = ReturnType<ShapeSnappingHandler> & { shape: FeatureShape };
 
     let featuresLineSnapping = features
@@ -175,11 +175,11 @@ export class SnappingHelper extends BaseHelper {
 
   getPointsSnapping(
     featureData: FeatureData,
-    lngLat: LngLat,
+    lngLat: LngLatTuple,
     point: ScreenPoint,
   ): ReturnType<ShapeSnappingHandler> {
     const shapeGeoJson = featureData.getGeoJson();
-    const closestPointData: { distance: number; coord: LngLat | null } = {
+    const closestPointData: { distance: number; coord: LngLatTuple | null } = {
       distance: Infinity,
       coord: null, // lngLat coords
     };
@@ -206,7 +206,7 @@ export class SnappingHelper extends BaseHelper {
 
   getLineSnapping(
     featureData: FeatureData,
-    lngLat: LngLat,
+    lngLat: LngLatTuple,
     point: ScreenPoint,
   ): ReturnType<ShapeSnappingHandler> {
     const shapeGeoJson = featureData.getGeoJson() as Feature<LineString>;
@@ -215,7 +215,7 @@ export class SnappingHelper extends BaseHelper {
 
   getNearestLinePointData(
     lineGeoJson: Feature<LineString | MultiLineString>,
-    lngLat: LngLat,
+    lngLat: LngLatTuple,
     point: ScreenPoint,
   ) {
     const result: ReturnType<ShapeSnappingHandler> = {

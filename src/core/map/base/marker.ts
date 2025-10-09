@@ -1,4 +1,4 @@
-import type { LngLat } from '@/main.ts';
+import type { LngLatTuple } from '@/main.ts';
 import log from 'loglevel';
 
 export abstract class BaseDomMarker<TMarkerInstance = unknown> {
@@ -6,9 +6,9 @@ export abstract class BaseDomMarker<TMarkerInstance = unknown> {
 
   abstract getElement(): HTMLElement | null;
 
-  abstract setLngLat(lngLat: LngLat): void;
+  abstract setLngLat(lngLat: LngLatTuple): void;
 
-  abstract getLngLat(): LngLat;
+  abstract getLngLat(): LngLatTuple;
 
   abstract remove(): void;
 

@@ -10,7 +10,7 @@ import {
   type GmEditMarkerMoveEvent,
   type GmSystemEvent,
   type HelperModeName,
-  type LngLat,
+  type LngLatTuple,
   type MapHandlerReturnData,
   type MarkerData,
   type PositionData,
@@ -47,7 +47,7 @@ type CreateMarkerParams = {
 export class ShapeMarkersHelper extends BaseHelper {
   mode: HelperModeName = 'shape_markers';
   pinEnabled: boolean = this.gm.options.controls.helper.pin?.active || false;
-  previousPosition: LngLat | null = null;
+  previousPosition: LngLatTuple | null = null;
   activeMarker: MarkerData | null = null;
   activeFeatureData: FeatureData | null = null;
   sharedMarkers: Array<SharedMarker> = [];

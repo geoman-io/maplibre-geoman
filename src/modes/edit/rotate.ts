@@ -5,7 +5,7 @@ import {
   type GmEditEvent,
   type GmEditMarkerMoveEvent,
   type GmSystemEvent,
-  type LngLat,
+  type LngLatTuple,
   type MapHandlerReturnData,
   type ShapeName,
   SOURCES,
@@ -155,7 +155,12 @@ export class EditRotate extends BaseDrag {
     return geoJson;
   }
 
-  calculateRotationAngle(pivot: LngLat, start: LngLat, end: LngLat, normalize = true) {
+  calculateRotationAngle(
+    pivot: LngLatTuple,
+    start: LngLatTuple,
+    end: LngLatTuple,
+    normalize = true,
+  ) {
     const bearingStart = bearing(pivot, start);
     const bearingEnd = bearing(pivot, end);
 

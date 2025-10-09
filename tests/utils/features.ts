@@ -3,7 +3,7 @@ import type {
   FeatureShape,
   GeoJsonImportFeature,
   GeoJsonShapeFeature,
-  LngLat,
+  LngLatTuple,
   MarkerData,
 } from '@/types/index.ts';
 import { expect, type Page } from '@playwright/test';
@@ -26,7 +26,7 @@ export type MarkerCustomData = {
   id: FeatureId | undefined;
   temporary: boolean | undefined;
   type: MarkerData['type'];
-  position: LngLat;
+  position: LngLatTuple;
   point: [number, number]; // ScreenCoordinates
   path?: Array<string | number>;
 };
@@ -236,8 +236,8 @@ export const getFeatureMarkersData = async ({
         }
 
         if (position) {
-          result.position = position as LngLat;
-          result.point = geoman.mapAdapter.project(position as LngLat);
+          result.position = position as LngLatTuple;
+          result.point = geoman.mapAdapter.project(position as LngLatTuple);
           markers.push(result);
         }
       });
@@ -399,7 +399,7 @@ export const performDragAndVerify = async (
  * @param page - Playwright page object
  * @returns Promise resolving to the LngLat position or null if marker pointer is not available
  */
-export const getMarkerPointerLngLat = async (page: Page): Promise<LngLat | null> => {
+export const getMarkerPointerLngLat = async (page: Page): Promise<LngLatTuple | null> => {
   return page.evaluate(() => {
     const geoman = window.geoman;
     if (!geoman || !geoman.markerPointer || !geoman.markerPointer.marker) {

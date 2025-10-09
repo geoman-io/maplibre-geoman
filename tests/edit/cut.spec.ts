@@ -16,7 +16,7 @@ import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import type { GeoJsonImportFeature, GeoJsonShapeFeature } from '@/types/geojson';
 import { eachCoordinateWithPath } from '@/utils/geojson.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
-import type { LngLat } from '@/types';
+import type { LngLatTuple } from '@/types';
 import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
 
 const GEOJSON_COMPARE_PRECISION = 1; // digits after comma
@@ -26,7 +26,7 @@ async function getScreenCoordinatesForPolygon(
   page: Page,
   cuttingFeature: GeoJsonImportFeature,
 ): Promise<ScreenCoordinates[]> {
-  const lngLats: Array<LngLat> = [];
+  const lngLats: Array<LngLatTuple> = [];
   const screenCoords: ScreenCoordinates[] = [];
 
   eachCoordinateWithPath(cuttingFeature, (position) => {

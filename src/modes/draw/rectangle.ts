@@ -6,7 +6,7 @@ import type {
   GeoJsonShapeFeature,
   GmDrawShapeEvent,
   GmDrawShapeEventWithData,
-  LngLat,
+  LngLatTuple,
   MapHandlerReturnData,
   MarkerData,
   ShapeName,
@@ -26,7 +26,7 @@ import type { BBox } from 'geojson';
 export class DrawRectangle extends BaseDraw {
   mode: DrawModeName = 'rectangle';
   shape: ShapeName = 'rectangle';
-  startLngLat: LngLat | null = null;
+  startLngLat: LngLatTuple | null = null;
 
   eventHandlers = {
     mousemove: this.onMouseMove.bind(this),
@@ -102,14 +102,14 @@ export class DrawRectangle extends BaseDraw {
     return { next: false };
   }
 
-  startShape(lngLat: LngLat) {
+  startShape(lngLat: LngLatTuple) {
     this.startLngLat = lngLat;
     const bounds = getBboxFromTwoCoords(this.startLngLat, this.startLngLat);
     this.featureData = this.createFeature(bounds);
     return this.featureData;
   }
 
-  finishShape(lngLat: LngLat) {
+  finishShape(lngLat: LngLatTuple) {
     if (this.startLngLat) {
       const bounds = getBboxFromTwoCoords(this.startLngLat, lngLat);
       this.throttledMethods.updateFeaturePosition(bounds);

@@ -1,5 +1,5 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { EventHandlers, Geoman, LngLat, MapEventHadler, ScreenPoint } from '@/main.ts';
+import type { EventHandlers, Geoman, LngLatTuple, MapEventHadler, ScreenPoint } from '@/main.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -7,7 +7,7 @@ import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 
 type EnableMarkerParameters = {
-  lngLat?: LngLat;
+  lngLat?: LngLatTuple;
   customMarker?: BaseDomMarker;
   invisibleMarker?: boolean;
 };
@@ -113,7 +113,7 @@ export class MarkerPointer {
     this.gm.mapAdapter.setCursor('');
   }
 
-  createMarker(lngLat: LngLat = [0, 0]): BaseDomMarker {
+  createMarker(lngLat: LngLatTuple = [0, 0]): BaseDomMarker {
     return this.gm.mapAdapter.createDomMarker(
       {
         anchor: 'center',
@@ -123,7 +123,7 @@ export class MarkerPointer {
     ) as BaseDomMarker; // todo: create a marker abstraction
   }
 
-  createInvisibleMarker(lngLat: LngLat = [0, 0]): BaseDomMarker {
+  createInvisibleMarker(lngLat: LngLatTuple = [0, 0]): BaseDomMarker {
     const htmlElement = document.createElement('div');
     htmlElement.style.width = '0px';
     htmlElement.style.height = '0px';
@@ -150,7 +150,7 @@ export class MarkerPointer {
     return { next: true };
   }
 
-  syncTmpMarker(lngLat: LngLat) {
+  syncTmpMarker(lngLat: LngLatTuple) {
     if (!this.tmpMarker) {
       this.tmpMarker = this.createMarker(lngLat);
     }

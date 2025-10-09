@@ -14,7 +14,7 @@ import type {
   FeatureSourceName,
   GeoJsonFeatureData,
   LineBasedGeometry,
-  LngLat,
+  LngLatTuple,
   MapEventName,
   MapInstanceWithGeoman,
   MapInteraction,
@@ -52,9 +52,9 @@ export abstract class BaseMapAdapter<
 
   abstract loadImage({ id, image }: { id: string; image: string }): Promise<void>;
 
-  abstract getBounds(): [LngLat, LngLat];
+  abstract getBounds(): [LngLatTuple, LngLatTuple];
 
-  abstract fitBounds(bounds: [LngLat, LngLat], options?: BaseFitBoundsOptions): void;
+  abstract fitBounds(bounds: [LngLatTuple, LngLatTuple], options?: BaseFitBoundsOptions): void;
 
   abstract setCursor(cursor: CursorType): void;
 
@@ -94,20 +94,22 @@ export abstract class BaseMapAdapter<
 
   abstract eachLayer(callback: (layer: BaseLayer<TLayer>) => void): void;
 
-  abstract createDomMarker(options: BaseDomMarkerOptions, lngLat: LngLat): BaseDomMarker;
+  abstract createDomMarker(options: BaseDomMarkerOptions, lngLat: LngLatTuple): BaseDomMarker;
 
   abstract createPopup(options: BasePopupOptions): BasePopup;
 
-  abstract project(position: LngLat): ScreenPoint;
+  abstract project(position: LngLatTuple): ScreenPoint;
 
-  abstract unproject(point: ScreenPoint): LngLat;
+  abstract unproject(point: ScreenPoint): LngLatTuple;
 
-  abstract coordBoundsToScreenBounds(bounds: [LngLat, LngLat]): [ScreenPoint, ScreenPoint];
+  abstract coordBoundsToScreenBounds(
+    bounds: [LngLatTuple, LngLatTuple],
+  ): [ScreenPoint, ScreenPoint];
 
   getEuclideanNearestLngLat(
     shapeGeoJson: Feature<LineBasedGeometry> | FeatureCollection<LineBasedGeometry>,
-    lngLat: LngLat,
-  ): LngLat {
+    lngLat: LngLatTuple,
+  ): LngLatTuple {
     const targetPoint = this.project(lngLat);
     let closestPoint: ScreenPoint = [0, 0];
     let minDistance = Infinity;
@@ -142,7 +144,7 @@ export abstract class BaseMapAdapter<
   abstract off<T extends AnyEventName>(type: AnyEventName, listener: BaseEventListener<T>): void;
   abstract off(type: MapEventName, layerId: string, listener: BaseEventListener): void;
 
-  getDistance(lngLat1: LngLat, lngLat2: LngLat): number {
+  getDistance(lngLat1: LngLatTuple, lngLat2: LngLatTuple): number {
     return turfDistance(lngLat1, lngLat2, { units: 'meters' });
   }
 }

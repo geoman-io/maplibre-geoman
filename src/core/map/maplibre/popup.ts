@@ -1,5 +1,5 @@
 import { BasePopup } from '@/core/map/base/popup.ts';
-import type { BasePopupOptions, LngLat } from '@/main.ts';
+import type { BasePopupOptions, LngLatTuple } from '@/main.ts';
 import ml from 'maplibre-gl';
 
 export class MaplibrePopup extends BasePopup<ml.Popup> {
@@ -12,7 +12,7 @@ export class MaplibrePopup extends BasePopup<ml.Popup> {
   }: {
     mapInstance: ml.Map;
     options: BasePopupOptions;
-    lngLat?: LngLat;
+    lngLat?: LngLatTuple;
   }) {
     super();
     this.popupInstance = new ml.Popup(options).addTo(mapInstance);
@@ -21,7 +21,7 @@ export class MaplibrePopup extends BasePopup<ml.Popup> {
     }
   }
 
-  getLngLat(): LngLat {
+  getLngLat(): LngLatTuple {
     if (!this.isInstanceAvailable()) {
       return [0, 0];
     }
@@ -29,7 +29,7 @@ export class MaplibrePopup extends BasePopup<ml.Popup> {
     return this.popupInstance.getLngLat().toArray() || [0, 0];
   }
 
-  setLngLat(lngLat: LngLat) {
+  setLngLat(lngLat: LngLatTuple) {
     if (!this.isInstanceAvailable()) {
       return;
     }

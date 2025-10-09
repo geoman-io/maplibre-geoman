@@ -1,7 +1,7 @@
 import type {
   DrawModeName,
   GeoJsonShapeFeature,
-  LngLat,
+  LngLatTuple,
   MapHandlerReturnData,
   ScreenPoint,
   ShapeName,
@@ -64,7 +64,7 @@ export class DrawTextMarker extends BaseDraw {
     return { next: false };
   }
 
-  createFeature(lngLat: LngLat) {
+  createFeature(lngLat: LngLatTuple) {
     const point = this.gm.mapAdapter.project(lngLat);
     this.createTextarea(point);
     return this.gm.features.createFeature({
@@ -100,7 +100,7 @@ export class DrawTextMarker extends BaseDraw {
     this.textarea = null;
   }
 
-  getFeatureGeoJson(lngLat: LngLat): GeoJsonShapeFeature {
+  getFeatureGeoJson(lngLat: LngLatTuple): GeoJsonShapeFeature {
     return {
       type: 'Feature',
       properties: {

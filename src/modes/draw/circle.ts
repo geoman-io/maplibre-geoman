@@ -1,4 +1,4 @@
-import type { DrawModeName, LngLat, MapHandlerReturnData, ShapeName } from '@/main.ts';
+import type { DrawModeName, LngLatTuple, MapHandlerReturnData, ShapeName } from '@/main.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { allCoordinatesEqual, getGeoJsonCircle } from '@/utils/geojson.ts';
@@ -21,7 +21,7 @@ export class DrawCircle extends BaseCircle {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
-    const lngLat: LngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
+    const lngLat: LngLatTuple = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.circleCenterPoint && this.circleCenterLngLat) {
       this.fireBeforeFeatureCreate({
@@ -70,7 +70,7 @@ export class DrawCircle extends BaseCircle {
     return { next: false };
   }
 
-  updateFeatureGeoJson(rimLngLat: LngLat) {
+  updateFeatureGeoJson(rimLngLat: LngLatTuple) {
     if (this.featureData && this.circleCenterLngLat) {
       const featureGeoJson = this.getCircleGeoJson(this.circleCenterLngLat, rimLngLat);
       this.featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
@@ -82,7 +82,7 @@ export class DrawCircle extends BaseCircle {
     }
   }
 
-  saveCircleFeature(eventLngLat: LngLat) {
+  saveCircleFeature(eventLngLat: LngLatTuple) {
     // it's needed to have a custom logic for saving a circle
     // for now circle is converted to a geojson polygon,
 
@@ -112,7 +112,7 @@ export class DrawCircle extends BaseCircle {
     return allCoordinatesEqual(this.featureData.getGeoJson());
   }
 
-  getCircleGeoJson(center: LngLat, endLngLat: LngLat) {
+  getCircleGeoJson(center: LngLatTuple, endLngLat: LngLatTuple) {
     const radius = this.gm.mapAdapter.getDistance(center, endLngLat);
     const circleGeoJson = getGeoJsonCircle({ center, radius });
 

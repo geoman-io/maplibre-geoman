@@ -1,7 +1,7 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { type GmBaseEvent, type GmSystemPrefix, type NonEmptyArray } from '@/types/events/index.ts';
 import type { GmBaseModeEvent } from '@/types/events/mode.ts';
-import type { LngLat } from '@/types/map/index.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index.ts';
 
 // Edit events
@@ -18,8 +18,8 @@ export interface GmEditMarkerMoveEvent extends GmBaseEvent {
   action: 'marker_move';
   featureData: FeatureData;
   markerData: MarkerData;
-  lngLatStart: LngLat;
-  lngLatEnd: LngLat;
+  lngLatStart: LngLatTuple;
+  lngLatEnd: LngLatTuple;
 }
 
 export interface GmEditMarkerEvent extends GmBaseEvent {

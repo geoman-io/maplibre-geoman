@@ -3,7 +3,7 @@ import {
   type GeoJsonImportFeature,
   type GeoJsonImportFeatureCollection,
   type Geoman,
-  type LngLat,
+  type LngLatTuple,
 } from '@/main.ts';
 import log from 'loglevel';
 
@@ -19,7 +19,7 @@ export const loadStressTestFeatureCollection = (geoman: Geoman, step: number, si
     features: [],
   };
 
-  const createPolygonFeature = (coords: Array<LngLat>): GeoJsonImportFeature => {
+  const createPolygonFeature = (coords: Array<LngLatTuple>): GeoJsonImportFeature => {
     const featureId = `${coords[0][0]}-${coords[0][1]}`;
     return {
       id: featureId,
@@ -63,7 +63,7 @@ export const loadStressTestCircleMarkers = (geoman: Geoman, step: number) => {
     features: [],
   };
 
-  const createCircleMarkerFeature = (lngLat: LngLat): GeoJsonImportFeature => {
+  const createCircleMarkerFeature = (lngLat: LngLatTuple): GeoJsonImportFeature => {
     return {
       type: 'Feature',
       geometry: {

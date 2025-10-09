@@ -1,4 +1,4 @@
-import type { LngLat } from '@/main.ts';
+import type { LngLatTuple } from '@/main.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
@@ -41,7 +41,7 @@ test('Drag', async ({ page }) => {
   for await (const feature of features) {
     let position;
     if (feature.shape === 'circle') {
-      position = centroid(feature.geoJson).geometry.coordinates as LngLat;
+      position = centroid(feature.geoJson).geometry.coordinates as LngLatTuple;
     } else {
       position = getGeoJsonFirstPoint(feature.geoJson);
     }
@@ -67,7 +67,7 @@ test('Drag', async ({ page }) => {
       if (updatedFeature) {
         let updatedPosition;
         if (feature.shape === 'circle') {
-          updatedPosition = centroid(updatedFeature.geoJson).geometry.coordinates as LngLat;
+          updatedPosition = centroid(updatedFeature.geoJson).geometry.coordinates as LngLatTuple;
         } else {
           updatedPosition = getGeoJsonFirstPoint(updatedFeature.geoJson);
         }

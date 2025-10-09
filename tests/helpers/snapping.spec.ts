@@ -4,7 +4,7 @@ import { enableMode } from '@tests/utils/basic.ts';
 import { getRenderedFeaturesData, getMarkerPointerLngLat } from '@tests/utils/features.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import { eachCoordinateWithPath, eachSegmentWithPath } from '@/utils/geojson.ts';
-import type { LngLat } from '@/types';
+import type { LngLatTuple } from '@/types';
 import type { Feature } from 'geojson';
 import type { LineBasedGeometry } from '@/types/geojson.ts';
 
@@ -30,7 +30,7 @@ test.describe('Snapping Helper', () => {
     // Iterate through each feature
     for (const feature of features) {
       // Extract all vertices from the feature using eachCoordinateWithPath
-      const coordinates: Array<{ coordinate: LngLat; path: Array<string | number> }> = [];
+      const coordinates: Array<{ coordinate: LngLatTuple; path: Array<string | number> }> = [];
 
       eachCoordinateWithPath(feature.geoJson, (position) => {
         coordinates.push({ coordinate: position.coordinate, path: position.path });
@@ -89,7 +89,7 @@ test.describe('Snapping Helper', () => {
     // Iterate through each feature
     for (const feature of features) {
       // Extract all segments from the feature using eachSegmentWithPath
-      const segments: Array<{ start: LngLat; end: LngLat }> = [];
+      const segments: Array<{ start: LngLatTuple; end: LngLatTuple }> = [];
 
       eachSegmentWithPath(feature.geoJson, (segment) => {
         segments.push({
@@ -123,7 +123,7 @@ test.describe('Snapping Helper', () => {
         // Calculate the midpoint of the segment
         const midLng = (segment.start[0] + segment.end[0]) / 2;
         const midLat = (segment.start[1] + segment.end[1]) / 2;
-        const midpoint = [midLng, midLat] as LngLat;
+        const midpoint = [midLng, midLat] as LngLatTuple;
 
         // Get screen coordinates of the midpoint
         const midpointScreen = await getScreenCoordinatesByLngLat({ page, position: midpoint });
