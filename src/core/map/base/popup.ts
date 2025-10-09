@@ -1,10 +1,10 @@
-import type { LngLat } from '@/main.ts';
+import type { LngLatTuple } from '@/main.ts';
 import log from 'loglevel';
 
 export abstract class BasePopup<TPopupInstance = unknown> {
   abstract popupInstance: TPopupInstance | null;
 
-  abstract setLngLat(lngLat: LngLat): void;
+  abstract setLngLat(lngLat: LngLatTuple): void;
 
   abstract setHtml(htmlContent: string): void;
 

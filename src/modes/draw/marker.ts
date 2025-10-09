@@ -2,7 +2,7 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type DrawModeName,
   type GeoJsonShapeFeature,
-  type LngLat,
+  type LngLatTuple,
   type MapHandlerReturnData,
   type ShapeName,
   SOURCES,
@@ -65,7 +65,7 @@ export class DrawMarker extends BaseDraw {
     return null;
   }
 
-  getFeatureGeoJson(lngLat: LngLat): GeoJsonShapeFeature | null {
+  getFeatureGeoJson(lngLat: LngLatTuple): GeoJsonShapeFeature | null {
     return {
       type: 'Feature',
       properties: {

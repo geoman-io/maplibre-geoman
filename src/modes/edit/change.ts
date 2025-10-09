@@ -5,7 +5,7 @@ import {
   type GmEditMarkerEvent,
   type GmEditMarkerMoveEvent,
   type GmSystemEvent,
-  type LngLat,
+  type LngLatTuple,
   type MapHandlerReturnData,
   type MarkerData,
   SOURCES,
@@ -180,7 +180,7 @@ export class EditChange extends BaseDrag {
 
     const coordinatesPath = event.markerData.segment.end.path;
     const insertIndex = coordinatesPath.pop();
-    const coordinates = get(geoJson, coordinatesPath) as Array<LngLat>;
+    const coordinates = get(geoJson, coordinatesPath) as Array<LngLatTuple>;
 
     if (typeof insertIndex === 'number') {
       coordinates.splice(insertIndex, 0, [...event.markerData.position.coordinate]);
@@ -198,7 +198,7 @@ export class EditChange extends BaseDrag {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
     const coordPath = cloneDeep(markerData.position.path);
     const coordIndex = coordPath.pop();
-    const coordinates = get(geoJson, coordPath) as Array<LngLat>;
+    const coordinates = get(geoJson, coordPath) as Array<LngLatTuple>;
 
     if (Array.isArray(coordinates) && typeof coordIndex === 'number') {
       coordinates[coordIndex] = [...lngLatEnd];
@@ -284,7 +284,7 @@ export class EditChange extends BaseDrag {
   updateRectangle({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {
     const totalCoordsCount = 4;
     const geoJson = featureData.getGeoJson() as GeoJsonShapeFeature;
-    const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLat>;
+    const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLatTuple>;
 
     // Find the index of the starting vertex
     const { absCoordIndex: startIndex } = findCoordinateIndices(geoJson, lngLatStart);
@@ -294,7 +294,7 @@ export class EditChange extends BaseDrag {
     }
 
     const oppositeVertexIndex = toMod(startIndex - 2, totalCoordsCount);
-    const oppositeCoordinate = shapeCoords[oppositeVertexIndex] as LngLat;
+    const oppositeCoordinate = shapeCoords[oppositeVertexIndex] as LngLatTuple;
     return twoCoordsToGeoJsonRectangle(lngLatEnd, oppositeCoordinate);
   }
 }

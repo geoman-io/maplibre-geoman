@@ -3,7 +3,7 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   DrawModeName,
   GeoJsonShapeFeature,
-  LngLat,
+  LngLatTuple,
   MapHandlerReturnData,
   MarkerData,
   ScreenPoint,
@@ -23,7 +23,7 @@ export abstract class BaseCircle extends BaseDraw {
     click: this.onMouseClick.bind(this),
   };
   protected circleCenterPoint: ScreenPoint | null = null;
-  protected circleCenterLngLat: LngLat | null = null;
+  protected circleCenterLngLat: LngLatTuple | null = null;
 
   onStartAction() {
     this.gm.markerPointer.enable();
@@ -39,7 +39,7 @@ export abstract class BaseCircle extends BaseDraw {
 
   abstract onMouseClick(event: BaseMapEvent): MapHandlerReturnData;
 
-  getFeatureGeoJson(position: LngLat): GeoJsonShapeFeature {
+  getFeatureGeoJson(position: LngLatTuple): GeoJsonShapeFeature {
     return {
       type: 'Feature',
       properties: {

@@ -1,6 +1,6 @@
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
-import type { LngLat } from '@/types/map';
+import type { LngLatTuple } from '@/types/map';
 import type { MarkerData } from '@/types/modes';
 import { FeatureData } from '@/core/features/feature-data.ts';
 
@@ -14,7 +14,7 @@ export interface SnapGuidesHelperInterface extends BaseHelper {
 
   updateSnapGuides(
     shapeGeoJson: GeoJsonShapeFeature | null,
-    currentLngLat: LngLat | null,
+    currentLngLat: LngLatTuple | null,
     withControlMarker?: boolean,
   ): void;
 }
@@ -22,11 +22,11 @@ export interface SnapGuidesHelperInterface extends BaseHelper {
 export interface AutoTraceHelperInterface extends BaseHelper {
   mode: 'auto_trace';
 
-  getShortestPath(lngLatStart: LngLat, lngLatEnd: LngLat): Array<LngLat> | null;
+  getShortestPath(lngLatStart: LngLatTuple, lngLatEnd: LngLatTuple): Array<LngLatTuple> | null;
 }
 
 export interface PinHelperInterface extends BaseHelper {
   mode: 'pin';
 
-  getSharedMarkers(coordinate: LngLat): Array<SharedMarker>;
+  getSharedMarkers(coordinate: LngLatTuple): Array<SharedMarker>;
 }

@@ -1,5 +1,5 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { BaseDomMarkerOptions, LngLat } from '@/main.ts';
+import type { BaseDomMarkerOptions, LngLatTuple } from '@/main.ts';
 import ml from 'maplibre-gl';
 
 export class MaplibreDomMarker extends BaseDomMarker<ml.Marker> {
@@ -12,7 +12,7 @@ export class MaplibreDomMarker extends BaseDomMarker<ml.Marker> {
   }: {
     mapInstance: ml.Map;
     options: BaseDomMarkerOptions;
-    lngLat: LngLat;
+    lngLat: LngLatTuple;
   }) {
     super();
     this.markerInstance = new ml.Marker(options).setLngLat(lngLat).addTo(mapInstance);
@@ -26,14 +26,14 @@ export class MaplibreDomMarker extends BaseDomMarker<ml.Marker> {
     return this.markerInstance?.getElement() || null;
   }
 
-  setLngLat(lngLat: LngLat) {
+  setLngLat(lngLat: LngLatTuple) {
     if (!this.isMarkerInstanceAvailable()) {
       return;
     }
     this.markerInstance?.setLngLat(lngLat);
   }
 
-  getLngLat(): LngLat {
+  getLngLat(): LngLatTuple {
     if (!this.isMarkerInstanceAvailable()) {
       return [0, 0];
     }

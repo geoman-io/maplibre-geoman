@@ -1,4 +1,10 @@
-import type { DrawModeName, LngLat, MapHandlerReturnData, ScreenPoint, ShapeName } from '@/types';
+import type {
+  DrawModeName,
+  LngLatTuple,
+  MapHandlerReturnData,
+  ScreenPoint,
+  ShapeName,
+} from '@/types';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import { BaseCircle } from './base-circle.ts';
 import { convertToThrottled, isMapPointerEvent } from '@/main.ts';
@@ -9,7 +15,7 @@ export class DrawEllipse extends BaseCircle {
   shape: ShapeName = 'ellipse';
 
   protected xSemiAxisPoint: ScreenPoint | null = null;
-  protected xSemiAxisLngLat: LngLat | null = null;
+  protected xSemiAxisLngLat: LngLatTuple | null = null;
 
   throttledMethods = convertToThrottled(
     {
@@ -23,7 +29,7 @@ export class DrawEllipse extends BaseCircle {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
-    const lngLat: LngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
+    const lngLat: LngLatTuple = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.circleCenterLngLat && this.xSemiAxisLngLat) {
       this.fireBeforeFeatureCreate({
@@ -91,7 +97,7 @@ export class DrawEllipse extends BaseCircle {
     return { next: false };
   }
 
-  updateFeatureGeoJson(eventLngLat: LngLat) {
+  updateFeatureGeoJson(eventLngLat: LngLatTuple) {
     if (!this.featureData || !this.circleCenterLngLat) {
       return;
     }
@@ -111,7 +117,7 @@ export class DrawEllipse extends BaseCircle {
     }
   }
 
-  saveEllipseFeature(eventLngLat: LngLat) {
+  saveEllipseFeature(eventLngLat: LngLatTuple) {
     if (!this.circleCenterLngLat || !this.xSemiAxisLngLat) {
       return;
     }
@@ -148,7 +154,7 @@ export class DrawEllipse extends BaseCircle {
     return allCoordinatesEqual(this.featureData.getGeoJson());
   }
 
-  getEllipseGeoJson(center: LngLat, xSemiAxisLngLat: LngLat, rimLngLat?: LngLat) {
+  getEllipseGeoJson(center: LngLatTuple, xSemiAxisLngLat: LngLatTuple, rimLngLat?: LngLatTuple) {
     const { xSemiAxis, ySemiAxis, angle } = getEllipseParameters({
       center,
       xSemiAxisLngLat,

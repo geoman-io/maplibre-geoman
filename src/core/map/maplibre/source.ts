@@ -2,7 +2,7 @@ import { BaseSource } from '@/core/map/base/source.ts';
 import {
   FEATURE_ID_PROPERTY,
   type GeoJsonShapeFeatureCollection,
-  type GeoJsonSourceDiff,
+  type GeoJsonUniversalDiff,
   type Geoman,
 } from '@/main.ts';
 import type { Feature, GeoJSON } from 'geojson';
@@ -67,16 +67,16 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     return this.sourceInstance.setData(geoJson);
   }
 
-  updateData(updateStorage: GeoJsonSourceDiff) {
+  updateData(updateStorage: GeoJsonUniversalDiff) {
     if (!this.isInstanceAvailable()) {
       return;
     }
 
-    const mlDiff = this.convertGeoJsonDiffToMlDiff(updateStorage);
+    const mlDiff = this.convertUniversalDiffToMlDiff(updateStorage);
     this.sourceInstance.updateData(mlDiff);
   }
 
-  convertGeoJsonDiffToMlDiff(diff: GeoJsonSourceDiff): ml.GeoJSONSourceDiff {
+  convertUniversalDiffToMlDiff(diff: GeoJsonUniversalDiff): ml.GeoJSONSourceDiff {
     // todo: check possible performance issue here,
     // todo: feature properties updates applies geometry updates
     return {

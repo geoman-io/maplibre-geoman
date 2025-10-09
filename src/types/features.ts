@@ -2,7 +2,7 @@ import type { FeatureData } from '@/core/features/feature-data.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import { FEATURE_ID_PROPERTY, type Geoman, SOURCES } from '@/main.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
-import type { LngLat } from '@/types/map/index.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
 import type { WithPrefixedKeys } from '@/types/utils.ts';
 import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
@@ -36,7 +36,7 @@ export type ForEachFeatureDataCallbackFn = (
 export type FeatureShapeProperties = {
   id?: FeatureId;
   shape?: FeatureShape;
-  center?: LngLat;
+  center?: LngLatTuple;
   xSemiAxis?: number;
   ySemiAxis?: number;
   angle?: number;

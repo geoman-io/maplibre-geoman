@@ -20,7 +20,7 @@ import {
   type GeoJsonFeatureData,
   type GeoJsonImportFeature,
   type Geoman,
-  type LngLat,
+  type LngLatTuple,
   type MapInstanceWithGeoman,
   type MapInteraction,
   type MapTypes,
@@ -78,12 +78,12 @@ export class MaplibreAdapter extends BaseMapAdapter<
     }
   }
 
-  getBounds(): [LngLat, LngLat] {
+  getBounds(): [LngLatTuple, LngLatTuple] {
     const mapBounds = this.mapInstance.getBounds();
-    return mapBounds.toArray() as [LngLat, LngLat];
+    return mapBounds.toArray() as [LngLatTuple, LngLatTuple];
   }
 
-  fitBounds(bounds: [LngLat, LngLat], options?: BaseFitBoundsOptions) {
+  fitBounds(bounds: [LngLatTuple, LngLatTuple], options?: BaseFitBoundsOptions) {
     this.mapInstance.fitBounds(bounds, options);
   }
 
@@ -220,7 +220,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
     });
   }
 
-  createDomMarker(options: BaseDomMarkerOptions, lngLat: LngLat): BaseDomMarker {
+  createDomMarker(options: BaseDomMarkerOptions, lngLat: LngLatTuple): BaseDomMarker {
     return new MaplibreDomMarker({
       mapInstance: this.mapInstance,
       options,
@@ -228,7 +228,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
     });
   }
 
-  createPopup(options: BasePopupOptions, lngLat?: LngLat): BasePopup {
+  createPopup(options: BasePopupOptions, lngLat?: LngLatTuple): BasePopup {
     return new MaplibrePopup({
       mapInstance: this.mapInstance,
       options,
@@ -236,17 +236,17 @@ export class MaplibreAdapter extends BaseMapAdapter<
     });
   }
 
-  project(position: LngLat) {
+  project(position: LngLatTuple) {
     const point = this.mapInstance.project(position);
     return [point.x, point.y] as ScreenPoint;
   }
 
   unproject(point: ScreenPoint) {
     const lngLat = this.mapInstance.unproject(point);
-    return [lngLat.lng, lngLat.lat] as LngLat;
+    return [lngLat.lng, lngLat.lat] as LngLatTuple;
   }
 
-  coordBoundsToScreenBounds(bounds: [LngLat, LngLat]): [ScreenPoint, ScreenPoint] {
+  coordBoundsToScreenBounds(bounds: [LngLatTuple, LngLatTuple]): [ScreenPoint, ScreenPoint] {
     const mlBounds = new ml.LngLatBounds(bounds);
     const sw = this.project(mlBounds.getSouthWest().toArray());
     const ne = this.project(mlBounds.getNorthEast().toArray());

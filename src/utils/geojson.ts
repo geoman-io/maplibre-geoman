@@ -4,7 +4,7 @@ import type {
   GeoJsonShapeFeature,
   GeoJsonShapeFeatureCollection,
   LineBasedGeometry,
-  LngLat,
+  LngLatTuple,
   LngLatDiff,
   PositionData,
   ScreenPoint,
@@ -36,7 +36,7 @@ import { get, isEqual } from 'lodash-es';
 import log from 'loglevel';
 import { lineString } from '@turf/helpers';
 
-export const isEqualPosition = (position1: LngLat, position2: LngLat): boolean => {
+export const isEqualPosition = (position1: LngLatTuple, position2: LngLatTuple): boolean => {
   return position1[0] === position2[0] && position1[1] === position2[1];
 };
 
@@ -80,12 +80,12 @@ export const multiLineStringToFeatureCollection = (
   };
 };
 
-export const getLngLatDiff = (startLngLat: LngLat, endLngLat: LngLat): LngLatDiff => ({
+export const getLngLatDiff = (startLngLat: LngLatTuple, endLngLat: LngLatTuple): LngLatDiff => ({
   lng: endLngLat[0] - startLngLat[0],
   lat: endLngLat[1] - startLngLat[1],
 });
 
-const isPosition = (position: unknown): position is LngLat =>
+const isPosition = (position: unknown): position is LngLatTuple =>
   Array.isArray(position) &&
   position.length >= 2 &&
   position.length <= 3 &&
@@ -134,7 +134,7 @@ export const eachCoordinateWithPath = (
   traverseGeoJson(geoJson, []);
 };
 
-export const findCoordinateWithPath = (geoJson: GeoJSON, coordinate: LngLat) => {
+export const findCoordinateWithPath = (geoJson: GeoJSON, coordinate: LngLatTuple) => {
   let targetPosition: PositionData = { coordinate: [0, 0], path: [] };
   let targetIndex: number = -1;
 
@@ -203,7 +203,7 @@ export const eachSegmentWithPath = (
   traverseGeoJson(geoJson, undefined, [], []);
 };
 
-export const findCoordinateIndices = (geoJson: GeoJSON, lngLat: LngLat): CoordinateIndices => {
+export const findCoordinateIndices = (geoJson: GeoJSON, lngLat: LngLatTuple): CoordinateIndices => {
   let indices: CoordinateIndices = {
     absCoordIndex: -1,
     featureIndex: -1,
@@ -228,8 +228,8 @@ export const findCoordinateIndices = (geoJson: GeoJSON, lngLat: LngLat): Coordin
 };
 
 export const twoCoordsToLineString = (
-  position1: LngLat,
-  position2: LngLat,
+  position1: LngLatTuple,
+  position2: LngLatTuple,
   properties: GeoJsonProperties = {},
 ): Feature<LineString> => {
   return {
@@ -242,7 +242,7 @@ export const twoCoordsToLineString = (
   };
 };
 
-export const getBboxFromTwoCoords = (lngLat1: LngLat, lngLat2: LngLat): BBox => {
+export const getBboxFromTwoCoords = (lngLat1: LngLatTuple, lngLat2: LngLatTuple): BBox => {
   const [lng1, lat1] = lngLat1;
   const [lng2, lat2] = lngLat2;
 
@@ -255,8 +255,8 @@ export const getBboxFromTwoCoords = (lngLat1: LngLat, lngLat2: LngLat): BBox => 
 };
 
 export const twoCoordsToGeoJsonRectangle = (
-  lngLat1: LngLat,
-  lngLat2: LngLat,
+  lngLat1: LngLatTuple,
+  lngLat2: LngLatTuple,
 ): GeoJsonShapeFeature => {
   const bBox = getBboxFromTwoCoords(lngLat1, lngLat2);
   const southWest = [bBox[0], bBox[1]];
@@ -287,11 +287,11 @@ export const twoCoordsToGeoJsonRectangle = (
   };
 };
 
-export const geoJsonPointToLngLat = (geoJson: Feature<Point>): LngLat => {
+export const geoJsonPointToLngLat = (geoJson: Feature<Point>): LngLatTuple => {
   return [geoJson.geometry.coordinates[0], geoJson.geometry.coordinates[1]];
 };
 
-export const getGeoJsonBounds = (geoJson: GeoJSON): [LngLat, LngLat] => {
+export const getGeoJsonBounds = (geoJson: GeoJSON): [LngLatTuple, LngLatTuple] => {
   const bounds = bbox(geoJson);
 
   return [
@@ -300,18 +300,21 @@ export const getGeoJsonBounds = (geoJson: GeoJSON): [LngLat, LngLat] => {
   ];
 };
 
-export const boundsToBBox = (bounds: [LngLat, LngLat]): BBox => {
+export const boundsToBBox = (bounds: [LngLatTuple, LngLatTuple]): BBox => {
   return [bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1]];
 };
 
-export const bBoxContains = (bBoxBounds: BBox, lngLat: LngLat): boolean => {
+export const bBoxContains = (bBoxBounds: BBox, lngLat: LngLatTuple): boolean => {
   const [minX, minY, maxX, maxY] = bBoxBounds;
   const [lng, lat] = lngLat;
 
   return lng >= minX && lng <= maxX && lat >= minY && lat <= maxY;
 };
 
-export const boundsContains = (bounds: [LngLat, LngLat], lngLat: LngLat): boolean => {
+export const boundsContains = (
+  bounds: [LngLatTuple, LngLatTuple],
+  lngLat: LngLatTuple,
+): boolean => {
   const bBoxBounds = boundsToBBox(bounds);
   return bBoxContains(bBoxBounds, lngLat);
 };
@@ -328,8 +331,8 @@ export const getGeoJsonCoordinatesCount = (geoJson: GeoJSON): number => {
   return count;
 };
 
-export const getAllGeoJsonCoordinates = (geoJson: GeoJSON): Array<LngLat> => {
-  const coordinates: Array<LngLat> = [];
+export const getAllGeoJsonCoordinates = (geoJson: GeoJSON): Array<LngLatTuple> => {
+  const coordinates: Array<LngLatTuple> = [];
   turfCoordEach(
     geoJson,
     (coord) => {
@@ -341,14 +344,14 @@ export const getAllGeoJsonCoordinates = (geoJson: GeoJSON): Array<LngLat> => {
 };
 
 export const allCoordinatesEqual = (geoJson: GeoJSON): boolean => {
-  const featureLngLats: Array<LngLat> = getAllGeoJsonCoordinates(geoJson);
+  const featureLngLats: Array<LngLatTuple> = getAllGeoJsonCoordinates(geoJson);
 
   // for now only checks if all points aren't the same
   return featureLngLats.some((lngLat) => !isEqual(featureLngLats[0], lngLat));
 };
 
-export const getGeoJsonFirstPoint = (shapeGeoJson: GeoJSON): LngLat | null => {
-  let firstPoint: LngLat | null = null;
+export const getGeoJsonFirstPoint = (shapeGeoJson: GeoJSON): LngLatTuple | null => {
+  let firstPoint: LngLatTuple | null = null;
 
   try {
     eachCoordinateWithPath(shapeGeoJson, (position) => {
@@ -395,7 +398,7 @@ export const getEuclideanSegmentNearestPoint = (
 
 export const removeVertexFromLine = (
   lineGeoJson: Feature<LineString>,
-  vertexLngLat: LngLat,
+  vertexLngLat: LngLatTuple,
 ): boolean => {
   const { absCoordIndex } = findCoordinateIndices(lineGeoJson, vertexLngLat);
 
@@ -408,13 +411,16 @@ export const removeVertexFromLine = (
 
 export const removeVertexFromPolygon = (
   shapeGeoJson: Feature<Polygon>,
-  vertexLngLat: LngLat,
+  vertexLngLat: LngLatTuple,
 ): boolean => {
   const coordIndices = findCoordinateIndices(shapeGeoJson, vertexLngLat);
 
   if (coordIndices.absCoordIndex !== -1) {
     const coordinatesPath: [number] = [coordIndices.geometryIndex];
-    const coordinates = get(shapeGeoJson.geometry.coordinates, coordinatesPath) as Array<LngLat>;
+    const coordinates = get(
+      shapeGeoJson.geometry.coordinates,
+      coordinatesPath,
+    ) as Array<LngLatTuple>;
     const targetCoordIndex = coordinates.findIndex((coord) => isEqual(coord, vertexLngLat));
 
     if (coordinates.length <= 4) {
@@ -433,13 +439,19 @@ export const removeVertexFromPolygon = (
 
 export const removeVertexFromMultiPolygon = (
   shapeGeoJson: Feature<MultiPolygon>,
-  vertexLngLat: LngLat,
+  vertexLngLat: LngLatTuple,
 ): boolean => {
   const coordIndices = findCoordinateIndices(shapeGeoJson, vertexLngLat);
 
   if (coordIndices.absCoordIndex !== -1) {
-    const coordinatesPath: LngLat = [coordIndices.multiFeatureIndex, coordIndices.geometryIndex];
-    const coordinates = get(shapeGeoJson.geometry.coordinates, coordinatesPath) as Array<LngLat>;
+    const coordinatesPath: LngLatTuple = [
+      coordIndices.multiFeatureIndex,
+      coordIndices.geometryIndex,
+    ];
+    const coordinates = get(
+      shapeGeoJson.geometry.coordinates,
+      coordinatesPath,
+    ) as Array<LngLatTuple>;
     const targetCoordIndex = coordinates.findIndex((coord) => isEqual(coord, vertexLngLat));
 
     if (coordinates.length <= 4) {
@@ -447,7 +459,7 @@ export const removeVertexFromMultiPolygon = (
       const coordinatesContainer = get(
         shapeGeoJson.geometry.coordinates,
         coordIndices.multiFeatureIndex,
-      ) as Array<Array<LngLat>>;
+      ) as Array<Array<LngLatTuple>>;
       coordinatesContainer.splice(coordIndices.geometryIndex, 1);
 
       if (coordinatesContainer.length === 0) {
@@ -467,7 +479,7 @@ export const removeVertexFromMultiPolygon = (
 
 export const removeVertexFromGeoJsonFeature = (
   shapeGeoJson: Feature<LineString | Polygon | MultiPolygon>,
-  vertexLngLat: LngLat,
+  vertexLngLat: LngLatTuple,
 ): boolean => {
   if (isLineStringFeature(shapeGeoJson)) {
     return removeVertexFromLine(shapeGeoJson, vertexLngLat);
@@ -539,7 +551,7 @@ export const convertToLineStringFeatureCollection = (
 };
 
 export const lngLatToGeoJsonPoint = (
-  position: LngLat,
+  position: LngLatTuple,
   shape: Extract<ShapeName, 'marker' | 'text_marker' | 'circle_marker'> = 'marker',
 ): GeoJsonShapeFeature => {
   return {
@@ -559,7 +571,7 @@ export const getGeoJsonCircle = ({
   radius,
   steps = 80,
 }: {
-  center: LngLat;
+  center: LngLatTuple;
   radius: number;
   steps?: number;
 }) => {
@@ -579,9 +591,9 @@ export const getEllipseParameters = ({
   xSemiAxisLngLat,
   rimLngLat,
 }: {
-  center: LngLat;
-  xSemiAxisLngLat: LngLat;
-  rimLngLat?: LngLat;
+  center: LngLatTuple;
+  xSemiAxisLngLat: LngLatTuple;
+  rimLngLat?: LngLatTuple;
 }) => {
   let xSemiAxis = turfDistance(center, xSemiAxisLngLat, { units: 'meters' });
   if (xSemiAxis === 0) {
@@ -631,7 +643,7 @@ export const getGeoJsonEllipse = ({
   angle,
   properties = {},
 }: {
-  center: LngLat;
+  center: LngLatTuple;
   xSemiAxis: number;
   ySemiAxis?: number;
   angle: number;
@@ -671,7 +683,7 @@ export const getGeoJsonEllipse = ({
 export const getCoordinateByPath = (
   geoJson: GeoJSON,
   path: Array<string | number>,
-): LngLat | null => {
+): LngLatTuple | null => {
   const coordinate = get(geoJson, path) as unknown;
   if (isPosition(coordinate)) {
     return coordinate;

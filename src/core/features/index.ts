@@ -17,7 +17,7 @@ import {
   type GeoJsonShapeFeatureCollection,
   type Geoman,
   type GmDrawFeatureCreatedEvent,
-  type LngLat,
+  type LngLatTuple,
   type MarkerData,
   type PartialLayerStyle,
   type ScreenPoint,
@@ -579,7 +579,7 @@ export class Features {
     sourceName,
   }: {
     type: MarkerData['type'];
-    coordinate: LngLat;
+    coordinate: LngLatTuple;
     parentFeature: FeatureData;
     sourceName: FeatureSourceName;
   }) {
@@ -599,7 +599,7 @@ export class Features {
     });
   }
 
-  updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLat) {
+  updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLatTuple) {
     markerFeatureData.updateGeoJsonGeometry({
       type: 'Point',
       coordinates,

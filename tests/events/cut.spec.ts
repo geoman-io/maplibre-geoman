@@ -10,7 +10,7 @@ import { getRenderedFeaturesData } from '@tests/utils/features.ts';
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import type { GeoJsonImportFeature } from '@/types/geojson';
-import type { LngLat } from '@/main.ts';
+import type { LngLatTuple } from '@/main.ts';
 import { eachCoordinateWithPath } from '@/utils/geojson.ts';
 
 // Helper function to get screen coordinates for a polygon
@@ -18,7 +18,7 @@ async function getScreenCoordinatesForPolygon(
   page: Page,
   cuttingFeature: GeoJsonImportFeature,
 ): Promise<ScreenCoordinates[]> {
-  const lngLats: Array<LngLat> = [];
+  const lngLats: Array<LngLatTuple> = [];
   const screenCoords: ScreenCoordinates[] = [];
 
   eachCoordinateWithPath(cuttingFeature, (position) => {

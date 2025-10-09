@@ -9,7 +9,7 @@ import type { GeoJsonImportFeature } from '@/types/index.ts';
 import type { EventFor } from '@/types/map/events-map.ts';
 import type { Feature } from 'geojson';
 
-export type LngLat = [number, number];
+export type LngLatTuple = [number, number];
 export type ScreenPoint = [number, number];
 
 export const pointerEvents = [
@@ -69,7 +69,7 @@ export type MapInstanceWithGeoman<T = AnyMapInstance> = {
   gm: Geoman;
 } & T;
 
-export type GeoJsonSourceDiff = {
+export type GeoJsonUniversalDiff = {
   remove?: Array<FeatureId>;
   add?: Array<Feature>;
   update?: Array<Feature>;

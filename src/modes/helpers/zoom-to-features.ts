@@ -1,4 +1,4 @@
-import { type HelperModeName, type LngLat, SOURCES } from '@/main.ts';
+import { type HelperModeName, type LngLatTuple, SOURCES } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import bbox from '@turf/bbox';
 import log from 'loglevel';
@@ -26,7 +26,7 @@ export class ZoomToFeaturesHelper extends BaseHelper {
       sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
     });
     const bboxArray = bbox(featureCollection) as [number, number, number, number];
-    const bounds: [LngLat, LngLat] = [
+    const bounds: [LngLatTuple, LngLatTuple] = [
       [bboxArray[0], bboxArray[1]],
       [bboxArray[2], bboxArray[3]],
     ];

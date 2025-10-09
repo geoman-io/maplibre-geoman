@@ -6,7 +6,7 @@ import type {
   FeatureShape,
   GeoJsonShapeFeature,
   GmSystemEvent,
-  LngLat,
+  LngLatTuple,
   MapHandlerReturnData,
 } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
@@ -26,13 +26,13 @@ import log from 'loglevel';
 
 type UpdateShapeHandler = (
   featureData: FeatureData,
-  lngLatStart: LngLat,
-  lngLatEnd: LngLat,
+  lngLatStart: LngLatTuple,
+  lngLatEnd: LngLatTuple,
 ) => GeoJsonShapeFeature | null;
 
 export abstract class BaseDrag extends BaseEdit {
   mode: EditModeName = 'drag';
-  previousLngLat: LngLat | null = null;
+  previousLngLat: LngLatTuple | null = null;
 
   pointBasedShapes: Array<FeatureShape> = ['marker', 'circle_marker', 'text_marker'];
 
@@ -136,7 +136,7 @@ export abstract class BaseDrag extends BaseEdit {
     }
   }
 
-  moveFeature(featureData: FeatureData, newLngLat: LngLat) {
+  moveFeature(featureData: FeatureData, newLngLat: LngLatTuple) {
     if (!this.flags.actionInProgress) {
       return;
     }
@@ -175,7 +175,7 @@ export abstract class BaseDrag extends BaseEdit {
     }
   }
 
-  moveSource(featureData: FeatureData, oldLngLat: LngLat, newLngLat: LngLat) {
+  moveSource(featureData: FeatureData, oldLngLat: LngLatTuple, newLngLat: LngLatTuple) {
     const lngLatDiff = getLngLatDiff(oldLngLat, newLngLat);
     // moveFeatureData(featureData, lngLatDiff);
     return getMovedGeoJson(featureData, lngLatDiff);
@@ -183,8 +183,8 @@ export abstract class BaseDrag extends BaseEdit {
 
   moveEllipse(
     featureData: FeatureData,
-    oldLngLat: LngLat,
-    newLngLat: LngLat,
+    oldLngLat: LngLatTuple,
+    newLngLat: LngLatTuple,
   ): GeoJsonShapeFeature | null {
     if (featureData.shape !== 'ellipse') {
       log.error('BaseDrag.moveCircle: invalid shape type', featureData);
@@ -211,7 +211,10 @@ export abstract class BaseDrag extends BaseEdit {
 
     const lngLatDiff = getLngLatDiff(oldLngLat, newLngLat);
 
-    const newCenterCoords: LngLat = [oldCenter[0] + lngLatDiff.lng, oldCenter[1] + lngLatDiff.lat];
+    const newCenterCoords: LngLatTuple = [
+      oldCenter[0] + lngLatDiff.lng,
+      oldCenter[1] + lngLatDiff.lat,
+    ];
 
     return getGeoJsonEllipse({
       center: newCenterCoords,
@@ -223,8 +226,8 @@ export abstract class BaseDrag extends BaseEdit {
 
   moveCircle(
     featureData: FeatureData,
-    oldLngLat: LngLat,
-    newLngLat: LngLat,
+    oldLngLat: LngLatTuple,
+    newLngLat: LngLatTuple,
   ): GeoJsonShapeFeature | null {
     if (featureData.shape !== 'circle') {
       log.error('BaseDrag.moveCircle: invalid shape type', featureData);
@@ -245,7 +248,7 @@ export abstract class BaseDrag extends BaseEdit {
       return null;
     }
 
-    const newCenterCoords: LngLat = [
+    const newCenterCoords: LngLatTuple = [
       shapeCenter[0] + lngLatDiff.lng,
       shapeCenter[1] + lngLatDiff.lat,
     ];

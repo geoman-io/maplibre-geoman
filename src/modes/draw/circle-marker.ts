@@ -1,4 +1,4 @@
-import type { DrawModeName, LngLat, MapHandlerReturnData, ShapeName } from '@/main.ts';
+import type { DrawModeName, LngLatTuple, MapHandlerReturnData, ShapeName } from '@/main.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
@@ -36,7 +36,7 @@ export class DrawCircleMarker extends BaseCircle {
     return { next: false };
   }
 
-  updateFeaturePosition(lngLat: LngLat) {
+  updateFeaturePosition(lngLat: LngLatTuple) {
     if (!this.featureData) {
       return;
     }

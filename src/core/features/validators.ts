@@ -1,4 +1,4 @@
-import type { FeatureId, FeatureShape, FeatureShapeProperties, LngLat } from '@/types';
+import type { FeatureId, FeatureShape, FeatureShapeProperties, LngLatTuple } from '@/types';
 import { includesWithType } from '@/utils/typing.ts';
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { isLngLat } from '@/utils/guards/geojson.ts';
@@ -16,7 +16,7 @@ export const propertyValidators: {
   shape: (value: unknown): value is FeatureShape =>
     typeof value === 'string' && includesWithType(value, ALL_SHAPE_NAMES),
 
-  center: (value: unknown): value is LngLat => isLngLat(value),
+  center: (value: unknown): value is LngLatTuple => isLngLat(value),
 
   xSemiAxis: (value: unknown): value is number => typeof value === 'number',
 

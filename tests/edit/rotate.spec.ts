@@ -18,7 +18,7 @@ import {
 } from '@tests/utils/features.ts';
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
-import type { LngLat } from '@/main.ts';
+import type { LngLatTuple } from '@/main.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import bearing from '@turf/bearing';
@@ -71,7 +71,7 @@ async function performRotationAndVerify(
     return;
   }
 
-  const originalCentroid = centroid(originalGeoJson).geometry.coordinates as LngLat;
+  const originalCentroid = centroid(originalGeoJson).geometry.coordinates as LngLatTuple;
 
   const { initialVertexLngLat, targetVertexLngLat } = await page.evaluate(
     (coords) => {
@@ -133,15 +133,15 @@ async function performMovementAndVerify(
     return;
   }
 
-  let referenceLngLat: LngLat | null;
+  let referenceLngLat: LngLatTuple | null;
   if (updatedFeatureData.geoJson.geometry.type === 'Point') {
-    referenceLngLat = updatedFeatureData.geoJson.geometry.coordinates as LngLat;
+    referenceLngLat = updatedFeatureData.geoJson.geometry.coordinates as LngLatTuple;
   } else if (
     updatedFeatureData.shape === 'circle' ||
     updatedFeatureData.shape === 'polygon' ||
     updatedFeatureData.shape === 'rectangle'
   ) {
-    referenceLngLat = centroid(updatedFeatureData.geoJson).geometry.coordinates as LngLat;
+    referenceLngLat = centroid(updatedFeatureData.geoJson).geometry.coordinates as LngLatTuple;
   } else {
     referenceLngLat = getGeoJsonFirstPoint(updatedFeatureData.geoJson);
   }

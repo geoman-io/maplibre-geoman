@@ -1,6 +1,6 @@
 import { SOURCES } from '@/core/features/constants.ts';
 import { FEATURE_ID_PROPERTY, type Geoman } from '@/main.ts';
-import type { FeatureSourceName, GeoJsonSourceDiff } from '@/types';
+import type { FeatureSourceName, GeoJsonUniversalDiff } from '@/types';
 import { typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
 import { debounce, throttle } from 'lodash-es';
@@ -18,7 +18,7 @@ const MAX_DIFF_ITEMS = 5000;
 // (possible imports trouble)
 export class SourceUpdateManager {
   gm: Geoman;
-  updateStorage: { [key in FeatureSourceName]: Array<GeoJsonSourceDiff> };
+  updateStorage: { [key in FeatureSourceName]: Array<GeoJsonUniversalDiff> };
   autoUpdatesEnabled: boolean = true;
   delayedSourceUpdateMethods: SourceUpdateMethods;
 
@@ -75,7 +75,13 @@ export class SourceUpdateManager {
     }
   }
 
-  updateSource({ sourceName, diff }: { sourceName: FeatureSourceName; diff?: GeoJsonSourceDiff }) {
+  updateSource({
+    sourceName,
+    diff,
+  }: {
+    sourceName: FeatureSourceName;
+    diff?: GeoJsonUniversalDiff;
+  }) {
     if (diff) {
       this.updateStorage[sourceName].push(diff);
     }
@@ -122,8 +128,8 @@ export class SourceUpdateManager {
     }
   }
 
-  getCombinedDiff(sourceName: FeatureSourceName): GeoJsonSourceDiff | null {
-    let combinedDiff: GeoJsonSourceDiff = {
+  getCombinedDiff(sourceName: FeatureSourceName): GeoJsonUniversalDiff | null {
+    let combinedDiff: GeoJsonUniversalDiff = {
       remove: [],
       add: [],
       update: [],
@@ -145,11 +151,11 @@ export class SourceUpdateManager {
   }
 
   mergeGeoJsonDiff(
-    pendingDiffOrNull: GeoJsonSourceDiff | null,
-    nextDiffOrNull: GeoJsonSourceDiff | null,
-  ): GeoJsonSourceDiff {
-    const pending: GeoJsonSourceDiff = pendingDiffOrNull ?? { add: [], update: [], remove: [] };
-    const next: GeoJsonSourceDiff = nextDiffOrNull ?? { add: [], update: [], remove: [] };
+    pendingDiffOrNull: GeoJsonUniversalDiff | null,
+    nextDiffOrNull: GeoJsonUniversalDiff | null,
+  ): GeoJsonUniversalDiff {
+    const pending: GeoJsonUniversalDiff = pendingDiffOrNull ?? { add: [], update: [], remove: [] };
+    const next: GeoJsonUniversalDiff = nextDiffOrNull ?? { add: [], update: [], remove: [] };
 
     const nextRemoveIds = new Set(next.remove);
 

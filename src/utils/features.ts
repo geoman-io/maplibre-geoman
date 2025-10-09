@@ -5,7 +5,7 @@ import {
   type FeatureId,
   type GeoJsonImportFeature,
   type GeoJsonShapeFeature,
-  type LngLat,
+  type LngLatTuple,
   type LngLatDiff,
 } from '@/main.ts';
 import {
@@ -98,7 +98,7 @@ export const isGeoJsonFeatureInPolygon = (
   return false;
 };
 
-export const getFeatureFirstPoint = (featureData: FeatureData): LngLat | null => {
+export const getFeatureFirstPoint = (featureData: FeatureData): LngLatTuple | null => {
   const shapeGeoJson = featureData.getGeoJson();
   if (typeof shapeGeoJson !== 'object') {
     return null;

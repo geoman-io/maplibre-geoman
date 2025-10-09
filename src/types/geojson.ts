@@ -1,5 +1,5 @@
 import type { ShapeGeoJsonProperties } from '@/types/features.ts';
-import type { LngLat } from '@/types/map/index.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
 import type {
   Feature,
@@ -14,7 +14,7 @@ import type {
 
 export type ImportGeoJsonProperties = {
   shape?: ShapeName;
-  center?: LngLat;
+  center?: LngLatTuple;
   text?: string;
   [key: string]: unknown;
 };
@@ -47,7 +47,7 @@ export type LngLatDiff = {
 };
 
 export interface PositionData {
-  coordinate: LngLat;
+  coordinate: LngLatTuple;
   path: Array<string | number>;
 }
 

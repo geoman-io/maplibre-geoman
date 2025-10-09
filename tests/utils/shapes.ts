@@ -1,4 +1,4 @@
-import type { LngLat } from '@/main.ts';
+import type { LngLatTuple } from '@/main.ts';
 import type { Page } from '@playwright/test';
 import { type ScreenCoordinates } from './basic.ts';
 
@@ -7,7 +7,7 @@ export const getScreenCoordinatesByLngLat = async ({
   position,
 }: {
   page: Page;
-  position: LngLat;
+  position: LngLatTuple;
 }): Promise<ScreenCoordinates | null> => {
   return page.evaluate(
     (context) => {

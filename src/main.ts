@@ -21,7 +21,11 @@ import '@/styles/map/maplibre.css';
 import '@/styles/style.css';
 import type { ModeName } from '@/types/controls.ts';
 import type { GmControlLoadEvent } from '@/types/index.ts';
-import { type AnyMapInstance, type LngLat, type MapInstanceWithGeoman } from '@/types/map/index.ts';
+import {
+  type AnyMapInstance,
+  type LngLatTuple,
+  type MapInstanceWithGeoman,
+} from '@/types/map/index.ts';
 import {
   type ActionInstance,
   type ActionInstanceKey,
@@ -45,7 +49,7 @@ import type { PartialDeep } from 'type-fest';
 
 export class Geoman {
   mapAdapterInstance: BaseMapAdapter<AnyMapInstance> | null = null;
-  globalLngLatBounds: [LngLat, LngLat] = this.getGlobalLngLatBounds();
+  globalLngLatBounds: [LngLatTuple, LngLatTuple] = this.getGlobalLngLatBounds();
   features: Features;
   loaded: boolean = false;
 
@@ -229,7 +233,7 @@ export class Geoman {
       .filter((mode): mode is HelperModeName => mode !== null);
   }
 
-  getGlobalLngLatBounds(): [LngLat, LngLat] {
+  getGlobalLngLatBounds(): [LngLatTuple, LngLatTuple] {
     // these coordinates are used to restrict the map to the maximum possible bounds
     // mercator projection is used for the map, so the maximum latitude is MAX_VALID_LATITUDE
     // import { MAX_VALID_LATITUDE } from 'maplibre-gl/src/geo/transform.ts';

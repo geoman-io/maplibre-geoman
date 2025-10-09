@@ -1,6 +1,6 @@
-import type { LngLat } from '@/types';
+import type { LngLatTuple } from '@/types';
 
-export const isLngLat = (value: unknown): value is LngLat => {
+export const isLngLat = (value: unknown): value is LngLatTuple => {
   return (
     Array.isArray(value) &&
     value.length === 2 &&
