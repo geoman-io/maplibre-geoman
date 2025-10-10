@@ -270,7 +270,7 @@ export class FeatureData {
     const keysToDelete = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
 
     keysToDelete.forEach((key) => {
-      delete this._geoJson?.properties[key];
+      this._geoJson!.properties[key] = undefined;
     });
 
     const diff = { update: [this._geoJson] };
