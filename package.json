@@ -1,7 +1,7 @@
 {
   "name": "@geoman-io/maplibre-geoman-free",
   "private": false,
-  "version": "0.4.9",
+  "version": "0.5.0",
   "type": "module",
   "description": "A MapLibre Plugin For Drawing and Editing Geometry Layers",
   "homepage": "https://geoman.io",
@@ -103,7 +103,7 @@
     "ts-autofix": "^1.0.0",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2",
-    "vite": "^7.1.5",
+    "vite": "^7.1.12",
     "vite-svg-loader": "^5.1.0"
   },
   "publishConfig": {

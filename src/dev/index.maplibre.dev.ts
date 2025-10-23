@@ -179,7 +179,7 @@ const initGeoman = async () => {
   });
 
   geoman.setGlobalEventsListener((event) => {
-    if (event.name === 'gm:globaldrawmodetoggled') {
+    if (event.name === '_gm:feature:before_create') {
       log.debug('setGlobalEventsListener event', event);
     }
   });
