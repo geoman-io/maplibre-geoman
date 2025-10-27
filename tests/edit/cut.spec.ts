@@ -93,7 +93,7 @@ async function verifyCutResultById(
   expect(actualFeatures.length).toBe(expectedGeoJsonResults.length);
 
   for (const expectedFeature of expectedGeoJsonResults) {
-    const expectedId = expectedFeature.id ?? expectedFeature.properties?._gmid;
+    const expectedId = expectedFeature.id ?? expectedFeature.properties?.[FEATURE_ID_PROPERTY];
     expect(
       expectedId,
       `Expected feature must have an ID. Feature: ${JSON.stringify(expectedFeature)}`,
