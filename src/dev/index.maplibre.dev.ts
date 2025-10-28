@@ -1,4 +1,3 @@
-import { GM_PREFIX } from '@/core/constants.ts';
 import {
   loadDevShapes,
   loadExternalGeoJson,
@@ -169,14 +168,10 @@ const initGeoman = async () => {
     console.error('Geoman is already initialized', window.geoman);
   }
 
-  const geoman = new Geoman(map, gmOptions);
-
-  await new Promise((resolve) => {
-    map.once(`${GM_PREFIX}:loaded`, async () => {
-      log.debug('Map loaded');
-      resolve(geoman);
-    });
-  });
+  let geoman = new Geoman(map, gmOptions);
+  await geoman.destroy();
+  geoman = new Geoman(map, gmOptions);
+  await geoman.waitForGeomanLoaded();
 
   geoman.setGlobalEventsListener((event) => {
     if (event.name === '_gm:feature:before_create') {
@@ -192,7 +187,7 @@ onOffButtonElement?.addEventListener('click', async () => {
   if (window.geoman) {
     log.debug('Destroying Geoman');
     unbindButtonHandlers();
-    window.geoman.destroy();
+    await window.geoman.destroy();
     // @ts-expect-error geoman is undefined
     window.geoman = undefined;
   } else {

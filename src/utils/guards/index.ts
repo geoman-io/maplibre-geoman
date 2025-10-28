@@ -12,7 +12,7 @@ export { isEditModeName } from '@/utils/guards/modes.ts';
 export { isDrawModeName } from '@/utils/guards/modes.ts';
 export { isActionType } from '@/utils/guards/modes.ts';
 export { isMapPointerEvent } from '@/utils/guards/map.ts';
-export { hasMapOnceMethod } from '@/utils/guards/map.ts';
+export { isMapWithOnceMethod } from '@/utils/guards/map.ts';
 export { isBaseMapEventName } from '@/utils/guards/map.ts';
 export { isPointerEventName } from '@/utils/guards/map.ts';
 export { isGmModeEvent } from '@/utils/guards/events/mode.ts';

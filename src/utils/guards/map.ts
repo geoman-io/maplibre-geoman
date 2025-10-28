@@ -16,7 +16,7 @@ export function isBaseMapEventName(key: string): key is BaseMapEventName {
   return baseMapEventNames.includes(key as BaseMapEventName);
 }
 
-export const hasMapOnceMethod = (map: unknown): map is MapWithOnceMethod => {
+export const isMapWithOnceMethod = (map: unknown): map is MapWithOnceMethod => {
   return !!(
     map &&
     typeof map === 'object' &&

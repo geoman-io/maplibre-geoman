@@ -6,6 +6,7 @@ import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import GmControl from '@/core/controls/index.ts';
 import { type EventForwarder } from '@/core/events/forwarder.ts';
 import GmEvents from '@/core/events/index.ts';
+import { LOAD_TIMEOUT } from '@/core/features/constants.ts';
 import { Features } from '@/core/features/index.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import { getMapAdapter } from '@/core/map/index.ts';
@@ -21,11 +22,7 @@ import '@/styles/map/maplibre.css';
 import '@/styles/style.css';
 import type { ModeName } from '@/types/controls.ts';
 import type { GmControlLoadEvent } from '@/types/index.ts';
-import {
-  type AnyMapInstance,
-  type LngLatTuple,
-  type MapInstanceWithGeoman,
-} from '@/types/map/index.ts';
+import { type AnyMapInstance, type LngLatTuple } from '@/types/map/index.ts';
 import {
   type ActionInstance,
   type ActionInstanceKey,
@@ -35,7 +32,7 @@ import {
 } from '@/types/modes/index.ts';
 import type { GmOptionsData, ModeType } from '@/types/options.ts';
 import { MarkerPointer } from '@/utils/draw/marker-pointer.ts';
-import { hasMapOnceMethod } from '@/utils/guards/map.ts';
+import { isMapWithOnceMethod } from '@/utils/guards/map.ts';
 import { isGmDrawEvent, isModeName, isModeType } from '@/utils/guards/modes.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
@@ -61,25 +58,16 @@ export class Geoman {
   markerPointer: MarkerPointer;
 
   constructor(map: AnyMapInstance, options: PartialDeep<GmOptionsData> = {}) {
-    const mapWithGeoman = Object.assign(map, { gm: this });
-
     this.options = this.initCoreOptions(options);
     this.events = this.initCoreEvents();
     this.features = this.initCoreFeatures();
     this.control = this.initCoreControls();
     this.markerPointer = this.initMarkerPointer();
 
-    if (hasMapOnceMethod(map)) {
-      if (this.isMapInstanceLoaded(map)) {
-        log.debug('map already loaded');
-        this.init(mapWithGeoman).then();
-      } else {
-        map.once('load', async () => {
-          log.debug('map once loaded');
-          await this.init(mapWithGeoman);
-        });
-      }
-    }
+    const mapWithGeoman = Object.assign(map, { gm: this });
+    this.mapAdapterInstance = getMapAdapter(this, mapWithGeoman);
+
+    this.waitForBaseMap().then(this.init.bind(this));
   }
 
   get drawClassMap() {
@@ -138,23 +126,69 @@ export class Geoman {
     });
   }
 
+  async waitForBaseMap() {
+    const map = this.mapAdapter.mapInstance;
+    if (!isMapWithOnceMethod(map)) {
+      log.error('Map instance does not have a "once" method', map);
+      return;
+    }
+
+    if (this.isMapInstanceLoaded(map)) {
+      return map;
+    }
+
+    await Promise.race([
+      new Promise((resolve) => {
+        map.once('load', resolve);
+      }),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error(`Timeout ${LOAD_TIMEOUT / 1000} seconds: waitForBaseMap failed`)),
+          LOAD_TIMEOUT,
+        );
+      }),
+    ]);
+
+    return map;
+  }
+
+  async waitForGeomanLoaded(): Promise<Geoman | undefined> {
+    if (this.loaded) {
+      return this;
+    }
+
+    const map = await this.waitForBaseMap();
+    if (!map) {
+      log.error('Map instance is not available', map);
+      return;
+    }
+
+    await Promise.race([
+      new Promise((resolve) => {
+        map.once(`${GM_PREFIX}:loaded`, resolve);
+      }),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error(`Timeout ${LOAD_TIMEOUT / 1000} seconds: waitForBaseMap failed`)),
+          LOAD_TIMEOUT,
+        );
+      }),
+    ]);
+
+    return this;
+  }
+
   isMapInstanceLoaded(map: AnyMapInstance) {
     return '_loaded' in map && map._loaded;
   }
 
-  async init(map: MapInstanceWithGeoman) {
-    this.mapAdapterInstance = await getMapAdapter(this, map);
+  async init() {
     this.features.init();
     await this.addControls();
   }
 
-  destroy(
-    {
-      removeSources,
-    }: {
-      removeSources: boolean;
-    } = { removeSources: false },
-  ) {
+  async destroy({ removeSources }: { removeSources: boolean } = { removeSources: false }) {
+    await this.waitForGeomanLoaded();
     this.removeControls();
     this.events.bus.detachAllEvents();
 
@@ -402,7 +436,6 @@ export const createGeomanInstance = async (
   map: AnyMapInstance,
   options: PartialDeep<GmOptionsData>,
 ) => {
-  const TIMEOUT = 60000;
   const geoman = new Geoman(map, options);
 
   await Promise.race([
@@ -411,8 +444,8 @@ export const createGeomanInstance = async (
     }),
     new Promise((_, reject) => {
       setTimeout(
-        () => reject(new Error(`Timeout ${TIMEOUT / 1000} seconds: can't init geoman`)),
-        TIMEOUT,
+        () => reject(new Error(`Timeout ${LOAD_TIMEOUT / 1000} seconds: can't init geoman`)),
+        LOAD_TIMEOUT,
       );
     }),
   ]);
