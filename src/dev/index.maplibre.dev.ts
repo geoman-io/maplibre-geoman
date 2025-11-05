@@ -89,8 +89,8 @@ const buttonHandlers = {
         [-4.1550035432676964, 50.75747515540502],
       ],
     });
-    feature?.updateGeoJsonCustomProperties({ testX: undefined });
     feature?.setGeoJsonCustomProperties({ testX: 'test-555' });
+    feature?.setGeoJsonCustomProperties({ testY: 'test-777' });
     feature?.deleteGeoJsonCustomProperties(['testX', '__gm_shape']);
   },
   '#b04': async () => {

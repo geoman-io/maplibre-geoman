@@ -437,18 +437,7 @@ export const createGeomanInstance = async (
   options: PartialDeep<GmOptionsData>,
 ) => {
   const geoman = new Geoman(map, options);
-
-  await Promise.race([
-    new Promise((resolve) => {
-      geoman.mapAdapter.once(`${GM_PREFIX}:loaded`, resolve);
-    }),
-    new Promise((_, reject) => {
-      setTimeout(
-        () => reject(new Error(`Timeout ${LOAD_TIMEOUT / 1000} seconds: can't init geoman`)),
-        LOAD_TIMEOUT,
-      );
-    }),
-  ]);
+  await geoman.waitForGeomanLoaded();
 
   return geoman;
 };

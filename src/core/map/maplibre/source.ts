@@ -87,15 +87,22 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   }
 
   convertFeatureToMlUpdateDiff(feature: Feature): ml.GeoJSONFeatureDiff {
-    const propertiesArray = Object.entries(feature.properties || {}).map((item) => ({
-      key: item[0],
-      value: item[1],
-    }));
+    const addOrUpdateProperties: ml.GeoJSONFeatureDiff['addOrUpdateProperties'] = [];
+    const removeProperties: ml.GeoJSONFeatureDiff['removeProperties'] = [];
+
+    Object.entries(feature.properties || {}).forEach(([key, value]) => {
+      if (value === undefined) {
+        removeProperties.push(key);
+      } else {
+        addOrUpdateProperties.push({ key, value });
+      }
+    });
 
     return {
       id: feature.properties?.[FEATURE_ID_PROPERTY],
       newGeometry: feature.geometry,
-      addOrUpdateProperties: propertiesArray,
+      addOrUpdateProperties,
+      removeProperties,
     };
   }
 

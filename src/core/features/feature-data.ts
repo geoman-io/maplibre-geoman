@@ -1,3 +1,4 @@
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { propertyValidators } from '@/core/features/validators.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
@@ -23,10 +24,9 @@ import {
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
+import type { Feature } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
-import type { Feature } from 'geojson';
 
 export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
   'circle',
@@ -268,12 +268,14 @@ export class FeatureData {
     );
 
     const keysToDelete = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
+    const newProperties = { ...this._geoJson.properties };
 
     keysToDelete.forEach((key) => {
-      this._geoJson!.properties[key] = undefined;
+      delete this._geoJson!.properties[key];
+      newProperties[key] = undefined;
     });
 
-    const diff = { update: [this._geoJson] };
+    const diff = { update: [{ ...this._geoJson, properties: newProperties }] };
     this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
