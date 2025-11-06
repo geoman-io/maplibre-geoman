@@ -36,7 +36,7 @@ import { isGmDrawEvent, isModeName, isModeType } from '@/utils/guards/modes.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
-import { withPromiseRace } from '@/utils/behavior.ts';
+import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
 // declare module 'maplibre-gl' {
 //   interface Map {
@@ -137,7 +137,7 @@ export class Geoman {
       return map;
     }
 
-    await withPromiseRace(
+    await withPromiseTimeoutRace(
       new Promise((resolve) => {
         map.once('load', resolve);
       }),
@@ -157,7 +157,7 @@ export class Geoman {
       return;
     }
 
-    await withPromiseRace(
+    await withPromiseTimeoutRace(
       new Promise((resolve) => {
         map.once(`${GM_PREFIX}:loaded`, resolve);
       }),

@@ -8,7 +8,7 @@ import {
 import type { Feature, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
-import { withPromiseRace } from '@/utils/behavior.ts';
+import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -60,7 +60,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
       this.mapInstance.on('data', onData);
     });
 
-    await withPromiseRace(loadPromise, 'Unable to wait for source to load');
+    await withPromiseTimeoutRace(loadPromise, 'Unable to wait for source to load');
   }
 
   createSource({ geoJson, sourceId }: { sourceId: string; geoJson: GeoJSON }): ml.GeoJSONSource {

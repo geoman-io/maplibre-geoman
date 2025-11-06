@@ -1,8 +1,8 @@
+import { IS_PRO } from '@/core/constants.ts';
+import { LOAD_TIMEOUT } from '@/core/features/constants.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import { debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
-import { IS_PRO } from '@/core/constants.ts';
-import { LOAD_TIMEOUT } from '@/core/features/constants.ts';
 
 export function augmentIfPro<T>(value: readonly T[]): readonly T[];
 export function augmentIfPro<T extends Record<PropertyKey, unknown>>(value: T): Partial<T>;
@@ -69,7 +69,7 @@ export const convertToDebounced = <T extends object>(
   return debouncedMethods;
 };
 
-export const withPromiseRace = async (promise: Promise<unknown>, errorMessage?: string) => {
+export const withPromiseTimeoutRace = async (promise: Promise<unknown>, errorMessage?: string) => {
   const defaultErrorMessage = 'Promise race timeout';
 
   await Promise.race([
