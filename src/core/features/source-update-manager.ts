@@ -3,13 +3,10 @@ import { FEATURE_ID_PROPERTY, type Geoman } from '@/main.ts';
 import type { FeatureSourceName, GeoJsonUniversalDiff } from '@/types';
 import { typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
-import { debounce, throttle } from 'lodash-es';
+import { throttle } from 'lodash-es';
 
 type SourceUpdateMethods = {
-  [key in FeatureSourceName]: {
-    debounced: () => void;
-    throttled: () => void;
-  };
+  [key in FeatureSourceName]: () => void;
 };
 
 const MAX_DIFF_ITEMS = 5000;
@@ -29,16 +26,10 @@ export class SourceUpdateManager {
     this.delayedSourceUpdateMethods = Object.fromEntries(
       typedValues(SOURCES).map((sourceName) => [
         sourceName,
-        {
-          throttled: this.getDelayedSourceUpdateMethod({
-            sourceName,
-            type: 'throttled',
-          }),
-          debounced: this.getDelayedSourceUpdateMethod({
-            sourceName,
-            type: 'debounced',
-          }),
-        } as { debounced: () => void; throttled: () => void },
+        throttle(
+          () => this.updateSourceActual(sourceName),
+          this.gm.options.settings.throttlingDelay,
+        ),
       ]),
     ) as SourceUpdateMethods;
   }
@@ -49,30 +40,6 @@ export class SourceUpdateManager {
       console.warn('Feature id is null or undefined', feature);
     }
     return id;
-  }
-
-  getDelayedSourceUpdateMethod({
-    sourceName,
-    type,
-  }: {
-    sourceName: FeatureSourceName;
-    type: 'throttled' | 'debounced';
-  }) {
-    if (type === 'throttled') {
-      return throttle(
-        () => this.updateSourceActual(sourceName),
-        this.gm.options.settings.throttlingDelay,
-        { leading: false, trailing: true },
-      );
-    } else if (type === 'debounced') {
-      return debounce(
-        () => this.updateSourceActual(sourceName),
-        this.gm.options.settings.throttlingDelay,
-        { leading: true, trailing: false },
-      );
-    } else {
-      throw new Error('Features: getDelayedSourceUpdateMethod: invalid type');
-    }
   }
 
   updateSource({
@@ -86,8 +53,7 @@ export class SourceUpdateManager {
       this.updateStorage[sourceName].push(diff);
     }
 
-    this.delayedSourceUpdateMethods[sourceName].throttled();
-    this.delayedSourceUpdateMethods[sourceName].debounced();
+    this.delayedSourceUpdateMethods[sourceName]();
   }
 
   updateSourceActual(sourceName: FeatureSourceName) {
