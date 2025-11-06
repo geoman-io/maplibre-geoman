@@ -14,10 +14,16 @@ export function augmentIfPro(value: unknown) {
 }
 
 export const isTouchScreen = () => {
-  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    return true;
+  if (window.PointerEvent && 'maxTouchPoints' in navigator) {
+    if (navigator.maxTouchPoints > 0) {
+      return !window.matchMedia('(hover: hover)').matches;
+    }
+    return false;
   }
   if (matchMedia('(hover: none)').matches) {
+    return true;
+  }
+  if ('ontouchstart' in window) {
     return true;
   }
   return (
