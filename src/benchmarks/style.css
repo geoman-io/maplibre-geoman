@@ -20,3 +20,7 @@ body,
   display: flex;
   flex-direction: column;
 }
+
+.action {
+  display: flex;
+}

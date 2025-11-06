@@ -21,6 +21,7 @@ const map = new maplibre.Map({
 let testInfos = '';
 let testMetadatas: unknown = null;
 let t0 = 0;
+let resultId = '';
 
 let baseSource: GeoJSONSource;
 let shapeSeparateSource: GeoJSONSource;
@@ -38,13 +39,21 @@ map.on('load', () => {
   });
   addLayers(map, sourceId);
   addLayers(map, shapeMarkersSourceId);
-
+  console.log(stressTestCircleFeatureCollection);
   map.on('sourcedata', (e) => {
     if (!testInfos || !e.isSourceLoaded) {
       return;
     }
     const t1 = performance.now();
-    console.log(`${testInfos} (${t1 - t0})ms`, testMetadatas);
+    const duration = (t1 - t0).toFixed(2);
+    console.log(`${testInfos} (${duration})ms`, testMetadatas);
+
+    if (resultId) {
+      const resultDiv = document.getElementById(resultId);
+      if (resultDiv) {
+        resultDiv.textContent = `${duration}ms`;
+      }
+    }
   });
 
   baseSource = map.getSource<GeoJSONSource>(sourceId)!;
@@ -56,12 +65,12 @@ document.querySelector<HTMLButtonElement>('#AddShapeMarkers')?.addEventListener(
   testInfos = 'Added vertex markers';
 
   const markers = getMarkers(map, stressTestCircleFeatureCollection);
-  baseSource.setData({
-    type: 'FeatureCollection',
-    features: markers,
+  baseSource.updateData({
+    add: markers,
   });
 
   testMetadatas = markers;
+  resultId = 'AddShapeMarkers-result';
 });
 
 document
@@ -78,6 +87,7 @@ document
     baseSource.updateData({ add: markers });
 
     testMetadatas = markers;
+    resultId = 'AddCompleteShapeMarkers-result';
   });
 
 document
@@ -98,6 +108,7 @@ document
     });
 
     testMetadatas = { markersToRemove, markersToAdd };
+    resultId = 'AddToggleShapeMarkers-result';
   });
 
 document.querySelector<HTMLButtonElement>('#RemoveShapeMarkers')?.addEventListener('click', () => {
@@ -113,6 +124,7 @@ document.querySelector<HTMLButtonElement>('#RemoveShapeMarkers')?.addEventListen
   });
 
   testMetadatas = markers;
+  resultId = 'RemoveShapeMarkers-result';
 });
 
 document.querySelector<HTMLButtonElement>('#SetShapeMarkers')?.addEventListener('click', () => {
@@ -126,6 +138,7 @@ document.querySelector<HTMLButtonElement>('#SetShapeMarkers')?.addEventListener(
   });
 
   testMetadatas = markers;
+  resultId = 'SetShapeMarkers-result';
 });
 
 document
@@ -141,6 +154,7 @@ document
     shapeSeparateSource.setData({ type: 'FeatureCollection', features: markers });
 
     testMetadatas = markers;
+    resultId = 'SetCompleteShapeMarkers-result';
   });
 
 document
@@ -163,6 +177,7 @@ document
     });
 
     testMetadatas = markersToAdd;
+    resultId = 'SetToggleShapeMarkers-result';
   });
 
 document
@@ -186,6 +201,7 @@ document
     });
 
     testMetadatas = markers;
+    resultId = 'SetToggleFlushShapeMarkers-result';
   });
 
 document.querySelector<HTMLButtonElement>('#FlushShapeMarkers')?.addEventListener('click', () => {
@@ -195,6 +211,7 @@ document.querySelector<HTMLButtonElement>('#FlushShapeMarkers')?.addEventListene
   shapeSeparateSource.setData({ type: 'FeatureCollection', features: [] });
 
   testMetadatas = null;
+  resultId = 'FlushShapeMarkers-result';
 });
 
 document
@@ -207,6 +224,7 @@ document
 
     const markers = getMarkersAndUpdate(manager, map, stressTestCircleFeatureCollection);
     testMetadatas = markers;
+    resultId = 'MultipleAddShapeMarkers-result';
   });
 
 document
@@ -223,6 +241,7 @@ document
     });
 
     testMetadatas = markers;
+    resultId = 'MultipleAddCompleteShapeMarkers-result';
   });
 
 document
@@ -244,6 +263,7 @@ document
     });
 
     testMetadatas = { markersToRemove, markersToAdd };
+    resultId = 'MultipleAddToggleShapeMarkers-result';
   });
 
 document
@@ -260,4 +280,5 @@ document
       withVertex: true,
     });
     testMetadatas = markersToRemove;
+    resultId = 'MultipleRemoveShapeMarkers-result';
   });
