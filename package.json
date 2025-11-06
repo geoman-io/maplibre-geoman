@@ -69,6 +69,7 @@
     "@turf/transform-scale": "^7.2.0",
     "@turf/union": "^7.2.0",
     "@turf/unkink-polygon": "^7.2.0",
+    "@types/geojson": "^7946.0.16",
     "dompurify": "^3.2.6",
     "lodash-es": "^4.17.21",
     "loglevel": "^1.9.2",

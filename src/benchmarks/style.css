@@ -1,0 +1,22 @@
+html,
+body,
+#dev-map {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+}
+
+#test-controls {
+  background-color: white;
+  padding: 1rem;
+  max-width: 400px;
+}
+
+.group {
+  margin-bottom: 1rem;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+}

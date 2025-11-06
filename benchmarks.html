@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="data:," />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geoman plugin</title>
+  </head>
+  <body>
+    <div id="test-controls" style="position: absolute; z-index: 1000; margin: 15px; right: 0">
+      <div class="group">
+        If you want timers to be fiable don't move / zoom the map when testing
+      </div>
+
+      <div class="group">
+        <div>
+          Features and markers in the same source. modifications in one transaction with updateData
+        </div>
+        <div class="buttons">
+          <button id="AddShapeMarkers">Add vertex (update)</button>
+          <button id="AddCompleteShapeMarkers">Add vertex/edge (update)</button>
+          <button id="AddToggleShapeMarkers">Toggle vertex/edge (update)</button>
+          <button id="RemoveShapeMarkers">delete (update)</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div>
+          Features and markers in separate source. modifications in one transaction with setData
+        </div>
+        <div class="buttons">
+          <button id="SetShapeMarkers">Added vertex markers</button>
+          <button id="SetCompleteShapeMarkers">Added vertex/edge markers (separate source)</button>
+          <button id="SetToggleShapeMarkers">
+            Added only edge markers (separate source with update)
+          </button>
+          <button id="SetToggleFlushShapeMarkers">
+            removed explicitly then added vertex/edge markers
+          </button>
+          <button id="FlushShapeMarkers">flush all markers</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div>
+          Features and markers in the same source. modifications in multiple transactions with
+          updateData
+        </div>
+        <div class="buttons">
+          <button id="MultipleAddShapeMarkers">Add vertex (update)</button>
+          <button id="MultipleAddCompleteShapeMarkers">Add vertex/edge (update)</button>
+          <button id="MultipleAddToggleShapeMarkers">Toggle vertex/edge (update)</button>
+          <button id="MultipleRemoveShapeMarkers">delete (update)</button>
+        </div>
+      </div>
+    </div>
+    <div id="dev-map"></div>
+
+    <script type="module" src="/src/benchmarks/index.ts"></script>
+  </body>
+</html>
