@@ -2,6 +2,7 @@ import type {
   FeatureEditEndFwdEvent,
   FeatureEditStartFwdEvent,
   FeatureUpdatedFwdEvent,
+  ShapeName,
 } from '@/types/index.ts';
 import test, { expect } from '@playwright/test';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '@tests/utils/basic.ts';
@@ -11,6 +12,17 @@ import {
 } from '@tests/utils/events.ts';
 import { getFeatureMarkersData, getRenderedFeaturesData } from '@tests/utils/features.ts';
 import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
+
+const ROTATE_SHAPE_MAP: { [key in string]: ShapeName } = {
+  marker: 'marker',
+  circle: 'circle',
+  circle_marker: 'circle_marker',
+  ellipse: 'ellipse',
+  text_marker: 'text_marker',
+  line: 'line',
+  rectangle: 'polygon',
+  polygon: 'polygon',
+};
 
 test.describe('Rotate Events', () => {
   test.beforeEach(async ({ page }) => {
@@ -70,13 +82,15 @@ test.describe('Rotate Events', () => {
           expect(rotateStartEvent.shape, `Shape should be ${feature.shape}`).toEqual(feature.shape);
         }
 
+        const requiredShape = ROTATE_SHAPE_MAP[feature.shape] || 'unknown';
+
         const rotateEvent = (await getGeomanEventResultById(page, rotateResultId)) as
           | FeatureUpdatedFwdEvent
           | undefined;
         expect(rotateEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateEvent) {
           expect(rotateEvent.feature, 'Event feature must be defined').toBeDefined();
-          expect(rotateEvent.shape, `Shape should be ${feature.shape}`).toEqual(feature.shape);
+          expect(rotateEvent.shape, `Shape should be ${requiredShape}`).toEqual(requiredShape);
           expect(rotateEvent.originalFeature, 'Event feature must be defined').toBeDefined();
         }
 
@@ -86,7 +100,6 @@ test.describe('Rotate Events', () => {
         expect(rotateEndEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateEndEvent) {
           expect(rotateEndEvent.feature, 'Event feature must be defined').toBeDefined();
-          const requiredShape = feature.shape === 'rectangle' ? 'polygon' : feature.shape;
           expect(rotateEndEvent.shape, `Shape should be ${requiredShape}`).toEqual(requiredShape);
         }
       }

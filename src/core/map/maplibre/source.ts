@@ -8,6 +8,7 @@ import {
 import type { Feature, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
+import { withPromiseRace } from '@/utils/behavior.ts';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -36,6 +37,30 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
 
   get loaded(): boolean {
     return !!this.sourceInstance?.loaded();
+  }
+
+  async waitForLoad() {
+    const loadPromise = new Promise<void>((resolve) => {
+      if (this.loaded) {
+        resolve();
+        return;
+      }
+
+      const onData = (event: ml.MapSourceDataEvent) => {
+        if (event.sourceId !== this.id || event.sourceId !== this.id) {
+          return;
+        }
+
+        if (this.loaded) {
+          this.mapInstance.off('data', onData);
+          resolve();
+        }
+      };
+
+      this.mapInstance.on('data', onData);
+    });
+
+    await withPromiseRace(loadPromise, 'Unable to wait for source to load');
   }
 
   createSource({ geoJson, sourceId }: { sourceId: string; geoJson: GeoJSON }): ml.GeoJSONSource {

@@ -52,7 +52,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
   }
 
   isLoaded(): boolean {
-    return this.mapInstance.loaded();
+    return this.mapInstance._loaded;
   }
 
   getContainer(): HTMLElement {

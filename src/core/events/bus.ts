@@ -40,7 +40,7 @@ export class EventBus {
     controlHandler(payload);
 
     // make events available for end users
-    this.forwarder.processEvent(eventName, payload);
+    this.forwarder.processEvent(eventName, payload).then();
   }
 
   attachEvents(handlers: EventHandlers) {

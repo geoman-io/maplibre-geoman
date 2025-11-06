@@ -6,7 +6,6 @@ import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import GmControl from '@/core/controls/index.ts';
 import { type EventForwarder } from '@/core/events/forwarder.ts';
 import GmEvents from '@/core/events/index.ts';
-import { LOAD_TIMEOUT } from '@/core/features/constants.ts';
 import { Features } from '@/core/features/index.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import { getMapAdapter } from '@/core/map/index.ts';
@@ -37,6 +36,7 @@ import { isGmDrawEvent, isModeName, isModeType } from '@/utils/guards/modes.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
+import { withPromiseRace } from '@/utils/behavior.ts';
 
 // declare module 'maplibre-gl' {
 //   interface Map {
@@ -133,22 +133,16 @@ export class Geoman {
       return;
     }
 
-    if (this.isMapInstanceLoaded(map)) {
+    if (this.mapAdapter.isLoaded()) {
       return map;
     }
 
-    await Promise.race([
+    await withPromiseRace(
       new Promise((resolve) => {
         map.once('load', resolve);
       }),
-      new Promise((_, reject) => {
-        setTimeout(
-          () => reject(new Error(`Timeout ${LOAD_TIMEOUT / 1000} seconds: waitForBaseMap failed`)),
-          LOAD_TIMEOUT,
-        );
-      }),
-    ]);
-
+      'waitForBaseMap failed',
+    );
     return map;
   }
 
@@ -163,23 +157,13 @@ export class Geoman {
       return;
     }
 
-    await Promise.race([
+    await withPromiseRace(
       new Promise((resolve) => {
         map.once(`${GM_PREFIX}:loaded`, resolve);
       }),
-      new Promise((_, reject) => {
-        setTimeout(
-          () => reject(new Error(`Timeout ${LOAD_TIMEOUT / 1000} seconds: waitForBaseMap failed`)),
-          LOAD_TIMEOUT,
-        );
-      }),
-    ]);
-
+      'waitForGeomanLoaded failed',
+    );
     return this;
-  }
-
-  isMapInstanceLoaded(map: AnyMapInstance) {
-    return '_loaded' in map && map._loaded;
   }
 
   async init() {

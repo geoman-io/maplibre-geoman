@@ -173,11 +173,17 @@ const initGeoman = async () => {
   geoman = new Geoman(map, gmOptions);
   await geoman.waitForGeomanLoaded();
 
-  geoman.setGlobalEventsListener((event) => {
-    if (event.name === '_gm:feature:before_create') {
-      log.debug('setGlobalEventsListener event', event);
-    }
+  // geoman.setGlobalEventsListener((event) => {
+  //   if (event.name === '_gm:feature:before_create') {
+  //     log.debug('setGlobalEventsListener event', event);
+  //   }
+  // });
+
+  map.on('gm:create', (event) => {
+    console.log('feature geojson', event.feature.getGeoJson());
+    console.log('source geojson', event.feature.source.getGeoJson());
   });
+
   return geoman;
 };
 
