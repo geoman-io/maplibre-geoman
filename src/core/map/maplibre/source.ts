@@ -5,10 +5,10 @@ import {
   type GeoJsonUniversalDiff,
   type Geoman,
 } from '@/main.ts';
+import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 import type { Feature, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
-import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -36,28 +36,26 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   }
 
   get loaded(): boolean {
-    return !!this.sourceInstance?.loaded();
+    return this.mapInstance.isSourceLoaded(this.id);
   }
 
   async waitForLoad() {
+    const EVENT_NAME = 'idle';
+
     const loadPromise = new Promise<void>((resolve) => {
       if (this.loaded) {
         resolve();
         return;
       }
 
-      const onData = (event: ml.MapSourceDataEvent) => {
-        if (event.sourceId !== this.id || event.sourceId !== this.id) {
-          return;
-        }
-
+      const onData = () => {
         if (this.loaded) {
-          this.mapInstance.off('data', onData);
+          this.mapInstance.off(EVENT_NAME, onData);
           resolve();
         }
       };
 
-      this.mapInstance.on('data', onData);
+      this.mapInstance.on(EVENT_NAME, onData);
     });
 
     await withPromiseTimeoutRace(loadPromise, 'Unable to wait for source to load');
