@@ -4,6 +4,8 @@ import {
   type GeoJsonShapeFeatureCollection,
   type GeoJsonUniversalDiff,
   type Geoman,
+  SHAPE_NAMES,
+  type ShapeName,
 } from '@/main.ts';
 import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 import type { Feature, GeoJSON } from 'geojson';
@@ -101,7 +103,9 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     );
 
     sourceForEach((featureData) => {
-      resultFeatureCollection.features.push(featureData.getGeoJson());
+      if (SHAPE_NAMES.includes(featureData.shape as ShapeName)) {
+        resultFeatureCollection.features.push(featureData.getGeoJson());
+      }
     });
     return resultFeatureCollection;
   }

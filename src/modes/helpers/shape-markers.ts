@@ -430,8 +430,12 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   refreshMarkers() {
-    this.removeMarkers();
-    this.addMarkers();
+    const isEnabled = this.gm.options.isModeEnabled('helper', 'shape_markers');
+
+    if (isEnabled) {
+      this.removeMarkers();
+      this.addMarkers();
+    }
   }
 
   handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
