@@ -21,6 +21,8 @@ export abstract class BaseSource<TSourceInstance = unknown> {
 
   abstract getGeoJson(): GeoJsonShapeFeatureCollection;
 
+  abstract getGmGeoJson(): GeoJsonShapeFeatureCollection;
+
   abstract setGeoJson(geoJson: GeoJSON): void;
 
   abstract updateData(updateStorage: GeoJsonUniversalDiff): void;

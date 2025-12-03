@@ -83,6 +83,29 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     return this.sourceInstance.serialize().data as GeoJsonShapeFeatureCollection;
   }
 
+  getGmGeoJson() {
+    if (!this.isInstanceAvailable()) {
+      throw new Error('Source instance is not available');
+    }
+
+    // this method retrieves features geojson according to internal representation
+    // for each FeatureData.
+    // In other words it collects "FeatureData._geoJson" for each feature in a source
+    const resultFeatureCollection: GeoJsonShapeFeatureCollection = {
+      type: 'FeatureCollection',
+      features: [],
+    };
+
+    const sourceForEach = this.gm.features.filteredForEach(
+      (featureData) => featureData.source.id === this.sourceInstance?.id,
+    );
+
+    sourceForEach((featureData) => {
+      resultFeatureCollection.features.push(featureData.getGeoJson());
+    });
+    return resultFeatureCollection;
+  }
+
   setGeoJson(geoJson: GeoJSON) {
     if (!this.isInstanceAvailable()) {
       throw new Error('Source instance is not available');

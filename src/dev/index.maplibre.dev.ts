@@ -182,6 +182,7 @@ const initGeoman = async () => {
   map.on('gm:create', (event) => {
     console.log('feature geojson', event.feature.getGeoJson());
     console.log('source geojson', event.feature.source.getGeoJson());
+    console.log('gm source geojson', event.feature.source.getGmGeoJson());
   });
 
   return geoman;

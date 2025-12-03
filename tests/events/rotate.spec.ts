@@ -73,16 +73,16 @@ test.describe('Rotate Events', () => {
         // Perform rotation operation
         await dragAndDrop(page, initialScreenPoint, targetScreenPoint);
 
+        const requiredShape = ROTATE_SHAPE_MAP[feature.shape] || 'unknown';
+
         const rotateStartEvent = (await getGeomanEventResultById(page, rotateStartResultId)) as
           | FeatureEditStartFwdEvent
           | undefined;
         expect(rotateStartEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateStartEvent) {
           expect(rotateStartEvent.feature, 'Event feature must be defined').toBeDefined();
-          expect(rotateStartEvent.shape, `Shape should be ${feature.shape}`).toEqual(feature.shape);
+          expect(rotateStartEvent.shape, `Shape should be ${requiredShape}`).toEqual(requiredShape);
         }
-
-        const requiredShape = ROTATE_SHAPE_MAP[feature.shape] || 'unknown';
 
         const rotateEvent = (await getGeomanEventResultById(page, rotateResultId)) as
           | FeatureUpdatedFwdEvent

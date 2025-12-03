@@ -15,7 +15,7 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Timeout for a test - increased for CI */
-  timeout: process.env.CI ? 120000 : 60000,
+  timeout: 120000,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -77,6 +77,6 @@ export default defineConfig({
     command: 'npm run testserver',
     url: 'http://localhost:4000/',
     reuseExistingServer: !process.env.CI,
-    timeout: process.env.CI ? 120000 : 60000, // Increased server startup timeout for CI
+    timeout: 120000,
   },
 });

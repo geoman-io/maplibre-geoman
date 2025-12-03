@@ -36,11 +36,8 @@ export const saveGeomanEventResultToCustomData = async (
 
 export const getGeomanEventResultById = async (page: Page, resultId: string) => {
   const handle = await page.waitForFunction(
-    async (context) => {
-      if (!window.customData) {
-        window.customData = { rawEventResults: {} };
-      }
-      return window.customData?.rawEventResults?.[context.resultId];
+    (context) => {
+      return window.customData?.rawEventResults?.[context.resultId] || null;
     },
     { resultId },
   );
