@@ -126,7 +126,7 @@ const loadGeomanData = (geoman: Geoman) => {
   log.debug(`Running mode: "${import.meta.env.MODE}"`);
   log.debug('Geoman instance', geoman);
 
-  const loadDevShapesFlag: boolean = true;
+  const loadDevShapesFlag: boolean = false;
   const loadStressTest: boolean = false;
   const loadCircleMarkerStressTest: boolean = false;
   const loadExternalGeoJsonFlag: boolean = false;
@@ -182,7 +182,7 @@ const initGeoman = async () => {
   map.on('gm:create', (event) => {
     console.log('feature geojson', event.feature.getGeoJson());
     console.log('source geojson', event.feature.source.getGeoJson());
-    console.log('gm source geojson', event.feature.source.getGmGeoJson());
+    // console.log('gm source geojson', event.feature.source.getGmGeoJson());
   });
 
   return geoman;

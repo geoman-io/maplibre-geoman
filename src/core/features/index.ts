@@ -33,7 +33,6 @@ import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import type {
   Feature,
   FeatureCollection,
-  GeoJSON,
   Geometry,
   LineString,
   MultiPolygon,
@@ -351,22 +350,6 @@ export class Features {
       shapeTypes: allowedShapes ? allowedShapes : [...SHAPE_NAMES],
       idPropertyName,
     });
-  }
-
-  getSourceGeoJson(sourceName: FeatureSourceName): GeoJsonShapeFeatureCollection {
-    const source = this.sources[sourceName];
-    if (!source) {
-      throw new Error(`getSourceGeoJson: missing source "${sourceName}"`);
-    }
-    return source.getGeoJson();
-  }
-
-  setSourceGeoJson({ geoJson, sourceName }: { geoJson: GeoJSON; sourceName: FeatureSourceName }) {
-    const source = this.sources[sourceName];
-    if (!source) {
-      throw new Error(`setSourceGeoJson: missing source "${sourceName}"`);
-    }
-    source.setGeoJson(geoJson);
   }
 
   asGeoJsonFeatureCollection({

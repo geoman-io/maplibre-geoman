@@ -11,8 +11,6 @@ type SourceUpdateMethods = {
 
 const MAX_DIFF_ITEMS = 5000;
 
-// this class is here cause playwright fails if it's extracted for unknown reason
-// (possible imports trouble)
 export class SourceUpdateManager {
   gm: Geoman;
   updateStorage: { [key in FeatureSourceName]: Array<GeoJsonUniversalDiff> };
@@ -32,6 +30,10 @@ export class SourceUpdateManager {
         ),
       ]),
     ) as SourceUpdateMethods;
+  }
+
+  updatesPending(sourceName: FeatureSourceName): boolean {
+    return !!this.updateStorage[sourceName]?.length;
   }
 
   getFeatureId(feature: Feature) {
@@ -70,7 +72,7 @@ export class SourceUpdateManager {
       const combinedDiff = this.getCombinedDiff(sourceName);
       if (combinedDiff) {
         // applies non empty diff
-        source.updateData(combinedDiff);
+        source.updateData(combinedDiff).then(/* it's possible to send events here */);
       }
 
       if (this.updateStorage[sourceName].length > 0) {

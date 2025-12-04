@@ -43,9 +43,10 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
 
   async waitForLoad() {
     const EVENT_NAME = 'idle';
+    const updatesPending = this.gm.features.updateManager.updatesPending(this.id);
 
     const loadPromise = new Promise<void>((resolve) => {
-      if (this.loaded) {
+      if (this.loaded && !updatesPending) {
         resolve();
         return;
       }
@@ -110,20 +111,20 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     return resultFeatureCollection;
   }
 
-  setGeoJson(geoJson: GeoJSON) {
+  async setData(geoJson: GeoJSON) {
     if (!this.isInstanceAvailable()) {
       throw new Error('Source instance is not available');
     }
-    return this.sourceInstance.setData(geoJson);
+    await this.sourceInstance.setData(geoJson, true);
   }
 
-  updateData(updateStorage: GeoJsonUniversalDiff) {
+  async updateData(updateStorage: GeoJsonUniversalDiff) {
     if (!this.isInstanceAvailable()) {
       return;
     }
 
     const mlDiff = this.convertUniversalDiffToMlDiff(updateStorage);
-    this.sourceInstance.updateData(mlDiff);
+    await this.sourceInstance.updateData(mlDiff, true);
   }
 
   convertUniversalDiffToMlDiff(diff: GeoJsonUniversalDiff): ml.GeoJSONSourceDiff {
