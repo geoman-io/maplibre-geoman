@@ -1,4 +1,4 @@
-import type { GeoJsonShapeFeatureCollection, GeoJsonUniversalDiff } from '@/main.ts';
+import type { GeoJsonShapeFeatureCollection, GeoJSONSourceDiff } from '@/main.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
 
@@ -23,7 +23,7 @@ export abstract class BaseSource<TSourceInstance = unknown> {
 
   abstract setData(geoJson: GeoJSON): Promise<void>;
 
-  abstract updateData(updateStorage: GeoJsonUniversalDiff): Promise<void>;
+  abstract updateData(updateStorage: GeoJSONSourceDiff): Promise<void>;
 
   abstract remove(): void;
 
