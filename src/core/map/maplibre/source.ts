@@ -2,14 +2,14 @@ import { BaseSource } from '@/core/map/base/source.ts';
 import {
   FEATURE_ID_PROPERTY,
   type GeoJsonShapeFeatureCollection,
-  type GeoJSONSourceDiff,
+  type GeoJSONSourceDiffHashed,
   type Geoman,
   SHAPE_NAMES,
   type ShapeName,
 } from '@/main.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
-import ml from 'maplibre-gl';
+import ml, { type GeoJSONSourceDiff } from 'maplibre-gl';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -94,12 +94,36 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     await this.sourceInstance.setData(geoJson, true);
   }
 
-  async updateData(updateStorage: GeoJSONSourceDiff) {
+  async updateData(hashedDiff: GeoJSONSourceDiffHashed) {
     if (!this.isInstanceAvailable()) {
       return;
     }
+    const mlDiff = MaplibreSource.hashedToDiff(hashedDiff);
 
-    await this.sourceInstance.updateData(updateStorage, true);
+    await this.sourceInstance.updateData(mlDiff, true);
+  }
+
+  /**
+   * @internal
+   * Convert a hashed GeoJSONSourceDiff back to the array-based representation
+   */
+  private static hashedToDiff(hashed: GeoJSONSourceDiffHashed): GeoJSONSourceDiff {
+    const diff: GeoJSONSourceDiff = {};
+
+    if (hashed.removeAll) {
+      diff.removeAll = hashed.removeAll;
+    }
+    if (hashed.remove) {
+      diff.remove = Array.from(hashed.remove);
+    }
+    if (hashed.add) {
+      diff.add = Array.from(hashed.add.values());
+    }
+    if (hashed.update) {
+      diff.update = Array.from(hashed.update.values());
+    }
+
+    return diff;
   }
 
   remove() {
