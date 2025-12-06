@@ -69,16 +69,6 @@ export type MapInstanceWithGeoman<T = AnyMapInstance> = {
   gm: Geoman;
 } & T;
 
-/**
- * Strict copy of the maplibre GeoJSONSourceDiff
- */
-export type GeoJSONSourceDiff = {
-  removeAll?: boolean;
-  remove?: Array<FeatureId>;
-  add?: Array<Feature>;
-  update?: Array<GeoJSONFeatureDiff>;
-};
-
 export type GeoJSONSourceDiffHashed = {
   removeAll?: boolean;
   remove?: Set<FeatureId>;
