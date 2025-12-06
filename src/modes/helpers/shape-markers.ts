@@ -101,12 +101,17 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     this.edgeMarkersAllowed = this.gm.getActiveEditModes().includes('change');
+    this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
     this.addMarkers();
+    this.gm.features.updateManager.commitTransaction(SOURCES.internal);
   }
 
   onEndAction() {
     this.gm.markerPointer.disable();
+
+    this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
     this.removeMarkers();
+    this.gm.features.updateManager.commitTransaction(SOURCES.internal);
   }
 
   setPin(enabled: boolean) {
@@ -251,7 +256,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   ): Exclude<MarkerData, DomMarkerData> | null {
     const markerFeatureData = this.gm.features.getFeatureByMouseEvent({
       event,
-      sourceNames: [SOURCES.main],
+      sourceNames: [SOURCES.internal],
     });
 
     if (markerFeatureData?.parent?.markers) {
@@ -462,8 +467,10 @@ export class ShapeMarkersHelper extends BaseHelper {
     const isEnabled = this.gm.options.isModeEnabled('helper', 'shape_markers');
 
     if (isEnabled) {
+      this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
       this.removeMarkers();
       this.addMarkers();
+      this.gm.features.updateManager.commitTransaction(SOURCES.internal);
     }
   }
 
@@ -676,7 +683,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     const coordinate = positionData.coordinate;
 
     const featureData = this.gm.features.createMarkerFeature({
-      sourceName: parentFeature.sourceName,
+      sourceName: SOURCES.internal,
       parentFeature,
       type,
       coordinate,

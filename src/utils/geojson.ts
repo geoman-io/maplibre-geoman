@@ -658,7 +658,7 @@ export const getGeoJsonEllipse = ({
   if (ySemiAxis === undefined || ySemiAxis === 0) {
     const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
     return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
-      shape: 'line',
+      __gm_shape: 'line',
     });
   }
 
