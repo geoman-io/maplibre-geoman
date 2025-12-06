@@ -471,7 +471,10 @@ export class FeatureData {
 
     this.markers.forEach((markerData) => {
       if (markerData.instance instanceof FeatureData) {
-        markerData.instance.changeSource({ sourceName, atomic });
+        markerData.instance.changeSource({
+          sourceName: sourceName === SOURCES.temporary ? SOURCES.temporary : SOURCES.internal,
+          atomic,
+        });
       }
     });
   }
