@@ -279,6 +279,8 @@ export class ShapeMarkersHelper extends BaseHelper {
       this.addCenterMarker(featureData);
       const shapeSegments = this.getAllShapeSegments(featureData);
 
+      const endMarkerIndexes = this.getEndMarkerIndexes(featureData);
+
       shapeSegments.forEach((segmentData, index) => {
         // generic vertex marker
         const isVertexMarkerAllowed = this.isMarkerIndexAllowed(
@@ -291,7 +293,7 @@ export class ShapeMarkersHelper extends BaseHelper {
           const marker = this.createOrUpdateVertexMarker(segmentData.segment.start, featureData);
           featureData.markers.set(marker.markerKey, marker.markerData);
 
-          if (featureData.shape === 'line' && index === shapeSegments.length - 1) {
+          if (endMarkerIndexes.has(index)) {
             const lineEndMarker = this.createOrUpdateVertexMarker(
               segmentData.segment.end,
               featureData,
@@ -357,6 +359,33 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   getEdgeMarkerKey(index: number) {
     return `edge.${index}`;
+  }
+
+  getEndMarkerIndexes(featureData: FeatureData): Set<number> {
+    const geometry = featureData.getGeoJson().geometry;
+
+    if (
+      featureData.shape !== 'line' ||
+      !['LineString', 'MultiLineString'].includes(geometry.type)
+    ) {
+      return new Set();
+    }
+
+    if (geometry.type === 'MultiLineString') {
+      const infos = geometry.coordinates.reduce<{
+        sum: number;
+        indexes: Set<number>;
+      }>(
+        (acc, line) => {
+          acc.indexes.add(acc.sum + line.length - 2);
+          acc.sum += line.length - 1;
+          return acc;
+        },
+        { sum: 0, indexes: new Set<number>() },
+      );
+      return infos.indexes;
+    }
+    return new Set([geometry.coordinates.length - 2]);
   }
 
   getSegmentMiddlePosition(segment: SegmentPosition): PositionData {
@@ -466,6 +495,8 @@ export class ShapeMarkersHelper extends BaseHelper {
     const shapeSegments = this.getAllShapeSegments(featureData);
     const currentMarkerKeys = new Set(featureData.markers.keys());
 
+    const endMarkerIndexes = this.getEndMarkerIndexes(featureData);
+
     shapeSegments.forEach((segmentData, index) => {
       const isVertexMarkerAllowed = this.isMarkerIndexAllowed(
         featureData.shape,
@@ -476,7 +507,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       if (isVertexMarkerAllowed) {
         const marker = this.createOrUpdateVertexMarker(segmentData.segment.start, featureData);
         currentMarkerKeys.delete(marker.markerKey);
-        if (featureData.shape === 'line' && index === shapeSegments.length - 1) {
+        if (endMarkerIndexes.has(index)) {
           const lineEndMarker = this.createOrUpdateVertexMarker(
             segmentData.segment.end,
             featureData,

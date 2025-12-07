@@ -318,5 +318,30 @@
         ]
       ]
     }
+  },
+  {
+    "type": "Feature",
+    "properties": {
+      "__gm_id": "feature-63",
+      "__gm_shape": "line"
+    },
+    "geometry": {
+      "type": "MultiLineString",
+      "coordinates": [
+        [
+          [7, 47],
+          [7, 50]
+        ],
+        [
+          [7, 48.5],
+          [10, 48.5]
+        ],
+        [
+          [10, 47],
+          [10, 50]
+        ]
+      ]
+    },
+    "id": "feature-63"
   }
 ]

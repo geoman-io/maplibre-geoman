@@ -18,10 +18,10 @@ import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import booleanIntersects from '@turf/boolean-intersects';
 import turfClone from '@turf/clone';
 import turfDifference from '@turf/difference';
-import { featureCollection } from '@turf/helpers';
+import { featureCollection, lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
-import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
+import type { Feature, LineString, MultiLineString, MultiPolygon, Polygon } from 'geojson';
 import log from 'loglevel';
 
 type PolygonFeature = Feature<Polygon | MultiPolygon>;
@@ -100,34 +100,71 @@ export class EditCut extends BaseEdit {
   }
 
   cutLineFeatureByPolygon(featureData: FeatureData, cutGeoJson: PolygonFeature) {
-    const shapeGeoJson = featureData.getGeoJson() as Feature<LineString>;
+    const { geometry } = featureData.getGeoJson() as Feature<LineString | MultiLineString>;
     const bufferedCutGeoJson = getBufferedOuterPolygon(this.gm.mapAdapter, cutGeoJson);
-    const resultGeoJson = lineSplit(shapeGeoJson, cutGeoJson);
 
-    if (!bufferedCutGeoJson || resultGeoJson.features.length === 0) {
+    if (!bufferedCutGeoJson) {
       return;
     }
 
-    const resultFeatures: Array<FeatureData> = [];
-    resultGeoJson.features
-      .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
-      .forEach((feature) => {
-        const lineFeatureData = this.createLineFeature(turfClone(feature));
-        if (lineFeatureData) {
-          resultFeatures.push(lineFeatureData);
+    if (geometry.type === 'MultiLineString') {
+      const newGeometry: MultiLineString = {
+        type: 'MultiLineString',
+        coordinates: [],
+      };
+      let isCut = false;
+
+      geometry.coordinates.forEach((lineCoordinates) => {
+        const resultGeoJson = lineSplit(lineString(lineCoordinates), cutGeoJson);
+
+        if (resultGeoJson.features.length === 0) {
+          newGeometry.coordinates.push(lineCoordinates);
+          return;
         }
+
+        resultGeoJson.features
+          .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
+          .forEach((feature) => {
+            isCut = true;
+            newGeometry.coordinates.push(feature.geometry.coordinates);
+          });
       });
-    this.gm.features.delete(featureData);
 
-    if (!isNonEmptyArray(resultFeatures)) {
-      log.error('cutLineFeatureByPolygon: resultFeatures not found', resultGeoJson);
-      return;
+      if (isCut) {
+        featureData.updateGeoJsonGeometry(newGeometry);
+        this.fireFeatureUpdatedEvent({
+          sourceFeatures: [featureData],
+          targetFeatures: [featureData],
+        });
+      }
+    } else if (geometry.type === 'LineString') {
+      const resultGeoJson = lineSplit(geometry, cutGeoJson);
+
+      if (resultGeoJson.features.length === 0) {
+        return;
+      }
+
+      const resultFeatures: Array<FeatureData> = [];
+      resultGeoJson.features
+        .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
+        .forEach((feature) => {
+          const lineFeatureData = this.createLineFeature(turfClone(feature));
+          if (lineFeatureData) {
+            resultFeatures.push(lineFeatureData);
+          }
+        });
+      this.gm.features.delete(featureData);
+
+      if (!isNonEmptyArray(resultFeatures)) {
+        log.error('cutLineFeatureByPolygon: resultFeatures not found', resultGeoJson);
+        return;
+      }
+
+      this.fireFeatureUpdatedEvent({
+        sourceFeatures: [featureData],
+        targetFeatures: resultFeatures,
+      });
     }
-
-    this.fireFeatureUpdatedEvent({
-      sourceFeatures: [featureData],
-      targetFeatures: resultFeatures,
-    });
   }
 
   createLineFeature(lineFeatureGeoJson: Feature<LineString>) {
