@@ -190,7 +190,7 @@ export class GmOptions {
       level: 'system',
       actionType: 'control',
       section: sectionName,
-      target: modeName,
+      mode: modeName,
       action,
     };
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
