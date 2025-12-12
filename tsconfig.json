@@ -14,14 +14,14 @@
     },
     "declaration": true,
     "outDir": "./dist/types",
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
     "module": "ESNext",
     "types": [
       "svelte"
     ],
     "lib": [
-      "ES2020",
+      "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
