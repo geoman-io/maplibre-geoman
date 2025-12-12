@@ -110,7 +110,7 @@ export abstract class BaseEventListener {
       modeName = payload.mode;
     } else if (isGmControlEvent(payload)) {
       sectionName = payload.section;
-      modeName = payload.target;
+      modeName = payload.mode;
     }
 
     return sectionName && modeName ? { sectionName, modeName } : null;

@@ -9,7 +9,7 @@ export interface GmControlSwitchEvent extends GmBaseEvent {
   actionType: 'control';
   action: (typeof controlActions)[number];
   section: ModeType;
-  target: ModeName;
+  mode: ModeName;
 }
 
 export interface GmControlLoadEvent extends GmBaseEvent {
