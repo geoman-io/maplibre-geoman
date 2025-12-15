@@ -144,7 +144,7 @@ export class DrawRectangle extends BaseDraw {
 
   getFeatureGeoJson(bounds: BBox): GeoJsonShapeFeature {
     const rectangleGeoJson = twoCoordsToGeoJsonRectangle(
-      [bounds[0], bounds[2]],
+      [bounds[0], bounds[1]],
       [bounds[2], bounds[3]],
     );
 
