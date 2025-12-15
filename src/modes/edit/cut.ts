@@ -100,21 +100,21 @@ export class EditCut extends BaseEdit {
   }
 
   cutLineFeatureByPolygon(featureData: FeatureData, cutGeoJson: PolygonFeature) {
-    const { geometry } = featureData.getGeoJson() as Feature<LineString | MultiLineString>;
+    const shapeGeoJson = featureData.getGeoJson() as Feature<LineString | MultiLineString>;
     const bufferedCutGeoJson = getBufferedOuterPolygon(this.gm.mapAdapter, cutGeoJson);
 
     if (!bufferedCutGeoJson) {
       return;
     }
 
-    if (geometry.type === 'MultiLineString') {
+    if (shapeGeoJson.geometry.type === 'MultiLineString') {
       const newGeometry: MultiLineString = {
         type: 'MultiLineString',
         coordinates: [],
       };
       let isCut = false;
 
-      geometry.coordinates.forEach((lineCoordinates) => {
+      shapeGeoJson.geometry.coordinates.forEach((lineCoordinates) => {
         const resultGeoJson = lineSplit(lineString(lineCoordinates), cutGeoJson);
 
         if (resultGeoJson.features.length === 0) {
@@ -137,8 +137,8 @@ export class EditCut extends BaseEdit {
           targetFeatures: [featureData],
         });
       }
-    } else if (geometry.type === 'LineString') {
-      const resultGeoJson = lineSplit(geometry, cutGeoJson);
+    } else if (shapeGeoJson.geometry.type === 'LineString') {
+      const resultGeoJson = lineSplit(shapeGeoJson as Feature<LineString>, cutGeoJson);
 
       if (resultGeoJson.features.length === 0) {
         return;
