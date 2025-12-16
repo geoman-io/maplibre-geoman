@@ -22,6 +22,8 @@ export type FeatureDataParameters = {
   parent: FeatureData | null;
   source: BaseSource;
   geoJsonShapeFeature: GeoJsonShapeFeature;
+  /** Skip adding to source (used when hydrating from existing source data) */
+  skipSourceUpdate?: boolean;
 };
 
 export type FeatureSourceName = (typeof SOURCES)[keyof typeof SOURCES];

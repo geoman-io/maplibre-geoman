@@ -11,6 +11,9 @@ log.setLevel('debug');
 // Expose utilities for testing
 window.geomanUtils = geojsonUtils;
 
+// Expose Geoman class for testing destroy/reinit
+window.GeomanClass = Geoman;
+
 // Hide dev panels in test mode - they take up space and interfere with tests
 const leftPanel = document.getElementById('dev-left-panel');
 const rightPanel = document.getElementById('dev-right-panel');
@@ -31,6 +34,9 @@ const map = new ml.Map({
   zoom: 5,
   fadeDuration: 50,
 });
+
+// Expose the map instance for testing
+window.mapInstance = map;
 
 const gmOptions: PartialDeep<GmOptionsData> = {};
 const geoman = new Geoman(map, gmOptions);

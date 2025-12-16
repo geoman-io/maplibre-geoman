@@ -82,9 +82,9 @@ export class Features {
       this.sources[sourceName] = this.createSource(sourceName);
     });
 
-    // Scan existing sources to find the highest feature ID counter
+    // Hydrate feature store from existing sources and sync the ID counter
     // This handles remounting when sources were preserved (removeSources: false)
-    this.syncFeatureCounterFromSources();
+    this.hydrateFromExistingSources();
 
     if (this.gm.options.settings.useDefaultLayers) {
       this.layers = this.createLayers();
@@ -92,10 +92,10 @@ export class Features {
   }
 
   /**
-   * Scans existing sources to find the highest feature ID number
-   * and sets the counter accordingly to avoid ID conflicts when remounting.
+   * Hydrates the feature store from existing sources and syncs the ID counter.
+   * This is called during init to restore state when remounting on preserved sources.
    */
-  syncFeatureCounterFromSources() {
+  hydrateFromExistingSources() {
     let maxCounter = 0;
 
     typedKeys(this.sources).forEach((sourceName) => {
@@ -105,15 +105,35 @@ export class Features {
       try {
         const geoJson = source.getGeoJson();
         if (geoJson && 'features' in geoJson) {
-          geoJson.features.forEach((feature) => {
-            const featureId = feature.properties?.[FEATURE_ID_PROPERTY];
+          for (const feature of geoJson.features) {
+            const featureId = feature.properties?.[FEATURE_ID_PROPERTY] as FeatureId | undefined;
+            if (!featureId) continue;
+
+            // Track max counter for auto-generated IDs
             if (typeof featureId === 'string' && featureId.startsWith('feature-')) {
               const num = parseInt(featureId.replace('feature-', ''), 10);
               if (!isNaN(num) && num > maxCounter) {
                 maxCounter = num;
               }
             }
-          });
+
+            // Skip if already in feature store (shouldn't happen on fresh init)
+            if (this.featureStore.has(featureId)) continue;
+
+            // Create FeatureData for the existing feature
+            // Use skipSourceUpdate since the feature already exists in the source
+            const shapeGeoJson = feature as GeoJsonShapeFeature;
+            const featureData = new FeatureData({
+              gm: this.gm,
+              id: featureId,
+              parent: null,
+              source,
+              geoJsonShapeFeature: cloneDeep(shapeGeoJson),
+              skipSourceUpdate: true,
+            });
+
+            this.featureStore.set(featureId, featureData);
+          }
         }
       } catch {
         // Source might not be ready yet, ignore
