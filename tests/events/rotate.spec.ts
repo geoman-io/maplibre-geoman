@@ -13,14 +13,27 @@ import {
 import { getFeatureMarkersData, getRenderedFeaturesData } from '@tests/utils/features.ts';
 import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
-const ROTATE_SHAPE_MAP: { [key in string]: ShapeName } = {
+// Shape expected at rotatestart event (before any conversion happens)
+const ROTATE_START_SHAPE_MAP: { [key in string]: ShapeName } = {
   marker: 'marker',
   circle: 'circle',
   circle_marker: 'circle_marker',
   ellipse: 'ellipse',
   text_marker: 'text_marker',
   line: 'line',
-  rectangle: 'polygon',
+  rectangle: 'rectangle', // Rectangle hasn't been converted yet at rotatestart
+  polygon: 'polygon',
+};
+
+// Shape expected at rotate/rotateend events (after conversion may have happened)
+const ROTATE_END_SHAPE_MAP: { [key in string]: ShapeName } = {
+  marker: 'marker',
+  circle: 'circle',
+  circle_marker: 'circle_marker',
+  ellipse: 'ellipse',
+  text_marker: 'text_marker',
+  line: 'line',
+  rectangle: 'polygon', // Rectangle gets converted to polygon during rotation
   polygon: 'polygon',
 };
 
@@ -73,7 +86,8 @@ test.describe('Rotate Events', () => {
         // Perform rotation operation
         await dragAndDrop(page, initialScreenPoint, targetScreenPoint);
 
-        const requiredShape = ROTATE_SHAPE_MAP[feature.shape] || 'unknown';
+        const startShape = ROTATE_START_SHAPE_MAP[feature.shape] || 'unknown';
+        const endShape = ROTATE_END_SHAPE_MAP[feature.shape] || 'unknown';
 
         const rotateStartEvent = (await getGeomanEventResultById(page, rotateStartResultId)) as
           | FeatureEditStartFwdEvent
@@ -81,7 +95,7 @@ test.describe('Rotate Events', () => {
         expect(rotateStartEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateStartEvent) {
           expect(rotateStartEvent.feature, 'Event feature must be defined').toBeDefined();
-          expect(rotateStartEvent.shape, `Shape should be ${requiredShape}`).toEqual(requiredShape);
+          expect(rotateStartEvent.shape, `Shape should be ${startShape}`).toEqual(startShape);
         }
 
         const rotateEvent = (await getGeomanEventResultById(page, rotateResultId)) as
@@ -90,7 +104,7 @@ test.describe('Rotate Events', () => {
         expect(rotateEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateEvent) {
           expect(rotateEvent.feature, 'Event feature must be defined').toBeDefined();
-          expect(rotateEvent.shape, `Shape should be ${requiredShape}`).toEqual(requiredShape);
+          expect(rotateEvent.shape, `Shape should be ${endShape}`).toEqual(endShape);
           expect(rotateEvent.originalFeature, 'Event feature must be defined').toBeDefined();
         }
 
@@ -100,7 +114,7 @@ test.describe('Rotate Events', () => {
         expect(rotateEndEvent, 'Retrieved event result must be defined').toBeDefined();
         if (rotateEndEvent) {
           expect(rotateEndEvent.feature, 'Event feature must be defined').toBeDefined();
-          expect(rotateEndEvent.shape, `Shape should be ${requiredShape}`).toEqual(requiredShape);
+          expect(rotateEndEvent.shape, `Shape should be ${endShape}`).toEqual(endShape);
         }
       }
     }

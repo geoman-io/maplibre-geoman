@@ -7,7 +7,6 @@ import {
   SHAPE_NAMES,
   type ShapeName,
 } from '@/main.ts';
-import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 import type { Feature, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
@@ -39,29 +38,6 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
 
   get loaded(): boolean {
     return this.mapInstance.isSourceLoaded(this.id);
-  }
-
-  async waitForLoad() {
-    const EVENT_NAME = 'idle';
-    const updatesPending = this.gm.features.updateManager.updatesPending(this.id);
-
-    const loadPromise = new Promise<void>((resolve) => {
-      if (this.loaded && !updatesPending) {
-        resolve();
-        return;
-      }
-
-      const onData = () => {
-        if (this.loaded) {
-          this.mapInstance.off(EVENT_NAME, onData);
-          resolve();
-        }
-      };
-
-      this.mapInstance.on(EVENT_NAME, onData);
-    });
-
-    await withPromiseTimeoutRace(loadPromise, 'Unable to wait for source to load');
   }
 
   createSource({ geoJson, sourceId }: { sourceId: string; geoJson: GeoJSON }): ml.GeoJSONSource {

@@ -9,8 +9,6 @@ export abstract class BaseSource<TSourceInstance = unknown> {
 
   abstract get loaded(): boolean;
 
-  abstract waitForLoad(): Promise<void>;
-
   abstract createSource({
     geoJson,
     sourceId,

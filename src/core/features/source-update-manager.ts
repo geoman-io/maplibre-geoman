@@ -16,10 +16,13 @@ export class SourceUpdateManager {
   updateStorage: { [key in FeatureSourceName]: Array<GeoJsonUniversalDiff> };
   autoUpdatesEnabled: boolean = true;
   delayedSourceUpdateMethods: SourceUpdateMethods;
+  // Track pending update promises per source to allow waiting for MapLibre to commit data
+  pendingUpdatePromises: { [key in FeatureSourceName]?: Promise<void> };
 
   constructor(gm: Geoman) {
     this.gm = gm;
     this.updateStorage = Object.fromEntries(typedValues(SOURCES).map((name) => [name, []]));
+    this.pendingUpdatePromises = {};
 
     this.delayedSourceUpdateMethods = Object.fromEntries(
       typedValues(SOURCES).map((sourceName) => [
@@ -33,7 +36,7 @@ export class SourceUpdateManager {
   }
 
   updatesPending(sourceName: FeatureSourceName): boolean {
-    return !!this.updateStorage[sourceName]?.length;
+    return !!this.updateStorage[sourceName]?.length || !!this.pendingUpdatePromises[sourceName];
   }
 
   getFeatureId(feature: Feature) {
@@ -71,8 +74,17 @@ export class SourceUpdateManager {
 
       const combinedDiff = this.getCombinedDiff(sourceName);
       if (combinedDiff) {
-        // applies non empty diff
-        source.updateData(combinedDiff).then(/* it's possible to send events here */);
+        // Track the update promise so callers can wait for MapLibre to commit the data
+        // MapLibre's updateData with waitForCompletion=true returns a Promise that
+        // resolves when the data is committed to the source
+        const updatePromise = source.updateData(combinedDiff);
+        this.pendingUpdatePromises[sourceName] = updatePromise;
+        updatePromise.then(() => {
+          // Clear the promise once the update is complete
+          if (this.pendingUpdatePromises[sourceName] === updatePromise) {
+            delete this.pendingUpdatePromises[sourceName];
+          }
+        });
       }
 
       if (this.updateStorage[sourceName].length > 0) {
@@ -81,6 +93,17 @@ export class SourceUpdateManager {
           this.gm.options.settings.throttlingDelay,
         );
       }
+    }
+  }
+
+  /**
+   * Wait for any pending MapLibre source updates to complete.
+   * This ensures data is committed before events are fired.
+   */
+  async waitForPendingUpdates(sourceName: FeatureSourceName): Promise<void> {
+    const pendingPromise = this.pendingUpdatePromises[sourceName];
+    if (pendingPromise) {
+      await pendingPromise;
     }
   }
 
