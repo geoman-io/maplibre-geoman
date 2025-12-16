@@ -114,6 +114,13 @@ export class LineDrawer extends BaseDraw {
     this.gm.markerPointer.disable();
     this.endShape();
     this.snapGuidesInstance?.removeSnapGuides();
+    this.clearDrawerHandlers();
+  }
+
+  clearDrawerHandlers() {
+    this.drawerEventHandlers.firstMarkerClick = null;
+    this.drawerEventHandlers.lastMarkerClick = null;
+    this.drawerEventHandlers.nMarkerClick = null;
   }
 
   handleGmHelperEvent(event: GmSystemEvent): MapHandlerReturnData {
