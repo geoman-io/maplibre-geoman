@@ -20,6 +20,7 @@ export interface GmEditMarkerMoveEvent extends GmBaseEvent {
   markerData: MarkerData;
   lngLatStart: LngLatTuple;
   lngLatEnd: LngLatTuple;
+  linkedFeatures: FeatureData[];
 }
 
 export interface GmEditMarkerEvent extends GmBaseEvent {
@@ -29,6 +30,7 @@ export interface GmEditMarkerEvent extends GmBaseEvent {
   action: 'edge_marker_click' | 'marker_right_click' | 'marker_captured' | 'marker_released';
   featureData: FeatureData;
   markerData: MarkerData;
+  linkedFeatures?: Array<FeatureData>;
 }
 
 export interface GmEditFeatureRemovedEvent extends GmBaseEvent {

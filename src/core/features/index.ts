@@ -240,6 +240,21 @@ export class Features {
     this.featureStore.clear();
   }
 
+  getLinkedFeatures(featureData: FeatureData): FeatureData[] {
+    const groupName = featureData.getShapeProperty('group');
+    if (!groupName) {
+      return [];
+    }
+
+    return Array.from(this.featureStore.values())
+      .filter(
+        (featureData) =>
+          SHAPE_NAMES.includes(featureData.shape as ShapeName) &&
+          featureData.getShapeProperty('group') === groupName,
+      )
+      .filter((f) => f.id !== featureData.id);
+  }
+
   getFeatureByMouseEvent({
     event,
     sourceNames,
