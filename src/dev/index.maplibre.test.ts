@@ -1,11 +1,15 @@
 import type { GmOptionsData } from '@/main.ts';
 import { Geoman } from '@/main.ts';
+import * as geojsonUtils from '@/utils/geojson.ts';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 log.setLevel('debug');
+
+// Expose utilities for testing
+window.geomanUtils = geojsonUtils;
 
 const emptyStyle: ml.StyleSpecification = {
   version: 8,
