@@ -49,6 +49,7 @@ export class Geoman {
   globalLngLatBounds: [LngLatTuple, LngLatTuple] = this.getGlobalLngLatBounds();
   features: Features;
   loaded: boolean = false;
+  destroyed: boolean = false;
 
   options: GmOptions;
   events: GmEvents;
@@ -167,14 +168,46 @@ export class Geoman {
   }
 
   async init() {
+    // Check if destroyed before continuing initialization
+    if (this.destroyed) {
+      return;
+    }
     this.features.init();
+
+    // Check again after features init, before async controls
+    if (this.destroyed) {
+      return;
+    }
     await this.addControls();
   }
 
+  /**
+   * Destroys the Geoman instance and cleans up resources.
+   *
+   * This method can be called at any point in the lifecycle:
+   * - Before initialization completes: cancels pending init and cleans up synchronously
+   * - After initialization completes: performs full cleanup including controls
+   *
+   * For React StrictMode compatibility, this method performs synchronous cleanup
+   * of the `gm` reference on the map instance, allowing immediate re-initialization.
+   */
   async destroy({ removeSources }: { removeSources: boolean } = { removeSources: false }) {
-    await this.waitForGeomanLoaded();
-    this.removeControls();
+    // Mark as destroyed early to prevent init() from continuing
+    this.destroyed = true;
+
+    // Synchronously remove gm reference to allow re-initialization
+    // This is critical for React StrictMode compatibility
+    if (this.mapAdapterInstance && 'gm' in this.mapAdapterInstance.mapInstance) {
+      delete this.mapAdapterInstance.mapInstance.gm;
+    }
+
+    // Synchronously detach all events to prevent handlers from firing
     this.events.bus.detachAllEvents();
+
+    // Only perform full cleanup if initialization completed
+    if (this.loaded) {
+      this.removeControls();
+    }
 
     if (removeSources) {
       for (const source of Object.values(this.features.sources)) {
@@ -182,10 +215,6 @@ export class Geoman {
           source.remove();
         }
       }
-    }
-
-    if ('gm' in this.mapAdapter.mapInstance) {
-      delete this.mapAdapter.mapInstance.gm;
     }
   }
 
@@ -195,7 +224,7 @@ export class Geoman {
   }
 
   async onMapLoad() {
-    if (this.loaded) {
+    if (this.loaded || this.destroyed) {
       return;
     }
 
@@ -203,6 +232,11 @@ export class Geoman {
       id: 'default-marker',
       image: defaultMarker,
     });
+
+    // Check if destroyed after async operation
+    if (this.destroyed) {
+      return;
+    }
 
     const payload: GmControlLoadEvent = {
       name: `${GM_SYSTEM_PREFIX}:control:load`,
