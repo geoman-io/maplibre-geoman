@@ -7,6 +7,7 @@ import defaultShapeMarker from '@/assets/images/markers/default-shape-marker.svg
 export const defaultOptions: GmOptionsData = {
   settings: {
     throttlingDelay: 10,
+    awaitDataUpdatesOnEvents: true,
     useDefaultLayers: true,
     controlsPosition: 'top-left',
     controlsUiEnabledByDefault: true,

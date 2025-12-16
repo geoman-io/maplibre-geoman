@@ -34,6 +34,17 @@ export interface ControlStyles {
 export type GmOptionsData = {
   settings: {
     throttlingDelay: number;
+    /**
+     * When true, events like gm:create and gm:remove will wait for MapLibre
+     * to commit data updates before firing. This ensures feature data is
+     * accessible in event handlers via exportGeoJson().
+     *
+     * Set to false for faster async updates if you don't need immediate
+     * data consistency in event handlers.
+     *
+     * @default true
+     */
+    awaitDataUpdatesOnEvents: boolean;
     useDefaultLayers: boolean;
     controlsPosition: BaseControlsPosition;
     controlsUiEnabledByDefault: boolean;
