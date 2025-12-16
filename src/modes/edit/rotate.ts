@@ -11,7 +11,7 @@ import {
   SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
-import { geoJsonPointToLngLat, getGeoJsonEllipse } from '@/utils/geojson.ts';
+import { geoJsonPointToLngLat, getGeoJsonEllipse, getLngLatDiff } from '@/utils/geojson.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import bearing from '@turf/bearing';
 import centroid from '@turf/centroid';
@@ -59,7 +59,8 @@ export class EditRotate extends BaseDrag {
       if (event.markerData?.type === 'vertex') {
         this.moveVertex(event);
       } else {
-        this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
+        const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
+        this.moveSource(event.featureData, lngLatDiff);
       }
       return { next: false };
     } else if (event.action === 'marker_captured') {

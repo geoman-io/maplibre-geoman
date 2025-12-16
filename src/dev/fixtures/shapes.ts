@@ -95,7 +95,7 @@ export const loadDevShapes = (geoman: Geoman, devShapes: Array<GeoJsonImportFeat
   // log.debug(result);
 
   devShapes.forEach((shapeGeoJson, index) => {
-    const allowedFeatureIds: Array<number> = [];
+    const allowedFeatureIds: Array<number> = [11, 12];
     // const allowedFeatureIds: Array<number> = [1];
     // const allowedFeatureIds: Array<number> = Array(10).fill(0).map((_, i) => i).slice(3);
 

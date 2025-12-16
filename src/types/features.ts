@@ -44,6 +44,7 @@ export type FeatureShapeProperties = {
   angle?: number;
   text?: string;
   disableEdit?: boolean;
+  group?: string;
 };
 
 export type PrefixedFeatureShapeProperties = WithPrefixedKeys<
