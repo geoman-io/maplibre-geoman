@@ -4,7 +4,6 @@ import {
   type EditModeName,
   type FeatureId,
   type FeatureShape,
-  type GeoJsonShapeFeature,
   type LineEventHandlerArguments,
   SOURCES,
 } from '@/main.ts';
@@ -12,16 +11,21 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
-import { isNonEmptyArray } from '@/utils/guards/index.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import booleanIntersects from '@turf/boolean-intersects';
-import turfClone from '@turf/clone';
 import turfDifference from '@turf/difference';
-import { featureCollection } from '@turf/helpers';
+import { featureCollection, lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
-import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
+import type {
+  Feature,
+  LineString,
+  MultiLineString,
+  MultiPolygon,
+  Polygon,
+  Position,
+} from 'geojson';
 import log from 'loglevel';
 
 type PolygonFeature = Feature<Polygon | MultiPolygon>;
@@ -100,48 +104,62 @@ export class EditCut extends BaseEdit {
   }
 
   cutLineFeatureByPolygon(featureData: FeatureData, cutGeoJson: PolygonFeature) {
-    const shapeGeoJson = featureData.getGeoJson() as Feature<LineString>;
+    const shapeGeoJson = featureData.getGeoJson() as Feature<LineString | MultiLineString>;
     const bufferedCutGeoJson = getBufferedOuterPolygon(this.gm.mapAdapter, cutGeoJson);
-    const resultGeoJson = lineSplit(shapeGeoJson, cutGeoJson);
 
-    if (!bufferedCutGeoJson || resultGeoJson.features.length === 0) {
+    let isCut = false;
+    let coordinates: Position[][] = [];
+
+    if (!bufferedCutGeoJson) {
       return;
     }
 
-    const resultFeatures: Array<FeatureData> = [];
-    resultGeoJson.features
-      .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
-      .forEach((feature) => {
-        const lineFeatureData = this.createLineFeature(turfClone(feature));
-        if (lineFeatureData) {
-          resultFeatures.push(lineFeatureData);
+    if (shapeGeoJson.geometry.type === 'MultiLineString') {
+      shapeGeoJson.geometry.coordinates.forEach((lineCoordinates) => {
+        if (isGeoJsonFeatureInPolygon(lineString(lineCoordinates), cutGeoJson)) {
+          return;
         }
-      });
-    this.gm.features.delete(featureData);
 
-    if (!isNonEmptyArray(resultFeatures)) {
-      log.error('cutLineFeatureByPolygon: resultFeatures not found', resultGeoJson);
-      return;
+        const resultGeoJson = lineSplit(lineString(lineCoordinates), cutGeoJson);
+
+        if (resultGeoJson.features.length === 0) {
+          coordinates.push(lineCoordinates);
+          return;
+        }
+
+        resultGeoJson.features
+          .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
+          .forEach((feature) => {
+            isCut = true;
+            coordinates.push(feature.geometry.coordinates);
+          });
+      });
+    } else if (shapeGeoJson.geometry.type === 'LineString') {
+      const resultGeoJson = lineSplit(shapeGeoJson as Feature<LineString>, cutGeoJson);
+      coordinates = resultGeoJson.features
+        .filter(
+          (feature) =>
+            !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson) &&
+            feature.geometry.type === 'LineString',
+        )
+        .map((feature) => feature.geometry.coordinates);
+
+      if (resultGeoJson.features.length > 0) {
+        isCut = true;
+      }
     }
 
-    this.fireFeatureUpdatedEvent({
-      sourceFeatures: [featureData],
-      targetFeatures: resultFeatures,
-    });
-  }
-
-  createLineFeature(lineFeatureGeoJson: Feature<LineString>) {
-    const shapeGeoJson: GeoJsonShapeFeature = {
-      ...lineFeatureGeoJson,
-      properties: {
-        shape: 'line',
-      },
-    };
-
-    return this.gm.features.createFeature({
-      shapeGeoJson,
-      sourceName: SOURCES.main,
-    });
+    if (isCut && coordinates.length) {
+      if (coordinates.length === 1) {
+        featureData.updateGeoJsonGeometry({ type: 'LineString', coordinates: coordinates[0] });
+      } else {
+        featureData.updateGeoJsonGeometry({ type: 'MultiLineString', coordinates: coordinates });
+      }
+      this.fireFeatureUpdatedEvent({
+        sourceFeatures: [featureData],
+        targetFeatures: [featureData],
+      });
+    }
   }
 
   cutPolygonFeatureByPolygon(featureId: FeatureId, cutGeoJson: PolygonFeature) {

@@ -543,6 +543,7 @@ export class Features {
     const SHAPE_MAP: { [key in Geometry['type']]?: ShapeName } = {
       Point: 'marker',
       LineString: 'line',
+      MultiLineString: 'line',
       Polygon: 'polygon',
       MultiPolygon: 'polygon',
     };
