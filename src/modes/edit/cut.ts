@@ -4,7 +4,6 @@ import {
   type EditModeName,
   type FeatureId,
   type FeatureShape,
-  type GeoJsonShapeFeature,
   type LineEventHandlerArguments,
   SOURCES,
 } from '@/main.ts';
@@ -12,11 +11,9 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
-import { isNonEmptyArray } from '@/utils/guards/index.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import booleanIntersects from '@turf/boolean-intersects';
-import turfClone from '@turf/clone';
 import turfDifference from '@turf/difference';
 import { featureCollection, lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
