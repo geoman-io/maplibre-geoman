@@ -52,6 +52,8 @@ export abstract class BaseMapAdapter<
 
   abstract loadImage({ id, image }: { id: string; image: string }): Promise<void>;
 
+  abstract removeImage(id: string): void;
+
   abstract getBounds(): [LngLatTuple, LngLatTuple];
 
   abstract fitBounds(bounds: [LngLatTuple, LngLatTuple], options?: BaseFitBoundsOptions): void;

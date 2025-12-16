@@ -82,8 +82,46 @@ export class Features {
       this.sources[sourceName] = this.createSource(sourceName);
     });
 
+    // Scan existing sources to find the highest feature ID counter
+    // This handles remounting when sources were preserved (removeSources: false)
+    this.syncFeatureCounterFromSources();
+
     if (this.gm.options.settings.useDefaultLayers) {
       this.layers = this.createLayers();
+    }
+  }
+
+  /**
+   * Scans existing sources to find the highest feature ID number
+   * and sets the counter accordingly to avoid ID conflicts when remounting.
+   */
+  syncFeatureCounterFromSources() {
+    let maxCounter = 0;
+
+    typedKeys(this.sources).forEach((sourceName) => {
+      const source = this.sources[sourceName];
+      if (!source) return;
+
+      try {
+        const geoJson = source.getGeoJson();
+        if (geoJson && 'features' in geoJson) {
+          geoJson.features.forEach((feature) => {
+            const featureId = feature.properties?.[FEATURE_ID_PROPERTY];
+            if (typeof featureId === 'string' && featureId.startsWith('feature-')) {
+              const num = parseInt(featureId.replace('feature-', ''), 10);
+              if (!isNaN(num) && num > maxCounter) {
+                maxCounter = num;
+              }
+            }
+          });
+        }
+      } catch {
+        // Source might not be ready yet, ignore
+      }
+    });
+
+    if (maxCounter > this.featureCounter) {
+      this.featureCounter = maxCounter;
     }
   }
 
