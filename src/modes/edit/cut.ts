@@ -21,7 +21,14 @@ import turfDifference from '@turf/difference';
 import { featureCollection, lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
-import type { Feature, LineString, MultiLineString, MultiPolygon, Polygon } from 'geojson';
+import type {
+  Feature,
+  LineString,
+  MultiLineString,
+  MultiPolygon,
+  Polygon,
+  Position,
+} from 'geojson';
 import log from 'loglevel';
 
 type PolygonFeature = Feature<Polygon | MultiPolygon>;
@@ -103,22 +110,23 @@ export class EditCut extends BaseEdit {
     const shapeGeoJson = featureData.getGeoJson() as Feature<LineString | MultiLineString>;
     const bufferedCutGeoJson = getBufferedOuterPolygon(this.gm.mapAdapter, cutGeoJson);
 
+    let isCut = false;
+    let coordinates: Position[][] = [];
+
     if (!bufferedCutGeoJson) {
       return;
     }
 
     if (shapeGeoJson.geometry.type === 'MultiLineString') {
-      const newGeometry: MultiLineString = {
-        type: 'MultiLineString',
-        coordinates: [],
-      };
-      let isCut = false;
-
       shapeGeoJson.geometry.coordinates.forEach((lineCoordinates) => {
+        if (isGeoJsonFeatureInPolygon(lineString(lineCoordinates), cutGeoJson)) {
+          return;
+        }
+
         const resultGeoJson = lineSplit(lineString(lineCoordinates), cutGeoJson);
 
         if (resultGeoJson.features.length === 0) {
-          newGeometry.coordinates.push(lineCoordinates);
+          coordinates.push(lineCoordinates);
           return;
         }
 
@@ -126,59 +134,35 @@ export class EditCut extends BaseEdit {
           .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
           .forEach((feature) => {
             isCut = true;
-            newGeometry.coordinates.push(feature.geometry.coordinates);
+            coordinates.push(feature.geometry.coordinates);
           });
       });
-
-      if (isCut) {
-        featureData.updateGeoJsonGeometry(newGeometry);
-        this.fireFeatureUpdatedEvent({
-          sourceFeatures: [featureData],
-          targetFeatures: [featureData],
-        });
-      }
     } else if (shapeGeoJson.geometry.type === 'LineString') {
       const resultGeoJson = lineSplit(shapeGeoJson as Feature<LineString>, cutGeoJson);
+      coordinates = resultGeoJson.features
+        .filter(
+          (feature) =>
+            !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson) &&
+            feature.geometry.type === 'LineString',
+        )
+        .map((feature) => feature.geometry.coordinates);
 
-      if (resultGeoJson.features.length === 0) {
-        return;
+      if (resultGeoJson.features.length > 0) {
+        isCut = true;
       }
+    }
 
-      const resultFeatures: Array<FeatureData> = [];
-      resultGeoJson.features
-        .filter((feature) => !isGeoJsonFeatureInPolygon(feature, bufferedCutGeoJson))
-        .forEach((feature) => {
-          const lineFeatureData = this.createLineFeature(turfClone(feature));
-          if (lineFeatureData) {
-            resultFeatures.push(lineFeatureData);
-          }
-        });
-      this.gm.features.delete(featureData);
-
-      if (!isNonEmptyArray(resultFeatures)) {
-        log.error('cutLineFeatureByPolygon: resultFeatures not found', resultGeoJson);
-        return;
+    if (isCut && coordinates.length) {
+      if (coordinates.length === 1) {
+        featureData.updateGeoJsonGeometry({ type: 'LineString', coordinates: coordinates[0] });
+      } else {
+        featureData.updateGeoJsonGeometry({ type: 'MultiLineString', coordinates: coordinates });
       }
-
       this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
-        targetFeatures: resultFeatures,
+        targetFeatures: [featureData],
       });
     }
-  }
-
-  createLineFeature(lineFeatureGeoJson: Feature<LineString>) {
-    const shapeGeoJson: GeoJsonShapeFeature = {
-      ...lineFeatureGeoJson,
-      properties: {
-        shape: 'line',
-      },
-    };
-
-    return this.gm.features.createFeature({
-      shapeGeoJson,
-      sourceName: SOURCES.main,
-    });
   }
 
   cutPolygonFeatureByPolygon(featureId: FeatureId, cutGeoJson: PolygonFeature) {
