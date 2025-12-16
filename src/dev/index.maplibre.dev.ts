@@ -1,14 +1,6 @@
-import {
-  loadDevShapes,
-  loadExternalGeoJson,
-  loadStressTestCircleMarkers,
-  loadStressTestFeatureCollection,
-} from '@/dev/fixtures/shapes.ts';
-import testShapes from '@/dev/fixtures/test-shapes.json';
 import mapLibreStyle from '@/dev/maplibre-style.ts';
 import { layerStyles } from '@/dev/styles/layer-styles.ts';
 import {
-  type GeoJsonImportFeature,
   Geoman,
   type GmOptionsData,
   type MapInstanceWithGeoman,
@@ -17,6 +9,9 @@ import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
+import { mount, unmount } from 'svelte';
+import LeftPanel from '@/dev/components/LeftPanel.svelte';
+import RightPanel from '@/dev/components/RightPanel.svelte';
 
 log.setLevel(log.levels.TRACE);
 
@@ -50,104 +45,115 @@ const gmOptions: PartialDeep<GmOptionsData> = {
   },
 };
 
-const buttonHandlers = {
-  '#b01': async () => {
-    const geoman = window.geoman;
-    if (!geoman) {
-      log.warn('Geoman is not initialized');
-    }
+// Panel state for persistence
+const STORAGE_KEY = 'gm-dev-panels';
 
-    if (document.querySelector('#custom-controls')) {
-      log.debug('Custom controls already added');
-      return;
-    }
+interface PanelState {
+  leftCollapsed: boolean;
+  rightCollapsed: boolean;
+}
 
-    const controlsContainer = document.createElement('div');
-    controlsContainer.id = 'custom-controls';
-    document.body.prepend(controlsContainer);
-    await geoman.addControls(controlsContainer);
-  },
-  '#b02': async () => {
-    const geoman = window.geoman;
-    if (!geoman) {
-      log.warn('Geoman is not initialized');
+const loadPanelState = (): PanelState => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
     }
+  } catch {
+    // ignore
+  }
+  return { leftCollapsed: false, rightCollapsed: false };
+};
 
-    geoman.removeControls();
-  },
-  '#b03': async () => {
-    log.debug('Button #b03 click');
-    const feature = window.geoman.features.get('gm_main', 'custom-feature-29');
-    feature?.updateGeoJsonGeometry({
-      type: 'LineString',
-      coordinates: [
-        [-7.405029296874261, 53.923817511191146],
-        [-6.548095703124517, 53.17977164467473],
-        [-9.843994140625, 52.42259189531441],
-        [-6.240478515624147, 51.52932168465881],
-        [-8.6593980745172985, 50.08551206469775],
-        [-4.1550035432676964, 50.75747515540502],
-      ],
+const savePanelState = (state: PanelState) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore
+  }
+};
+
+// Panel management
+let leftPanelComponent: ReturnType<typeof mount> | null = null;
+let rightPanelComponent: ReturnType<typeof mount> | null = null;
+const panelState = loadPanelState();
+
+const leftPanelElement = document.getElementById('dev-left-panel');
+const rightPanelElement = document.getElementById('dev-right-panel');
+
+// Apply initial panel state
+if (leftPanelElement && panelState.leftCollapsed) {
+  leftPanelElement.classList.add('collapsed');
+}
+if (rightPanelElement && panelState.rightCollapsed) {
+  rightPanelElement.classList.add('collapsed');
+}
+
+const toggleLeftPanel = () => {
+  if (!leftPanelElement) return;
+  leftPanelElement.classList.toggle('collapsed');
+  panelState.leftCollapsed = leftPanelElement.classList.contains('collapsed');
+  savePanelState(panelState);
+};
+
+const toggleRightPanel = () => {
+  if (!rightPanelElement) return;
+  rightPanelElement.classList.toggle('collapsed');
+  panelState.rightCollapsed = rightPanelElement.classList.contains('collapsed');
+  savePanelState(panelState);
+};
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl+1 or Cmd+1 to toggle left panel
+  if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+    e.preventDefault();
+    toggleLeftPanel();
+  }
+  // Ctrl+2 or Cmd+2 to toggle right panel
+  if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+    e.preventDefault();
+    toggleRightPanel();
+  }
+});
+
+const mountPanels = (geoman: Geoman, map: ml.Map) => {
+  if (leftPanelElement && !leftPanelComponent) {
+    leftPanelComponent = mount(LeftPanel, {
+      target: leftPanelElement,
+      props: {
+        geoman,
+      },
     });
-    feature?.setGeoJsonCustomProperties({ testX: 'test-555' });
-    feature?.setGeoJsonCustomProperties({ testY: 'test-777' });
-    feature?.deleteGeoJsonCustomProperties(['testX', '__gm_shape']);
-  },
-  '#b04': async () => {
-    const geoman = window.geoman;
-    if (!geoman) {
-      log.warn('Geoman is not initialized');
-    }
-    const geojson = geoman.features.exportGeoJson();
-    log.debug('total features count: ', geojson?.features?.length);
-    log.debug('geojson', JSON.stringify(geojson, null, 2));
-  },
-  // '#b05': async () => {
-  //   const geoman = window.geoman;
-  //   if (!geoman) {
-  //     log.warn('Geoman is not initialized')
-  //   }
-  // },
+  }
+
+  if (rightPanelElement && !rightPanelComponent) {
+    rightPanelComponent = mount(RightPanel, {
+      target: rightPanelElement,
+      props: {
+        geoman,
+        map,
+      },
+    });
+  }
 };
 
-const bindButtonHandlers = () => {
-  Object.entries(buttonHandlers).forEach(([selector, handler]) => {
-    document.querySelector(selector)?.addEventListener('click', handler);
-  });
-};
-
-const unbindButtonHandlers = () => {
-  Object.entries(buttonHandlers).forEach(([selector, handler]) => {
-    document.querySelector(selector)?.removeEventListener('click', handler);
-  });
-};
-
-const loadGeomanData = (geoman: Geoman) => {
-  log.debug(`Running mode: "${import.meta.env.MODE}"`);
-  log.debug('Geoman instance', geoman);
-
-  const loadDevShapesFlag: boolean = false;
-  const loadStressTest: boolean = false;
-  const loadCircleMarkerStressTest: boolean = false;
-  const loadExternalGeoJsonFlag: boolean = false;
-
-  const step = 0.2;
-  const size = 0.18;
-  if (loadDevShapesFlag) {
-    // loadDevShapes(geoman, devShapes);
-    loadDevShapes(geoman, testShapes as GeoJsonImportFeature[]);
+const unmountPanels = () => {
+  if (leftPanelComponent) {
+    unmount(leftPanelComponent);
+    leftPanelComponent = null;
   }
-  if (loadStressTest) {
-    loadStressTestFeatureCollection(geoman, step, size);
+  if (rightPanelComponent) {
+    unmount(rightPanelComponent);
+    rightPanelComponent = null;
   }
-  if (loadCircleMarkerStressTest) {
-    loadStressTestCircleMarkers(geoman, step);
+  // Clear panel content
+  if (leftPanelElement) {
+    leftPanelElement.innerHTML = '';
   }
-  if (loadExternalGeoJsonFlag) {
-    loadExternalGeoJson(geoman);
+  if (rightPanelElement) {
+    rightPanelElement.innerHTML = '';
   }
-
-  log.debug('Shapes loaded');
 };
 
 const initGeoman = async () => {
@@ -156,7 +162,6 @@ const initGeoman = async () => {
     existingMapInstance ||
     new ml.Map({
       container: 'dev-map',
-      // style: 'https://demotiles.maplibre.org/style.json',
       style: mapLibreStyle,
       center: [0, 51],
       zoom: 5,
@@ -173,41 +178,29 @@ const initGeoman = async () => {
   geoman = new Geoman(map, gmOptions);
   await geoman.waitForGeomanLoaded();
 
-  // geoman.setGlobalEventsListener((event) => {
-  //   if (event.name === '_gm:feature:before_create') {
-  //     log.debug('setGlobalEventsListener event', event);
-  //   }
-  // });
-
   map.on('gm:create', (event) => {
     console.log('feature geojson', event.feature.getGeoJson());
     console.log('source geojson', event.feature.source.getGeoJson());
-    // console.log('gm source geojson', event.feature.source.getGmGeoJson());
   });
 
-  return geoman;
+  return { geoman, map };
 };
 
-const onOffButtonElement = document.querySelector('#b05') as HTMLButtonElement | null;
+// Auto-initialize on load
+(async () => {
+  log.debug('Initializing Geoman dev environment');
+  const { geoman, map } = await initGeoman();
 
-onOffButtonElement?.addEventListener('click', async () => {
-  if (window.geoman) {
-    log.debug('Destroying Geoman');
-    unbindButtonHandlers();
-    await window.geoman.destroy();
-    // @ts-expect-error geoman is undefined
-    window.geoman = undefined;
-  } else {
-    log.debug('Initializing Geoman');
-    const geoman = await initGeoman();
-    loadGeomanData(geoman);
-    bindButtonHandlers();
-    window.geoman = geoman;
-    window.customData ??= { eventResults: {} };
-    window.customData.map = geoman.mapAdapter.mapInstance as MapInstanceWithGeoman;
+  window.geoman = geoman;
+  window.customData ??= { eventResults: {} };
+  window.customData.map = map as unknown as MapInstanceWithGeoman;
 
-    log.debug('geoman version:', __GEOMAN_VERSION__);
-  }
-});
+  // Mount the dev panels
+  mountPanels(geoman, map);
 
-onOffButtonElement?.click();
+  log.debug('geoman version:', __GEOMAN_VERSION__);
+  log.debug('Dev panels mounted');
+})();
+
+// Export for potential hot module replacement
+export { toggleLeftPanel, toggleRightPanel, unmountPanels };
