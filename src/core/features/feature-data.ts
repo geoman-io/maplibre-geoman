@@ -49,13 +49,25 @@ export class FeatureData {
     this.parent = parameters.parent;
     this.markers = new Map();
 
-    this.addGeoJson({
+    const geoJson = {
       ...parameters.geoJsonShapeFeature,
       properties: {
         ...this.parseExtraProperties(parameters.geoJsonShapeFeature),
         ...this.parseGmShapeProperties(parameters.geoJsonShapeFeature),
       },
-    });
+    };
+
+    if (parameters.skipSourceUpdate) {
+      // When hydrating from existing source, just set the internal GeoJSON
+      // without adding to the source (feature already exists there)
+      this._geoJson = {
+        ...geoJson,
+        id: this.id,
+      };
+      this.updateGeoJsonCenter(this._geoJson);
+    } else {
+      this.addGeoJson(geoJson);
+    }
   }
 
   get shape(): FeatureShape {

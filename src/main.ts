@@ -201,12 +201,15 @@ export class Geoman {
       delete this.mapAdapterInstance.mapInstance.gm;
     }
 
-    // Synchronously detach all events to prevent handlers from firing
-    this.events.bus.detachAllEvents();
-
     // Only perform full cleanup if initialization completed
     if (this.loaded) {
+      // removeControls() will detach events via control.onRemove()
       this.removeControls();
+      // Remove images that were added during initialization
+      this.mapAdapter.removeImage('default-marker');
+    } else {
+      // If not loaded, detach any events that may have been registered
+      this.events.bus.detachAllEvents();
     }
 
     if (removeSources) {

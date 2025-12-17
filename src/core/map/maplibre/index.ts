@@ -78,6 +78,16 @@ export class MaplibreAdapter extends BaseMapAdapter<
     }
   }
 
+  removeImage(id: string) {
+    try {
+      if (this.mapInstance.hasImage(id)) {
+        this.mapInstance.removeImage(id);
+      }
+    } catch {
+      // Map may have been destroyed, style is no longer available
+    }
+  }
+
   getBounds(): [LngLatTuple, LngLatTuple] {
     const mapBounds = this.mapInstance.getBounds();
     return mapBounds.toArray() as [LngLatTuple, LngLatTuple];

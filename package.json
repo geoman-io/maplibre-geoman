@@ -37,7 +37,8 @@
     "test": "VITE_GEOMAN_VERSION=free playwright test",
     "test:headed": "VITE_GEOMAN_VERSION=free playwright test --headed",
     "test:ui": "VITE_GEOMAN_VERSION=free playwright test --ui",
-    "test:debug": "VITE_GEOMAN_VERSION=free playwright test --debug"
+    "test:debug": "VITE_GEOMAN_VERSION=free playwright test --debug",
+    "prepare": "test -f dist/maplibre-geoman.es.js || npm run build"
   },
   "dependencies": {
     "@turf/area": "^7.3.1",
