@@ -35,6 +35,7 @@ export class DrawCircle extends BaseCircle {
         this.fireFinishEvent();
       }
     } else {
+      this.gm.features.clearSelection();
       this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 
       if (this.flags.featureCreateAllowed) {
