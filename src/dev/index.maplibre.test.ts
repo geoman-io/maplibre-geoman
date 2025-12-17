@@ -11,6 +11,12 @@ log.setLevel('debug');
 // Expose utilities for testing
 window.geomanUtils = geojsonUtils;
 
+// Hide dev panels in test mode - they take up space and interfere with tests
+const leftPanel = document.getElementById('dev-left-panel');
+const rightPanel = document.getElementById('dev-right-panel');
+if (leftPanel) leftPanel.style.display = 'none';
+if (rightPanel) rightPanel.style.display = 'none';
+
 const emptyStyle: ml.StyleSpecification = {
   version: 8,
   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',

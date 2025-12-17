@@ -237,7 +237,15 @@ export const getFeatureMarkersData = async ({
 
         if (position) {
           result.position = position as LngLatTuple;
-          result.point = geoman.mapAdapter.project(position as LngLatTuple);
+          // Get point relative to map container
+          const containerPoint = geoman.mapAdapter.project(position as LngLatTuple);
+          // Convert to viewport coordinates by adding container offset
+          const container = geoman.mapAdapter.getContainer();
+          const rect = container.getBoundingClientRect();
+          result.point = [
+            Math.round(containerPoint[0] + rect.left),
+            Math.round(containerPoint[1] + rect.top),
+          ];
           markers.push(result);
         }
       });

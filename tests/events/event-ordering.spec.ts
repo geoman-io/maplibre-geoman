@@ -457,7 +457,11 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
 
     // Draw a rectangle
     await page.click('#id_draw_rectangle');
+    await page.waitForTimeout(100); // Wait for draw mode to activate
+    await page.mouse.move(centerX - 50, centerY - 50);
     await page.mouse.click(centerX - 50, centerY - 50);
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 50, centerY + 50);
     await page.mouse.click(centerX + 50, centerY + 50);
 
     // Wait for event
@@ -528,7 +532,11 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
 
     // Draw a rectangle
     await page.click('#id_draw_rectangle');
+    await page.waitForTimeout(100); // Wait for draw mode to activate
+    await page.mouse.move(centerX - 50, centerY - 50);
     await page.mouse.click(centerX - 50, centerY - 50);
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 50, centerY + 50);
     await page.mouse.click(centerX + 50, centerY + 50);
 
     // Wait for event
