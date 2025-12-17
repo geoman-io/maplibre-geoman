@@ -17,8 +17,14 @@ export const getScreenCoordinatesByLngLat = async ({
         return null;
       }
 
+      // Get point relative to map container
       const point = geoman.mapAdapter.project(context.position);
-      return [Math.round(point[0]), Math.round(point[1])];
+
+      // Get map container's offset from viewport to convert to viewport coordinates
+      const container = geoman.mapAdapter.getContainer();
+      const rect = container.getBoundingClientRect();
+
+      return [Math.round(point[0] + rect.left), Math.round(point[1] + rect.top)];
     },
     { position },
   );
