@@ -131,12 +131,14 @@ export class ShapeMarkersHelper extends BaseHelper {
     const featureMarkerData = this.getFeatureMarkerByMouseEvent(event);
     this.activeMarker = featureMarkerData || null;
     this.activeFeatureData = featureMarkerData?.instance.parent || null;
-    this.linkedFeatures = this.activeFeatureData
-      ? this.gm.features.getLinkedFeatures(this.activeFeatureData).filter((f) => {
-          // what if linked feature has edit disabled and not the principal feature ?
-          return f.getShapeProperty('disableEdit') !== true;
-        })
-      : [];
+
+    if (this.activeFeatureData) {
+      const linkedFeatures = this.gm.features.getLinkedFeatures(this.activeFeatureData);
+      if (linkedFeatures.some((f) => f.getShapeProperty('disableEdit') === true)) {
+        return { next: true };
+      }
+      this.linkedFeatures = linkedFeatures;
+    }
 
     if (!(this.activeMarker && this.activeFeatureData)) {
       return { next: true };

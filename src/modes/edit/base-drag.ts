@@ -76,11 +76,15 @@ export abstract class BaseDrag extends BaseEdit {
     const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
+      const linkedFeatures = this.gm.features.getLinkedFeatures(featureData);
+
+      if (linkedFeatures.some((f) => f.getShapeProperty('disableEdit') === true)) {
+        return { next: true };
+      }
+
       this.featureData = featureData;
-      this.linkedFeatures = this.gm.features.getLinkedFeatures(featureData).filter((f) => {
-        // what if linked feature has edit disabled and not the principal feature ?
-        return f.getShapeProperty('disableEdit') !== true;
-      });
+      this.linkedFeatures = linkedFeatures;
+
       this.gm.mapAdapter.setDragPan(false);
 
       [this.featureData, ...this.linkedFeatures].map((featureData) => {
