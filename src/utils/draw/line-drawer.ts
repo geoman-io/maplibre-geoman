@@ -167,6 +167,7 @@ export class LineDrawer extends BaseDraw {
       const markerInfo = this.getClickedMarkerInfo(event);
       this.handleNextVertex(lngLat, markerInfo);
     } else if (this.isFeatureAllowed(lngLatToGeoJsonPoint(lngLat))) {
+      this.gm.features.clearSelection();
       this.startShape(lngLat);
     }
 
