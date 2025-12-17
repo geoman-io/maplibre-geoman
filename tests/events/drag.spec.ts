@@ -10,7 +10,7 @@ import centroid from '@turf/centroid';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '@tests/utils/basic.ts';
 import {
   getGeomanEventResultById,
-  saveGeomanEventResultToCustomData,
+  saveGeomanFeatureEventResultToCustomData,
 } from '@tests/utils/events.ts';
 import { getRenderedFeaturesData } from '@tests/utils/features.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
@@ -59,9 +59,17 @@ test.describe('Drag Events', () => {
       const targetPoint: ScreenCoordinates = [point[0] + dX, point[1] + dY];
 
       // Set up event listeners
-      const dragStartResultId = await saveGeomanEventResultToCustomData(page, 'dragstart');
-      const dragResultId = await saveGeomanEventResultToCustomData(page, 'drag');
-      const dragEndResultId = await saveGeomanEventResultToCustomData(page, 'dragend');
+      const dragStartResultId = await saveGeomanFeatureEventResultToCustomData(
+        page,
+        'dragstart',
+        feature.id,
+      );
+      const dragResultId = await saveGeomanFeatureEventResultToCustomData(page, 'drag', feature.id);
+      const dragEndResultId = await saveGeomanFeatureEventResultToCustomData(
+        page,
+        'dragend',
+        feature.id,
+      );
 
       // Perform drag operation
       await dragAndDrop(page, point, targetPoint);

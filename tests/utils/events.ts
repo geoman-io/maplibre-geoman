@@ -1,4 +1,4 @@
-import type { AnyEventName } from '@/types/index.ts';
+import type { AnyEventName, BaseEventListener, FeatureEditFwdEvent } from '@/types/index.ts';
 import type { Page } from '@playwright/test';
 import { GM_PREFIX } from '@/core/constants.ts';
 
@@ -29,6 +29,37 @@ export const saveGeomanEventResultToCustomData = async (
       );
     },
     { gmPrefix: GM_PREFIX, eventName, resultId },
+  );
+
+  return resultId;
+};
+
+export const saveGeomanFeatureEventResultToCustomData = async (
+  page: Page,
+  eventName: string,
+  featureId: string | number,
+): Promise<string> => {
+  const resultId = `${eventName}_${Math.floor(Math.random() * 10e8)}`;
+
+  await page.evaluate(
+    async (context) => {
+      if (!window.customData) {
+        window.customData = { rawEventResults: {} };
+      }
+
+      const eventName = `${context.gmPrefix}:${context.eventName}` as AnyEventName;
+      const listener = (event: FeatureEditFwdEvent) => {
+        if (event.feature.id === context.featureId) {
+          if (window.customData?.rawEventResults) {
+            window.customData.rawEventResults[context.resultId] = event;
+          }
+          window.geoman.mapAdapter.off(eventName, listener as BaseEventListener);
+        }
+      };
+
+      window.geoman.mapAdapter.on(eventName, listener as BaseEventListener);
+    },
+    { gmPrefix: GM_PREFIX, eventName, resultId, featureId },
   );
 
   return resultId;
