@@ -98,7 +98,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   onStartAction() {
     if (this.isShapeMarkerAllowed()) {
-      this.gm.markerPointer.enable({ invisibleMarker: false });
+      this.gm.markerPointer.enable({ invisibleMarker: true });
     }
 
     this.edgeMarkersAllowed = this.gm.getActiveEditModes().includes('change');

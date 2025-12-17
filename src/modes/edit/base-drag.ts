@@ -271,12 +271,6 @@ export abstract class BaseDrag extends BaseEdit {
       radius: this.gm.mapAdapter.getDistance(shapeCenter, circleRimLngLat),
     });
 
-    return {
-      type: 'Feature',
-      properties: {
-        shape: 'circle',
-      },
-      geometry: circlePolygon.geometry,
-    };
+    return circlePolygon;
   }
 }

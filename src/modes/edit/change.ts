@@ -227,13 +227,7 @@ export class EditChange extends BaseDrag {
       radius: this.gm.mapAdapter.getDistance(shapeCenter, lngLatEnd),
     });
 
-    return {
-      type: 'Feature',
-      properties: {
-        shape: 'circle',
-      },
-      geometry: circlePolygon.geometry,
-    };
+    return circlePolygon;
   }
 
   updateEllipse(args: GmEditMarkerMoveEvent): GeoJsonShapeFeature | null {

@@ -42,16 +42,16 @@ export class EditDrag extends BaseDrag {
     } else if (event.action === 'marker_captured') {
       [event.featureData, ...(event.linkedFeatures ?? [])].map((featureData) => {
         featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+        this.fireFeatureEditStartEvent({ feature: featureData });
       });
       this.flags.actionInProgress = true;
-      this.fireFeatureEditStartEvent({ feature: event.featureData });
       this.setCursorToPointer();
     } else if (event.action === 'marker_released') {
       this.previousLngLat = null;
       [event.featureData, ...(event.linkedFeatures ?? [])].map((featureData) => {
         featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+        this.fireFeatureEditEndEvent({ feature: featureData });
       });
-      this.fireFeatureEditEndEvent({ feature: event.featureData });
       this.flags.actionInProgress = false;
     }
     return { next: true };
