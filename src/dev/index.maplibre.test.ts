@@ -6,6 +6,8 @@ import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+document.body.classList.add('ci');
+
 log.setLevel('debug');
 
 // Expose utilities for testing

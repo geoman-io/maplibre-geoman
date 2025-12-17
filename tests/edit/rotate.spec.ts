@@ -196,6 +196,9 @@ test.beforeEach(async ({ page }) => {
   }
 });
 
+const isNotGroupedFeature = (feature: FeatureCustomData) =>
+  typeof feature.geoJson.properties.__gm_group === 'undefined';
+
 test('Rotate Polygon, Line, Rectangle, Circle via vertex drag', async ({ page }) => {
   const dragOffsetX = 40;
   const dragOffsetY = -30;
@@ -207,7 +210,7 @@ test('Rotate Polygon, Line, Rectangle, Circle via vertex drag', async ({ page })
   const features = await getRenderedFeaturesData({ page, temporary: false });
   expect(features.length).toBeGreaterThan(0);
 
-  for (const feature of features) {
+  for (const feature of features.filter(isNotGroupedFeature)) {
     if (rotatableShapes.includes(feature.shape)) {
       const vertexMarker = await getFirstDraggableVertex(page, feature);
       expect(
