@@ -170,7 +170,7 @@ export abstract class BaseDrag extends BaseEdit {
         forceMode: 'drag',
       });
       if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
-        featureData.updateGeoJsonProperties(updatedGeoJson.properties);
+        featureData._updateAllProperties(updatedGeoJson.properties);
       }
 
       if (isUpdated) {

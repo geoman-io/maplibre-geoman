@@ -107,9 +107,31 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     // todo: check possible performance issue here,
     // todo: feature properties updates applies geometry updates
     return {
-      add: diff.add,
+      add: diff.add?.map(this.sanitizeFeatureForAdd.bind(this)),
       update: diff.update?.map(this.convertFeatureToMlUpdateDiff.bind(this)),
       remove: diff.remove,
+    };
+  }
+
+  /**
+   * Sanitize a feature for addition to the source by removing undefined property values.
+   * MapLibre's protobuf encoding does not support undefined values (per MapBox vector tile spec).
+   */
+  sanitizeFeatureForAdd(feature: Feature): Feature {
+    if (!feature.properties) {
+      return feature;
+    }
+
+    const sanitizedProperties: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(feature.properties)) {
+      if (value !== undefined) {
+        sanitizedProperties[key] = value;
+      }
+    }
+
+    return {
+      ...feature,
+      properties: sanitizedProperties,
     };
   }
 
