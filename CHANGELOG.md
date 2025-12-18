@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.9] - Unreleased
+
+### Added
+
+- Property update methods (`updateGeoJsonProperties`, `setGeoJsonCustomProperties`, `updateGeoJsonCustomProperties`, `deleteGeoJsonCustomProperties`) now return `Promise<void>` that resolves when MapLibre commits the data ([#109](https://github.com/geoman-io/maplibre-geoman/pull/109))
+  - Enables ergonomic awaiting: `await e.feature.updateGeoJsonProperties({ myProp: 'value' })`
+  - Backwards compatible: existing code that doesn't await continues to work
+- New `sync()` method on `FeatureData` to explicitly wait for all pending source updates to be committed to MapLibre ([#109](https://github.com/geoman-io/maplibre-geoman/pull/109))
+
+### Fixed
+
+- `exportGeoJson()` and `source.getGeoJson()` now return correct data when called in `gm:create` event handlers ([#109](https://github.com/geoman-io/maplibre-geoman/pull/109), fixes [#84](https://github.com/geoman-io/maplibre-geoman/issues/84))
+  - Previously returned empty FeatureCollection because MapLibre source updates are async
+  - Now properly tracks update chains from queue to MapLibre commit, including handling `source.loaded=false` edge case
+  - Example usage:
+    ```typescript
+    map.on('gm:create', async (e) => {
+      await e.feature.updateGeoJsonProperties({ customProp: 'value' });
+      console.log(e.feature.source.getGeoJson()); // Works!
+      console.log(geoman.features.exportGeoJson()); // Works!
+    });
+    ```
+
+### Changed
+
+- `awaitDataUpdatesOnEvents` setting now only applies to `gm:create` events ([#109](https://github.com/geoman-io/maplibre-geoman/pull/109))
+  - Edit events like `gm:drag`, `gm:dragstart`, `gm:dragend` no longer wait for source updates, as the feature already exists in the source
+  - This prevents event ordering issues where drag events could fire out of sequence
+
 ## [0.5.8] - 2025-12-17
 
 ### Added
