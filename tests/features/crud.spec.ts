@@ -129,6 +129,238 @@ test.describe('Feature Management - CRUD Operations', () => {
       const features = await getRenderedFeaturesData({ page, temporary: false });
       expect(features.length).toBe(1);
     });
+
+    test('should overwrite existing feature with same ID when overwrite option is true', async () => {
+      const customId = 'overwrite-test-id';
+      const originalCoords = [0, 51] as const;
+      const newCoords = [5, 55] as const;
+
+      const feature1: GeoJsonImportFeature = {
+        id: customId,
+        type: 'Feature',
+        properties: { shape: 'marker' },
+        geometry: { type: 'Point', coordinates: [...originalCoords] },
+      };
+      const feature2: GeoJsonImportFeature = {
+        id: customId,
+        type: 'Feature',
+        properties: { shape: 'marker' },
+        geometry: { type: 'Point', coordinates: [...newCoords] },
+      };
+
+      const result = await page.evaluate(
+        ({ f1, f2 }) => {
+          // Import first feature
+          window.geoman.features.importGeoJson(f1);
+
+          // Import second feature with overwrite option
+          const importResult = window.geoman.features.importGeoJson(f2, { overwrite: true });
+
+          // Get the feature and check its coordinates
+          const fd = window.geoman.features.get('gm_main', f2.id as string);
+          const geoJson = fd?.getGeoJson();
+
+          return {
+            success: importResult.stats.success,
+            overwritten: importResult.stats.overwritten,
+            coordinates: geoJson?.geometry.coordinates,
+          };
+        },
+        { f1: feature1, f2: feature2 },
+      );
+
+      expect(result.success).toBe(1);
+      expect(result.overwritten).toBe(1);
+      expect(result.coordinates).toEqual([...newCoords]);
+
+      const features = await getRenderedFeaturesData({ page, temporary: false });
+      expect(features.length).toBe(1);
+    });
+
+    test('should not overwrite when overwrite option is false or not provided', async () => {
+      const customId = 'no-overwrite-test-id';
+
+      const feature1: GeoJsonImportFeature = {
+        id: customId,
+        type: 'Feature',
+        properties: { shape: 'marker' },
+        geometry: { type: 'Point', coordinates: [0, 51] },
+      };
+      const feature2: GeoJsonImportFeature = {
+        id: customId,
+        type: 'Feature',
+        properties: { shape: 'marker' },
+        geometry: { type: 'Point', coordinates: [5, 55] },
+      };
+
+      const result = await page.evaluate(
+        ({ f1, f2 }) => {
+          window.geoman.features.importGeoJson(f1);
+          const importResult = window.geoman.features.importGeoJson(f2, { overwrite: false });
+
+          return {
+            success: importResult.stats.success,
+            failed: importResult.stats.failed,
+            overwritten: importResult.stats.overwritten,
+          };
+        },
+        { f1: feature1, f2: feature2 },
+      );
+
+      expect(result.success).toBe(0);
+      expect(result.failed).toBe(1);
+      expect(result.overwritten).toBe(0);
+
+      const features = await getRenderedFeaturesData({ page, temporary: false });
+      expect(features.length).toBe(1);
+    });
+
+    test('should overwrite multiple features in batch import', async () => {
+      // First, import some features
+      const initialFeatures = {
+        type: 'FeatureCollection' as const,
+        features: [
+          {
+            id: 'batch-1',
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const },
+            geometry: { type: 'Point' as const, coordinates: [0, 50] },
+          },
+          {
+            id: 'batch-2',
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const },
+            geometry: { type: 'Point' as const, coordinates: [1, 51] },
+          },
+        ],
+      };
+
+      // Then, import updated features with one new and one existing
+      const updatedFeatures = {
+        type: 'FeatureCollection' as const,
+        features: [
+          {
+            id: 'batch-1', // existing - should be overwritten
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const },
+            geometry: { type: 'Point' as const, coordinates: [10, 60] },
+          },
+          {
+            id: 'batch-3', // new - should be added
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const },
+            geometry: { type: 'Point' as const, coordinates: [2, 52] },
+          },
+        ],
+      };
+
+      const result = await page.evaluate(
+        ({ initial, updated }) => {
+          window.geoman.features.importGeoJson(initial);
+          const importResult = window.geoman.features.importGeoJson(updated, { overwrite: true });
+
+          // Get coordinates of batch-1 to verify it was updated
+          const fd = window.geoman.features.get('gm_main', 'batch-1');
+          const geoJson = fd?.getGeoJson();
+
+          return {
+            total: importResult.stats.total,
+            success: importResult.stats.success,
+            overwritten: importResult.stats.overwritten,
+            batch1Coords: geoJson?.geometry.coordinates,
+          };
+        },
+        { initial: initialFeatures, updated: updatedFeatures },
+      );
+
+      expect(result.total).toBe(2);
+      expect(result.success).toBe(2);
+      expect(result.overwritten).toBe(1);
+      expect(result.batch1Coords).toEqual([10, 60]);
+
+      const features = await getRenderedFeaturesData({ page, temporary: false });
+      expect(features.length).toBe(3); // batch-1, batch-2, batch-3
+    });
+
+    test('should import with idPropertyName option', async () => {
+      const featureCollection = {
+        type: 'FeatureCollection' as const,
+        features: [
+          {
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const, customId: 'custom-id-1' },
+            geometry: { type: 'Point' as const, coordinates: [0, 51] },
+          },
+        ],
+      };
+
+      const result = await page.evaluate((fc) => {
+        const importResult = window.geoman.features.importGeoJson(fc, {
+          idPropertyName: 'customId',
+        });
+        const fd = window.geoman.features.get('gm_main', 'custom-id-1');
+        return {
+          success: importResult.stats.success,
+          featureExists: fd !== null,
+          featureId: fd?.id,
+        };
+      }, featureCollection);
+
+      expect(result.success).toBe(1);
+      expect(result.featureExists).toBe(true);
+      expect(result.featureId).toBe('custom-id-1');
+    });
+
+    test('should use idPropertyName with overwrite together', async () => {
+      const feature1 = {
+        type: 'FeatureCollection' as const,
+        features: [
+          {
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const, myId: 'shared-id' },
+            geometry: { type: 'Point' as const, coordinates: [0, 51] },
+          },
+        ],
+      };
+
+      const feature2 = {
+        type: 'FeatureCollection' as const,
+        features: [
+          {
+            type: 'Feature' as const,
+            properties: { shape: 'marker' as const, myId: 'shared-id' },
+            geometry: { type: 'Point' as const, coordinates: [10, 60] },
+          },
+        ],
+      };
+
+      const result = await page.evaluate(
+        ({ f1, f2 }) => {
+          window.geoman.features.importGeoJson(f1, { idPropertyName: 'myId' });
+          const importResult = window.geoman.features.importGeoJson(f2, {
+            idPropertyName: 'myId',
+            overwrite: true,
+          });
+
+          const fd = window.geoman.features.get('gm_main', 'shared-id');
+          const geoJson = fd?.getGeoJson();
+
+          return {
+            success: importResult.stats.success,
+            overwritten: importResult.stats.overwritten,
+            coordinates: geoJson?.geometry.coordinates,
+          };
+        },
+        { f1: feature1, f2: feature2 },
+      );
+
+      expect(result.success).toBe(1);
+      expect(result.overwritten).toBe(1);
+      expect(result.coordinates).toEqual([10, 60]);
+
+      const features = await getRenderedFeaturesData({ page, temporary: false });
+      expect(features.length).toBe(1);
+    });
   });
 
   test.describe('Read (get, has, forEach)', () => {
