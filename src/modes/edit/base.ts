@@ -115,7 +115,7 @@ export abstract class BaseEdit extends BaseAction {
 
     featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
     if (!isEqual(featureData.getGeoJson().properties, featureGeoJson.properties)) {
-      featureData.updateGeoJsonProperties(featureGeoJson.properties);
+      featureData._updateAllProperties(featureGeoJson.properties);
     }
 
     this.fireFeatureUpdatedEvent({

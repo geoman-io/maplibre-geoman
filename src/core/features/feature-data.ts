@@ -119,7 +119,7 @@ export class FeatureData {
       return;
     }
     this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`] = value;
-    this.updateGeoJsonProperties(this._geoJson.properties);
+    this._updateAllProperties(this._geoJson.properties);
   }
 
   deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
@@ -128,7 +128,7 @@ export class FeatureData {
       return;
     }
     delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-    this.updateGeoJsonProperties(this._geoJson.properties);
+    this._updateAllProperties(this._geoJson.properties);
   }
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
@@ -215,7 +215,22 @@ export class FeatureData {
     this.markers = new Map();
   }
 
-  updateGeoJsonGeometry(geometry: BasicGeometry) {
+  /**
+   * Updates the geometry of this feature.
+   *
+   * @param geometry - The new geometry for the feature
+   *
+   * @example
+   * // Update a marker's position
+   * feature.updateGeometry({ type: 'Point', coordinates: [10, 52] });
+   *
+   * // Update a polygon's coordinates
+   * feature.updateGeometry({
+   *   type: 'Polygon',
+   *   coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
+   * });
+   */
+  updateGeometry(geometry: BasicGeometry) {
     const featureGeoJson = this.getGeoJson();
     if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
@@ -232,7 +247,133 @@ export class FeatureData {
     });
   }
 
-  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
+  /**
+   * @deprecated Use `updateGeometry()` instead.
+   */
+  updateGeoJsonGeometry(geometry: BasicGeometry) {
+    this.updateGeometry(geometry);
+  }
+
+  /**
+   * Updates custom properties on this feature. Properties are merged with existing ones.
+   * Set a property value to `undefined` to delete it.
+   *
+   * Internal Geoman properties (prefixed with `gm_`) cannot be modified through this method
+   * and will be preserved.
+   *
+   * @param properties - Object containing properties to update or delete (set to undefined)
+   *
+   * @example
+   * // Add or update properties
+   * feature.updateProperties({ color: 'red', size: 10 });
+   *
+   * // Delete a property
+   * feature.updateProperties({ color: undefined });
+   *
+   * // Mix of updates and deletions
+   * feature.updateProperties({ color: 'blue', oldProp: undefined });
+   */
+  updateProperties(properties: Record<string, unknown>) {
+    if (!this._geoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
+    const protectedKeys = new Set(Object.keys(mandatoryProperties));
+
+    // Build new properties: start with existing, apply updates (respecting undefined as delete)
+    const newProperties: Record<string, unknown> = {};
+
+    // Copy existing properties (excluding ones being deleted)
+    for (const [key, value] of Object.entries(this._geoJson.properties)) {
+      if (key in properties) {
+        // This key is being updated - will be handled below
+        continue;
+      }
+      newProperties[key] = value;
+    }
+
+    // Apply updates (skip protected keys, handle undefined as delete signal)
+    for (const [key, value] of Object.entries(properties)) {
+      if (protectedKeys.has(key)) {
+        // Skip protected gm_ properties
+        continue;
+      }
+      if (value !== undefined) {
+        newProperties[key] = value;
+      }
+      // If value is undefined, we simply don't add it (deletion)
+    }
+
+    // Always preserve mandatory properties
+    Object.assign(newProperties, mandatoryProperties);
+
+    // Update internal state (without undefined markers)
+    this._geoJson.properties = newProperties as ShapeGeoJsonProperties;
+
+    // Build diff properties with undefined markers for MapLibre's removeProperties
+    const diffProperties: Record<string, unknown> = { ...newProperties };
+    for (const [key, value] of Object.entries(properties)) {
+      if (protectedKeys.has(key)) continue;
+      if (value === undefined) {
+        diffProperties[key] = undefined; // Signal to MapLibre to remove this property
+      }
+    }
+
+    const diff = { update: [{ ...this._geoJson, properties: diffProperties }] };
+    this.gm.features.updateManager.updateSource({
+      diff,
+      sourceName: this.sourceName,
+    });
+  }
+
+  /**
+   * Replaces all custom properties on this feature. Existing custom properties are removed
+   * and replaced with the provided ones.
+   *
+   * Internal Geoman properties (prefixed with `gm_`) cannot be modified and will be preserved.
+   *
+   * @param properties - Object containing the new properties (replaces all existing custom properties)
+   *
+   * @example
+   * // Replace all custom properties
+   * feature.setProperties({ name: 'New Feature', category: 'poi' });
+   */
+  setProperties(properties: Record<string, unknown>) {
+    if (!this._geoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
+
+    // Filter out undefined values and protected keys from input
+    const filteredProperties: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(properties)) {
+      if (value !== undefined && !(key in mandatoryProperties)) {
+        filteredProperties[key] = value;
+      }
+    }
+
+    this._geoJson.properties = {
+      ...filteredProperties,
+      ...mandatoryProperties,
+    } as ShapeGeoJsonProperties;
+
+    const diff = { update: [this._geoJson] };
+    this.gm.features.updateManager.updateSource({
+      diff,
+      sourceName: this.sourceName,
+    });
+  }
+
+  /**
+   * Internal method to update all properties including Geoman system properties.
+   * This should only be used by internal Geoman code (edit modes, draw modes, etc.).
+   *
+   * @internal
+   * @param properties - Properties to merge with existing ones
+   */
+  _updateAllProperties(properties: Partial<ShapeGeoJsonProperties>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -246,64 +387,36 @@ export class FeatureData {
     });
   }
 
+  /**
+   * @deprecated Use `updateProperties()` instead. Set property value to `undefined` to delete it.
+   */
+  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
+    this._updateAllProperties(properties);
+  }
+
+  /**
+   * @deprecated Use `setProperties()` instead.
+   */
   setGeoJsonCustomProperties(properties: Feature['properties']) {
-    if (!this._geoJson) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-
-    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
-
-    this._geoJson.properties = { ...properties, ...mandatoryProperties };
-
-    const diff = { update: [this._geoJson] };
-    this.gm.features.updateManager.updateSource({
-      diff,
-      sourceName: this.sourceName,
-    });
+    this.setProperties(properties || {});
   }
 
+  /**
+   * @deprecated Use `updateProperties()` instead.
+   */
   updateGeoJsonCustomProperties(properties: Feature['properties']) {
-    if (!this._geoJson) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-
-    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
-
-    this._geoJson.properties = {
-      ...this._geoJson.properties,
-      ...properties,
-      ...mandatoryProperties,
-    };
-
-    const diff = { update: [this._geoJson] };
-    this.gm.features.updateManager.updateSource({
-      diff,
-      sourceName: this.sourceName,
-    });
+    this.updateProperties(properties || {});
   }
 
+  /**
+   * @deprecated Use `updateProperties({ propName: undefined })` instead.
+   */
   deleteGeoJsonCustomProperties(fieldNames: Array<string>) {
-    if (!this._geoJson) {
-      throw new Error(`Feature not found: "${this.id}"`);
+    const deleteProps: Record<string, undefined> = {};
+    for (const fieldName of fieldNames) {
+      deleteProps[fieldName] = undefined;
     }
-
-    const deniedKeys = typedKeys(propertyValidators).map(
-      (fieldName) => `${FEATURE_PROPERTY_PREFIX}${fieldName}`,
-    );
-
-    const keysToDelete = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
-    const newProperties = { ...this._geoJson.properties };
-
-    keysToDelete.forEach((key) => {
-      delete this._geoJson!.properties[key];
-      newProperties[key] = undefined;
-    });
-
-    const diff = { update: [{ ...this._geoJson, properties: newProperties }] };
-    this.gm.features.updateManager.updateSource({
-      diff,
-      sourceName: this.sourceName,
-    });
+    this.updateProperties(deleteProps);
   }
 
   convertToPolygon(): boolean {

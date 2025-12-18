@@ -10,6 +10,39 @@ All notable changes to this project will be documented in this file.
   - When `overwrite: true`, existing features with matching IDs are deleted before importing the new feature
   - Import result now includes `stats.overwritten` count to track how many features were replaced
 
+- New simplified feature data API for `FeatureData` ([#77](https://github.com/geoman-io/maplibre-geoman/issues/77))
+  - `updateProperties(properties)` - Merge properties with existing ones; set a property to `undefined` to delete it
+  - `setProperties(properties)` - Replace all custom properties completely
+  - `updateGeometry(geometry)` - Update the feature's geometry
+  - Property methods protect internal Geoman properties (prefixed with `gm_`) from modification
+  - Example usage:
+    ```typescript
+    // Add or update properties
+    feature.updateProperties({ color: 'red', size: 10 });
+
+    // Delete a property by setting to undefined
+    feature.updateProperties({ color: undefined });
+
+    // Replace all custom properties
+    feature.setProperties({ name: 'New Feature' });
+
+    // Update geometry
+    feature.updateGeometry({ type: 'Point', coordinates: [10, 52] });
+    ```
+
+- `exportGeoJsonFromSource()` method to export GeoJSON directly from MapLibre's underlying source
+  - Reads from MapLibre's serialized source state (via `serialize()`)
+  - Useful for debugging, verification, or synchronization with external systems
+  - For most use cases, prefer `exportGeoJson()` which uses Geoman's internal state and is always up-to-date
+  - Example usage:
+    ```typescript
+    // Export from internal Geoman state (recommended)
+    const geoJson = geoman.features.exportGeoJson();
+
+    // Export from MapLibre's source (for debugging/verification)
+    const sourceGeoJson = geoman.features.exportGeoJsonFromSource();
+    ```
+
 ### Changed
 
 - **BREAKING**: `importGeoJson()` signature changed from `importGeoJson(geoJson, idPropertyName?)` to `importGeoJson(geoJson, options?)`
@@ -17,7 +50,22 @@ All notable changes to this project will be documented in this file.
   - Now: `geoman.features.importGeoJson(geoJson, { idPropertyName: 'customIdProperty' })`
   - This allows for additional options like `overwrite`
 
+### Deprecated
+
+- `updateGeoJsonProperties()` - Use `updateProperties()` instead (or `_updateAllProperties()` for internal use)
+- `setGeoJsonCustomProperties()` - Use `setProperties()` instead
+- `updateGeoJsonCustomProperties()` - Use `updateProperties()` instead
+- `deleteGeoJsonCustomProperties()` - Use `updateProperties({ propName: undefined })` instead
+- `updateGeoJsonGeometry()` - Use `updateGeometry()` instead
+
 ### Fixed
+
+- Property deletion now works correctly without causing MapLibre encoding errors ([#77](https://github.com/geoman-io/maplibre-geoman/issues/77))
+  - **Root cause**: Setting properties to `undefined` caused "unknown feature value" errors because the Mapbox Vector Tile specification does not support undefined values. When a feature with undefined properties was merged into a pending "add" operation (via `mergeGeoJsonDiff`), the undefined values were passed directly to MapLibre's `updateData()` without conversion.
+  - **Solution**:
+    1. Added `sanitizeFeatureForAdd()` in `MaplibreSource` to strip undefined values from features being added to the source
+    2. The existing `convertFeatureToMlUpdateDiff()` correctly converts undefined values to MapLibre's `removeProperties` array for update operations
+  - **Technical details**: MapLibre's `GeoJSONSourceDiff` supports property removal via `GeoJSONFeatureDiff.removeProperties`, but the "add" path bypasses this conversion. The fix ensures both add and update paths handle undefined values correctly.
 
 - Dev panel "Clear All Shapes" now properly clears the internal featureStore ([#112](https://github.com/geoman-io/maplibre-geoman/pull/112))
   - **Root cause**: `clearAllShapes` was calling `feature.delete()` which only removed features from the MapLibre source but left stale entries in `featureStore`, causing "feature already exists" errors on reimport.

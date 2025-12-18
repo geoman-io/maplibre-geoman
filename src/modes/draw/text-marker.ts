@@ -118,6 +118,6 @@ export class DrawTextMarker extends BaseDraw {
     if (!this.featureData) {
       return;
     }
-    this.featureData.updateGeoJsonProperties({ shape: this.shape, text });
+    this.featureData._updateAllProperties({ shape: this.shape, text });
   }
 }
