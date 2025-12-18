@@ -22,8 +22,7 @@ permissions:
 
 env:
   FILE_NAME_PREFIX: geoman-io-maplibre-geoman-free
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  NODE_VERSION: "20"
+  NODE_VERSION: "24"
 
 jobs:
   # Validate release
@@ -36,12 +35,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -101,10 +100,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -126,7 +125,7 @@ jobs:
       - name: Build and package
         run: just pack
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: release-artifacts
           path: |
@@ -142,10 +141,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: release-artifacts
           path: pub/
@@ -176,17 +175,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
           registry-url: "https://registry.npmjs.org"
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: release-artifacts
           path: ./pub
@@ -195,9 +194,6 @@ jobs:
         run: rm -f pub/${{ env.FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
 
       - name: Publish to NPM
-        shell: bash
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
             cd pub && npm publish --tag beta --provenance --access public
