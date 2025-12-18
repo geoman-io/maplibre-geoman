@@ -237,12 +237,15 @@ export class EventForwarder {
     const prefix = type === 'system' ? GM_SYSTEM_PREFIX : GM_PREFIX;
     const eventNameWithPrefix = `${prefix}:${eventName}`;
 
-    // Wait for pending source updates when the setting is enabled and
-    // the payload contains a feature with a source. This ensures feature
-    // data is accessible in event handlers via exportGeoJson().
+    // Wait for pending source updates when the setting is enabled and this is a 'create' event.
+    // Only 'create' events need to wait - for edit events like drag, the feature already exists
+    // in the source. Waiting on all feature events could cause event ordering issues.
+    // This ensures feature data is accessible in event handlers via exportGeoJson().
     // Users can disable this via settings.awaitDataUpdatesOnEvents for faster async updates.
     const shouldAwaitUpdates =
       this.gm.options.settings.awaitDataUpdatesOnEvents &&
+      type === 'converted' &&
+      eventName === 'create' &&
       'feature' in payload &&
       payload.feature?.source;
 

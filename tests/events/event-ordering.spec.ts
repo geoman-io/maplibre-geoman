@@ -567,4 +567,86 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
       window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
     });
   });
+
+  test('await updateGeoJsonProperties() should wait for MapLibre commit (issue #84)', async ({
+    page,
+  }) => {
+    // Ensure setting is true (default)
+    await page.evaluate(() => {
+      window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
+    });
+
+    const { width, height } = await page.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Set up event listener that updates properties and then checks source
+    const resultId = `_syncTest_${Date.now()}`;
+    await page.evaluate(
+      (context) => {
+        if (!window.customData) {
+          window.customData = { rawEventResults: {} };
+        }
+        window.customData.rawEventResults = window.customData.rawEventResults || {};
+
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        window.geoman.mapAdapter.once('gm:create', (async (event: any) => {
+          const featureId = event.feature.id;
+
+          // Await the updateGeoJsonProperties call directly
+          await event.feature.updateGeoJsonProperties({ testProp: 'testValue' });
+
+          // After await: feature with updated properties should be in source
+          const sourceGeoJson = event.feature.source.getGeoJson();
+          const featureInSource = sourceGeoJson.features.find(
+            (f: { id?: string | number }) => f.id === featureId
+          );
+          const hasProperty = featureInSource?.properties?.testProp === 'testValue';
+
+          window.customData.rawEventResults![context.resultId] = {
+            featureId,
+            hasProperty,
+          };
+        }) as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+      },
+      { resultId },
+    );
+
+    // Draw a rectangle
+    await page.click('#id_draw_rectangle');
+    await page.waitForTimeout(100); // Wait for draw mode to activate
+    await page.mouse.move(centerX - 50, centerY - 50);
+    await page.mouse.click(centerX - 50, centerY - 50);
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 50, centerY + 50);
+    await page.mouse.click(centerX + 50, centerY + 50);
+
+    // Wait for event and async operations
+    await page.waitForTimeout(500);
+
+    const result = await page.evaluate(
+      (context) => {
+        return window.customData.rawEventResults?.[context.resultId] as
+          | { featureId: string; hasProperty: boolean }
+          | undefined;
+      },
+      { resultId },
+    );
+
+    expect(result, 'Create event should have been captured').toBeDefined();
+    if (result) {
+      expect(
+        result.hasProperty,
+        'After await updateGeoJsonProperties(), updated properties should be in source (issue #84)',
+      ).toBe(true);
+    }
+
+    // Exit drawing mode
+    await page.click('#id_draw_rectangle');
+  });
 });

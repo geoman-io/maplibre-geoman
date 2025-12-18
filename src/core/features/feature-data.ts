@@ -220,7 +220,23 @@ export class FeatureData {
     });
   }
 
-  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
+  /**
+   * Update properties on the feature's GeoJSON.
+   *
+   * Returns a Promise that resolves when the update is committed to MapLibre.
+   * You can await this if you need to read from the source immediately after.
+   *
+   * @example
+   * ```typescript
+   * // Fire-and-forget (existing behavior still works)
+   * e.feature.updateGeoJsonProperties({ myProp: 'value' });
+   *
+   * // Or await to ensure data is committed before reading
+   * await e.feature.updateGeoJsonProperties({ myProp: 'value' });
+   * console.log(e.feature.source.getGeoJson()); // Will include the update
+   * ```
+   */
+  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -232,9 +248,16 @@ export class FeatureData {
       diff,
       sourceName: this.sourceName,
     });
+
+    return this.sync();
   }
 
-  setGeoJsonCustomProperties(properties: Feature['properties']) {
+  /**
+   * Replace all custom properties on the feature's GeoJSON (preserves mandatory Geoman properties).
+   *
+   * Returns a Promise that resolves when the update is committed to MapLibre.
+   */
+  setGeoJsonCustomProperties(properties: Feature['properties']): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -248,9 +271,16 @@ export class FeatureData {
       diff,
       sourceName: this.sourceName,
     });
+
+    return this.sync();
   }
 
-  updateGeoJsonCustomProperties(properties: Feature['properties']) {
+  /**
+   * Update custom properties on the feature's GeoJSON (merges with existing).
+   *
+   * Returns a Promise that resolves when the update is committed to MapLibre.
+   */
+  updateGeoJsonCustomProperties(properties: Feature['properties']): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -268,9 +298,16 @@ export class FeatureData {
       diff,
       sourceName: this.sourceName,
     });
+
+    return this.sync();
   }
 
-  deleteGeoJsonCustomProperties(fieldNames: Array<string>) {
+  /**
+   * Delete custom properties from the feature's GeoJSON.
+   *
+   * Returns a Promise that resolves when the update is committed to MapLibre.
+   */
+  deleteGeoJsonCustomProperties(fieldNames: Array<string>): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -292,6 +329,8 @@ export class FeatureData {
       diff,
       sourceName: this.sourceName,
     });
+
+    return this.sync();
   }
 
   updateGeoJsonCenter(geoJson: GeoJsonShapeFeature) {
@@ -377,5 +416,26 @@ export class FeatureData {
   delete() {
     this.removeGeoJson();
     this.removeMarkers();
+  }
+
+  /**
+   * Wait for all pending source updates to be committed to MapLibre.
+   *
+   * Use this method when you need to ensure that changes made via methods like
+   * `updateGeoJsonProperties()`, `updateGeoJsonGeometry()`, etc. are fully
+   * committed before reading from the source.
+   *
+   * @example
+   * ```typescript
+   * map.on('gm:create', async (e) => {
+   *   e.feature.updateGeoJsonProperties({ customProp: 'value' });
+   *   await e.feature.sync();
+   *   // Now safe to read from source
+   *   console.log(e.feature.source.getGeoJson());
+   * });
+   * ```
+   */
+  async sync(): Promise<void> {
+    await this.gm.features.updateManager.waitForPendingUpdates(this.sourceName);
   }
 }
