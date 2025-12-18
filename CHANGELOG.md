@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Circle features now appear in `source.getGeoJson()` immediately after creation ([#110](https://github.com/geoman-io/maplibre-geoman/pull/110))
+  - **Root cause**: When creating circles, `setShapeProperty()` was called to set the center, which queued an `update` diff before the `add` diff. MapLibre processes diffs in order (remove → add → update), so the update for the non-existent feature was silently ignored.
+  - **Solution**: Set the center property directly on the GeoJSON object before queuing the add diff, avoiding the race condition.
+
+- Drag events (`gm:dragstart`, `gm:drag`, `gm:dragend`) now fire in correct order to user event listeners ([#110](https://github.com/geoman-io/maplibre-geoman/pull/110))
+  - **Root cause**: Event forwarding to users was fire-and-forget (`processEvent().then()`), causing concurrent async processing with no ordering guarantee.
+  - **Solution**: Chain event forwarding using a promise queue to ensure events are delivered in the order they were fired internally.
+
+- Improved `waitForPendingUpdates` reliability for edge cases where MapLibre's internal `_isUpdatingWorker` guard caused early promise resolution ([#110](https://github.com/geoman-io/maplibre-geoman/pull/110))
+
+### Changed
+
+- `exportGeoJson()` now uses internal `FeatureData` state (`getGmGeoJson()`) instead of MapLibre's `serialize()`, ensuring newly created features are always included even during event handlers ([#110](https://github.com/geoman-io/maplibre-geoman/pull/110))
+
 ## [0.5.8] - 2025-12-17
 
 ### Added
