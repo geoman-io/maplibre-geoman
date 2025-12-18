@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.10] - 2025-12-18
+
+### Changed
+
+- Updated maplibre-gl to 5.15.0
+- Expanded peerDependencies to support maplibre-gl >=5.14.0
+- Increased Playwright CI workers from 1 to 4 for faster test runs
+- CI now cancels in-progress runs when new commits are pushed to a PR
+
 ## [0.5.9] - 2025-12-18
 
 ### Fixed
