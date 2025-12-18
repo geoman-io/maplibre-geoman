@@ -43,15 +43,23 @@ import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
 export class Features {
+  /** @internal */
   gm: Geoman;
 
+  /** @internal */
   featureCounter: number = 0;
+  /** @internal */
   featureStore: FeatureStore = new Map<FeatureId, FeatureData>();
+  /** @internal */
   featureStoreAllowedSources: Array<FeatureSourceName> = [SOURCES.main, SOURCES.temporary];
 
+  /** @internal */
   sources: SourcesStorage;
+  /** @internal */
   defaultSourceName: FeatureSourceName = SOURCES.main;
+  /** @internal */
   updateManager: SourceUpdateManager;
+  /** @internal */
   layers: Array<BaseLayer>;
 
   constructor(gm: Geoman) {
@@ -69,10 +77,12 @@ export class Features {
     return this.filteredForEach((featureData) => !featureData.temporary);
   }
 
+  /** @internal */
   get tmpForEach() {
     return this.filteredForEach((featureData) => featureData.temporary);
   }
 
+  /** @internal */
   init() {
     if (Object.values(this.sources).some((source) => source !== null)) {
       log.warn('features.init(): features are already initialized');
@@ -95,6 +105,7 @@ export class Features {
   /**
    * Hydrates the feature store from existing sources and syncs the ID counter.
    * This is called during init to restore state when remounting on preserved sources.
+   * @internal
    */
   hydrateFromExistingSources() {
     let maxCounter = 0;
@@ -146,6 +157,7 @@ export class Features {
     }
   }
 
+  /** @internal */
   getNewFeatureId(shapeGeoJson: GeoJsonShapeFeature): FeatureId {
     this.featureCounter += 1;
 
@@ -163,6 +175,7 @@ export class Features {
     return newFeatureId;
   }
 
+  /** @internal */
   filteredForEach(filterFn: (featureData: FeatureData) => boolean) {
     return (callbackfn: ForEachFeatureDataCallbackFn): void => {
       this.featureStore.forEach((featureData, featureId, featureStore) => {
@@ -187,6 +200,7 @@ export class Features {
     return null;
   }
 
+  /** @internal */
   add(featureData: FeatureData) {
     if (this.featureStore.has(featureData.id)) {
       log.error(`features.add: feature with the id "${featureData.id}" already exists`);
@@ -198,10 +212,12 @@ export class Features {
     }
   }
 
+  /** @internal */
   setDefaultSourceName(sourceName: FeatureSourceName) {
     this.defaultSourceName = sourceName;
   }
 
+  /** @internal */
   createSource(sourceName: FeatureSourceName) {
     const source = this.gm.mapAdapter.addSource(sourceName, {
       type: 'FeatureCollection',
@@ -233,6 +249,7 @@ export class Features {
     }
   }
 
+  /** @internal */
   deleteAll() {
     this.featureStore.forEach((featureData) => {
       featureData.delete();
@@ -240,6 +257,7 @@ export class Features {
     this.featureStore.clear();
   }
 
+  /** @internal */
   getFeatureByMouseEvent({
     event,
     sourceNames,
@@ -259,6 +277,7 @@ export class Features {
     return features.length ? features[0] : null;
   }
 
+  /** @internal */
   getFeaturesByGeoJsonBounds({
     geoJson,
     sourceNames,
@@ -272,6 +291,7 @@ export class Features {
     return this.getFeaturesByScreenBounds({ bounds: polygonScreenBounds, sourceNames });
   }
 
+  /** @internal */
   getFeaturesByScreenBounds({
     bounds,
     sourceNames,
@@ -285,6 +305,7 @@ export class Features {
     });
   }
 
+  /** @internal */
   createFeature({
     featureId,
     shapeGeoJson,
@@ -387,6 +408,7 @@ export class Features {
     return result;
   }
 
+  /** @internal */
   importGeoJsonFeature(shapeGeoJson: GeoJsonImportFeature): FeatureData | null {
     // add an externally created GeoJSON
     const sourceName: FeatureSourceName = this.defaultSourceName;
@@ -405,6 +427,7 @@ export class Features {
     });
   }
 
+  /** @internal */
   getAll(): FeatureCollection {
     return this.exportGeoJson();
   }
@@ -425,6 +448,7 @@ export class Features {
     });
   }
 
+  /** @internal */
   asGeoJsonFeatureCollection({
     shapeTypes,
     sourceNames,
@@ -476,6 +500,7 @@ export class Features {
     return resultFeatureCollection;
   }
 
+  /** @internal */
   convertSourceToGm(inputSource: BaseSource): Array<FeatureData> {
     // adds an externally created source to the features store
     // the method converts the source/layers to internal format
@@ -501,6 +526,7 @@ export class Features {
     return features;
   }
 
+  /** @internal */
   addGeoJsonFeature({
     shapeGeoJson,
     sourceName,
@@ -542,6 +568,7 @@ export class Features {
     });
   }
 
+  /** @internal */
   createLayers(): Array<BaseLayer> {
     const layers: Array<BaseLayer> = [];
 
@@ -565,6 +592,7 @@ export class Features {
     return layers;
   }
 
+  /** @internal */
   createGenericLayer({
     sourceName,
     shapeNames,
@@ -589,6 +617,7 @@ export class Features {
     return this.gm.mapAdapter.addLayer(layerOptions);
   }
 
+  /** @internal */
   getGenericLayerName({
     sourceName,
     shapeNames,
@@ -615,6 +644,7 @@ export class Features {
     return null;
   }
 
+  /** @internal */
   getFeatureShapeByGeoJson(shapeGeoJson: Feature): ShapeName | null {
     const SHAPE_MAP: { [key in Geometry['type']]?: ShapeName } = {
       Point: 'marker',
@@ -632,6 +662,7 @@ export class Features {
     return SHAPE_MAP[shapeGeoJson.geometry.type] || null;
   }
 
+  /** @internal */
   createMarkerFeature({
     parentFeature,
     coordinate,
@@ -659,6 +690,7 @@ export class Features {
     });
   }
 
+  /** @internal */
   updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLatTuple) {
     markerFeatureData.updateGeoJsonGeometry({
       type: 'Point',
@@ -666,6 +698,7 @@ export class Features {
     });
   }
 
+  /** @internal */
   fireFeatureCreatedEvent(featureData: FeatureData) {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GmDrawFeatureCreatedEvent = {
