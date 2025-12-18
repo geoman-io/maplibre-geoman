@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Dev panel "Clear All Shapes" now properly clears the internal featureStore ([#112](https://github.com/geoman-io/maplibre-geoman/pull/112))
+  - **Root cause**: `clearAllShapes` was calling `feature.delete()` which only removed features from the MapLibre source but left stale entries in `featureStore`, causing "feature already exists" errors on reimport.
+  - **Solution**: Use `geoman.features.deleteAll()` which properly clears both the source and featureStore.
+
 ## [0.5.9] - 2025-12-18
 
 ### Fixed

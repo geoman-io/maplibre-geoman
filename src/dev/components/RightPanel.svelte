@@ -304,18 +304,10 @@
 
   const clearAllShapes = () => {
     if (!geoman) return;
-    const geoJson = geoman.features.exportGeoJson();
-    const featureIds = geoJson?.features?.map((f) => f.id).filter(Boolean) || [];
-    featureIds.forEach((id) => {
-      try {
-        const feature = geoman.features.get('gm_main', id as string);
-        feature?.delete();
-      } catch {
-        // ignore
-      }
-    });
+    const count = geoman.features.featureStore.size;
+    geoman.features.deleteAll();
     updateDebugInfo();
-    logEvent('shapes:cleared', { count: featureIds.length });
+    logEvent('shapes:cleared', { count });
   };
 
   // GeoJSON tools
