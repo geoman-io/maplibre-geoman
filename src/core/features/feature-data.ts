@@ -229,7 +229,10 @@ export class FeatureData {
     this.markers = new Map();
   }
 
-  /** @internal */
+  /**
+   * Updates the geometry of the feature.
+   * Use this to programmatically move or reshape features.
+   */
   updateGeoJsonGeometry(geometry: BasicGeometry) {
     const featureGeoJson = this.getGeoJson();
     if (!featureGeoJson) {
@@ -260,23 +263,6 @@ export class FeatureData {
     this._geoJson.properties = { ...this._geoJson.properties, ...properties };
     const diff = { update: [this._geoJson] };
 
-    this.gm.features.updateManager.updateSource({
-      diff,
-      sourceName: this.sourceName,
-    });
-  }
-
-  /** @internal */
-  setGeoJsonCustomProperties(properties: Feature['properties']) {
-    if (!this._geoJson) {
-      throw new Error(`Feature not found: "${this.id}"`);
-    }
-
-    const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
-
-    this._geoJson.properties = { ...properties, ...mandatoryProperties };
-
-    const diff = { update: [this._geoJson] };
     this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
