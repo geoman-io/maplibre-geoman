@@ -127,7 +127,7 @@ export class FeatureData {
       return;
     }
     this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`] = value;
-    this.updateGeoJsonProperties(this._geoJson.properties);
+    this.updateGeoJsonInternalProperties(this._geoJson.properties);
   }
 
   /** @internal */
@@ -137,7 +137,7 @@ export class FeatureData {
       return;
     }
     delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-    this.updateGeoJsonProperties(this._geoJson.properties);
+    this.updateGeoJsonInternalProperties(this._geoJson.properties);
   }
 
   /** @internal */
@@ -247,8 +247,12 @@ export class FeatureData {
     });
   }
 
-  /** @internal */
-  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
+  /**
+   * Updates the raw GeoJSON properties including internal shape properties.
+   * Used internally by setShapeProperty and deleteShapeProperty.
+   * @internal
+   */
+  updateGeoJsonInternalProperties(properties: Partial<ShapeGeoJsonProperties>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -279,7 +283,11 @@ export class FeatureData {
     });
   }
 
-  updateGeoJsonCustomProperties(properties: Feature['properties']) {
+  /**
+   * Updates user-defined properties on the feature while preserving internal shape properties.
+   * Use this to add or modify custom metadata on features.
+   */
+  updateGeoJsonProperties(properties: Feature['properties']) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -299,7 +307,11 @@ export class FeatureData {
     });
   }
 
-  deleteGeoJsonCustomProperties(fieldNames: Array<string>) {
+  /**
+   * Deletes user-defined properties from the feature.
+   * Internal shape properties (prefixed with __gm_) cannot be deleted.
+   */
+  deleteGeoJsonProperties(fieldNames: Array<string>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
