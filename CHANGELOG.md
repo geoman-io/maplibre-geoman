@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `overwrite` option for `importGeoJson()` to replace existing features with the same ID ([#113](https://github.com/geoman-io/maplibre-geoman/issues/113))
+  - When `overwrite: true`, existing features with matching IDs are deleted before importing the new feature
+  - Import result now includes `stats.overwritten` count to track how many features were replaced
+
+### Changed
+
+- **BREAKING**: `importGeoJson()` signature changed from `importGeoJson(geoJson, idPropertyName?)` to `importGeoJson(geoJson, options?)`
+  - Previously: `geoman.features.importGeoJson(geoJson, 'customIdProperty')`
+  - Now: `geoman.features.importGeoJson(geoJson, { idPropertyName: 'customIdProperty' })`
+  - This allows for additional options like `overwrite`
+
 ### Fixed
 
 - Dev panel "Clear All Shapes" now properly clears the internal featureStore ([#112](https://github.com/geoman-io/maplibre-geoman/pull/112))

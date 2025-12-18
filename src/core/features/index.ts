@@ -17,6 +17,7 @@ import {
   type GeoJsonShapeFeatureCollection,
   type Geoman,
   type GmDrawFeatureCreatedEvent,
+  type ImportGeoJsonOptions,
   type LngLatTuple,
   type MarkerData,
   type PartialLayerStyle,
@@ -334,14 +335,17 @@ export class Features {
 
   importGeoJson(
     geoJson: GeoJsonImportFeatureCollection | GeoJsonImportFeature,
-    idPropertyName?: string,
+    options?: ImportGeoJsonOptions,
   ) {
+    const opts = options ?? {};
+
     const features = 'features' in geoJson ? geoJson.features : [geoJson];
     const result = {
       stats: {
         total: 0,
         success: 0,
         failed: 0,
+        overwritten: 0,
       },
       addedFeatures: [] as Array<FeatureData>,
     };
@@ -352,12 +356,23 @@ export class Features {
 
       const featureGeoJson = fixGeoJsonFeature(feature);
       if (featureGeoJson) {
-        if (idPropertyName) {
-          const customId = getCustomFeatureId(featureGeoJson, idPropertyName);
+        if (opts.idPropertyName) {
+          const customId = getCustomFeatureId(featureGeoJson, opts.idPropertyName);
           if (customId) {
             featureGeoJson.id = customId;
           }
         }
+
+        // Handle overwrite: delete existing feature with same ID before importing
+        if (opts.overwrite) {
+          const featureId = (featureGeoJson.id ??
+            featureGeoJson.properties?.[FEATURE_ID_PROPERTY]) as FeatureId | undefined;
+          if (featureId && this.featureStore.has(featureId)) {
+            this.delete(featureId);
+            result.stats.overwritten += 1;
+          }
+        }
+
         featureData = this.importGeoJsonFeature(featureGeoJson);
       }
 

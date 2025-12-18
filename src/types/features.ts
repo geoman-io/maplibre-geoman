@@ -50,3 +50,10 @@ export type PrefixedFeatureShapeProperties = WithPrefixedKeys<
   FeatureShapeProperties,
   typeof FEATURE_PROPERTY_PREFIX
 >;
+
+export type ImportGeoJsonOptions = {
+  /** Property name to use as feature ID (e.g., 'id', 'customId') */
+  idPropertyName?: string;
+  /** If true, existing features with the same ID will be replaced */
+  overwrite?: boolean;
+};
