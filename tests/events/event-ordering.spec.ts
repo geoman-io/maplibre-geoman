@@ -516,13 +516,15 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
         /* eslint-disable @typescript-eslint/no-explicit-any */
         window.geoman.mapAdapter.once('gm:create', ((event: any) => {
           const featureId = event.feature.id;
-          const sourceGeoJson = event.feature.source.getGeoJson();
-          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          // Use getGmGeoJson() which returns from internal FeatureData state
+          // getGeoJson() uses MapLibre's serialize() which may not have the data yet
+          const gmGeoJson = event.feature.source.getGmGeoJson();
+          const featureInSource = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
 
           window.customData.rawEventResults![context.resultId] = {
             featureId,
             featureInSource,
-            sourceFeatureCount: sourceGeoJson.features.length,
+            sourceFeatureCount: gmGeoJson.features.length,
           };
         }) as any);
         /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -553,11 +555,11 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
 
     expect(result, 'Create event should have been captured').toBeDefined();
     if (result) {
-      // With the fix, getGeoJson() now returns from internal FeatureData state,
+      // getGmGeoJson() returns from internal FeatureData state,
       // so features are always immediately available regardless of awaitDataUpdatesOnEvents
       expect(
         result.featureInSource,
-        'Feature should be in source via getGeoJson() (uses internal state)',
+        'Feature should be in source via getGmGeoJson() (uses internal state)',
       ).toBe(true);
     }
 
