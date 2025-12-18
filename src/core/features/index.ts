@@ -430,7 +430,10 @@ export class Features {
       const source = this.sources[sourceName];
 
       if (source) {
-        const sourceFeatureCollection = source.getGeoJson();
+        // Use getGmGeoJson() to get features from internal FeatureData state
+        // This ensures newly created features are included even if MapLibre's
+        // serialize() hasn't been updated yet (e.g., during gm:create event)
+        const sourceFeatureCollection = source.getGmGeoJson();
 
         sourceFeatureCollection.features
           .filter((feature) => !!feature)

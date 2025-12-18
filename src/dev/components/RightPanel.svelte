@@ -349,6 +349,18 @@
   const clearGeoJsonInput = () => {
     geojsonInput = '';
   };
+
+  const getSourceGeojson = () => {
+    if (!geoman) return;
+    const source = geoman.features.sources['gm_main'];
+    if (!source) {
+      logEvent('source:geojson-error', { error: 'gm_main source not found' });
+      return;
+    }
+    const geoJson = source.getGeoJson();
+    geojsonInput = prettyPrint ? JSON.stringify(geoJson, null, 2) : JSON.stringify(geoJson);
+    logEvent('source:geojson', { source: 'gm_main', featureCount: geoJson?.features?.length || 0 });
+  };
 </script>
 
 <div class="dev-panel-header">
@@ -533,6 +545,9 @@
       <div class="dev-btn-row">
         <button class="dev-btn" onclick={exportGeoJson}>Dump GeoJSON</button>
         <button class="dev-btn" onclick={copyToClipboard}>Copy to Clipboard</button>
+      </div>
+      <div class="dev-btn-row">
+        <button class="dev-btn" onclick={getSourceGeojson}>Get Source GeoJSON (gm_main)</button>
       </div>
       <div class="dev-control-row">
         <label for="pretty-print">Pretty Print</label>

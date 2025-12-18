@@ -34,15 +34,36 @@ export const saveGeomanEventResultToCustomData = async (
   return resultId;
 };
 
-export const getGeomanEventResultById = async (page: Page, resultId: string) => {
+export const getGeomanEventResultById = async (
+  page: Page,
+  resultId: string,
+  options: { timeout?: number } = {},
+) => {
+  const timeout = options.timeout ?? 20000; // Default 20s timeout
   const handle = await page.waitForFunction(
     (context) => {
       return window.customData?.rawEventResults?.[context.resultId] || null;
     },
     { resultId },
+    { timeout },
   );
 
   const value = await handle.jsonValue();
   await handle.dispose();
   return value;
+};
+
+/**
+ * Clear a specific event result from customData.
+ * Useful when testing multiple shapes in a loop to avoid interference.
+ */
+export const clearGeomanEventResult = async (page: Page, resultId: string) => {
+  await page.evaluate(
+    (context) => {
+      if (window.customData?.rawEventResults) {
+        delete window.customData.rawEventResults[context.resultId];
+      }
+    },
+    { resultId },
+  );
 };

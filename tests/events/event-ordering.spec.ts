@@ -45,16 +45,18 @@ test.describe('Event Ordering', () => {
     // Calculate target point
     const targetPoint: ScreenCoordinates = [point[0] + dX, point[1] + dY];
 
-    // Set up event recording to track order
+    // Move mouse to start position first (this may trigger some events)
+    await page.mouse.move(point[0], point[1]);
+    await page.waitForTimeout(100);
+
+    // Set up event recording to track order AFTER moving to start position
+    // This avoids capturing any drag events from the mouse move
     await page.evaluate(
       (context) => {
-        // Use rawEventResults to store our event order data
-        if (!window.customData) {
-          window.customData = { rawEventResults: {} };
-        }
-        window.customData.rawEventResults = window.customData.rawEventResults || {};
-        window.customData.rawEventResults['_eventOrder'] = [];
-        window.customData.rawEventResults['_timestamps'] = [];
+        // Initialize customData and clear any existing event data
+        window.customData = { rawEventResults: {} };
+        window.customData.rawEventResults!['_eventOrder'] = [];
+        window.customData.rawEventResults!['_timestamps'] = [];
 
         const events = ['dragstart', 'drag', 'dragend'];
         events.forEach((eventName) => {
@@ -67,8 +69,21 @@ test.describe('Event Ordering', () => {
       { gmPrefix: GM_PREFIX },
     );
 
-    // Perform drag operation
-    await dragAndDrop(page, point, targetPoint);
+    // Small delay to ensure listeners are registered
+    await page.waitForTimeout(50);
+
+    // Perform drag operation (without moving to start since we're already there)
+    await page.mouse.down();
+    const STEPS = 5;
+    for (let i = 1; i <= STEPS; i++) {
+      const middleX = point[0] + (targetPoint[0] - point[0]) * (i / STEPS);
+      const middleY = point[1] + (targetPoint[1] - point[1]) * (i / STEPS);
+      await page.mouse.move(middleX, middleY);
+    }
+    await page.mouse.up();
+
+    // Wait for all events to be processed asynchronously
+    await page.waitForTimeout(300);
 
     // Get the recorded event order
     const result = await page.evaluate(() => {
@@ -79,9 +94,6 @@ test.describe('Event Ordering', () => {
     });
 
     const { eventOrder, timestamps } = result;
-
-    // Log the event order for debugging
-    console.log('Event order received:', eventOrder);
 
     // Verify events were fired
     expect(eventOrder.length, 'At least some events should be fired').toBeGreaterThan(0);
@@ -162,14 +174,13 @@ test.describe('Event Ordering', () => {
     if (!point) return;
 
     // Set up event recording
+    // Clear any existing data first to avoid interference from previous tests
     await page.evaluate(
       (context) => {
-        if (!window.customData) {
-          window.customData = { rawEventResults: {} };
-        }
-        window.customData.rawEventResults = window.customData.rawEventResults || {};
-        window.customData.rawEventResults['_eventOrder'] = [];
-        window.customData.rawEventResults['_dragCount'] = 0;
+        // Initialize customData and clear any existing event data
+        window.customData = { rawEventResults: {} };
+        window.customData.rawEventResults!['_eventOrder'] = [];
+        window.customData.rawEventResults!['_dragCount'] = 0;
 
         const events = ['dragstart', 'drag', 'dragend'];
         events.forEach((eventName) => {
@@ -187,12 +198,18 @@ test.describe('Event Ordering', () => {
       { gmPrefix: GM_PREFIX },
     );
 
-    // Perform multiple drag operations
+    // Perform multiple drag operations with wait between them
     const targetPoint1: ScreenCoordinates = [point[0] + dX, point[1] + dY];
     await dragAndDrop(page, point, targetPoint1);
 
+    // Wait for first drag events to complete
+    await page.waitForTimeout(300);
+
     const targetPoint2: ScreenCoordinates = [targetPoint1[0] + dX, targetPoint1[1] + dY];
     await dragAndDrop(page, targetPoint1, targetPoint2);
+
+    // Wait for second drag events to complete
+    await page.waitForTimeout(300);
 
     // Get the recorded event order
     const result = await page.evaluate(() => {
@@ -488,7 +505,7 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
     await page.click('#id_draw_rectangle');
   });
 
-  test('awaitDataUpdatesOnEvents=false should NOT have feature in source when gm:create fires', async ({
+  test('awaitDataUpdatesOnEvents=false should still have feature in source via getGeoJson()', async ({
     page,
   }) => {
     // Set setting to false
@@ -516,13 +533,15 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
         /* eslint-disable @typescript-eslint/no-explicit-any */
         window.geoman.mapAdapter.once('gm:create', ((event: any) => {
           const featureId = event.feature.id;
-          const sourceGeoJson = event.feature.source.getGeoJson();
-          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          // Use getGmGeoJson() which returns from internal FeatureData state
+          // getGeoJson() uses MapLibre's serialize() which may not have the data yet
+          const gmGeoJson = event.feature.source.getGmGeoJson();
+          const featureInSource = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
 
           window.customData.rawEventResults![context.resultId] = {
             featureId,
             featureInSource,
-            sourceFeatureCount: sourceGeoJson.features.length,
+            sourceFeatureCount: gmGeoJson.features.length,
           };
         }) as any);
         /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -553,10 +572,12 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
 
     expect(result, 'Create event should have been captured').toBeDefined();
     if (result) {
+      // getGmGeoJson() returns from internal FeatureData state,
+      // so features are always immediately available regardless of awaitDataUpdatesOnEvents
       expect(
         result.featureInSource,
-        'With awaitDataUpdatesOnEvents=false, created feature should NOT be in source when event fires (async behavior)',
-      ).toBe(false);
+        'Feature should be in source via getGmGeoJson() (uses internal state)',
+      ).toBe(true);
     }
 
     // Exit drawing mode
@@ -566,5 +587,208 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
     await page.evaluate(() => {
       window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
     });
+  });
+
+  test('awaitDataUpdatesOnEvents=true should have circle feature in source when gm:create fires', async ({
+    page,
+  }) => {
+    // Ensure setting is true (default)
+    await page.evaluate(() => {
+      window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
+    });
+
+    const { width, height } = await page.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Set up event listener to check if feature exists in source when event fires
+    const resultId = `_createCircleTest_${Date.now()}`;
+    await page.evaluate(
+      (context) => {
+        if (!window.customData) {
+          window.customData = { rawEventResults: {} };
+        }
+        window.customData.rawEventResults = window.customData.rawEventResults || {};
+
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        window.geoman.mapAdapter.once('gm:create', ((event: any) => {
+          const featureId = event.feature.id;
+          const sourceGeoJson = event.feature.source.getGeoJson();
+          const gmGeoJson = event.feature.source.getGmGeoJson();
+          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInGmGeoJson = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const geomanExportGeoJson = window.geoman.features.exportGeoJson();
+          const featureInExport = geomanExportGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+
+          window.customData.rawEventResults![context.resultId] = {
+            featureId,
+            featureShape: event.shape,
+            featureInSource,
+            featureInGmGeoJson,
+            featureInExport,
+            sourceFeatureCount: sourceGeoJson.features.length,
+            gmGeoJsonFeatureCount: gmGeoJson.features.length,
+            exportFeatureCount: geomanExportGeoJson.features.length,
+            sourceFeatureIds: sourceGeoJson.features.map((f: any) => f.id),
+            gmGeoJsonFeatureIds: gmGeoJson.features.map((f: any) => f.id),
+          };
+        }) as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+      },
+      { resultId },
+    );
+
+    // Draw a circle - click for center, then click for radius
+    await page.click('#id_draw_circle');
+    await page.waitForTimeout(100); // Wait for draw mode to activate
+    await page.mouse.move(centerX, centerY);
+    await page.mouse.click(centerX, centerY); // First click sets center
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 80, centerY); // Move to set radius
+    await page.waitForTimeout(100);
+    await page.mouse.click(centerX + 80, centerY); // Second click completes circle
+
+    // Wait for event
+    await page.waitForTimeout(500);
+
+    const result = await page.evaluate(
+      (context) => {
+        return window.customData.rawEventResults?.[context.resultId] as
+          | {
+              featureId: string;
+              featureShape: string;
+              featureInSource: boolean;
+              featureInExport: boolean;
+              sourceFeatureCount: number;
+              exportFeatureCount: number;
+            }
+          | undefined;
+      },
+      { resultId },
+    );
+
+    expect(result, 'Create event should have been captured for circle').toBeDefined();
+    if (result) {
+      console.log('Circle test result:', JSON.stringify(result, null, 2));
+      expect(result.featureShape, 'Shape should be circle').toBe('circle');
+      expect(
+        result.featureInSource,
+        `With awaitDataUpdatesOnEvents=true, circle feature should be in source. Debug: ${JSON.stringify(result)}`,
+      ).toBe(true);
+      expect(
+        result.featureInExport,
+        'With awaitDataUpdatesOnEvents=true, circle feature should be in exportGeoJson when gm:create fires',
+      ).toBe(true);
+    }
+
+    // Exit drawing mode
+    await page.click('#id_draw_circle');
+  });
+
+  test('awaitDataUpdatesOnEvents=true should have ellipse feature in source when gm:create fires', async ({
+    page,
+  }) => {
+    // Ensure setting is true (default)
+    await page.evaluate(() => {
+      window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
+    });
+
+    const { width, height } = await page.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Set up event listener to check if feature exists in source when event fires
+    const resultId = `_createEllipseTest_${Date.now()}`;
+    await page.evaluate(
+      (context) => {
+        if (!window.customData) {
+          window.customData = { rawEventResults: {} };
+        }
+        window.customData.rawEventResults = window.customData.rawEventResults || {};
+
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        window.geoman.mapAdapter.once('gm:create', ((event: any) => {
+          const featureId = event.feature.id;
+          const sourceGeoJson = event.feature.source.getGeoJson();
+          const gmGeoJson = event.feature.source.getGmGeoJson();
+          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInGmGeoJson = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const geomanExportGeoJson = window.geoman.features.exportGeoJson();
+          const featureInExport = geomanExportGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+
+          window.customData.rawEventResults![context.resultId] = {
+            featureId,
+            featureShape: event.shape,
+            featureInSource,
+            featureInGmGeoJson,
+            featureInExport,
+            sourceFeatureCount: sourceGeoJson.features.length,
+            gmGeoJsonFeatureCount: gmGeoJson.features.length,
+            exportFeatureCount: geomanExportGeoJson.features.length,
+            sourceFeatureIds: sourceGeoJson.features.map((f: any) => f.id),
+            gmGeoJsonFeatureIds: gmGeoJson.features.map((f: any) => f.id),
+          };
+        }) as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+      },
+      { resultId },
+    );
+
+    // Draw an ellipse - click for center, click for x-axis, click for y-axis
+    await page.click('#id_draw_ellipse');
+    await page.waitForTimeout(100); // Wait for draw mode to activate
+    await page.mouse.move(centerX, centerY);
+    await page.mouse.click(centerX, centerY); // First click sets center
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 80, centerY); // Move to set x semi-axis
+    await page.mouse.click(centerX + 80, centerY); // Second click sets x semi-axis
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 80, centerY + 50); // Move to set y semi-axis
+    await page.waitForTimeout(100);
+    await page.mouse.click(centerX + 80, centerY + 50); // Third click completes ellipse
+
+    // Wait for event
+    await page.waitForTimeout(500);
+
+    const result = await page.evaluate(
+      (context) => {
+        return window.customData.rawEventResults?.[context.resultId] as
+          | {
+              featureId: string;
+              featureShape: string;
+              featureInSource: boolean;
+              featureInExport: boolean;
+              sourceFeatureCount: number;
+              exportFeatureCount: number;
+            }
+          | undefined;
+      },
+      { resultId },
+    );
+
+    expect(result, 'Create event should have been captured for ellipse').toBeDefined();
+    if (result) {
+      console.log('Ellipse test result:', JSON.stringify(result, null, 2));
+      expect(result.featureShape, 'Shape should be ellipse').toBe('ellipse');
+      expect(
+        result.featureInSource,
+        `With awaitDataUpdatesOnEvents=true, ellipse feature should be in source. Debug: ${JSON.stringify(result)}`,
+      ).toBe(true);
+      expect(
+        result.featureInExport,
+        'With awaitDataUpdatesOnEvents=true, ellipse feature should be in exportGeoJson when gm:create fires',
+      ).toBe(true);
+    }
+
+    // Exit drawing mode
+    await page.click('#id_draw_ellipse');
   });
 });

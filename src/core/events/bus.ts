@@ -30,6 +30,10 @@ export class EventBus {
     this.forwarder = new EventForwarder(gm);
   }
 
+  // Track pending event forwarding to maintain event ordering
+  // Events are processed sequentially to ensure dragstart fires before drag, etc.
+  private pendingForward: Promise<void> = Promise.resolve();
+
   fireEvent(eventName: GmEventName, payload: GmSystemEvent) {
     const eventHandler = this.gmEventHandlers[eventName];
     if (!eventHandler) {
@@ -39,8 +43,11 @@ export class EventBus {
     const { controlHandler } = eventHandler;
     controlHandler(payload);
 
-    // make events available for end users
-    this.forwarder.processEvent(eventName, payload).then();
+    // Chain event forwarding to maintain order
+    // This ensures dragstart completes before drag events are forwarded
+    this.pendingForward = this.pendingForward.then(() =>
+      this.forwarder.processEvent(eventName, payload),
+    );
   }
 
   attachEvents(handlers: EventHandlers) {

@@ -7,6 +7,7 @@ import type {
 import test, { expect } from '@playwright/test';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '@tests/utils/basic.ts';
 import {
+  clearGeomanEventResult,
   getGeomanEventResultById,
   saveGeomanEventResultToCustomData,
 } from '@tests/utils/events.ts';
@@ -84,8 +85,14 @@ test.describe('Rotate Events', () => {
         const rotateResultId = await saveGeomanEventResultToCustomData(page, 'rotate');
         const rotateEndResultId = await saveGeomanEventResultToCustomData(page, 'rotateend');
 
+        // Small wait to ensure event listeners are registered
+        await page.waitForTimeout(50);
+
         // Perform rotation operation
         await dragAndDrop(page, initialScreenPoint, targetScreenPoint);
+
+        // Wait a bit for events to be processed
+        await page.waitForTimeout(100);
 
         const allowedStartShapes = ROTATE_START_SHAPE_MAP[feature.shape] || ['unknown'];
         const endShape = ROTATE_END_SHAPE_MAP[feature.shape] || 'unknown';
@@ -125,6 +132,11 @@ test.describe('Rotate Events', () => {
           expect(rotateEndEvent.feature, 'Event feature must be defined').toBeDefined();
           expect(rotateEndEvent.shape, `Shape should be ${endShape}`).toEqual(endShape);
         }
+
+        // Clean up event results to avoid interference with next shape
+        await clearGeomanEventResult(page, rotateStartResultId);
+        await clearGeomanEventResult(page, rotateResultId);
+        await clearGeomanEventResult(page, rotateEndResultId);
 
         // Small wait between shapes to let events settle
         await page.waitForTimeout(100);

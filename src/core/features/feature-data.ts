@@ -64,7 +64,12 @@ export class FeatureData {
         ...geoJson,
         id: this.id,
       };
-      this.updateGeoJsonCenter(this._geoJson);
+      // For circles, ensure center property is set (but don't queue an update
+      // since the feature already exists in the source)
+      if (this.shape === 'circle') {
+        const shapeCentroid = geoJsonPointToLngLat(centroid(this._geoJson));
+        this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
+      }
     } else {
       this.addGeoJson(geoJson);
     }
@@ -173,7 +178,14 @@ export class FeatureData {
       ...geoJson,
       id: this.id,
     };
-    this.updateGeoJsonCenter(this._geoJson);
+    // For circles, calculate and set center property directly on _geoJson
+    // before adding to source. We must not call setShapeProperty here because
+    // it would queue an update diff before the add diff, causing MapLibre
+    // to receive an update for a non-existent feature.
+    if (this.shape === 'circle') {
+      const shapeCentroid = geoJsonPointToLngLat(centroid(this._geoJson));
+      this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
+    }
 
     this.gm.features.updateManager.updateSource({
       diff: { add: [this._geoJson] },
@@ -292,13 +304,6 @@ export class FeatureData {
       diff,
       sourceName: this.sourceName,
     });
-  }
-
-  updateGeoJsonCenter(geoJson: GeoJsonShapeFeature) {
-    if (this.shape === 'circle') {
-      const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
-      this.setShapeProperty('center', shapeCentroid);
-    }
   }
 
   convertToPolygon(): boolean {
