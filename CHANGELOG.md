@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Mark internal APIs with `@internal` JSDoc tags for clearer public/private API boundary ([#114](https://github.com/geoman-io/maplibre-geoman/pull/114))
+- Rename `updateGeoJsonCustomProperties()` to `updateGeoJsonProperties()` and `deleteGeoJsonCustomProperties()` to `deleteGeoJsonProperties()` for simpler naming ([#114](https://github.com/geoman-io/maplibre-geoman/pull/114))
+- `updateGeoJsonGeometry()` is now part of the public API for programmatic feature manipulation ([#114](https://github.com/geoman-io/maplibre-geoman/pull/114))
+
+### Removed
+
+- Remove unused `setGeoJsonCustomProperties()` method ([#114](https://github.com/geoman-io/maplibre-geoman/pull/114))
+
+### Other
+
 - Updated maplibre-gl to 5.15.0
 - Expanded peerDependencies to support maplibre-gl >=5.14.0
 - Increased Playwright CI workers from 1 to 4 for faster test runs
