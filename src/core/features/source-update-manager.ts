@@ -17,7 +17,8 @@ export class SourceUpdateManager {
   autoUpdatesEnabled: boolean = true;
   delayedSourceUpdateMethods: SourceUpdateMethods;
   // Track pending update promises per source to allow waiting for MapLibre to commit data
-  pendingUpdatePromises: { [key in FeatureSourceName]?: Promise<void> };
+  // Using an array to track multiple concurrent promises (prevents overwriting if rapid updates occur)
+  pendingUpdatePromises: { [key in FeatureSourceName]?: Promise<void>[] };
 
   constructor(gm: Geoman) {
     this.gm = gm;
@@ -36,7 +37,10 @@ export class SourceUpdateManager {
   }
 
   updatesPending(sourceName: FeatureSourceName): boolean {
-    return !!this.updateStorage[sourceName]?.length || !!this.pendingUpdatePromises[sourceName];
+    return (
+      !!this.updateStorage[sourceName]?.length ||
+      !!(this.pendingUpdatePromises[sourceName]?.length ?? 0)
+    );
   }
 
   getFeatureId(feature: Feature) {
@@ -78,13 +82,7 @@ export class SourceUpdateManager {
         // MapLibre's updateData with waitForCompletion=true returns a Promise that
         // resolves when the data is committed to the source
         const updatePromise = source.updateData(combinedDiff);
-        this.pendingUpdatePromises[sourceName] = updatePromise;
-        updatePromise.then(() => {
-          // Clear the promise once the update is complete
-          if (this.pendingUpdatePromises[sourceName] === updatePromise) {
-            delete this.pendingUpdatePromises[sourceName];
-          }
-        });
+        this.addPendingPromise(sourceName, updatePromise);
       }
 
       if (this.updateStorage[sourceName].length > 0) {
@@ -97,13 +95,66 @@ export class SourceUpdateManager {
   }
 
   /**
+   * Add a pending promise to the tracking array for a source.
+   * Automatically removes the promise from the array when it resolves.
+   */
+  private addPendingPromise(sourceName: FeatureSourceName, promise: Promise<void>): void {
+    if (!this.pendingUpdatePromises[sourceName]) {
+      this.pendingUpdatePromises[sourceName] = [];
+    }
+    this.pendingUpdatePromises[sourceName].push(promise);
+
+    // Remove from array when the promise resolves (success or failure)
+    promise.finally(() => {
+      const promises = this.pendingUpdatePromises[sourceName];
+      if (promises) {
+        const idx = promises.indexOf(promise);
+        if (idx !== -1) {
+          promises.splice(idx, 1);
+        }
+        // Clean up empty arrays
+        if (promises.length === 0) {
+          delete this.pendingUpdatePromises[sourceName];
+        }
+      }
+    });
+  }
+
+  /**
    * Wait for any pending MapLibre source updates to complete.
    * This ensures data is committed before events are fired.
+   *
+   * When there are queued updates in updateStorage that haven't been processed yet
+   * (due to throttling), this method flushes them immediately and waits for completion.
+   *
+   * Note: We call updateData() directly here rather than going through updateSourceActual()
+   * because updateSourceActual() checks `!source.loaded` and may delay processing.
+   * When waiting for pending updates (e.g., for event handlers), we need immediate processing.
+   *
+   * This is safe and won't cause duplicates because getCombinedDiff() atomically drains
+   * the storage - whoever calls it first gets the diffs, subsequent calls get null.
    */
   async waitForPendingUpdates(sourceName: FeatureSourceName): Promise<void> {
-    const pendingPromise = this.pendingUpdatePromises[sourceName];
-    if (pendingPromise) {
-      await pendingPromise;
+    const source = this.gm.features.sources[sourceName];
+
+    // If there are queued updates that haven't been processed yet (due to throttling
+    // or source not being loaded), we flush them directly to ensure data availability.
+    // getCombinedDiff() atomically drains the storage, preventing duplicate updates.
+    if (this.updateStorage[sourceName]?.length && source) {
+      const combinedDiff = this.getCombinedDiff(sourceName);
+      if (combinedDiff) {
+        const updatePromise = source.updateData(combinedDiff);
+        this.addPendingPromise(sourceName, updatePromise);
+      }
+    }
+
+    // Wait for ALL pending promises to complete (not just the latest one)
+    const pendingPromises = this.pendingUpdatePromises[sourceName];
+    if (pendingPromises?.length) {
+      await Promise.all(pendingPromises);
+      // Wait for MapLibre to process the data in the next frame
+      // This ensures serialize() returns the updated data
+      await new Promise((resolve) => requestAnimationFrame(resolve));
     }
   }
 

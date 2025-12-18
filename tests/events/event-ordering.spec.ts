@@ -488,7 +488,7 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
     await page.click('#id_draw_rectangle');
   });
 
-  test('awaitDataUpdatesOnEvents=false should NOT have feature in source when gm:create fires', async ({
+  test('awaitDataUpdatesOnEvents=false should still have feature in source via getGeoJson()', async ({
     page,
   }) => {
     // Set setting to false
@@ -553,10 +553,12 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
 
     expect(result, 'Create event should have been captured').toBeDefined();
     if (result) {
+      // With the fix, getGeoJson() now returns from internal FeatureData state,
+      // so features are always immediately available regardless of awaitDataUpdatesOnEvents
       expect(
         result.featureInSource,
-        'With awaitDataUpdatesOnEvents=false, created feature should NOT be in source when event fires (async behavior)',
-      ).toBe(false);
+        'Feature should be in source via getGeoJson() (uses internal state)',
+      ).toBe(true);
     }
 
     // Exit drawing mode
@@ -566,5 +568,105 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
     await page.evaluate(() => {
       window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
     });
+  });
+
+  test('awaitDataUpdatesOnEvents=true should have circle feature in source when gm:create fires', async ({
+    page,
+  }) => {
+    // Ensure setting is true (default)
+    await page.evaluate(() => {
+      window.geoman.options.settings.awaitDataUpdatesOnEvents = true;
+    });
+
+    const { width, height } = await page.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Set up event listener to check if feature exists in source when event fires
+    const resultId = `_createCircleTest_${Date.now()}`;
+    await page.evaluate(
+      (context) => {
+        if (!window.customData) {
+          window.customData = { rawEventResults: {} };
+        }
+        window.customData.rawEventResults = window.customData.rawEventResults || {};
+
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        window.geoman.mapAdapter.once('gm:create', ((event: any) => {
+          const featureId = event.feature.id;
+          const sourceGeoJson = event.feature.source.getGeoJson();
+          const gmGeoJson = event.feature.source.getGmGeoJson();
+          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInGmGeoJson = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const geomanExportGeoJson = window.geoman.features.exportGeoJson();
+          const featureInExport = geomanExportGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+
+          window.customData.rawEventResults![context.resultId] = {
+            featureId,
+            featureShape: event.shape,
+            featureInSource,
+            featureInGmGeoJson,
+            featureInExport,
+            sourceFeatureCount: sourceGeoJson.features.length,
+            gmGeoJsonFeatureCount: gmGeoJson.features.length,
+            exportFeatureCount: geomanExportGeoJson.features.length,
+            sourceFeatureIds: sourceGeoJson.features.map((f: any) => f.id),
+            gmGeoJsonFeatureIds: gmGeoJson.features.map((f: any) => f.id),
+          };
+        }) as any);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+      },
+      { resultId },
+    );
+
+    // Draw a circle - click for center, then click for radius
+    await page.click('#id_draw_circle');
+    await page.waitForTimeout(100); // Wait for draw mode to activate
+    await page.mouse.move(centerX, centerY);
+    await page.mouse.click(centerX, centerY); // First click sets center
+    await page.waitForTimeout(100);
+    await page.mouse.move(centerX + 80, centerY); // Move to set radius
+    await page.waitForTimeout(100);
+    await page.mouse.click(centerX + 80, centerY); // Second click completes circle
+
+    // Wait for event
+    await page.waitForTimeout(500);
+
+    const result = await page.evaluate(
+      (context) => {
+        return window.customData.rawEventResults?.[context.resultId] as
+          | {
+              featureId: string;
+              featureShape: string;
+              featureInSource: boolean;
+              featureInExport: boolean;
+              sourceFeatureCount: number;
+              exportFeatureCount: number;
+            }
+          | undefined;
+      },
+      { resultId },
+    );
+
+    expect(result, 'Create event should have been captured for circle').toBeDefined();
+    if (result) {
+      console.log('Circle test result:', JSON.stringify(result, null, 2));
+      expect(result.featureShape, 'Shape should be circle').toBe('circle');
+      expect(
+        result.featureInSource,
+        `With awaitDataUpdatesOnEvents=true, circle feature should be in source. Debug: ${JSON.stringify(result)}`,
+      ).toBe(true);
+      expect(
+        result.featureInExport,
+        'With awaitDataUpdatesOnEvents=true, circle feature should be in exportGeoJson when gm:create fires',
+      ).toBe(true);
+    }
+
+    // Exit drawing mode
+    await page.click('#id_draw_circle');
   });
 });
