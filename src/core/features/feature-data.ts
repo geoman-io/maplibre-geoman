@@ -28,6 +28,7 @@ import type { Feature } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
+/** @internal */
 export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
   'circle',
   'ellipse',
@@ -35,11 +36,16 @@ export const toPolygonAllowedShapes: Array<FeatureData['shape']> = [
 ];
 
 export class FeatureData {
+  /** @internal */
   gm: Geoman;
   id: FeatureId = 'no-id';
+  /** @internal */
   parent: FeatureData | null = null;
+  /** @internal */
   markers: Map<MarkerId, MarkerData>;
+  /** @internal */
   source: BaseSource;
+  /** @internal */
   _geoJson: GeoJsonShapeFeature | null = null;
 
   constructor(parameters: FeatureDataParameters) {
@@ -83,6 +89,7 @@ export class FeatureData {
     throw new Error(`Wrong shape type: "${value}"`);
   }
 
+  /** @internal */
   set shape(shape: FeatureShape) {
     this.setShapeProperty('shape', shape);
   }
@@ -110,6 +117,7 @@ export class FeatureData {
     return undefined;
   }
 
+  /** @internal */
   setShapeProperty<T extends keyof FeatureShapeProperties>(
     name: T,
     value: ShapeGeoJsonProperties[`${typeof FEATURE_PROPERTY_PREFIX}${T}`],
@@ -122,6 +130,7 @@ export class FeatureData {
     this.updateGeoJsonProperties(this._geoJson.properties);
   }
 
+  /** @internal */
   deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
     if (!this._geoJson) {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
@@ -131,6 +140,7 @@ export class FeatureData {
     this.updateGeoJsonProperties(this._geoJson.properties);
   }
 
+  /** @internal */
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
     const shape =
       this.getShapeProperty('shape', geoJson) || this.gm.features.getFeatureShapeByGeoJson(geoJson);
@@ -156,6 +166,7 @@ export class FeatureData {
     );
   }
 
+  /** @internal */
   parseExtraProperties(geoJson: GeoJsonShapeFeature) {
     const extraProperties = cloneDeep(geoJson.properties) || {};
     typedKeys(propertyValidators).forEach((name) => {
@@ -173,6 +184,7 @@ export class FeatureData {
     }
   }
 
+  /** @internal */
   addGeoJson(geoJson: GeoJsonShapeFeature) {
     this._geoJson = {
       ...geoJson,
@@ -193,6 +205,7 @@ export class FeatureData {
     });
   }
 
+  /** @internal */
   removeGeoJson() {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
@@ -204,6 +217,7 @@ export class FeatureData {
     });
   }
 
+  /** @internal */
   removeMarkers() {
     this.markers.forEach((markerData) => {
       if (markerData.instance instanceof BaseDomMarker) {
@@ -215,6 +229,7 @@ export class FeatureData {
     this.markers = new Map();
   }
 
+  /** @internal */
   updateGeoJsonGeometry(geometry: BasicGeometry) {
     const featureGeoJson = this.getGeoJson();
     if (!featureGeoJson) {
@@ -232,6 +247,7 @@ export class FeatureData {
     });
   }
 
+  /** @internal */
   updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
@@ -246,6 +262,7 @@ export class FeatureData {
     });
   }
 
+  /** @internal */
   setGeoJsonCustomProperties(properties: Feature['properties']) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
@@ -323,16 +340,7 @@ export class FeatureData {
     return toPolygonAllowedShapes.includes(this.shape);
   }
 
-  // changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
-  //   if (atomic) {
-  //     this.gm.features.updateManager.withAtomicSourcesUpdate(() =>
-  //       this.actualChangeSource({ sourceName, atomic }),
-  //     );
-  //   } else {
-  //     this.actualChangeSource({ sourceName, atomic });
-  //   }
-  // }
-
+  /** @internal */
   changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
     if (this.source.id === sourceName) {
       log.error(
@@ -364,6 +372,7 @@ export class FeatureData {
     });
   }
 
+  /** @internal */
   fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
     const payload: GmEditFeatureUpdatedEvent = {
       name: `${GM_SYSTEM_PREFIX}:edit:feature_updated`,
@@ -379,6 +388,7 @@ export class FeatureData {
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
+  /** @internal */
   delete() {
     this.removeGeoJson();
     this.removeMarkers();
