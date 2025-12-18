@@ -30,6 +30,19 @@ All notable changes to this project will be documented in this file.
     feature.updateGeometry({ type: 'Point', coordinates: [10, 52] });
     ```
 
+- `exportGeoJsonFromSource()` method to export GeoJSON directly from MapLibre's underlying source
+  - Reads from MapLibre's serialized source state (via `serialize()`)
+  - Useful for debugging, verification, or synchronization with external systems
+  - For most use cases, prefer `exportGeoJson()` which uses Geoman's internal state and is always up-to-date
+  - Example usage:
+    ```typescript
+    // Export from internal Geoman state (recommended)
+    const geoJson = geoman.features.exportGeoJson();
+
+    // Export from MapLibre's source (for debugging/verification)
+    const sourceGeoJson = geoman.features.exportGeoJsonFromSource();
+    ```
+
 ### Changed
 
 - **BREAKING**: `importGeoJson()` signature changed from `importGeoJson(geoJson, idPropertyName?)` to `importGeoJson(geoJson, options?)`

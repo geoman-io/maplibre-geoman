@@ -409,6 +409,24 @@ export class Features {
     return this.exportGeoJson();
   }
 
+  /**
+   * Exports GeoJSON from Geoman's internal state.
+   *
+   * This is the recommended method for most use cases as it always returns the latest
+   * feature data, even during event handlers before MapLibre has committed changes.
+   *
+   * @param options - Export options
+   * @param options.allowedShapes - Filter to only include specific shape types
+   * @param options.idPropertyName - Property name to use for feature IDs (default: 'gm_id')
+   * @returns GeoJSON FeatureCollection with all features
+   *
+   * @example
+   * // Export all features
+   * const geoJson = geoman.features.exportGeoJson();
+   *
+   * // Export only polygons and circles
+   * const shapes = geoman.features.exportGeoJson({ allowedShapes: ['polygon', 'circle'] });
+   */
   exportGeoJson(
     {
       allowedShapes,
@@ -422,6 +440,50 @@ export class Features {
       sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
       shapeTypes: allowedShapes ? allowedShapes : [...SHAPE_NAMES],
       idPropertyName,
+      useMapLibreSource: false,
+    });
+  }
+
+  /**
+   * Exports GeoJSON directly from MapLibre's underlying source data.
+   *
+   * This method reads from MapLibre's serialized source state, which may lag slightly
+   * behind Geoman's internal state during rapid updates or in event handlers.
+   *
+   * Use this method when you specifically need to verify what MapLibre has committed
+   * to its source, for debugging, or for synchronization with external systems that
+   * read directly from MapLibre sources.
+   *
+   * For most use cases, prefer `exportGeoJson()` which uses Geoman's internal state
+   * and is always up-to-date.
+   *
+   * @param options - Export options
+   * @param options.allowedShapes - Filter to only include specific shape types
+   * @param options.idPropertyName - Property name to use for feature IDs (default: 'gm_id')
+   * @returns GeoJSON FeatureCollection from MapLibre's source
+   *
+   * @example
+   * // Export features as stored in MapLibre source
+   * const geoJson = geoman.features.exportGeoJsonFromSource();
+   *
+   * // Verify MapLibre has committed the data
+   * await geoman.features.waitForPendingUpdates();
+   * const committed = geoman.features.exportGeoJsonFromSource();
+   */
+  exportGeoJsonFromSource(
+    {
+      allowedShapes,
+      idPropertyName,
+    }: {
+      allowedShapes?: Array<FeatureShape>;
+      idPropertyName?: string;
+    } = { allowedShapes: undefined },
+  ): GeoJsonShapeFeatureCollection {
+    return this.asGeoJsonFeatureCollection({
+      sourceNames: [SOURCES.main, ...(IS_PRO ? [SOURCES.standby] : [])],
+      shapeTypes: allowedShapes ? allowedShapes : [...SHAPE_NAMES],
+      idPropertyName,
+      useMapLibreSource: true,
     });
   }
 
@@ -429,10 +491,12 @@ export class Features {
     shapeTypes,
     sourceNames,
     idPropertyName,
+    useMapLibreSource = false,
   }: {
     shapeTypes?: Array<FeatureShape>;
     sourceNames: Array<FeatureSourceName>;
     idPropertyName?: string;
+    useMapLibreSource?: boolean;
   }): GeoJsonShapeFeatureCollection {
     const resultFeatureCollection: GeoJsonShapeFeatureCollection = {
       type: 'FeatureCollection',
@@ -445,10 +509,11 @@ export class Features {
       const source = this.sources[sourceName];
 
       if (source) {
-        // Use getGmGeoJson() to get features from internal FeatureData state
-        // This ensures newly created features are included even if MapLibre's
-        // serialize() hasn't been updated yet (e.g., during gm:create event)
-        const sourceFeatureCollection = source.getGmGeoJson();
+        // getGmGeoJson() returns features from internal FeatureData state (always up-to-date)
+        // getGeoJson() returns features from MapLibre's serialize() (may lag during rapid updates)
+        const sourceFeatureCollection = useMapLibreSource
+          ? source.getGeoJson()
+          : source.getGmGeoJson();
 
         sourceFeatureCollection.features
           .filter((feature) => !!feature)
