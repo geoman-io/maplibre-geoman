@@ -321,6 +321,7 @@ export class FeatureData {
     });
   }
 
+  /** @internal */
   convertToPolygon(): boolean {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
@@ -334,6 +335,7 @@ export class FeatureData {
     return false;
   }
 
+  /** @internal */
   isConvertableToPolygon(): boolean {
     return toPolygonAllowedShapes.includes(this.shape);
   }
