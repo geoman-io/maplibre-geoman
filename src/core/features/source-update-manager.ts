@@ -133,29 +133,45 @@ export class SourceUpdateManager {
    *
    * This is safe and won't cause duplicates because getCombinedDiff() atomically drains
    * the storage - whoever calls it first gets the diffs, subsequent calls get null.
+   *
+   * IMPORTANT: MapLibre's _updateWorkerData() has a guard that returns early if already
+   * updating (`if (this._isUpdatingWorker) return`). This means updateData() can return
+   * a promise that resolves before the data is actually committed to serialize().
+   * To handle this, we loop until both storage and pending promises are empty, with
+   * a microtask yield between iterations to allow MapLibre's recursive updates to run.
    */
   async waitForPendingUpdates(sourceName: FeatureSourceName): Promise<void> {
     const source = this.gm.features.sources[sourceName];
+    if (!source) return;
 
-    // If there are queued updates that haven't been processed yet (due to throttling
-    // or source not being loaded), we flush them directly to ensure data availability.
-    // getCombinedDiff() atomically drains the storage, preventing duplicate updates.
-    if (this.updateStorage[sourceName]?.length && source) {
-      const combinedDiff = this.getCombinedDiff(sourceName);
-      if (combinedDiff) {
-        const updatePromise = source.updateData(combinedDiff);
-        this.addPendingPromise(sourceName, updatePromise);
+    // Loop until all pending work is complete.
+    // This handles the case where MapLibre's _updateWorkerData returns early due to
+    // _isUpdatingWorker being true, and the actual data gets processed via the
+    // recursive call in the finally block.
+    while (this.updateStorage[sourceName]?.length || this.pendingUpdatePromises[sourceName]?.length) {
+      // Flush any queued updates that haven't been processed yet
+      if (this.updateStorage[sourceName]?.length) {
+        const combinedDiff = this.getCombinedDiff(sourceName);
+        if (combinedDiff) {
+          const updatePromise = source.updateData(combinedDiff);
+          this.addPendingPromise(sourceName, updatePromise);
+        }
       }
+
+      // Wait for all pending promises to complete
+      const pendingPromises = this.pendingUpdatePromises[sourceName];
+      if (pendingPromises?.length) {
+        await Promise.all(pendingPromises);
+      }
+
+      // Yield to allow MapLibre's recursive _updateWorkerData calls to process
+      // and potentially queue more work. Using setTimeout(0) ensures we go through
+      // the task queue, giving MapLibre's async operations a chance to complete.
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
-    // Wait for ALL pending promises to complete (not just the latest one)
-    const pendingPromises = this.pendingUpdatePromises[sourceName];
-    if (pendingPromises?.length) {
-      await Promise.all(pendingPromises);
-      // Wait for MapLibre to process the data in the next frame
-      // This ensures serialize() returns the updated data
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    }
+    // Final frame wait for serialize() to reflect the committed data
+    await new Promise((resolve) => requestAnimationFrame(resolve));
   }
 
   withAtomicSourcesUpdate<T>(callback: () => T): T {

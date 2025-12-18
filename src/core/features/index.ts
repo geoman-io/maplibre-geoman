@@ -394,15 +394,6 @@ export class Features {
     return this.exportGeoJson();
   }
 
-  getSourceGeojson(sourceName: FeatureSourceName): GeoJsonShapeFeatureCollection | null {
-    const source = this.sources[sourceName];
-    if (!source) {
-      log.warn(`getSourceGeojson: source "${sourceName}" not found`);
-      return null;
-    }
-    return source.getGeoJson();
-  }
-
   exportGeoJson(
     {
       allowedShapes,

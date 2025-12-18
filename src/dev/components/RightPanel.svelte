@@ -352,11 +352,12 @@
 
   const getSourceGeojson = () => {
     if (!geoman) return;
-    const geoJson = geoman.features.getSourceGeojson('gm_main');
-    if (!geoJson) {
-      logEvent('source:geojson-error', { error: 'Failed to get gm_main source' });
+    const source = geoman.features.sources['gm_main'];
+    if (!source) {
+      logEvent('source:geojson-error', { error: 'gm_main source not found' });
       return;
     }
+    const geoJson = source.getGeoJson();
     geojsonInput = prettyPrint ? JSON.stringify(geoJson, null, 2) : JSON.stringify(geoJson);
     logEvent('source:geojson', { source: 'gm_main', featureCount: geoJson?.features?.length || 0 });
   };

@@ -78,13 +78,17 @@ export abstract class BaseDrag extends BaseEdit {
       this.featureData = featureData;
       this.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
       this.gm.mapAdapter.setDragPan(false);
-      this.flags.actionInProgress = true;
 
       this.snappingHelper?.addExcludedFeature(this.featureData);
+      // Fire dragstart BEFORE setting actionInProgress and aligning shapes.
+      // This ensures correct internal event ordering: dragstart -> drag -> dragend.
+      // alignShapeCenterWithControlMarker calls onMouseMove which can fire drag events,
+      // so dragstart must be fired first.
+      this.fireFeatureEditStartEvent({ feature: this.featureData, forceMode: 'drag' });
+      this.flags.actionInProgress = true;
       if (this.isPointBasedShape()) {
         this.alignShapeCenterWithControlMarker(this.featureData, event);
       }
-      this.fireFeatureEditStartEvent({ feature: this.featureData, forceMode: 'drag' });
       return { next: false };
     }
     return { next: true };
