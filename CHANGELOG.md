@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.6.0] - 2025-12-19
 
 ### Added
 
@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
   - `updateGeometry(geometry)` - Update the feature's geometry
   - Property methods protect internal Geoman properties (prefixed with `gm_`) from modification
   - Example usage:
+
     ```typescript
     // Add or update properties
     feature.updateProperties({ color: 'red', size: 10 });
@@ -35,6 +36,7 @@ All notable changes to this project will be documented in this file.
   - Useful for debugging, verification, or synchronization with external systems
   - For most use cases, prefer `exportGeoJson()` which uses Geoman's internal state and is always up-to-date
   - Example usage:
+
     ```typescript
     // Export from internal Geoman state (recommended)
     const geoJson = geoman.features.exportGeoJson();
@@ -46,9 +48,25 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - **BREAKING**: `importGeoJson()` signature changed from `importGeoJson(geoJson, idPropertyName?)` to `importGeoJson(geoJson, options?)`
-  - Previously: `geoman.features.importGeoJson(geoJson, 'customIdProperty')`
-  - Now: `geoman.features.importGeoJson(geoJson, { idPropertyName: 'customIdProperty' })`
-  - This allows for additional options like `overwrite`
+
+  Migration:
+
+  ```typescript
+  // Before
+  geoman.features.importGeoJson(geoJson, 'customIdProperty');
+
+  // After
+  geoman.features.importGeoJson(geoJson, { idPropertyName: 'customIdProperty' });
+
+  // New overwrite feature
+  geoman.features.importGeoJson(geoJson, { overwrite: true });
+
+  // Both options together
+  geoman.features.importGeoJson(geoJson, {
+    idPropertyName: 'customIdProperty',
+    overwrite: true,
+  });
+  ```
 
 ### Deprecated
 
