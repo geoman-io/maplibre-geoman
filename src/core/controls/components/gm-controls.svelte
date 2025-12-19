@@ -19,6 +19,13 @@
     return controlSection?.[mode as ModeName] || null;
   };
 
+  const hasVisibleControls = (groupKey: string, groupControls: Record<string, unknown>) => {
+    return Object.entries(groupControls).some(([controlKey, controlOptions]) => {
+      const control = getControl(groupKey, controlKey);
+      return control && controlOptions && (controlOptions as { uiEnabled?: boolean }).uiEnabled;
+    });
+  };
+
   const toggleExpanded = () => {
     expanded = !expanded;
   };
@@ -40,22 +47,20 @@
   {#if expanded}
     <div in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
       {#each Object.entries($controlsStore.options) as [groupKey, groupControls] (groupKey)}
-        <div class={`${controlsStyles.controlGroupClass} group-${groupKey}`}>
-          {#each Object.entries(groupControls) as [controlKey, controlOptions] (controlKey)}
-            {@const control = getControl(groupKey, controlKey)}
-            {#if control}
-              <ActionControl control={control} controlOptions={controlOptions} />
-            {/if}
-          {/each}
-        </div>
+        {#if hasVisibleControls(groupKey, groupControls)}
+          <div class={`${controlsStyles.controlGroupClass} group-${groupKey}`}>
+            {#each Object.entries(groupControls) as [controlKey, controlOptions] (controlKey)}
+              {@const control = getControl(groupKey, controlKey)}
+              {#if control}
+                <ActionControl control={control} controlOptions={controlOptions} />
+              {/if}
+            {/each}
+          </div>
+        {/if}
       {/each}
     </div>
   {/if}
 </div>
 
 <style>
-  .gm-reactive-controls {
-    display: flex;
-    flex-direction: column;
-  }
 </style>

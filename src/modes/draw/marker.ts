@@ -1,6 +1,7 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type DrawModeName,
+  type FeatureSourceName,
   type GeoJsonShapeFeature,
   type LngLatTuple,
   type MapHandlerReturnData,
@@ -78,11 +79,34 @@ export class DrawMarker extends BaseDraw {
     };
   }
 
-  protected createMarker() {
+  protected createMarker(sourceName: FeatureSourceName = SOURCES.temporary) {
+    // Extract style properties from marker layer styles for the specified source
+    const markerStyles = this.gm.options.layerStyles.marker[sourceName];
+    const symbolLayer = markerStyles?.find((layer) => layer.type === 'symbol');
+
+    // Get icon-opacity from paint properties
+    const iconOpacity =
+      symbolLayer?.paint && 'icon-opacity' in symbolLayer.paint
+        ? (symbolLayer.paint['icon-opacity'] as number)
+        : undefined;
+
+    // Get icon-size from layout properties (default is 0.18 in marker.ts defaults)
+    const iconSize =
+      symbolLayer?.layout && 'icon-size' in symbolLayer.layout
+        ? (symbolLayer.layout['icon-size'] as number)
+        : undefined;
+
+    // Calculate pixel size based on icon-size (base size is 36px at icon-size: 0.18)
+    const baseSize = 36;
+    const defaultIconSize = 0.18;
+    const pixelSize = iconSize !== undefined ? Math.round(baseSize * (iconSize / defaultIconSize)) : baseSize;
+    const sizeStr = `${pixelSize}px`;
+
     const iconElement = this.gm.createSvgMarkerElement('default', {
-      width: '36px',
-      height: '36px',
+      width: sizeStr,
+      height: sizeStr,
       pointerEvents: 'none',
+      ...(iconOpacity !== undefined && { opacity: String(iconOpacity) }),
     });
 
     return this.gm.mapAdapter.createDomMarker(

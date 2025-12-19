@@ -7,14 +7,12 @@
   const gm: Geoman = getContext('gm');
   const { control }: { control: GenericSystemControl } = $props();
 
-  const actionType = control.type;
-  const modeName = control.targetMode;
+  const actionType = $derived(control.type);
+  const modeName = $derived(control.targetMode);
 
-  let actionInstance: ActionInstance | null = $state(null);
-
-  if (actionType && modeName) {
-    actionInstance = gm.actionInstances[`${actionType}__${modeName}`] || null;
-  }
+  const actionInstance: ActionInstance | null = $derived(
+    actionType && modeName ? gm.actionInstances[`${actionType}__${modeName}`] || null : null
+  );
 </script>
 
 {#if actionInstance}
