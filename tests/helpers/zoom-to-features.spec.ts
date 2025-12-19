@@ -57,21 +57,18 @@ test.describe('Zoom To Features Helper', () => {
 
     // Check that all feature centroids are within the map bounds
     for (const feature of features) {
-      const featureBounds = await page.evaluate(
-        (geoJson) => {
-          const bbox = window.turf?.bbox?.(geoJson);
-          if (bbox) {
-            return {
-              minLng: bbox[0],
-              minLat: bbox[1],
-              maxLng: bbox[2],
-              maxLat: bbox[3],
-            };
-          }
-          return null;
-        },
-        feature.geoJson,
-      );
+      const featureBounds = await page.evaluate((geoJson) => {
+        const bbox = window.turf?.bbox?.(geoJson);
+        if (bbox) {
+          return {
+            minLng: bbox[0],
+            minLat: bbox[1],
+            maxLng: bbox[2],
+            maxLat: bbox[3],
+          };
+        }
+        return null;
+      }, feature.geoJson);
 
       // Skip if we couldn't get feature bounds (turf might not be available on window)
       if (!featureBounds) continue;

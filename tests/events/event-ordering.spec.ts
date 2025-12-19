@@ -126,10 +126,7 @@ test.describe('Event Ordering', () => {
 
     // Verify dragend was fired last (if it was fired)
     if (dragendIndices.length > 0) {
-      expect(
-        dragendIndices[0],
-        'dragend should be the last event',
-      ).toBe(eventOrder.length - 1);
+      expect(dragendIndices[0], 'dragend should be the last event').toBe(eventOrder.length - 1);
     }
 
     // Verify all drag events are between dragstart and dragend (if all events were captured)
@@ -234,10 +231,7 @@ test.describe('Event Ordering', () => {
       'Both dragstart events MUST be captured - issue #84 if this fails',
     ).toBe(2);
 
-    expect(
-      dragendEvents.length,
-      'Both dragend events should be captured',
-    ).toBe(2);
+    expect(dragendEvents.length, 'Both dragend events should be captured').toBe(2);
 
     // Verify first drag cycle completes before second starts
     const firstDragendIndex = eventOrder.findIndex((e: string) => e === 'dragend_1');
@@ -420,7 +414,6 @@ test.describe('Event Ordering', () => {
     // (they fire alongside converted events due to the queuing mechanism)
     expect(systemEventIndices.length).toBeGreaterThan(0);
   });
-
 });
 
 test.describe('awaitDataUpdatesOnEvents Setting', () => {
@@ -459,7 +452,9 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
         window.geoman.mapAdapter.once('gm:create', ((event: any) => {
           const featureId = event.feature.id;
           const sourceGeoJson = event.feature.source.getGeoJson();
-          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInSource = sourceGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
 
           window.customData.rawEventResults![context.resultId] = {
             featureId,
@@ -536,7 +531,9 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
           // Use getGmGeoJson() which returns from internal FeatureData state
           // getGeoJson() uses MapLibre's serialize() which may not have the data yet
           const gmGeoJson = event.feature.source.getGmGeoJson();
-          const featureInSource = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInSource = gmGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
 
           window.customData.rawEventResults![context.resultId] = {
             featureId,
@@ -619,10 +616,16 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
           const featureId = event.feature.id;
           const sourceGeoJson = event.feature.source.getGeoJson();
           const gmGeoJson = event.feature.source.getGmGeoJson();
-          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
-          const featureInGmGeoJson = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInSource = sourceGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
+          const featureInGmGeoJson = gmGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
           const geomanExportGeoJson = window.geoman.features.exportGeoJson();
-          const featureInExport = geomanExportGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInExport = geomanExportGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
 
           window.customData.rawEventResults![context.resultId] = {
             featureId,
@@ -719,10 +722,16 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
           const featureId = event.feature.id;
           const sourceGeoJson = event.feature.source.getGeoJson();
           const gmGeoJson = event.feature.source.getGmGeoJson();
-          const featureInSource = sourceGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
-          const featureInGmGeoJson = gmGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInSource = sourceGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
+          const featureInGmGeoJson = gmGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
           const geomanExportGeoJson = window.geoman.features.exportGeoJson();
-          const featureInExport = geomanExportGeoJson.features.some((f: { id?: string | number }) => f.id === featureId);
+          const featureInExport = geomanExportGeoJson.features.some(
+            (f: { id?: string | number }) => f.id === featureId,
+          );
 
           window.customData.rawEventResults![context.resultId] = {
             featureId,

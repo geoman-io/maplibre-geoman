@@ -1,10 +1,6 @@
 import mapLibreStyle from '@/dev/maplibre-style.ts';
 import { layerStyles } from '@/dev/styles/layer-styles.ts';
-import {
-  Geoman,
-  type GmOptionsData,
-  type MapInstanceWithGeoman,
-} from '@/main.ts';
+import { Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';
