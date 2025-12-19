@@ -1,4 +1,10 @@
 /* Controls */
+.geoman-controls,
+.geoman-controls .gm-reactive-controls,
+.geoman-controls .gm-reactive-controls > div {
+  display: contents;
+}
+
 .maplibregl-ctrl-group button.gm-control-button {
   color: #2371a0;
   padding: 6px;
