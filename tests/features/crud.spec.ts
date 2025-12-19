@@ -373,12 +373,9 @@ test.describe('Feature Management - CRUD Operations', () => {
       const features = await getRenderedFeaturesData({ page, temporary: false });
       expect(features.length).toBeGreaterThan(0);
 
-      const hasResult = await page.evaluate(
-        (featureId) => {
-          return window.geoman.features.has('gm_main', featureId);
-        },
-        features[0].id,
-      );
+      const hasResult = await page.evaluate((featureId) => {
+        return window.geoman.features.has('gm_main', featureId);
+      }, features[0].id);
 
       expect(hasResult).toBe(true);
     });
@@ -400,13 +397,10 @@ test.describe('Feature Management - CRUD Operations', () => {
       const features = await getRenderedFeaturesData({ page, temporary: false });
       expect(features.length).toBeGreaterThan(0);
 
-      const featureData = await page.evaluate(
-        (featureId) => {
-          const fd = window.geoman.features.get('gm_main', featureId);
-          return fd ? { id: fd.id, shape: fd.shape } : null;
-        },
-        features[0].id,
-      );
+      const featureData = await page.evaluate((featureId) => {
+        const fd = window.geoman.features.get('gm_main', featureId);
+        return fd ? { id: fd.id, shape: fd.shape } : null;
+      }, features[0].id);
 
       expect(featureData).not.toBeNull();
       expect(featureData?.id).toBe(features[0].id);
@@ -558,13 +552,10 @@ test.describe('Feature Management - CRUD Operations', () => {
       }
 
       const features = await getRenderedFeaturesData({ page, temporary: false });
-      const featureGeoJson = await page.evaluate(
-        (featureId) => {
-          const fd = window.geoman.features.get('gm_main', featureId);
-          return fd?.getGeoJson() || null;
-        },
-        features[0].id,
-      );
+      const featureGeoJson = await page.evaluate((featureId) => {
+        const fd = window.geoman.features.get('gm_main', featureId);
+        return fd?.getGeoJson() || null;
+      }, features[0].id);
 
       expect(featureGeoJson).not.toBeNull();
       expect(featureGeoJson?.type).toBe('Feature');

@@ -163,7 +163,16 @@ test.describe('GmOptions - Mode Management', () => {
 
   test.describe('isModeAvailable', () => {
     test('should return true for available draw modes', async () => {
-      const drawModes = ['marker', 'circle_marker', 'text_marker', 'line', 'polygon', 'rectangle', 'circle', 'ellipse'];
+      const drawModes = [
+        'marker',
+        'circle_marker',
+        'text_marker',
+        'line',
+        'polygon',
+        'rectangle',
+        'circle',
+        'ellipse',
+      ];
 
       for (const mode of drawModes) {
         const isAvailable = await page.evaluate((modeName) => {
@@ -273,7 +282,9 @@ test.describe('GmOptions - Mode Management', () => {
   test.describe('Mode switching', () => {
     test('should switch between draw modes', async () => {
       await enableMode(page, 'draw', 'marker');
-      expect(await page.evaluate(() => window.geoman.options.isModeEnabled('draw', 'marker'))).toBe(true);
+      expect(await page.evaluate(() => window.geoman.options.isModeEnabled('draw', 'marker'))).toBe(
+        true,
+      );
 
       await disableMode(page, 'draw', 'marker');
       await enableMode(page, 'draw', 'line');

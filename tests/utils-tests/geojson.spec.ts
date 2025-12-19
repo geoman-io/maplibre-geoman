@@ -43,13 +43,10 @@ test.describe('GeoJSON Utility Functions', () => {
           ],
         },
       };
-      const result = await page.evaluate(
-        (feature) => {
-          const { isLineStringFeature } = window.geomanUtils;
-          return isLineStringFeature(feature);
-        },
-        lineFeature,
-      );
+      const result = await page.evaluate((feature) => {
+        const { isLineStringFeature } = window.geomanUtils;
+        return isLineStringFeature(feature);
+      }, lineFeature);
       expect(result).toBe(true);
     });
 
@@ -70,13 +67,10 @@ test.describe('GeoJSON Utility Functions', () => {
           ],
         },
       };
-      const result = await page.evaluate(
-        (feature) => {
-          const { isLineStringFeature } = window.geomanUtils;
-          return isLineStringFeature(feature);
-        },
-        polygonFeature,
-      );
+      const result = await page.evaluate((feature) => {
+        const { isLineStringFeature } = window.geomanUtils;
+        return isLineStringFeature(feature);
+      }, polygonFeature);
       expect(result).toBe(false);
     });
   });
@@ -99,13 +93,10 @@ test.describe('GeoJSON Utility Functions', () => {
           ],
         },
       };
-      const result = await page.evaluate(
-        (feature) => {
-          const { isPolygonFeature } = window.geomanUtils;
-          return isPolygonFeature(feature);
-        },
-        polygonFeature,
-      );
+      const result = await page.evaluate((feature) => {
+        const { isPolygonFeature } = window.geomanUtils;
+        return isPolygonFeature(feature);
+      }, polygonFeature);
       expect(result).toBe(true);
     });
   });
@@ -139,13 +130,10 @@ test.describe('GeoJSON Utility Functions', () => {
           ],
         },
       };
-      const result = await page.evaluate(
-        (feature) => {
-          const { isMultiPolygonFeature } = window.geomanUtils;
-          return isMultiPolygonFeature(feature);
-        },
-        multiPolygonFeature,
-      );
+      const result = await page.evaluate((feature) => {
+        const { isMultiPolygonFeature } = window.geomanUtils;
+        return isMultiPolygonFeature(feature);
+      }, multiPolygonFeature);
       expect(result).toBe(true);
     });
   });

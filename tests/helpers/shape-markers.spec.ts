@@ -85,10 +85,9 @@ test.describe('Shape Markers Helper', () => {
           allowedTypes: ['edge'],
         });
 
-        expect(
-          markers.length,
-          `Feature ${feature.shape} should have edge markers`,
-        ).toBeGreaterThan(0);
+        expect(markers.length, `Feature ${feature.shape} should have edge markers`).toBeGreaterThan(
+          0,
+        );
       }
     }
   });
@@ -108,9 +107,10 @@ test.describe('Shape Markers Helper', () => {
         featureId: lineFeature.id,
         temporary: false,
       });
-      expect(markers.length, 'Line should have markers when change mode is enabled').toBeGreaterThan(
-        0,
-      );
+      expect(
+        markers.length,
+        'Line should have markers when change mode is enabled',
+      ).toBeGreaterThan(0);
 
       // Disable change mode
       await disableMode(page, 'edit', 'change');
