@@ -99,7 +99,8 @@ export class DrawMarker extends BaseDraw {
     // Calculate pixel size based on icon-size (base size is 36px at icon-size: 0.18)
     const baseSize = 36;
     const defaultIconSize = 0.18;
-    const pixelSize = iconSize !== undefined ? Math.round(baseSize * (iconSize / defaultIconSize)) : baseSize;
+    const pixelSize =
+      iconSize !== undefined ? Math.round(baseSize * (iconSize / defaultIconSize)) : baseSize;
     const sizeStr = `${pixelSize}px`;
 
     const iconElement = this.gm.createSvgMarkerElement('default', {

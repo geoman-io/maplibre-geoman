@@ -43,7 +43,7 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
       await enableMode(page, 'edit', 'drag');
 
       const isEnabled = await page.evaluate(() =>
-        window.geoman.options.isModeEnabled('edit', 'drag')
+        window.geoman.options.isModeEnabled('edit', 'drag'),
       );
 
       expect(isEnabled).toBe(true);
@@ -53,7 +53,7 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
       await enableMode(page, 'edit', 'change');
 
       const isEnabled = await page.evaluate(() =>
-        window.geoman.options.isModeEnabled('edit', 'change')
+        window.geoman.options.isModeEnabled('edit', 'change'),
       );
 
       expect(isEnabled).toBe(true);
@@ -63,7 +63,7 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
       await enableMode(page, 'edit', 'rotate');
 
       const isEnabled = await page.evaluate(() =>
-        window.geoman.options.isModeEnabled('edit', 'rotate')
+        window.geoman.options.isModeEnabled('edit', 'rotate'),
       );
 
       expect(isEnabled).toBe(true);
@@ -133,7 +133,10 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
         expect(initialLngLat).not.toBeNull();
 
         if (initialLngLat) {
-          const initialPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
+          const initialPoint = await getScreenCoordinatesByLngLat({
+            page,
+            position: initialLngLat,
+          });
           expect(initialPoint).not.toBeNull();
 
           if (initialPoint) {
@@ -169,7 +172,10 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
         expect(initialLngLat).not.toBeNull();
 
         if (initialLngLat) {
-          const initialPoint = await getScreenCoordinatesByLngLat({ page, position: initialLngLat });
+          const initialPoint = await getScreenCoordinatesByLngLat({
+            page,
+            position: initialLngLat,
+          });
           expect(initialPoint).not.toBeNull();
 
           if (initialPoint) {
@@ -268,7 +274,9 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
   test.describe('Edit mode switching', () => {
     test('should cleanly switch from drag to change mode', async () => {
       await enableMode(page, 'edit', 'drag');
-      expect(await page.evaluate(() => window.geoman.options.isModeEnabled('edit', 'drag'))).toBe(true);
+      expect(await page.evaluate(() => window.geoman.options.isModeEnabled('edit', 'drag'))).toBe(
+        true,
+      );
 
       await disableMode(page, 'edit', 'drag');
       await enableMode(page, 'edit', 'change');

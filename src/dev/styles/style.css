@@ -23,7 +23,9 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: flex-basis 0.2s ease, opacity 0.2s ease;
+  transition:
+    flex-basis 0.2s ease,
+    opacity 0.2s ease;
 }
 
 #dev-left-panel {
@@ -167,7 +169,7 @@ body {
 
 .dev-toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 14px;
   width: 14px;
   left: 3px;
@@ -178,7 +180,7 @@ body {
 }
 
 .dev-toggle input:checked + .dev-toggle-slider {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .dev-toggle input:checked + .dev-toggle-slider:before {
@@ -207,8 +209,8 @@ body {
 }
 
 .dev-btn.primary {
-  background: #4CAF50;
-  border-color: #4CAF50;
+  background: #4caf50;
+  border-color: #4caf50;
   color: white;
 }
 
@@ -262,8 +264,8 @@ body {
 
 .dev-mode-btn.active {
   background: #e3f2fd;
-  border-color: #2196F3;
-  color: #1976D2;
+  border-color: #2196f3;
+  color: #1976d2;
 }
 
 .dev-mode-btn.disabled {
@@ -282,7 +284,7 @@ body {
 
 .dev-input:focus {
   outline: none;
-  border-color: #2196F3;
+  border-color: #2196f3;
 }
 
 /* Textarea */
@@ -300,7 +302,7 @@ body {
 
 .dev-textarea:focus {
   outline: none;
-  border-color: #2196F3;
+  border-color: #2196f3;
 }
 
 /* Event Log */
@@ -394,7 +396,7 @@ body {
 
 .dev-filter-btn.active {
   background: #e3f2fd;
-  border-color: #2196F3;
+  border-color: #2196f3;
 }
 
 /* Keyboard shortcuts hint */
