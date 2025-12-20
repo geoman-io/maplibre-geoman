@@ -155,13 +155,14 @@ export class Geoman {
     // registering the listener to close the race window.
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
-        map.once('load', resolve);
+        const onLoad = () => resolve(map);
+        map.once('load', onLoad);
 
         // Check if map loaded between the isLoaded() check above and the once() call.
-        // If so, resolve immediately. The once() listener will still fire but will be
-        // a no-op since the promise is already resolved, and MapLibre automatically
-        // removes once() listeners after they fire.
+        // If so, remove the listener and resolve immediately. Since the map is already
+        // loaded, the 'load' event won't fire again, so we must clean up the listener.
         if (this.mapAdapter.isLoaded()) {
+          map.off('load', onLoad);
           resolve(map);
         }
       }),
@@ -175,6 +176,12 @@ export class Geoman {
       return this;
     }
 
+    // If destroyed (e.g., initialization failed), return undefined immediately
+    // to prevent callers from waiting on a timeout
+    if (this.destroyed) {
+      return;
+    }
+
     const map = await this.waitForBaseMap();
     if (!map) {
       log.error('Map instance is not available', map);
@@ -183,12 +190,16 @@ export class Geoman {
 
     // Same race condition fix as waitForBaseMap - check loaded state after
     // registering the listener to close the timing window
+    const eventName = `${GM_PREFIX}:loaded`;
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
-        map.once(`${GM_PREFIX}:loaded`, resolve);
+        const onLoaded = () => resolve(this);
+        map.once(eventName, onLoaded);
 
-        // Check if loaded between the this.loaded check above and the once() call
+        // Check if loaded between the this.loaded check above and the once() call.
+        // If so, remove the listener and resolve immediately.
         if (this.loaded) {
+          map.off(eventName, onLoaded);
           resolve(this);
         }
       }),
@@ -488,7 +499,12 @@ export const createGeomanInstance = async (
   options: PartialDeep<GmOptionsData>,
 ) => {
   const geoman = new Geoman(map, options);
-  await geoman.waitForGeomanLoaded();
+  const result = await geoman.waitForGeomanLoaded();
+
+  // If initialization failed (destroyed or returned undefined), throw an error
+  if (!result || geoman.destroyed) {
+    throw new Error('Geoman initialization failed');
+  }
 
   return geoman;
 };
