@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2025-12-20
+
+### Fixed
+
+- Race condition in `waitForBaseMap` causing initialization timeout ([#119](https://github.com/geoman-io/maplibre-geoman/pull/119))
+  - **Root cause**: The map 'load' event could fire between checking `isLoaded()` and registering the event listener, causing a 60-second timeout
+  - **Solution**: Fixed the classic race condition with proper event listener cleanup and added error handling for initialization failures with cleanup via `destroy()`
+  - Properly removes dangling `once()` listeners in `waitForBaseMap` and `waitForGeomanLoaded`
+  - Added destroyed state check in `waitForGeomanLoaded` to prevent timeout when initialization has already failed
+  - `createGeomanInstance` now throws an error on initialization failure instead of returning a destroyed instance
+  - Fixes [#106](https://github.com/geoman-io/maplibre-geoman/issues/106)
+
+- Empty toolbar groups now hidden and marker temporary styles are respected ([#117](https://github.com/geoman-io/maplibre-geoman/pull/117))
+  - Only render control group containers when they have visible controls
+  - Added `display: contents` to geoman-controls wrapper so control groups participate directly in MapLibre's control container flexbox layout
+  - Apply `icon-opacity` and `icon-size` from `layerStyles.marker.gm_temporary` to the DOM marker preview during draw mode
+  - Fixes toolbar positioning issues when used with React Map GL
+  - Fixes empty divs pushing other MapLibre controls out of alignment
+  - Fixes custom marker temporary styles not being applied during draw
+  - Also fixes Svelte 5 reactivity warning in control-menu.svelte by using `$derived()` for values derived from props
+  - Closes [#107](https://github.com/geoman-io/maplibre-geoman/issues/107)
+
+### Changed
+
+- Run prettier formatter on codebase ([#118](https://github.com/geoman-io/maplibre-geoman/pull/118))
+
 ## [0.6.0] - 2025-12-19
 
 ### Added
