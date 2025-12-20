@@ -6,7 +6,6 @@ import type {
   FeatureEditEndFwdEvent,
   FeatureEditStartFwdEvent,
   FeatureRemovedFwdEvent,
-  FeatureSourceName,
   FeatureUpdatedFwdEvent,
   FwdEditModeName,
   Geoman,
@@ -238,18 +237,16 @@ export class EventForwarder {
     const eventNameWithPrefix = `${prefix}:${eventName}`;
 
     // Wait for pending source updates when the setting is enabled and
-    // the payload contains a feature with a source. This ensures feature
-    // data is accessible in event handlers via exportGeoJson().
+    // the payload contains a feature. This ensures feature data is accessible
+    // in event handlers via exportGeoJson().
     // Users can disable this via settings.awaitDataUpdatesOnEvents for faster async updates.
+    // We wait for ALL sources to handle cross-source operations like changeSource().
     const shouldAwaitUpdates =
-      this.gm.options.settings.awaitDataUpdatesOnEvents &&
-      'feature' in payload &&
-      payload.feature?.source;
+      this.gm.options.settings.awaitDataUpdatesOnEvents && 'feature' in payload && payload.feature;
 
     if (shouldAwaitUpdates) {
-      // Wait for MapLibre to commit pending data updates before firing the event
-      const sourceName = payload.feature!.source.id as FeatureSourceName;
-      await this.gm.features.updateManager.waitForPendingUpdates(sourceName);
+      // Wait for MapLibre to commit pending data updates on ALL sources before firing the event
+      await this.gm.features.updateManager.waitForAllPendingUpdates();
     }
 
     this.globalEventsListener?.(payload);
