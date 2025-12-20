@@ -215,7 +215,16 @@ export class Features {
     throw new Error(`Features: failed to create the source: "${sourceName}"`);
   }
 
-  delete(featureIdOrFeatureData: FeatureData | FeatureId) {
+  /**
+   * Delete a feature by ID or FeatureData instance.
+   *
+   * Returns a Promise that resolves when MapLibre has committed the removal.
+   * Internal callers can ignore the Promise for fire-and-forget behavior.
+   *
+   * @param featureIdOrFeatureData - The feature ID or FeatureData instance to delete
+   * @returns Promise that resolves when the data is committed to MapLibre
+   */
+  delete(featureIdOrFeatureData: FeatureData | FeatureId): Promise<void> {
     let featureData: FeatureData | null;
 
     if (featureIdOrFeatureData instanceof FeatureData) {
@@ -226,18 +235,28 @@ export class Features {
 
     if (featureData) {
       this.featureStore.delete(featureData.id);
-      featureData.delete();
-      // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
+      return featureData.delete();
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
+      return Promise.resolve();
     }
   }
 
-  deleteAll() {
+  /**
+   * Delete all features from all sources.
+   *
+   * Returns a Promise that resolves when MapLibre has committed all removals.
+   * Internal callers can ignore the Promise for fire-and-forget behavior.
+   *
+   * @returns Promise that resolves when all data is committed to MapLibre
+   */
+  deleteAll(): Promise<void> {
+    const promises: Promise<void>[] = [];
     this.featureStore.forEach((featureData) => {
-      featureData.delete();
+      promises.push(featureData.delete());
     });
     this.featureStore.clear();
+    return Promise.all(promises).then(() => {});
   }
 
   getFeatureByMouseEvent({
@@ -725,7 +744,7 @@ export class Features {
   }
 
   updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLatTuple) {
-    markerFeatureData.updateGeoJsonGeometry({
+    markerFeatureData.updateGeometry({
       type: 'Point',
       coordinates,
     });

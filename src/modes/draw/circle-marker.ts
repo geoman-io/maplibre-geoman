@@ -42,6 +42,6 @@ export class DrawCircleMarker extends BaseCircle {
     }
 
     const shapeGeoJson = this.getFeatureGeoJson(lngLat);
-    this.featureData.updateGeoJsonGeometry(shapeGeoJson.geometry);
+    this.featureData.updateGeometry(shapeGeoJson.geometry);
   }
 }

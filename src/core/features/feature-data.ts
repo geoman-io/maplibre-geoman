@@ -24,7 +24,6 @@ import {
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
-import type { Feature } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
@@ -173,7 +172,16 @@ export class FeatureData {
     }
   }
 
-  addGeoJson(geoJson: GeoJsonShapeFeature) {
+  /**
+   * Add a GeoJSON feature to the source.
+   *
+   * Returns a Promise that resolves when MapLibre has committed the data.
+   * The internal feature state is updated synchronously before the Promise.
+   *
+   * @param geoJson - The GeoJSON feature to add
+   * @returns Promise that resolves when the data is committed to MapLibre
+   */
+  addGeoJson(geoJson: GeoJsonShapeFeature): Promise<void> {
     this._geoJson = {
       ...geoJson,
       id: this.id,
@@ -187,18 +195,25 @@ export class FeatureData {
       this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
     }
 
-    this.gm.features.updateManager.updateSource({
+    return this.gm.features.updateManager.updateSource({
       diff: { add: [this._geoJson] },
       sourceName: this.sourceName,
     });
   }
 
-  removeGeoJson() {
+  /**
+   * Remove the GeoJSON feature from the source.
+   *
+   * Returns a Promise that resolves when MapLibre has committed the removal.
+   *
+   * @returns Promise that resolves when the data is committed to MapLibre
+   */
+  removeGeoJson(): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
-    this.gm.features.updateManager.updateSource({
+    return this.gm.features.updateManager.updateSource({
       diff: { remove: [this.id] },
       sourceName: this.sourceName,
     });
@@ -218,19 +233,23 @@ export class FeatureData {
   /**
    * Updates the geometry of this feature.
    *
+   * Returns a Promise that resolves when MapLibre has committed the data.
+   * The internal feature state is updated synchronously before the Promise.
+   *
    * @param geometry - The new geometry for the feature
+   * @returns Promise that resolves when the data is committed to MapLibre
    *
    * @example
    * // Update a marker's position
-   * feature.updateGeometry({ type: 'Point', coordinates: [10, 52] });
+   * await feature.updateGeometry({ type: 'Point', coordinates: [10, 52] });
    *
    * // Update a polygon's coordinates
-   * feature.updateGeometry({
+   * await feature.updateGeometry({
    *   type: 'Polygon',
    *   coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
    * });
    */
-  updateGeometry(geometry: BasicGeometry) {
+  updateGeometry(geometry: BasicGeometry): Promise<void> {
     const featureGeoJson = this.getGeoJson();
     if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
@@ -241,17 +260,10 @@ export class FeatureData {
     const diff = {
       update: [this._geoJson],
     };
-    this.gm.features.updateManager.updateSource({
+    return this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
-  }
-
-  /**
-   * @deprecated Use `updateGeometry()` instead.
-   */
-  updateGeoJsonGeometry(geometry: BasicGeometry) {
-    this.updateGeometry(geometry);
   }
 
   /**
@@ -261,19 +273,23 @@ export class FeatureData {
    * Internal Geoman properties (prefixed with `gm_`) cannot be modified through this method
    * and will be preserved.
    *
+   * Returns a Promise that resolves when MapLibre has committed the data.
+   * The internal feature state is updated synchronously before the Promise.
+   *
    * @param properties - Object containing properties to update or delete (set to undefined)
+   * @returns Promise that resolves when the data is committed to MapLibre
    *
    * @example
    * // Add or update properties
-   * feature.updateProperties({ color: 'red', size: 10 });
+   * await feature.updateProperties({ color: 'red', size: 10 });
    *
    * // Delete a property
-   * feature.updateProperties({ color: undefined });
+   * await feature.updateProperties({ color: undefined });
    *
    * // Mix of updates and deletions
-   * feature.updateProperties({ color: 'blue', oldProp: undefined });
+   * await feature.updateProperties({ color: 'blue', oldProp: undefined });
    */
-  updateProperties(properties: Record<string, unknown>) {
+  updateProperties(properties: Record<string, unknown>): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -321,7 +337,7 @@ export class FeatureData {
     }
 
     const diff = { update: [{ ...this._geoJson, properties: diffProperties }] };
-    this.gm.features.updateManager.updateSource({
+    return this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
@@ -333,13 +349,17 @@ export class FeatureData {
    *
    * Internal Geoman properties (prefixed with `gm_`) cannot be modified and will be preserved.
    *
+   * Returns a Promise that resolves when MapLibre has committed the data.
+   * The internal feature state is updated synchronously before the Promise.
+   *
    * @param properties - Object containing the new properties (replaces all existing custom properties)
+   * @returns Promise that resolves when the data is committed to MapLibre
    *
    * @example
    * // Replace all custom properties
-   * feature.setProperties({ name: 'New Feature', category: 'poi' });
+   * await feature.setProperties({ name: 'New Feature', category: 'poi' });
    */
-  setProperties(properties: Record<string, unknown>) {
+  setProperties(properties: Record<string, unknown>): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -360,7 +380,7 @@ export class FeatureData {
     } as ShapeGeoJsonProperties;
 
     const diff = { update: [this._geoJson] };
-    this.gm.features.updateManager.updateSource({
+    return this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
@@ -370,10 +390,14 @@ export class FeatureData {
    * Internal method to update all properties including Geoman system properties.
    * This should only be used by internal Geoman code (edit modes, draw modes, etc.).
    *
+   * Returns a Promise that resolves when MapLibre has committed the data.
+   * The internal feature state is updated synchronously before the Promise.
+   *
    * @internal
    * @param properties - Properties to merge with existing ones
+   * @returns Promise that resolves when the data is committed to MapLibre
    */
-  _updateAllProperties(properties: Partial<ShapeGeoJsonProperties>) {
+  _updateAllProperties(properties: Partial<ShapeGeoJsonProperties>): Promise<void> {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -381,42 +405,10 @@ export class FeatureData {
     this._geoJson.properties = { ...this._geoJson.properties, ...properties };
     const diff = { update: [this._geoJson] };
 
-    this.gm.features.updateManager.updateSource({
+    return this.gm.features.updateManager.updateSource({
       diff,
       sourceName: this.sourceName,
     });
-  }
-
-  /**
-   * @deprecated Use `updateProperties()` instead. Set property value to `undefined` to delete it.
-   */
-  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
-    this._updateAllProperties(properties);
-  }
-
-  /**
-   * @deprecated Use `setProperties()` instead.
-   */
-  setGeoJsonCustomProperties(properties: Feature['properties']) {
-    this.setProperties(properties || {});
-  }
-
-  /**
-   * @deprecated Use `updateProperties()` instead.
-   */
-  updateGeoJsonCustomProperties(properties: Feature['properties']) {
-    this.updateProperties(properties || {});
-  }
-
-  /**
-   * @deprecated Use `updateProperties({ propName: undefined })` instead.
-   */
-  deleteGeoJsonCustomProperties(fieldNames: Array<string>) {
-    const deleteProps: Record<string, undefined> = {};
-    for (const fieldName of fieldNames) {
-      deleteProps[fieldName] = undefined;
-    }
-    this.updateProperties(deleteProps);
   }
 
   convertToPolygon(): boolean {
@@ -436,45 +428,58 @@ export class FeatureData {
     return toPolygonAllowedShapes.includes(this.shape);
   }
 
-  // changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
-  //   if (atomic) {
-  //     this.gm.features.updateManager.withAtomicSourcesUpdate(() =>
-  //       this.actualChangeSource({ sourceName, atomic }),
-  //     );
-  //   } else {
-  //     this.actualChangeSource({ sourceName, atomic });
-  //   }
-  // }
-
-  changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
+  /**
+   * Move this feature to a different source.
+   *
+   * Returns a Promise that resolves when MapLibre has committed the source change.
+   * Internal state is updated synchronously before the Promise.
+   * Internal callers can ignore the Promise for fire-and-forget behavior.
+   *
+   * @param sourceName - The target source name
+   * @param atomic - Whether to batch the remove/add operations (currently unused)
+   * @returns Promise that resolves when the data is committed to MapLibre
+   */
+  changeSource({
+    sourceName,
+    atomic,
+  }: {
+    sourceName: FeatureSourceName;
+    atomic: boolean;
+  }): Promise<void> {
     if (this.source.id === sourceName) {
       log.error(
         `FeatureData.changeSource: feature "${this.id}" already has the source "${sourceName}"`,
       );
-      return;
+      return Promise.resolve();
     }
 
     const source = this.gm.features.sources[sourceName];
     if (!source) {
       log.error(`FeatureData.changeSource: missing source "${sourceName}"`);
-      return;
+      return Promise.resolve();
     }
 
     const shapeGeoJson = this.getGeoJson();
     if (!shapeGeoJson) {
       log.error('FeatureData.changeSource: missing shape GeoJSON');
-      return;
+      return Promise.resolve();
     }
 
-    this.removeGeoJson();
+    // Fire-and-forget internally - internal state is updated synchronously
+    const removePromise = this.removeGeoJson();
     this.source = source;
-    this.addGeoJson(shapeGeoJson);
+    const addPromise = this.addGeoJson(shapeGeoJson);
 
+    // Collect marker promises (also fire-and-forget)
+    const markerPromises: Promise<void>[] = [];
     this.markers.forEach((markerData) => {
       if (markerData.instance instanceof FeatureData) {
-        markerData.instance.changeSource({ sourceName, atomic });
+        markerPromises.push(markerData.instance.changeSource({ sourceName, atomic }));
       }
     });
+
+    // Return combined promise for users who want to await
+    return Promise.all([removePromise, addPromise, ...markerPromises]).then(() => {});
   }
 
   fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
@@ -492,8 +497,17 @@ export class FeatureData {
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  delete() {
-    this.removeGeoJson();
+  /**
+   * Delete this feature from its source and remove all markers.
+   *
+   * Returns a Promise that resolves when MapLibre has committed the removal.
+   * Internal callers can ignore the Promise for fire-and-forget behavior.
+   *
+   * @returns Promise that resolves when the data is committed to MapLibre
+   */
+  delete(): Promise<void> {
+    const promise = this.removeGeoJson();
     this.removeMarkers();
+    return promise;
   }
 }
