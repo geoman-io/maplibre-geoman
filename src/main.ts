@@ -68,7 +68,16 @@ export class Geoman {
     const mapWithGeoman = Object.assign(map, { gm: this });
     this.mapAdapterInstance = getMapAdapter(this, mapWithGeoman);
 
-    this.waitForBaseMap().then(this.init.bind(this));
+    this.waitForBaseMap()
+      .then(this.init.bind(this))
+      .catch((error) => {
+        log.error('Geoman initialization failed:', error);
+        // Use destroy() for proper cleanup of any registered events/resources.
+        // Note: destroy() is async but we don't need to await it here since
+        // we're in a fire-and-forget catch block and destroy() handles the
+        // not-yet-loaded case synchronously for the critical cleanup paths.
+        this.destroy();
+      });
   }
 
   get drawClassMap() {
@@ -134,13 +143,27 @@ export class Geoman {
       return;
     }
 
+    // Fast path: if already loaded, return immediately
     if (this.mapAdapter.isLoaded()) {
       return map;
     }
 
+    // Fix for race condition (see https://github.com/maplibre/maplibre-gl-js/issues/4024):
+    // The map might finish loading between our isLoaded() check above and registering
+    // the 'load' event listener. Since MapLibre's 'load' event only fires once, we would
+    // miss it and timeout after 60 seconds. Solution: re-check isLoaded() after
+    // registering the listener to close the race window.
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
         map.once('load', resolve);
+
+        // Check if map loaded between the isLoaded() check above and the once() call.
+        // If so, resolve immediately. The once() listener will still fire but will be
+        // a no-op since the promise is already resolved, and MapLibre automatically
+        // removes once() listeners after they fire.
+        if (this.mapAdapter.isLoaded()) {
+          resolve(map);
+        }
       }),
       'waitForBaseMap failed',
     );
@@ -158,9 +181,16 @@ export class Geoman {
       return;
     }
 
+    // Same race condition fix as waitForBaseMap - check loaded state after
+    // registering the listener to close the timing window
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
         map.once(`${GM_PREFIX}:loaded`, resolve);
+
+        // Check if loaded between the this.loaded check above and the once() call
+        if (this.loaded) {
+          resolve(this);
+        }
       }),
       'waitForGeomanLoaded failed',
     );
