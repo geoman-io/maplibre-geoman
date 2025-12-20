@@ -107,6 +107,7 @@ export type BasePopupOptions = {
 
 export interface MapWithOnceMethod {
   once(type: string, listener: (ev: unknown) => void): this;
+  off(type: string, listener: (ev: unknown) => void): this;
 }
 
 export const mapInteractions = [

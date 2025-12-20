@@ -68,7 +68,16 @@ export class Geoman {
     const mapWithGeoman = Object.assign(map, { gm: this });
     this.mapAdapterInstance = getMapAdapter(this, mapWithGeoman);
 
-    this.waitForBaseMap().then(this.init.bind(this));
+    this.waitForBaseMap()
+      .then(this.init.bind(this))
+      .catch((error) => {
+        log.error('Geoman initialization failed:', error);
+        // Use destroy() for proper cleanup of any registered events/resources.
+        // Note: destroy() is async but we don't need to await it here since
+        // we're in a fire-and-forget catch block and destroy() handles the
+        // not-yet-loaded case synchronously for the critical cleanup paths.
+        this.destroy();
+      });
   }
 
   get drawClassMap() {
@@ -134,13 +143,28 @@ export class Geoman {
       return;
     }
 
+    // Fast path: if already loaded, return immediately
     if (this.mapAdapter.isLoaded()) {
       return map;
     }
 
+    // Fix for race condition (see https://github.com/maplibre/maplibre-gl-js/issues/4024):
+    // The map might finish loading between our isLoaded() check above and registering
+    // the 'load' event listener. Since MapLibre's 'load' event only fires once, we would
+    // miss it and timeout after 60 seconds. Solution: re-check isLoaded() after
+    // registering the listener to close the race window.
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
-        map.once('load', resolve);
+        const onLoad = () => resolve(map);
+        map.once('load', onLoad);
+
+        // Check if map loaded between the isLoaded() check above and the once() call.
+        // If so, remove the listener and resolve immediately. Since the map is already
+        // loaded, the 'load' event won't fire again, so we must clean up the listener.
+        if (this.mapAdapter.isLoaded()) {
+          map.off('load', onLoad);
+          resolve(map);
+        }
       }),
       'waitForBaseMap failed',
     );
@@ -152,15 +176,32 @@ export class Geoman {
       return this;
     }
 
+    // If destroyed (e.g., initialization failed), return undefined immediately
+    // to prevent callers from waiting on a timeout
+    if (this.destroyed) {
+      return;
+    }
+
     const map = await this.waitForBaseMap();
     if (!map) {
       log.error('Map instance is not available', map);
       return;
     }
 
+    // Same race condition fix as waitForBaseMap - check loaded state after
+    // registering the listener to close the timing window
+    const eventName = `${GM_PREFIX}:loaded`;
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
-        map.once(`${GM_PREFIX}:loaded`, resolve);
+        const onLoaded = () => resolve(this);
+        map.once(eventName, onLoaded);
+
+        // Check if loaded between the this.loaded check above and the once() call.
+        // If so, remove the listener and resolve immediately.
+        if (this.loaded) {
+          map.off(eventName, onLoaded);
+          resolve(this);
+        }
       }),
       'waitForGeomanLoaded failed',
     );
@@ -458,7 +499,12 @@ export const createGeomanInstance = async (
   options: PartialDeep<GmOptionsData>,
 ) => {
   const geoman = new Geoman(map, options);
-  await geoman.waitForGeomanLoaded();
+  const result = await geoman.waitForGeomanLoaded();
+
+  // If initialization failed (destroyed or returned undefined), throw an error
+  if (!result || geoman.destroyed) {
+    throw new Error('Geoman initialization failed');
+  }
 
   return geoman;
 };
