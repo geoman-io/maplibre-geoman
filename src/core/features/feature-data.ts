@@ -283,7 +283,7 @@ export class FeatureData {
 
     const nextProperties = { ...this._geoJson.properties };
 
-    const diff: GeoJSONFeatureDiff = {
+    const featureDiff: GeoJSONFeatureDiff = {
       id: this.id,
       addOrUpdateProperties: [],
       removeProperties: [],
@@ -298,14 +298,14 @@ export class FeatureData {
       }
       if (typeof value === 'undefined') {
         delete nextProperties[key];
-        diff.removeProperties?.push(key);
+        featureDiff.removeProperties?.push(key);
       } else {
         nextProperties[key] = value;
-        diff.addOrUpdateProperties?.push({ key, value });
+        featureDiff.addOrUpdateProperties?.push({ key, value });
       }
     }
 
-    const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, diff);
+    const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, featureDiff);
 
     this._geoJson.properties = nextProperties;
     this.gm.features.updateManager.updateSource({
@@ -354,7 +354,7 @@ export class FeatureData {
     });
   }
 
-  deleteGeoJsonProperties(fieldNames: Array<string>) {
+  removeProperties(fieldNames: Array<string>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -363,16 +363,16 @@ export class FeatureData {
       (fieldName) => `${FEATURE_PROPERTY_PREFIX}${fieldName}`,
     );
 
-    const keysToDelete = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
+    const keysToRemove = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
     const nextProperties = { ...this._geoJson.properties };
 
-    keysToDelete.forEach((key) => {
+    keysToRemove.forEach((key) => {
       delete nextProperties[key];
     });
 
     const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, {
       id: this.id,
-      removeProperties: keysToDelete,
+      removeProperties: keysToRemove,
     });
 
     this._geoJson.properties = nextProperties;
