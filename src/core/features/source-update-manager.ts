@@ -80,11 +80,14 @@ export class SourceUpdateManager {
         if (diff.update) {
           console.error('In transactional-set updates are not allowed');
         }
+        // Merge is processed by mutating the diff object.
+        // This is essential for performance - avoiding mutation would significantly degrade the improvements
         this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
       } else {
         if (!this.updateStorage[sourceName].diff) {
           this.updateStorage[sourceName].diff = {};
         }
+        // Idem
         this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
       }
     }
@@ -219,36 +222,6 @@ export class SourceUpdateManager {
       this.updateStorage[sourceName].method = 'automatic';
     });
   }
-
-  // withAtomicSourcesUpdate<T>(callback: () => T): T {
-  //   try {
-  //     this.updateMethod = 'transactional-update';
-  //     return callback();
-  //   } finally {
-  //     typedKeys(this.gm.features.sources).forEach((sourceName) => {
-  //       this.updateSource({ sourceName });
-  //     });
-  //     this.updateMethod = 'automatic';
-  //   }
-  // }
-
-  // getCombinedDiff(sourceName: FeatureSourceName): GeoJSONSourceDiffHashed | null {
-  //   let combinedDiff: GeoJSONSourceDiffHashed = {};
-
-  //   for (let i = 0; i < MAX_DIFF_ITEMS; i += 1) {
-  //     if (this.updateStorage[sourceName][i] === undefined) {
-  //       break;
-  //     }
-  //     combinedDiff = this.mergeGeoJsonDiff(combinedDiff, this.updateStorage[sourceName][i]);
-  //   }
-  //   this.updateStorage[sourceName] = this.updateStorage[sourceName].slice(MAX_DIFF_ITEMS);
-
-  //   if (Object.values(combinedDiff).find((item) => (Array.isArray(item) ? item.length : item))) {
-  //     return combinedDiff;
-  //   }
-
-  //   return null;
-  // }
 
   mergeGeoJsonDiff(prev: GeoJSONSourceDiffHashed, next: GeoJSONSourceDiffHashed) {
     // Resolve merge conflicts
