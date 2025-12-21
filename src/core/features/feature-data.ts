@@ -128,8 +128,7 @@ export class FeatureData {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-    this._updateAllProperties(this._geoJson.properties);
+    this.removeProperties([`${FEATURE_PROPERTY_PREFIX}${name}`], false);
   }
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
@@ -354,14 +353,14 @@ export class FeatureData {
     });
   }
 
-  removeProperties(fieldNames: Array<string>) {
+  removeProperties(fieldNames: Array<string>, preserveInternals = true) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
-    const deniedKeys = typedKeys(propertyValidators).map(
-      (fieldName) => `${FEATURE_PROPERTY_PREFIX}${fieldName}`,
-    );
+    const deniedKeys = preserveInternals
+      ? typedKeys(propertyValidators).map((fieldName) => `${FEATURE_PROPERTY_PREFIX}${fieldName}`)
+      : [];
 
     const keysToRemove = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
     const nextProperties = { ...this._geoJson.properties };
@@ -373,6 +372,8 @@ export class FeatureData {
     const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, {
       id: this.id,
       removeProperties: keysToRemove,
+      // issue with MapLibre 5.15 keep empty but present
+      addOrUpdateProperties: [],
     });
 
     this._geoJson.properties = nextProperties;
