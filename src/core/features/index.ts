@@ -47,7 +47,11 @@ export class Features {
 
   featureCounter: number = 0;
   featureStore: FeatureStore = new Map<FeatureId, FeatureData>();
-  featureStoreAllowedSources: Array<FeatureSourceName> = [SOURCES.main, SOURCES.temporary];
+  featureStoreAllowedSources: Array<FeatureSourceName> = [
+    SOURCES.main,
+    SOURCES.temporary,
+    SOURCES.internal,
+  ];
 
   sources: SourcesStorage;
   defaultSourceName: FeatureSourceName = SOURCES.main;
@@ -350,6 +354,8 @@ export class Features {
       addedFeatures: [] as Array<FeatureData>,
     };
 
+    this.updateManager.beginTransaction('transactional-update', SOURCES.main);
+
     features.forEach((feature) => {
       let featureData: FeatureData | null = null;
       result.stats.total += 1;
@@ -383,6 +389,8 @@ export class Features {
         result.stats.failed += 1;
       }
     });
+
+    this.updateManager.commitTransaction('gm_main');
 
     return result;
   }
@@ -613,7 +621,7 @@ export class Features {
     typedKeys(this.sources).forEach((sourceName) => {
       typedKeys(this.gm.options.layerStyles).forEach((shapeName) => {
         const styles = this.gm.options.layerStyles[shapeName][sourceName];
-        styles.forEach((partialStyle) => {
+        styles?.forEach((partialStyle) => {
           const layer = this.createGenericLayer({
             sourceName,
             shapeNames: [shapeName],
