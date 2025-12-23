@@ -66,6 +66,7 @@ export class DrawRectangle extends BaseDraw {
         this.finishShape(lngLat);
       }
     } else {
+      this.gm.features.clearSelection();
       const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(lngLat, lngLat));
       this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 

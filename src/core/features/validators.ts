@@ -27,4 +27,6 @@ export const propertyValidators: {
   text: (value: unknown): value is string => typeof value === 'string',
 
   disableEdit: (value: unknown): value is boolean => typeof value === 'boolean',
+
+  group: (value: unknown): value is string => typeof value === 'string',
 };

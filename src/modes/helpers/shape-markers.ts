@@ -50,6 +50,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   previousPosition: LngLatTuple | null = null;
   activeMarker: MarkerData | null = null;
   activeFeatureData: FeatureData | null = null;
+  linkedFeatures: Array<FeatureData> = [];
   sharedMarkers: Array<SharedMarker> = [];
   allowedShapes: Array<FeatureShape> = ['circle', 'line', 'rectangle', 'polygon', 'ellipse'];
   edgeMarkersAllowed: boolean = false;
@@ -131,6 +132,17 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.activeMarker = featureMarkerData || null;
     this.activeFeatureData = featureMarkerData?.instance.parent || null;
 
+    if (this.activeFeatureData) {
+      if (!this.gm.features.selection.has(this.activeFeatureData.id)) {
+        this.gm.features.setSelection([this.activeFeatureData.id], true);
+      }
+      const linkedFeatures = this.gm.features.getLinkedFeatures(this.activeFeatureData);
+      if (linkedFeatures.some((f) => f.getShapeProperty('disableEdit') === true)) {
+        return { next: true };
+      }
+      this.linkedFeatures = linkedFeatures;
+    }
+
     if (!(this.activeMarker && this.activeFeatureData)) {
       return { next: true };
     }
@@ -150,10 +162,17 @@ export class ShapeMarkersHelper extends BaseHelper {
         this.snappingHelper?.addExcludedFeature(sharedMarker.featureData),
       );
     } else {
-      this.snappingHelper?.addExcludedFeature(this.activeFeatureData);
+      [this.activeFeatureData, ...this.linkedFeatures].map((featureData) => {
+        this.snappingHelper?.addExcludedFeature(featureData);
+      });
     }
 
-    this.sendMarkerEvent('marker_captured', this.activeFeatureData, this.activeMarker);
+    this.sendMarkerEvent(
+      'marker_captured',
+      this.activeFeatureData,
+      this.activeMarker,
+      this.linkedFeatures,
+    );
     return { next: false };
   }
 
@@ -165,17 +184,24 @@ export class ShapeMarkersHelper extends BaseHelper {
     const eventData = {
       featureData: this.activeFeatureData,
       markerData: this.activeMarker,
+      linkedFeatures: this.linkedFeatures,
     };
 
     this.activeMarker = null;
     this.activeFeatureData = null;
     this.sharedMarkers = [];
+    this.linkedFeatures = [];
     this.snappingHelper?.clearExcludedFeatures();
     this.previousPosition = null;
     this.gm.mapAdapter.setDragPan(true);
 
     if (eventData.featureData && eventData.markerData) {
-      this.sendMarkerEvent('marker_released', eventData.featureData, eventData.markerData);
+      this.sendMarkerEvent(
+        'marker_released',
+        eventData.featureData,
+        eventData.markerData,
+        eventData.linkedFeatures,
+      );
       return { next: false };
     } else {
       log.debug('ShapeMarkersHelper.onMouseUp: no active marker or featureData', eventData);
@@ -607,6 +633,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     action: GmEditMarkerEvent['action'],
     featureData: FeatureData,
     markerData: MarkerData,
+    linkedFeatures: Array<FeatureData> = [],
   ) {
     const payload: GmEditMarkerEvent = {
       name: `${GM_SYSTEM_PREFIX}:edit:marker`,
@@ -616,6 +643,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       action,
       featureData,
       markerData,
+      linkedFeatures,
     };
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
@@ -635,7 +663,6 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   sendMarkerMoveEvent(event: BaseMapPointerEvent) {
     const markerLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
-
     if (this.activeMarker && this.activeFeatureData) {
       const targetMarkers = this.pinEnabled
         ? this.sharedMarkers
@@ -658,6 +685,7 @@ export class ShapeMarkersHelper extends BaseHelper {
             markerData: item.markerData,
             lngLatStart: this.previousPosition,
             lngLatEnd: markerLngLat,
+            linkedFeatures: item.featureData === this.activeFeatureData ? this.linkedFeatures : [],
           };
           this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
         }
