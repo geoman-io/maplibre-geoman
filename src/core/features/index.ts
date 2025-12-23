@@ -17,6 +17,7 @@ import {
   type GeoJsonShapeFeatureCollection,
   type Geoman,
   type GmDrawFeatureCreatedEvent,
+  type GmEditSelectionChangeEvent,
   type ImportGeoJsonOptions,
   isDefined,
   type LngLatTuple,
@@ -206,8 +207,11 @@ export class Features {
     this.defaultSourceName = sourceName;
   }
 
-  setSelection(featureIds: Array<FeatureId>) {
+  setSelection(featureIds: Array<FeatureId>, fireEvent = false) {
     this.selection = new Set(featureIds);
+    if (fireEvent) {
+      this.fireSelectionChangeEvent(featureIds);
+    }
   }
 
   clearSelection() {
@@ -774,5 +778,16 @@ export class Features {
       };
       this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
     }
+  }
+
+  fireSelectionChangeEvent(selection: FeatureId[]) {
+    const payload: GmEditSelectionChangeEvent = {
+      name: `${GM_SYSTEM_PREFIX}:edit:selection_change`,
+      level: 'system',
+      actionType: 'edit',
+      action: 'selection_change',
+      selection,
+    };
+    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 }

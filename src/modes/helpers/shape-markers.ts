@@ -134,7 +134,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     if (this.activeFeatureData) {
       if (!this.gm.features.selection.has(this.activeFeatureData.id)) {
-        this.gm.features.setSelection([this.activeFeatureData.id]);
+        this.gm.features.setSelection([this.activeFeatureData.id], true);
       }
       const linkedFeatures = this.gm.features.getLinkedFeatures(this.activeFeatureData);
       if (linkedFeatures.some((f) => f.getShapeProperty('disableEdit') === true)) {
