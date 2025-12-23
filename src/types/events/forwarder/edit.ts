@@ -2,8 +2,9 @@ import { FeatureData } from '@/core/features/feature-data.ts';
 import type {
   GmEditFeatureEditEndEvent,
   GmEditFeatureEditStartEvent,
+  GmEditSelectionChangeEvent,
 } from '@/types/events/edit.ts';
-import type { FeatureShape } from '@/types/features.ts';
+import type { FeatureId, FeatureShape } from '@/types/features.ts';
 import type { AnyMapInstance } from '@/types/map/index.ts';
 
 import type { EditModeName } from '@/types/modes/index.ts';
@@ -26,4 +27,13 @@ export interface FeatureEditEndFwdEvent extends BaseFwdEvent<GmEditFeatureEditEn
   map: AnyMapInstance;
 }
 
-export type FeatureEditFwdEvent = FeatureEditStartFwdEvent | FeatureEditEndFwdEvent;
+export interface SelectionChangedFwdEvent extends BaseFwdEvent<GmEditSelectionChangeEvent> {
+  name: `${GmPrefix}:selection`;
+  selection: FeatureId[];
+  map: AnyMapInstance;
+}
+
+export type FeatureEditFwdEvent =
+  | FeatureEditStartFwdEvent
+  | FeatureEditEndFwdEvent
+  | SelectionChangedFwdEvent;

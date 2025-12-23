@@ -805,6 +805,7 @@ export class Features {
       actionType: 'edit',
       action: 'selection_change',
       selection,
+      mode: null,
     };
     this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
