@@ -77,7 +77,7 @@ export abstract class BaseDrag extends BaseEdit {
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
       if (!this.gm.features.selection.has(featureData.id)) {
-        this.gm.features.setSelection([featureData.id]);
+        this.gm.features.setSelection([featureData.id], true);
       }
 
       const linkedFeatures = this.gm.features.getLinkedFeatures(featureData);

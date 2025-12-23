@@ -35,7 +35,7 @@ export class EditDelete extends BaseEdit {
     const principalFeature = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
     if (principalFeature && this.allowedShapes.includes(principalFeature.shape)) {
       if (!this.gm.features.selection.has(principalFeature.id)) {
-        this.gm.features.setSelection([principalFeature.id]);
+        this.gm.features.setSelection([principalFeature.id], true);
       }
 
       const linkedFeatures = this.gm.features.getLinkedFeatures(principalFeature);
@@ -44,7 +44,7 @@ export class EditDelete extends BaseEdit {
         return { next: false };
       }
 
-      this.gm.features.setSelection([]);
+      this.gm.features.setSelection([], true);
 
       [principalFeature, ...linkedFeatures].map((featureData) => {
         this.gm.features.delete(featureData);
