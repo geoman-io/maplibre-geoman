@@ -86,6 +86,7 @@ export interface GmEditFeatureEditEndEvent extends GmBaseEvent {
 export interface GmEditSelectionChangeEvent extends GmBaseEvent {
   name: `${GmSystemPrefix}:edit:selection_change`;
   actionType: 'edit';
+  mode: null;
   action: 'selection_change';
   selection: FeatureId[];
 }

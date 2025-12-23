@@ -49,7 +49,7 @@ export const saveGeomanFeatureEventResultToCustomData = async (
 
       const eventName = `${context.gmPrefix}:${context.eventName}` as AnyEventName;
       const listener = (event: FeatureEditFwdEvent) => {
-        if (event.feature.id === context.featureId) {
+        if (event.name !== 'gm:selection' && event.feature.id === context.featureId) {
           if (window.customData?.rawEventResults) {
             window.customData.rawEventResults[context.resultId] = event;
           }
