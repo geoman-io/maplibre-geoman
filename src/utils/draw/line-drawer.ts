@@ -425,9 +425,7 @@ export class LineDrawer extends BaseDraw {
       return;
     }
 
-    this.featureData.updateGeoJsonGeometry(
-      this.getFeatureGeoJson({ withControlMarker: true }).geometry,
-    );
+    this.featureData.updateGeometry(this.getFeatureGeoJson({ withControlMarker: true }).geometry);
 
     if (this.gm.markerPointer.marker) {
       const markerData: MarkerData = {
