@@ -1,6 +1,6 @@
-import type { ShapeGeoJsonProperties } from '@/types/features.ts';
-import type { LngLatTuple } from '@/types/map/index.ts';
-import type { ShapeName } from '@/types/modes/index.ts';
+import type { ShapeGeoJsonProperties } from "@/types/features.ts";
+import type { LngLatTuple } from "@/types/map/index.ts";
+import type { ShapeName } from "@/types/modes/index.ts";
 import type {
   Feature,
   FeatureCollection,
@@ -10,7 +10,7 @@ import type {
   MultiPolygon,
   Point,
   Polygon,
-} from 'geojson';
+} from "geojson";
 
 export type ImportGeoJsonProperties = {
   shape?: ShapeName;
@@ -21,13 +21,23 @@ export type ImportGeoJsonProperties = {
 
 export type PointBasedGeometry = Point | MultiPoint;
 
-export type LineBasedGeometry = LineString | MultiLineString | Polygon | MultiPolygon;
+export type LineBasedGeometry =
+  | LineString
+  | MultiLineString
+  | Polygon
+  | MultiPolygon;
 
 export type BasicGeometry = PointBasedGeometry | LineBasedGeometry;
 
-export type GeoJsonShapeFeature = Feature<BasicGeometry, ShapeGeoJsonProperties>;
+export type GeoJsonShapeFeature = Feature<
+  BasicGeometry,
+  ShapeGeoJsonProperties
+>;
 
-export type GeoJsonImportFeature = Feature<BasicGeometry, ImportGeoJsonProperties>;
+export type GeoJsonImportFeature = Feature<
+  BasicGeometry,
+  ImportGeoJsonProperties
+>;
 
 export type GeoJsonLineFeature = Feature<LineString, ShapeGeoJsonProperties>;
 
@@ -67,4 +77,10 @@ export type CoordinateIndices = {
   featureIndex: number;
   multiFeatureIndex: number;
   geometryIndex: number;
+};
+
+export type SegmentData = {
+  segment: SegmentPosition;
+  middle: PositionData;
+  edgeMarkerKey: string;
 };

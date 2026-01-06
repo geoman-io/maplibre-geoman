@@ -1,36 +1,98 @@
-import { layerStyles } from './styles/layer-styles.ts';
+import { layerStyles } from "./styles/layer-styles.ts";
 import {
   type AnyMapInstance,
+  type GeoJsonShapeFeature,
   Geoman,
   type GmOptionsData,
+  type LngLatTuple,
   type MapInstanceWithGeoman,
-} from '@/main.ts';
-import log from 'loglevel';
-import type { PartialDeep } from 'type-fest';
-import { mount, unmount } from 'svelte';
-import LeftPanel from './components/LeftPanel.svelte';
-import RightPanel from './components/RightPanel.svelte';
-import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';
+} from "@/main.ts";
+import log from "loglevel";
+import type { PartialDeep } from "type-fest";
+import { mount, unmount } from "svelte";
+import LeftPanel from "./components/LeftPanel.svelte";
+import RightPanel from "./components/RightPanel.svelte";
+import { CONTROL_GROUP_CLASS } from "@mapLib/constants.ts";
+import { cloneDeep, get } from "lodash-es";
+import bearing from "@turf/bearing";
+import transformRotate from "@turf/transform-rotate";
 
 export function createGmOptions(): PartialDeep<GmOptionsData> {
   return {
     settings: {
-      controlsPosition: 'top-left',
+      controlsPosition: "top-left",
       useDefaultLayers: true,
       useControlsUi: true,
       controlsUiEnabledByDefault: true,
       controlsCollapsible: true,
       controlsStyles: {
         controlGroupClass: CONTROL_GROUP_CLASS,
-        controlContainerClass: 'gm-control-container',
-        controlButtonClass: 'gm-control-button',
+        controlContainerClass: "gm-control-container",
+        controlButtonClass: "gm-control-button",
+      },
+      customGetAllShapeSegments(featureData) {
+        console.log(featureData);
+        return null;
+      },
+      customRotateHandler(featureData, shapeCentroid, event) {
+        if (featureData.shape === "polygon") {
+          const featureData = event.featureData;
+
+          const geoJson = cloneDeep(
+            featureData.getGeoJson() as GeoJsonShapeFeature,
+          );
+
+          const bearingStart = bearing(shapeCentroid, event.lngLatStart);
+          const bearingEnd = bearing(shapeCentroid, event.lngLatEnd);
+
+          const rotationAngle = bearingEnd - bearingStart;
+          const angle = (rotationAngle + 360) % 360;
+
+          geoJson.geometry = transformRotate(geoJson, angle, {
+            pivot: shapeCentroid,
+          }).geometry;
+
+          return geoJson;
+        }
+
+        return null;
+      },
+      customVertexUpdateHandler({ featureData, lngLatEnd, markerData }) {
+        if (featureData.shape === "polygon") {
+          const geoJson = cloneDeep(
+            featureData.getGeoJson() as GeoJsonShapeFeature,
+          );
+          const coordPath = cloneDeep(markerData.position.path);
+          const coordIndex = coordPath.pop();
+          const coordinates = get(geoJson, coordPath) as Array<LngLatTuple>;
+
+          if (Array.isArray(coordinates) && typeof coordIndex === "number") {
+            coordinates[coordIndex] = [...lngLatEnd];
+            if (coordIndex === 0 && featureData.shape === "polygon") {
+              coordinates[coordinates.length - 1] = [...lngLatEnd];
+            }
+          } else {
+            log.error(
+              "BaseDrag.moveSingleVertex: invalid coordinates",
+              geoJson,
+              coordPath,
+            );
+          }
+
+          return geoJson;
+        }
+
+        return null;
+      },
+      customShapeUpdateHandler() {
+        return null;
       },
     },
     layerStyles: layerStyles,
     controls: {
       edit: {
         drag: {
-          title: 'Drag',
+          title: "Drag",
           uiEnabled: true,
         },
       },
@@ -59,7 +121,7 @@ export interface DevMapInstance {
 
 // --- Panel management ---
 
-const STORAGE_KEY = 'gm-dev-panels';
+const STORAGE_KEY = "gm-dev-panels";
 
 interface PanelState {
   leftCollapsed: boolean;
@@ -90,40 +152,40 @@ let leftPanelComponent: ReturnType<typeof mount> | null = null;
 let rightPanelComponent: ReturnType<typeof mount> | null = null;
 const panelState = loadPanelState();
 
-const leftPanelElement = document.getElementById('dev-left-panel');
-const rightPanelElement = document.getElementById('dev-right-panel');
+const leftPanelElement = document.getElementById("dev-left-panel");
+const rightPanelElement = document.getElementById("dev-right-panel");
 
 // Apply initial panel state
 if (leftPanelElement && panelState.leftCollapsed) {
-  leftPanelElement.classList.add('collapsed');
+  leftPanelElement.classList.add("collapsed");
 }
 if (rightPanelElement && panelState.rightCollapsed) {
-  rightPanelElement.classList.add('collapsed');
+  rightPanelElement.classList.add("collapsed");
 }
 
 export const toggleLeftPanel = () => {
   if (!leftPanelElement) return;
-  leftPanelElement.classList.toggle('collapsed');
-  panelState.leftCollapsed = leftPanelElement.classList.contains('collapsed');
+  leftPanelElement.classList.toggle("collapsed");
+  panelState.leftCollapsed = leftPanelElement.classList.contains("collapsed");
   savePanelState(panelState);
 };
 
 export const toggleRightPanel = () => {
   if (!rightPanelElement) return;
-  rightPanelElement.classList.toggle('collapsed');
-  panelState.rightCollapsed = rightPanelElement.classList.contains('collapsed');
+  rightPanelElement.classList.toggle("collapsed");
+  panelState.rightCollapsed = rightPanelElement.classList.contains("collapsed");
   savePanelState(panelState);
 };
 
 // Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
+document.addEventListener("keydown", (e) => {
   // Ctrl+1 or Cmd+1 to toggle left panel
-  if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+  if ((e.ctrlKey || e.metaKey) && e.key === "1") {
     e.preventDefault();
     toggleLeftPanel();
   }
   // Ctrl+2 or Cmd+2 to toggle right panel
-  if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+  if ((e.ctrlKey || e.metaKey) && e.key === "2") {
     e.preventDefault();
     toggleRightPanel();
   }
@@ -161,10 +223,10 @@ export const unmountPanels = async () => {
   }
   // Clear panel content
   if (leftPanelElement) {
-    leftPanelElement.innerHTML = '';
+    leftPanelElement.innerHTML = "";
   }
   if (rightPanelElement) {
-    rightPanelElement.innerHTML = '';
+    rightPanelElement.innerHTML = "";
   }
 };
 
@@ -175,7 +237,7 @@ export async function initGeomanInstance(
   gmOptions: PartialDeep<GmOptionsData>,
 ): Promise<Geoman> {
   if (window.geoman) {
-    console.error('Geoman is already initialized', window.geoman);
+    console.error("Geoman is already initialized", window.geoman);
   }
 
   let geoman = new Geoman(map, gmOptions);
@@ -183,10 +245,10 @@ export async function initGeomanInstance(
   geoman = new Geoman(map, gmOptions);
   await geoman.waitForGeomanLoaded();
 
-  geoman.mapAdapter.on('gm:create', (event) => {
+  geoman.mapAdapter.on("gm:create", (event) => {
     log.debug('Event: "gm:create"', event.name);
-    console.log('Feature geojson', event.feature.getGeoJson());
-    console.log('Source geojson', event.feature.source.getGeoJson());
+    console.log("Feature geojson", event.feature.getGeoJson());
+    console.log("Source geojson", event.feature.source.getGeoJson());
   });
 
   return geoman;
@@ -201,6 +263,6 @@ export function setupDevEnvironment(geoman: Geoman, map: DevMapInstance): void {
 
   mountPanels(geoman, map);
 
-  log.debug('geoman version:', __GEOMAN_VERSION__);
-  log.debug('Dev panels mounted');
+  log.debug("geoman version:", __GEOMAN_VERSION__);
+  log.debug("Dev panels mounted");
 }
