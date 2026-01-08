@@ -107,8 +107,8 @@ export class DrawEllipse extends BaseCircle {
       : this.getEllipseGeoJson(this.circleCenterLngLat, eventLngLat);
     this.featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
 
-    this.featureData._updateAllProperties({
-      shape: featureGeoJson.properties.shape,
+    this.featureData.updateGeoJsonProperties({
+      __gm_shape: featureGeoJson.properties.__gm_shape,
     });
 
     const markerData = this.getControlMarkerData();

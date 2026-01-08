@@ -43,7 +43,7 @@ export abstract class BaseCircle extends BaseDraw {
     return {
       type: 'Feature',
       properties: {
-        shape: this.shape,
+        __gm_shape: this.shape,
       },
       geometry: {
         type: 'Point',
