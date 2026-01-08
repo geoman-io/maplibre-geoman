@@ -12,7 +12,7 @@ import type { PartialDeep } from 'type-fest';
 
 import { ACTION_TYPES, MODE_TYPES } from '@/modes/constants.ts';
 import type { GeoJsonShapeFeature, LngLatDiff, SegmentData } from './geojson.ts';
-import type { FeatureData, FeatureShape, GmEditMarkerMoveEvent } from '@/main.ts';
+import type { FeatureData, GmEditMarkerMoveEvent } from '@/main.ts';
 
 export type ModeType = (typeof MODE_TYPES)[number];
 export type ActionType = (typeof ACTION_TYPES)[number];
@@ -67,29 +67,14 @@ export type GmOptionsData = {
     };
     customGetAllShapeSegments?: (featureData: FeatureData) => SegmentData[] | null;
     customVertexUpdateHandler?: (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
-    customShapeUpdateHandler?: (
+    customDragHandler?: (
       featureData: FeatureData,
       lngLatDiff: LngLatDiff,
     ) => GeoJsonShapeFeature | null;
     customRotateHandler?: (
-      featureData: FeatureData,
-      shapeCentroid: LngLatTuple,
       event: GmEditMarkerMoveEvent,
+      shapeCentroid: LngLatTuple,
     ) => GeoJsonShapeFeature | null;
-    //     customShapeUpdateHandler?: (
-    //   featureData: FeatureData,
-    //   oldLngLat: LngLatTuple,
-    //   newLngLat: LngLatTuple,
-    // ) => GeoJsonShapeFeature | null;
-    // customVertexUpdateHandler?: (
-    //   shape: FeatureShape,
-    //   event: GmEditMarkerMoveEvent,
-    // ) => GeoJsonShapeFeature | null;
-
-    // legacyCustomRotateHandler?: (
-    //   shape: FeatureShape,
-    //   event: GmEditMarkerMoveEvent,
-    // ) => GeoJsonShapeFeature | null;
   };
   layerStyles: typeof defaultLayerStyles;
   controls: {

@@ -131,7 +131,7 @@ export class EditRotate extends BaseDrag {
       let updatedGeoJson: GeoJsonShapeFeature | null = null;
 
       if (customRotateHandlerFunc) {
-        updatedGeoJson = customRotateHandlerFunc(fd, shapeCentroid, event);
+        updatedGeoJson = customRotateHandlerFunc(event, shapeCentroid);
       }
 
       if (!updatedGeoJson) {

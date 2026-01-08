@@ -237,15 +237,14 @@ export abstract class BaseDrag extends BaseEdit {
       return false;
     }
 
-    const customShapeUpdateHandlerFunc =
-      this.gm.options.settings.customShapeUpdateHandler;
+    const customDragHandlerFunc = this.gm.options.settings.customDragHandler;
     let updatedGeoJson:
       | Promise<GeoJsonShapeFeature | null>
       | GeoJsonShapeFeature
       | null = null;
 
-    if (customShapeUpdateHandlerFunc) {
-      updatedGeoJson = customShapeUpdateHandlerFunc(featureData, lngLatDiff);
+    if (customDragHandlerFunc) {
+      updatedGeoJson = customDragHandlerFunc(featureData, lngLatDiff);
     }
 
     if (!updatedGeoJson) {

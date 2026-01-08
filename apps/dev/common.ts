@@ -34,16 +34,17 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
         console.log(featureData);
         return null;
       },
-      customRotateHandler(featureData, shapeCentroid, event) {
+      customRotateHandler(
+        { featureData, lngLatStart, lngLatEnd },
+        shapeCentroid,
+      ) {
         if (featureData.shape === "polygon") {
-          const featureData = event.featureData;
-
           const geoJson = cloneDeep(
             featureData.getGeoJson() as GeoJsonShapeFeature,
           );
 
-          const bearingStart = bearing(shapeCentroid, event.lngLatStart);
-          const bearingEnd = bearing(shapeCentroid, event.lngLatEnd);
+          const bearingStart = bearing(shapeCentroid, lngLatStart);
+          const bearingEnd = bearing(shapeCentroid, lngLatEnd);
 
           const rotationAngle = bearingEnd - bearingStart;
           const angle = (rotationAngle + 360) % 360;
@@ -84,7 +85,7 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
 
         return null;
       },
-      customShapeUpdateHandler() {
+      customDragHandler() {
         return null;
       },
     },
