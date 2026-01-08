@@ -1,5 +1,6 @@
 import type { ModeName, ModeType } from '@/main.ts';
 import { expect, type Page } from '@playwright/test';
+import type { GeoJSONSource } from 'maplibre-gl';
 
 export type ScreenCoordinates = [number, number];
 
@@ -26,7 +27,9 @@ export const waitForMapIdle = async (page: Page) => {
         return null;
       }
 
-      return !Object.values(sources).some((source) => !source?.loaded);
+      return !Object.values(sources).some(
+        (source) => !(source?.sourceInstance as GeoJSONSource)?.loaded(),
+      );
     },
     {
       timeout: isCI ? 30000 : 10000,
