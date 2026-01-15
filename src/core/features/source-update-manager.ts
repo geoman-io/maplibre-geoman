@@ -174,7 +174,7 @@ export class SourceUpdateManager {
     // This handles the case where MapLibre's _updateWorkerData returns early due to
     // _isUpdatingWorker being true, and the actual data gets processed via the
     // recursive call in the finally block.
-    while (this.updateStorage[sourceName] || this.pendingUpdatePromises[sourceName]?.length) {
+    while (this.updateStorage[sourceName].diff || this.pendingUpdatePromises[sourceName]?.length) {
       // Flush any queued updates that haven't been processed yet
       if (this.updateStorage[sourceName].diff) {
         const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
