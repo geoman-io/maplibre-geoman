@@ -62,3 +62,9 @@ export type CoordinateIndices = {
   multiFeatureIndex: number;
   geometryIndex: number;
 };
+
+export type SimplePoint = {
+  x: number;
+  y: number;
+  dist(p: { x: number; y: number }): number;
+};

@@ -9,6 +9,7 @@ import type {
   LngLatDiff,
   LngLatTuple,
   MapHandlerReturnData,
+  SimplePoint,
 } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
@@ -32,6 +33,7 @@ type UpdateShapeHandler = (
 
 export abstract class BaseDrag extends BaseEdit {
   mode: EditModeName = 'drag';
+  initialPoint: SimplePoint | null = null;
   previousLngLat: LngLatTuple | null = null;
   linkedFeatures: Array<FeatureData> = [];
 
@@ -77,7 +79,7 @@ export abstract class BaseDrag extends BaseEdit {
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
       if (!this.gm.features.selection.has(featureData.id)) {
-        this.gm.features.setSelection([featureData.id], true);
+        this.gm.features.setSelection([featureData.id]);
       }
 
       const linkedFeatures = this.gm.features.getLinkedFeatures(featureData);
@@ -86,6 +88,7 @@ export abstract class BaseDrag extends BaseEdit {
         return { next: true };
       }
 
+      this.initialPoint = event.point;
       this.featureData = featureData;
 
       this.gm.features.updateManager.beginTransaction('transactional-update');
@@ -130,6 +133,11 @@ export abstract class BaseDrag extends BaseEdit {
     });
     this.gm.features.updateManager.commitTransaction();
 
+    if (this.initialPoint && this.initialPoint.dist(event.point) < 1) {
+      this.gm.features.setSelection([this.featureData.id], true);
+    }
+
+    this.initialPoint = null;
     this.previousLngLat = null;
     this.featureData = null;
     this.linkedFeatures = [];
