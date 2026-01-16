@@ -3,7 +3,7 @@
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
   import { controlsStore } from '@/core/controls/components/controls-store.ts';
-  import type {ActionType, ControlOptions, GenericSystemControls, ModeName} from '@/main.ts';
+  import type { ActionType, ControlOptions, GenericSystemControls, ModeName } from '@/main.ts';
   import DOMPurify from 'dompurify';
   import { slide } from 'svelte/transition';
 
