@@ -3,7 +3,7 @@
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
   import { controlsStore } from '@/core/controls/components/controls-store.ts';
-  import type { ActionType, GenericSystemControls, ModeName } from '@/main.ts';
+  import type {ActionType, ControlOptions, GenericSystemControls, ModeName} from '@/main.ts';
   import DOMPurify from 'dompurify';
   import { slide } from 'svelte/transition';
 
@@ -33,6 +33,16 @@
   const getToggleExpandedIcon = () => {
     return DOMPurify.sanitize(expanded ? caretDown : caretUp);
   };
+
+  const sortControlEntries = (
+          groupControls: Record<string, ControlOptions>
+  ): Array<[string, ControlOptions]> => {
+    return Object.entries(groupControls).sort(([, optionsA], [, optionsB]) => {
+      const orderA = optionsA.order || 0;
+      const orderB = optionsB.order || 0;
+      return orderA - orderB;
+    });
+  };
 </script>
 
 <div class="gm-reactive-controls">
@@ -49,7 +59,7 @@
       {#each Object.entries($controlsStore.options) as [groupKey, groupControls] (groupKey)}
         {#if hasVisibleControls(groupKey, groupControls)}
           <div class={`${controlsStyles.controlGroupClass} group-${groupKey}`}>
-            {#each Object.entries(groupControls) as [controlKey, controlOptions] (controlKey)}
+            {#each sortControlEntries(groupControls) as [controlKey, controlOptions] (controlKey)}
               {@const control = getControl(groupKey, controlKey)}
               {#if control}
                 <ActionControl control={control} controlOptions={controlOptions} />
