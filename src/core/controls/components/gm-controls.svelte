@@ -34,12 +34,21 @@
     return DOMPurify.sanitize(expanded ? caretDown : caretUp);
   };
 
+  // Sort controls by order property while preserving insertion order for undefined values
   const sortControlEntries = (groupControls: Record<string, ControlOptions>): Array<[string, ControlOptions]> => {
-    return Object.entries(groupControls).sort(([, optionsA], [, optionsB]) => {
-      const orderA = optionsA.order || 0;
-      const orderB = optionsB.order || 0;
-      return orderA - orderB;
-    });
+    return Object.entries(groupControls)
+            .map(([key, options], originalIndex) => ({ key, options, originalIndex }))
+            .sort((a, b) => {
+              const orderA = a.options.order ?? Infinity;
+              const orderB = b.options.order ?? Infinity;
+
+              // Sort by order value, use original index as tiebreaker
+              if (orderA !== orderB) {
+                return orderA - orderB;
+              }
+              return a.originalIndex - b.originalIndex;
+            })
+            .map(({ key, options }) => [key, options] as [string, ControlOptions]);
   };
 </script>
 
