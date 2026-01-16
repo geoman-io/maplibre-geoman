@@ -34,9 +34,7 @@
     return DOMPurify.sanitize(expanded ? caretDown : caretUp);
   };
 
-  const sortControlEntries = (
-          groupControls: Record<string, ControlOptions>
-  ): Array<[string, ControlOptions]> => {
+  const sortControlEntries = (groupControls: Record<string, ControlOptions>): Array<[string, ControlOptions]> => {
     return Object.entries(groupControls).sort(([, optionsA], [, optionsB]) => {
       const orderA = optionsA.order || 0;
       const orderB = optionsB.order || 0;
