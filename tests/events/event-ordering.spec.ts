@@ -82,8 +82,10 @@ test.describe('Event Ordering', () => {
     }
     await page.mouse.up();
 
-    // Wait for all events to be processed asynchronously
-    await page.waitForTimeout(300);
+    // wait for event results
+    await page.waitForFunction(() => {
+      return (window.customData.rawEventResults!['_timestamps'] as string[]).length >= 3;
+    });
 
     // Get the recorded event order
     const result = await page.evaluate(() => {
@@ -395,6 +397,11 @@ test.describe('Event Ordering', () => {
 
     // Perform drag operation
     await dragAndDrop(page, point, targetPoint);
+
+    // wait for event results
+    await page.waitForFunction(() => {
+      return (window.customData.rawEventResults!['_eventOrder'] as string[]).length >= 4;
+    });
 
     // Get the recorded event order
     const result = await page.evaluate(() => {
@@ -760,12 +767,17 @@ test.describe('awaitDataUpdatesOnEvents Setting', () => {
     await page.mouse.move(centerX + 80, centerY); // Move to set x semi-axis
     await page.mouse.click(centerX + 80, centerY); // Second click sets x semi-axis
     await page.waitForTimeout(100);
-    await page.mouse.move(centerX + 80, centerY + 50); // Move to set y semi-axis
+    await page.mouse.move(centerX + 40, centerY + 50); // Move to set y semi-axis
     await page.waitForTimeout(100);
-    await page.mouse.click(centerX + 80, centerY + 50); // Third click completes ellipse
+    await page.mouse.click(centerX + 40, centerY + 50); // Third click completes ellipse
 
-    // Wait for event
-    await page.waitForTimeout(500);
+    // wait for event results
+    await page.waitForFunction(
+      (context) => {
+        return window.customData.rawEventResults?.[context.resultId];
+      },
+      { resultId },
+    );
 
     const result = await page.evaluate(
       (context) => {
