@@ -264,7 +264,9 @@ export class Geoman {
 
   removeControls() {
     this.disableAllModes();
-    this.mapAdapter.removeControl(this.control);
+    if (this.options.settings.useControlsUi) {
+      this.mapAdapter.removeControl(this.control);
+    }
   }
 
   async onMapLoad() {
