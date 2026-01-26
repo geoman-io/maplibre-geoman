@@ -9,4 +9,5 @@ export const SOURCES: { [key: string]: string } = {
   ...(IS_PRO && { standby: `${GM_PREFIX}_standby` }), // available only in the pro version
   main: `${GM_PREFIX}_main`,
   temporary: `${GM_PREFIX}_temporary`,
+  internal: `${GM_PREFIX}_internal`,
 } as const;

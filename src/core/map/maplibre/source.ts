@@ -2,14 +2,14 @@ import { BaseSource } from '@/core/map/base/source.ts';
 import {
   FEATURE_ID_PROPERTY,
   type GeoJsonShapeFeatureCollection,
-  type GeoJsonUniversalDiff,
+  type GeoJSONSourceDiffHashed,
   type Geoman,
   SHAPE_NAMES,
   type ShapeName,
 } from '@/main.ts';
-import type { Feature, GeoJSON } from 'geojson';
+import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
-import ml from 'maplibre-gl';
+import ml, { type GeoJSONSourceDiff } from 'maplibre-gl';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -94,65 +94,36 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     await this.sourceInstance.setData(geoJson, true);
   }
 
-  async updateData(updateStorage: GeoJsonUniversalDiff) {
+  async updateData(hashedDiff: GeoJSONSourceDiffHashed) {
     if (!this.isInstanceAvailable()) {
       return;
     }
+    const mlDiff = MaplibreSource.hashedToDiff(hashedDiff);
 
-    const mlDiff = this.convertUniversalDiffToMlDiff(updateStorage);
     await this.sourceInstance.updateData(mlDiff, true);
   }
 
-  convertUniversalDiffToMlDiff(diff: GeoJsonUniversalDiff): ml.GeoJSONSourceDiff {
-    // todo: check possible performance issue here,
-    // todo: feature properties updates applies geometry updates
-    return {
-      add: diff.add?.map(this.sanitizeFeatureForAdd.bind(this)),
-      update: diff.update?.map(this.convertFeatureToMlUpdateDiff.bind(this)),
-      remove: diff.remove,
-    };
-  }
-
   /**
-   * Sanitize a feature for addition to the source by removing undefined property values.
-   * MapLibre's protobuf encoding does not support undefined values (per MapBox vector tile spec).
+   * @internal
+   * Convert a hashed GeoJSONSourceDiff back to the array-based representation
    */
-  sanitizeFeatureForAdd(feature: Feature): Feature {
-    if (!feature.properties) {
-      return feature;
+  private static hashedToDiff(hashed: GeoJSONSourceDiffHashed): GeoJSONSourceDiff {
+    const diff: GeoJSONSourceDiff = {};
+
+    if (hashed.removeAll) {
+      diff.removeAll = hashed.removeAll;
+    }
+    if (hashed.remove) {
+      diff.remove = Array.from(hashed.remove);
+    }
+    if (hashed.add) {
+      diff.add = Array.from(hashed.add.values());
+    }
+    if (hashed.update) {
+      diff.update = Array.from(hashed.update.values());
     }
 
-    const sanitizedProperties: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(feature.properties)) {
-      if (value !== undefined) {
-        sanitizedProperties[key] = value;
-      }
-    }
-
-    return {
-      ...feature,
-      properties: sanitizedProperties,
-    };
-  }
-
-  convertFeatureToMlUpdateDiff(feature: Feature): ml.GeoJSONFeatureDiff {
-    const addOrUpdateProperties: ml.GeoJSONFeatureDiff['addOrUpdateProperties'] = [];
-    const removeProperties: ml.GeoJSONFeatureDiff['removeProperties'] = [];
-
-    Object.entries(feature.properties || {}).forEach(([key, value]) => {
-      if (value === undefined) {
-        removeProperties.push(key);
-      } else {
-        addOrUpdateProperties.push({ key, value });
-      }
-    });
-
-    return {
-      id: feature.properties?.[FEATURE_ID_PROPERTY],
-      newGeometry: feature.geometry,
-      addOrUpdateProperties,
-      removeProperties,
-    };
+    return diff;
   }
 
   remove() {
