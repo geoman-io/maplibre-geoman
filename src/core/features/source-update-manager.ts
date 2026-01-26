@@ -204,6 +204,7 @@ export class SourceUpdateManager {
       const source = this.gm.features.sources[sourceName];
 
       if (!source || !this.updateStorage[sourceName].diff) {
+        this.updateStorage[sourceName].method = 'automatic';
         return;
       }
 
