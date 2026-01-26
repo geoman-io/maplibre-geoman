@@ -9,6 +9,7 @@ import {
 } from '@tests/utils/basic.ts';
 import { getRenderedFeaturesData, type FeatureCustomData } from '@tests/utils/features.ts';
 import type { FeatureShape } from '@/types';
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 const checkFeatureCreated = async (page: Page, featureType: FeatureShape) => {
   let renderedFeatures: Array<FeatureCustomData> = [];
@@ -312,6 +313,7 @@ test.describe('Draw Mode - Advanced Scenarios', () => {
 
   test.describe('Text marker drawing', () => {
     test('should draw text marker', async () => {
+      const markerText = 'Hello World';
       const { width, height } = await getWindowDimensions(page);
       const centerX = width / 2;
       const centerY = height / 2;
@@ -321,7 +323,7 @@ test.describe('Draw Mode - Advanced Scenarios', () => {
       await mouseMoveAndClick(page, [centerX, centerY]);
 
       // Type text
-      await page.keyboard.type('Hello World');
+      await page.keyboard.type(markerText);
       // Click outside to confirm
       await page.mouse.click(centerX - 100, centerY - 100);
 
@@ -331,6 +333,7 @@ test.describe('Draw Mode - Advanced Scenarios', () => {
       expect(feature).toBeDefined();
       expect(feature.shape).toBe('text_marker');
       expect(feature.geoJson.geometry.type).toBe('Point');
+      expect(feature.geoJson.properties[`${FEATURE_PROPERTY_PREFIX}text`]).toEqual(markerText);
     });
   });
 
