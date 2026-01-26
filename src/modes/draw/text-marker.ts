@@ -1,10 +1,11 @@
-import type {
-  DrawModeName,
-  GeoJsonShapeFeature,
-  LngLatTuple,
-  MapHandlerReturnData,
-  ScreenPoint,
-  ShapeName,
+import {
+  type DrawModeName,
+  FEATURE_PROPERTY_PREFIX,
+  type GeoJsonShapeFeature,
+  type LngLatTuple,
+  type MapHandlerReturnData,
+  type ScreenPoint,
+  type ShapeName,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -118,6 +119,9 @@ export class DrawTextMarker extends BaseDraw {
     if (!this.featureData) {
       return;
     }
-    this.featureData._updateAllProperties({ shape: this.shape, text });
+    this.featureData._updateAllProperties({
+      [`${FEATURE_PROPERTY_PREFIX}shape`]: this.shape,
+      [`${FEATURE_PROPERTY_PREFIX}text`]: text,
+    });
   }
 }
