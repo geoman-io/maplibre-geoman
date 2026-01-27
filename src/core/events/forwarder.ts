@@ -23,6 +23,7 @@ import type {
   GmEditFeatureRemovedEvent,
   GmEditFeatureUpdatedEvent,
   GmEditModeEvent,
+  GmEditSelectionChangeEvent,
   GmEvent,
   GmEventName,
   GmEventNameWithoutPrefix,
@@ -30,6 +31,7 @@ import type {
   GmHelperModeEvent,
   GmSystemEvent,
   ModeName,
+  SelectionChangedFwdEvent,
   SystemFwdEvent,
 } from '@/main.ts';
 
@@ -68,6 +70,8 @@ export class EventForwarder {
       await this.forwardFeatureEditStart(payload);
     } else if (payload.action === 'feature_edit_end') {
       await this.forwardFeatureEditEnd(payload);
+    } else if (payload.action === 'selection_change') {
+      await this.forwardSelectionChanged(payload);
     } else if (payload.action === 'loaded' || payload.action === 'unloaded') {
       await this.forwardGeomanLoaded(payload);
     }
@@ -133,6 +137,17 @@ export class EventForwarder {
         payload: eventData,
       });
     }
+  }
+
+  async forwardSelectionChanged(payload: GmEditSelectionChangeEvent) {
+    const eventData: SelectionChangedFwdEvent = {
+      name: `${GM_PREFIX}:selection`,
+      actionType: payload.actionType,
+      action: payload.action,
+      selection: payload.selection,
+      map: this.map,
+    };
+    await this.fireToMap({ type: 'converted', eventName: 'selection', payload: eventData });
   }
 
   async forwardFeatureCreated(payload: GmDrawFeatureCreatedEvent) {

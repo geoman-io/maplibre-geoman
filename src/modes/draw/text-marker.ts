@@ -53,6 +53,7 @@ export class DrawTextMarker extends BaseDraw {
       this.gm.markerPointer.enable({ invisibleMarker: true, lngLat: event.lngLat.toArray() });
       this.fireMarkerPointerUpdateEvent();
     } else {
+      this.gm.features.clearSelection();
       const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
       this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 

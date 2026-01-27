@@ -33,6 +33,7 @@ export class DrawMarker extends BaseDraw {
 
   onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
     if (isMapPointerEvent(event)) {
+      this.gm.features.clearSelection();
       this.featureData = this.createFeature(event);
       if (this.featureData) {
         this.saveFeature();
