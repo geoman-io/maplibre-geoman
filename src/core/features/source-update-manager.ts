@@ -9,11 +9,21 @@ type SourceUpdateMethods = {
   [key in FeatureSourceName]: () => void;
 };
 
+/**
+ * Tracks a diff along with resolver/reject functions that will be called
+ * when the diff has been committed to MapLibre (or fails).
+ */
+type DiffWithResolver = {
+  diff: GeoJsonUniversalDiff;
+  resolve: () => void;
+  reject: (error: Error) => void;
+};
+
 const MAX_DIFF_ITEMS = 5000;
 
 export class SourceUpdateManager {
   gm: Geoman;
-  updateStorage: { [key in FeatureSourceName]: Array<GeoJsonUniversalDiff> };
+  updateStorage: { [key in FeatureSourceName]: Array<DiffWithResolver> };
   autoUpdatesEnabled: boolean = true;
   delayedSourceUpdateMethods: SourceUpdateMethods;
   // Track pending update promises per source to allow waiting for MapLibre to commit data
@@ -51,18 +61,35 @@ export class SourceUpdateManager {
     return id;
   }
 
+  /**
+   * Queue a diff for a source and return a Promise that resolves when the data
+   * has been committed to MapLibre.
+   *
+   * The diff is queued and processed by the throttled updateSourceActual().
+   * The returned Promise resolves after source.updateData() completes for the
+   * batch containing this diff.
+   *
+   * If no diff is provided, still triggers the throttle to flush any previously
+   * queued diffs (used by withAtomicSourcesUpdate).
+   */
   updateSource({
     sourceName,
     diff,
   }: {
     sourceName: FeatureSourceName;
     diff?: GeoJsonUniversalDiff;
-  }) {
-    if (diff) {
-      this.updateStorage[sourceName].push(diff);
+  }): Promise<void> {
+    if (!diff) {
+      // No diff to queue - still trigger throttle to flush any previously queued diffs
+      // (needed for withAtomicSourcesUpdate which disables auto-updates then flushes)
+      this.delayedSourceUpdateMethods[sourceName]();
+      return Promise.resolve();
     }
 
-    this.delayedSourceUpdateMethods[sourceName]();
+    return new Promise((resolve, reject) => {
+      this.updateStorage[sourceName].push({ diff, resolve, reject });
+      this.delayedSourceUpdateMethods[sourceName]();
+    });
   }
 
   updateSourceActual(sourceName: FeatureSourceName) {
@@ -76,14 +103,7 @@ export class SourceUpdateManager {
         return;
       }
 
-      const combinedDiff = this.getCombinedDiff(sourceName);
-      if (combinedDiff) {
-        // Track the update promise so callers can wait for MapLibre to commit the data
-        // MapLibre's updateData with waitForCompletion=true returns a Promise that
-        // resolves when the data is committed to the source
-        const updatePromise = source.updateData(combinedDiff);
-        this.addPendingPromise(sourceName, updatePromise);
-      }
+      this.flushQueuedDiffs(sourceName);
 
       if (this.updateStorage[sourceName].length > 0) {
         setTimeout(
@@ -121,18 +141,48 @@ export class SourceUpdateManager {
   }
 
   /**
+   * Flush queued diffs for a source and commit them to MapLibre.
+   * Returns true if there was a diff to process, false otherwise.
+   *
+   * This is the single place where diffs are extracted and committed,
+   * used by both throttled updates and immediate flushes.
+   */
+  private flushQueuedDiffs(sourceName: FeatureSourceName): boolean {
+    const source = this.gm.features.sources[sourceName];
+    if (!source) return false;
+
+    const { combinedDiff, resolvers, rejecters } = this.getCombinedDiffWithResolvers(sourceName);
+    if (!combinedDiff) return false;
+
+    const updatePromise = source.updateData(combinedDiff);
+    this.addPendingPromise(sourceName, updatePromise);
+
+    updatePromise
+      .then(() => {
+        resolvers.forEach((resolve) => resolve());
+      })
+      .catch((error: Error) => {
+        console.error(`[Geoman] Failed to update source "${sourceName}":`, error);
+        rejecters.forEach((reject) => reject(error));
+      });
+
+    return true;
+  }
+
+  /**
    * Wait for any pending MapLibre source updates to complete.
    * This ensures data is committed before events are fired.
    *
    * When there are queued updates in updateStorage that haven't been processed yet
-   * (due to throttling), this method flushes them immediately and waits for completion.
+   * (due to throttling), this method flushes them immediately via flushQueuedDiffs()
+   * and waits for completion.
    *
-   * Note: We call updateData() directly here rather than going through updateSourceActual()
-   * because updateSourceActual() checks `!source.loaded` and may delay processing.
-   * When waiting for pending updates (e.g., for event handlers), we need immediate processing.
+   * Note: We bypass updateSourceActual() because it checks `!source.loaded` and may
+   * delay processing. When waiting for pending updates (e.g., for event handlers),
+   * we need immediate processing.
    *
-   * This is safe and won't cause duplicates because getCombinedDiff() atomically drains
-   * the storage - whoever calls it first gets the diffs, subsequent calls get null.
+   * This is safe and won't cause duplicates because getCombinedDiffWithResolvers() atomically
+   * drains the storage - whoever calls it first gets the diffs, subsequent calls get null.
    *
    * IMPORTANT: MapLibre's _updateWorkerData() has a guard that returns early if already
    * updating (`if (this._isUpdatingWorker) return`). This means updateData() can return
@@ -144,6 +194,15 @@ export class SourceUpdateManager {
     const source = this.gm.features.sources[sourceName];
     if (!source) return;
 
+    // Early exit if nothing pending - no need to wait for frame
+    // This makes waitForAllPendingUpdates() efficient: sources without pending work return immediately
+    if (
+      !this.updateStorage[sourceName]?.length &&
+      !this.pendingUpdatePromises[sourceName]?.length
+    ) {
+      return;
+    }
+
     // Loop until all pending work is complete.
     // This handles the case where MapLibre's _updateWorkerData returns early due to
     // _isUpdatingWorker being true, and the actual data gets processed via the
@@ -154,11 +213,7 @@ export class SourceUpdateManager {
     ) {
       // Flush any queued updates that haven't been processed yet
       if (this.updateStorage[sourceName]?.length) {
-        const combinedDiff = this.getCombinedDiff(sourceName);
-        if (combinedDiff) {
-          const updatePromise = source.updateData(combinedDiff);
-          this.addPendingPromise(sourceName, updatePromise);
-        }
+        this.flushQueuedDiffs(sourceName);
       }
 
       // Wait for all pending promises to complete
@@ -177,6 +232,17 @@ export class SourceUpdateManager {
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
 
+  /**
+   * Wait for all pending MapLibre source updates across ALL sources to complete.
+   * Useful when operations affect multiple sources (e.g., changeSource moves features
+   * between main and temporary sources).
+   */
+  async waitForAllPendingUpdates(): Promise<void> {
+    await Promise.all(
+      typedKeys(this.updateStorage).map((sourceName) => this.waitForPendingUpdates(sourceName)),
+    );
+  }
+
   withAtomicSourcesUpdate<T>(callback: () => T): T {
     try {
       this.autoUpdatesEnabled = false;
@@ -189,26 +255,43 @@ export class SourceUpdateManager {
     }
   }
 
-  getCombinedDiff(sourceName: FeatureSourceName): GeoJsonUniversalDiff | null {
+  /**
+   * Get the combined diff from all queued items along with their resolvers and rejecters.
+   * This atomically drains the storage up to MAX_DIFF_ITEMS.
+   *
+   * @returns The combined diff and arrays of resolver/rejecter functions to call after commit/failure.
+   */
+  getCombinedDiffWithResolvers(sourceName: FeatureSourceName): {
+    combinedDiff: GeoJsonUniversalDiff | null;
+    resolvers: Array<() => void>;
+    rejecters: Array<(error: Error) => void>;
+  } {
     let combinedDiff: GeoJsonUniversalDiff = {
       remove: [],
       add: [],
       update: [],
     };
+    const resolvers: Array<() => void> = [];
+    const rejecters: Array<(error: Error) => void> = [];
 
     for (let i = 0; i < MAX_DIFF_ITEMS; i += 1) {
-      if (this.updateStorage[sourceName][i] === undefined) {
+      const item = this.updateStorage[sourceName][i];
+      if (item === undefined) {
         break;
       }
-      combinedDiff = this.mergeGeoJsonDiff(combinedDiff, this.updateStorage[sourceName][i]);
+      combinedDiff = this.mergeGeoJsonDiff(combinedDiff, item.diff);
+      resolvers.push(item.resolve);
+      rejecters.push(item.reject);
     }
     this.updateStorage[sourceName] = this.updateStorage[sourceName].slice(MAX_DIFF_ITEMS);
 
     if (Object.values(combinedDiff).find((item) => item.length)) {
-      return combinedDiff;
+      return { combinedDiff, resolvers, rejecters };
     }
 
-    return null;
+    // If no diff, still resolve all the queued resolvers (edge case: all updates cancelled out)
+    resolvers.forEach((resolve) => resolve());
+    return { combinedDiff: null, resolvers: [], rejecters: [] };
   }
 
   mergeGeoJsonDiff(

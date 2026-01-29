@@ -159,7 +159,7 @@ export class EditChange extends BaseDrag {
 
     if (featureUpdated) {
       featureData.convertToPolygon(); // if possible
-      featureData.updateGeoJsonGeometry(geoJson.geometry);
+      featureData.updateGeometry(geoJson.geometry);
       this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
         targetFeatures: [featureData],
@@ -184,7 +184,7 @@ export class EditChange extends BaseDrag {
 
     if (typeof insertIndex === 'number') {
       coordinates.splice(insertIndex, 0, [...event.markerData.position.coordinate]);
-      event.featureData.updateGeoJsonGeometry(geoJson.geometry);
+      event.featureData.updateGeometry(geoJson.geometry);
       event.featureData.convertToPolygon(); // if possible
       this.fireFeatureUpdatedEvent({
         sourceFeatures: [event.featureData],

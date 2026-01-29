@@ -395,95 +395,6 @@ test.describe('Feature Properties Management', () => {
     });
   });
 
-  test.describe('Deprecated methods (backward compatibility)', () => {
-    test('updateGeoJsonCustomProperties should still work', async () => {
-      const markerFeature: GeoJsonImportFeature = {
-        id: 'deprecated-test-1',
-        type: 'Feature',
-        properties: { shape: 'marker', existingProp: 'keep' },
-        geometry: {
-          type: 'Point',
-          coordinates: [0, 51],
-        },
-      };
-
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
-      }, markerFeature);
-
-      const result = await page.evaluate(() => {
-        const fd = window.geoman.features.get('gm_main', 'deprecated-test-1');
-        if (!fd) return null;
-
-        // Using deprecated method
-        fd.updateGeoJsonCustomProperties({ newProp: 'added' });
-        return fd.getGeoJson().properties;
-      });
-
-      expect(result).not.toBeNull();
-      expect(result!.existingProp).toBe('keep');
-      expect(result!.newProp).toBe('added');
-    });
-
-    test('setGeoJsonCustomProperties should still work', async () => {
-      const markerFeature: GeoJsonImportFeature = {
-        id: 'deprecated-test-2',
-        type: 'Feature',
-        properties: { shape: 'marker', oldProp: 'remove' },
-        geometry: {
-          type: 'Point',
-          coordinates: [0, 51],
-        },
-      };
-
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
-      }, markerFeature);
-
-      const result = await page.evaluate(() => {
-        const fd = window.geoman.features.get('gm_main', 'deprecated-test-2');
-        if (!fd) return null;
-
-        // Using deprecated method
-        fd.setGeoJsonCustomProperties({ replaced: true });
-        return fd.getGeoJson().properties;
-      });
-
-      expect(result).not.toBeNull();
-      expect(result!.oldProp).toBeUndefined();
-      expect(result!.replaced).toBe(true);
-    });
-
-    test('deleteGeoJsonCustomProperties should still work', async () => {
-      const markerFeature: GeoJsonImportFeature = {
-        id: 'deprecated-test-3',
-        type: 'Feature',
-        properties: { shape: 'marker', toDelete: 'bye', toKeep: 'stay' },
-        geometry: {
-          type: 'Point',
-          coordinates: [0, 51],
-        },
-      };
-
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
-      }, markerFeature);
-
-      const result = await page.evaluate(() => {
-        const fd = window.geoman.features.get('gm_main', 'deprecated-test-3');
-        if (!fd) return null;
-
-        // Using deprecated method
-        fd.deleteGeoJsonCustomProperties(['toDelete']);
-        return fd.getGeoJson().properties;
-      });
-
-      expect(result).not.toBeNull();
-      expect(result!.toDelete).toBeUndefined();
-      expect(result!.toKeep).toBe('stay');
-    });
-  });
-
   test.describe('updateGeometry()', () => {
     test('should update point geometry', async () => {
       const markerFeature: GeoJsonImportFeature = {
@@ -627,35 +538,6 @@ test.describe('Feature Properties Management', () => {
 
       expect(verifyResult).not.toBeNull();
       expect(verifyResult!.coordinates).toEqual([15, 60]);
-    });
-
-    test('deprecated updateGeoJsonGeometry should still work', async () => {
-      const markerFeature: GeoJsonImportFeature = {
-        id: 'geom-test-deprecated',
-        type: 'Feature',
-        properties: { shape: 'marker' },
-        geometry: {
-          type: 'Point',
-          coordinates: [0, 51],
-        },
-      };
-
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
-      }, markerFeature);
-
-      const result = await page.evaluate(() => {
-        const fd = window.geoman.features.get('gm_main', 'geom-test-deprecated');
-        if (!fd) return null;
-
-        // Using deprecated method
-        fd.updateGeoJsonGeometry({ type: 'Point', coordinates: [7, 53] });
-
-        return fd.getGeoJson().geometry;
-      });
-
-      expect(result).not.toBeNull();
-      expect(result!.coordinates).toEqual([7, 53]);
     });
   });
 });
