@@ -57,21 +57,22 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
     // not a geojson source, layers aren't required
     [SOURCES.main]: [],
     [SOURCES.temporary]: [],
+    [SOURCES.internal]: [],
     ...(IS_PRO && { [SOURCES.standby]: [] }),
   },
   center_marker: {
-    [SOURCES.main]: getControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
+    [SOURCES.internal]: getControlMarkerStyles(sourceStyles[SOURCES.internal]),
     ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
   },
   vertex_marker: {
-    [SOURCES.main]: getControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
+    [SOURCES.internal]: getControlMarkerStyles(sourceStyles[SOURCES.internal]),
     ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
   },
   edge_marker: {
-    [SOURCES.main]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.temporary]),
+    [SOURCES.internal]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.internal]),
     ...(IS_PRO && {
       [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]),
     }),
@@ -80,6 +81,7 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
     // todo: check which sources can't display snap guides (and other shapes) and remove layers
     [SOURCES.main]: getSnapGuideStyles(),
     [SOURCES.temporary]: getSnapGuideStyles(),
+    [SOURCES.internal]: getSnapGuideStyles(),
     ...(IS_PRO && { [SOURCES.standby]: getSnapGuideStyles() }),
   },
 };

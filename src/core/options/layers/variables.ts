@@ -33,6 +33,14 @@ export const sourceStyles: SourceStyles = {
     fillOpacity: 0.4,
     circleMarkerRadius: 10,
   },
+  [SOURCES.internal]: {
+    lineColor: '#278cda',
+    lineOpacity: 0.8,
+    lineWidth: 3,
+    fillColor: '#4fb3ff',
+    fillOpacity: 0.4,
+    circleMarkerRadius: 10,
+  },
   ...(IS_PRO && {
     [SOURCES.standby]: {
       lineColor: '#787878',
