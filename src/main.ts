@@ -125,7 +125,7 @@ export class Geoman {
       const handleCreateControls = async () => {
         if (controlsElement) {
           this.control.createControls(controlsElement);
-        } else {
+        } else if (this.options.settings.useControlsUi) {
           this.mapAdapter.addControl(this.control);
         }
         await this.onMapLoad();
@@ -264,7 +264,9 @@ export class Geoman {
 
   removeControls() {
     this.disableAllModes();
-    this.mapAdapter.removeControl(this.control);
+    if (this.options.settings.useControlsUi) {
+      this.mapAdapter.removeControl(this.control);
+    }
   }
 
   async onMapLoad() {
