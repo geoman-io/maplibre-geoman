@@ -23,6 +23,7 @@ export interface ControlOptions {
   active: boolean;
   options?: ActionOptions;
   settings?: ActionSettings;
+  order?: number;
 }
 
 export interface ControlStyles {
