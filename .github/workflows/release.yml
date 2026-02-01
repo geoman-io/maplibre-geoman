@@ -196,7 +196,7 @@ jobs:
       - name: Publish to NPM
         run: |
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
-            cd pub && npm publish --tag beta --provenance --access public
+            cd pub && npm publish --tag beta --provenance --access public --ignore-scripts
           else
-            cd pub && npm publish --provenance --access public
+            cd pub && npm publish --provenance --access public --ignore-scripts
           fi
