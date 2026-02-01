@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2] - 2026-02-01
+
+### Added
+
+- Optional ordering of controls ([#135](https://github.com/geoman-io/maplibre-geoman/pull/135))
+  - Controls can now be ordered by specifying a custom order
+  - Maintains insertion-based sort order for backwards compatibility when no order is specified
+
+### Fixed
+
+- Prioritize special shape when querying map features ([#124](https://github.com/geoman-io/maplibre-geoman/pull/124))
+  - Fixes issue where special shapes (like circles) were not correctly prioritized during feature queries
+
+- Text marker properties are now correctly applied during drawing (7f797c9)
+
+### Changed
+
+- Update @turf dependencies to 7.3.3 ([#134](https://github.com/geoman-io/maplibre-geoman/pull/134))
+
+- Use cross platform commands in package.json ([#123](https://github.com/geoman-io/maplibre-geoman/pull/123))
+  - Build scripts now work consistently across Windows, macOS, and Linux
+
 ## [0.6.1] - 2025-12-20
 
 ### Fixed
