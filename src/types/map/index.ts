@@ -69,10 +69,23 @@ export type MapInstanceWithGeoman<T = AnyMapInstance> = {
   gm: Geoman;
 } & T;
 
-export type GeoJsonUniversalDiff = {
-  remove?: Array<FeatureId>;
-  add?: Array<Feature>;
-  update?: Array<Feature>;
+export type GeoJSONSourceDiffHashed = {
+  removeAll?: boolean;
+  remove?: Set<FeatureId>;
+  add?: Map<FeatureId, Feature>;
+  update?: Map<FeatureId, GeoJSONFeatureDiff>;
+};
+
+export type GeoJSONFeatureDiff = {
+  id: FeatureId;
+  newGeometry?: GeoJSON.Geometry;
+  removeAllProperties?: boolean;
+  removeProperties?: Array<string>;
+  addOrUpdateProperties?: Array<{
+    key: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any;
+  }>;
 };
 
 export type BaseFitBoundsOptions = {

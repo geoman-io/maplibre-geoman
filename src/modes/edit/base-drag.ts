@@ -76,7 +76,11 @@ export abstract class BaseDrag extends BaseEdit {
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
       this.featureData = featureData;
+
+      this.gm.features.updateManager.beginTransaction('transactional-update');
       this.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      this.gm.features.updateManager.commitTransaction();
+
       this.gm.mapAdapter.setDragPan(false);
 
       this.snappingHelper?.addExcludedFeature(this.featureData);
@@ -100,7 +104,9 @@ export abstract class BaseDrag extends BaseEdit {
     }
 
     this.snappingHelper?.clearExcludedFeatures();
+    this.gm.features.updateManager.beginTransaction('transactional-update');
     this.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+    this.gm.features.updateManager.commitTransaction();
 
     this.previousLngLat = null;
     this.gm.mapAdapter.setDragPan(true);
@@ -119,7 +125,9 @@ export abstract class BaseDrag extends BaseEdit {
       // marker pointer is automatically enabled when the drag starts
       // see "relatedModes" in options
       const endLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
+      this.gm.features.updateManager.beginTransaction('transactional-update', SOURCES.temporary);
       this.moveFeature(this.featureData, endLngLat);
+      this.gm.features.updateManager.commitTransaction(SOURCES.temporary);
     }
     return { next: false };
   }

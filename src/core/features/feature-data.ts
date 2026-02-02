@@ -11,6 +11,7 @@ import {
   type FeatureShape,
   type FeatureShapeProperties,
   type FeatureSourceName,
+  type GeoJSONFeatureDiff,
   type GeoJsonShapeFeature,
   type Geoman,
   type GmEditFeatureUpdatedEvent,
@@ -127,8 +128,7 @@ export class FeatureData {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    delete this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`];
-    this._updateAllProperties(this._geoJson.properties);
+    this.removeProperties([`${FEATURE_PROPERTY_PREFIX}${name}`], false);
   }
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
@@ -187,8 +187,9 @@ export class FeatureData {
       this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
     }
 
+    const add = new Map<FeatureId, Feature>().set(this.id, this._geoJson);
     this.gm.features.updateManager.updateSource({
-      diff: { add: [this._geoJson] },
+      diff: { add },
       sourceName: this.sourceName,
     });
   }
@@ -199,7 +200,7 @@ export class FeatureData {
     }
 
     this.gm.features.updateManager.updateSource({
-      diff: { remove: [this.id] },
+      diff: { remove: new Set([this.id]) },
       sourceName: this.sourceName,
     });
   }
@@ -238,11 +239,13 @@ export class FeatureData {
 
     this._geoJson = { ...featureGeoJson, geometry };
 
-    const diff = {
-      update: [this._geoJson],
-    };
+    const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, {
+      id: this.id,
+      newGeometry: this._geoJson.geometry,
+    });
+
     this.gm.features.updateManager.updateSource({
-      diff,
+      diff: { update },
       sourceName: this.sourceName,
     });
   }
@@ -256,7 +259,6 @@ export class FeatureData {
 
   /**
    * Updates custom properties on this feature. Properties are merged with existing ones.
-   * Set a property value to `undefined` to delete it.
    *
    * Internal Geoman properties (prefixed with `gm_`) cannot be modified through this method
    * and will be preserved.
@@ -278,51 +280,35 @@ export class FeatureData {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
+    const nextProperties = { ...this._geoJson.properties };
+
+    const featureDiff: GeoJSONFeatureDiff = {
+      id: this.id,
+      addOrUpdateProperties: [],
+      removeProperties: [],
+    };
+
     const mandatoryProperties = this.parseGmShapeProperties(this._geoJson);
     const protectedKeys = new Set(Object.keys(mandatoryProperties));
 
-    // Build new properties: start with existing, apply updates (respecting undefined as delete)
-    const newProperties: Record<string, unknown> = {};
-
-    // Copy existing properties (excluding ones being deleted)
-    for (const [key, value] of Object.entries(this._geoJson.properties)) {
-      if (key in properties) {
-        // This key is being updated - will be handled below
-        continue;
-      }
-      newProperties[key] = value;
-    }
-
-    // Apply updates (skip protected keys, handle undefined as delete signal)
     for (const [key, value] of Object.entries(properties)) {
       if (protectedKeys.has(key)) {
-        // Skip protected gm_ properties
         continue;
       }
-      if (value !== undefined) {
-        newProperties[key] = value;
-      }
-      // If value is undefined, we simply don't add it (deletion)
-    }
-
-    // Always preserve mandatory properties
-    Object.assign(newProperties, mandatoryProperties);
-
-    // Update internal state (without undefined markers)
-    this._geoJson.properties = newProperties as ShapeGeoJsonProperties;
-
-    // Build diff properties with undefined markers for MapLibre's removeProperties
-    const diffProperties: Record<string, unknown> = { ...newProperties };
-    for (const [key, value] of Object.entries(properties)) {
-      if (protectedKeys.has(key)) continue;
-      if (value === undefined) {
-        diffProperties[key] = undefined; // Signal to MapLibre to remove this property
+      if (typeof value === 'undefined') {
+        delete nextProperties[key];
+        featureDiff.removeProperties?.push(key);
+      } else {
+        nextProperties[key] = value;
+        featureDiff.addOrUpdateProperties?.push({ key, value });
       }
     }
 
-    const diff = { update: [{ ...this._geoJson, properties: diffProperties }] };
+    const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, featureDiff);
+
+    this._geoJson.properties = nextProperties;
     this.gm.features.updateManager.updateSource({
-      diff,
+      diff: { update },
       sourceName: this.sourceName,
     });
   }
@@ -359,9 +345,40 @@ export class FeatureData {
       ...mandatoryProperties,
     } as ShapeGeoJsonProperties;
 
-    const diff = { update: [this._geoJson] };
+    const add = new Map<FeatureId, Feature>().set(this.id, this._geoJson);
+
     this.gm.features.updateManager.updateSource({
-      diff,
+      diff: { add },
+      sourceName: this.sourceName,
+    });
+  }
+
+  removeProperties(fieldNames: Array<string>, preserveInternals = true) {
+    if (!this._geoJson) {
+      throw new Error(`Feature not found: "${this.id}"`);
+    }
+
+    const deniedKeys = preserveInternals
+      ? typedKeys(propertyValidators).map((fieldName) => `${FEATURE_PROPERTY_PREFIX}${fieldName}`)
+      : [];
+
+    const keysToRemove = fieldNames.filter((fieldName) => !deniedKeys.includes(fieldName));
+    const nextProperties = { ...this._geoJson.properties };
+
+    keysToRemove.forEach((key) => {
+      delete nextProperties[key];
+    });
+
+    const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, {
+      id: this.id,
+      removeProperties: keysToRemove,
+      // issue with MapLibre 5.15 keep empty but present
+      addOrUpdateProperties: [],
+    });
+
+    this._geoJson.properties = nextProperties;
+    this.gm.features.updateManager.updateSource({
+      diff: { update },
       sourceName: this.sourceName,
     });
   }
@@ -379,10 +396,17 @@ export class FeatureData {
     }
 
     this._geoJson.properties = { ...this._geoJson.properties, ...properties };
-    const diff = { update: [this._geoJson] };
+
+    const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, {
+      id: this.id,
+      addOrUpdateProperties: Object.entries(properties || {}).map(([key, value]) => ({
+        key,
+        value,
+      })),
+    });
 
     this.gm.features.updateManager.updateSource({
-      diff,
+      diff: { update },
       sourceName: this.sourceName,
     });
   }
@@ -472,7 +496,10 @@ export class FeatureData {
 
     this.markers.forEach((markerData) => {
       if (markerData.instance instanceof FeatureData) {
-        markerData.instance.changeSource({ sourceName, atomic });
+        markerData.instance.changeSource({
+          sourceName: sourceName === SOURCES.temporary ? SOURCES.temporary : SOURCES.internal,
+          atomic,
+        });
       }
     });
   }
