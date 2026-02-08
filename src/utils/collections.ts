@@ -40,3 +40,13 @@ export function forEachDeep(
     log.warn(`forEachDeep: unknown collection type (${item}), path "${path.join('.')}"`);
   }
 }
+
+export const dedupeById = <T extends { id: unknown }>(items: Array<T>): Array<T> => {
+  const seen = new Map<unknown, T>();
+  items.forEach((item) => {
+    if (!seen.has(item.id)) {
+      seen.set(item.id, item);
+    }
+  });
+  return Array.from(seen.values());
+};

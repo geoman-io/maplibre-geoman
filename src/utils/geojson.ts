@@ -570,14 +570,21 @@ export const getGeoJsonCircle = ({
   center,
   radius,
   steps = 80,
+  properties = {},
 }: {
   center: LngLatTuple;
   radius: number;
   steps?: number;
-}) => {
+  properties?: GeoJsonProperties;
+}): GeoJsonShapeFeature => {
   const circleGeoJson = turfCircle(center, radius, {
     steps,
     units: 'meters',
+    properties: {
+      ...properties,
+      [`${FEATURE_PROPERTY_PREFIX}shape`]: 'circle',
+      [`${FEATURE_PROPERTY_PREFIX}center`]: center,
+    },
   });
 
   // remove link between first and last coordinates

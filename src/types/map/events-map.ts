@@ -19,6 +19,7 @@ import type {
   GmLoadStateFwdEvent,
   GmSystemEvent,
   HelperModeName,
+  SelectionChangedFwdEvent,
 } from '@/types';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
@@ -34,6 +35,7 @@ export type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
   Record<`${typeof GM_PREFIX}:global${HelperModeName}modetoggled`, GlobalHelperToggledFwdEvent> &
   Record<`${typeof GM_PREFIX}:create`, FeatureCreatedFwdEvent> &
   Record<`${typeof GM_PREFIX}:remove`, FeatureRemovedFwdEvent> &
+  Record<`${typeof GM_PREFIX}:selection`, SelectionChangedFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}`, FeatureUpdatedFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}start`, FeatureEditStartFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}end`, FeatureEditEndFwdEvent> &
