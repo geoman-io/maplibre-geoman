@@ -31,6 +31,7 @@ export class DrawPolygon extends BaseDraw {
   onStartAction(): void {
     this.lineDrawer.startAction();
     this.lineDrawer.on('firstMarkerClick', this.polygonFinished.bind(this));
+    this.lineDrawer.on('lastMarkerClick', this.polygonFinished.bind(this));
   }
 
   onMouseMove(event: BaseMapEvent) {
