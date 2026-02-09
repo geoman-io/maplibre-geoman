@@ -18,6 +18,16 @@ All notable changes to this project will be documented in this file.
   - Developers can now set the snapping tolerance at initialization or change it at runtime
   - The dev panel "Snap Distance (px)" input is now wired to this setting
 
+### Changed
+
+- Update all dependencies
+  - @turf/* packages from 7.3.3 to 7.3.4
+  - @playwright/test and playwright from 1.58.1 to 1.58.2
+  - @types/node from 25.1.0 to 25.2.2
+  - svelte from 5.49.1 to 5.50.0
+  - type-fest from 5.4.3 to 5.4.4
+  - globals from 17.2.0 to 17.3.0
+
 ## [0.6.2] - 2026-02-01
 
 ### Added
