@@ -18,6 +18,7 @@ export const defaultOptions: GmOptionsData = {
       controlButtonClass: 'gm-control-button',
     },
     idGenerator: null,
+    snapDistance: 18,
     markerIcons: {
       default: defaultMarker,
       control: defaultShapeMarker,

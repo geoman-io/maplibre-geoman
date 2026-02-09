@@ -15,7 +15,10 @@ type ShapeSnappingHandler = (
 
 export class SnappingHelper extends BaseHelper {
   mode: HelperModeName = 'snapping';
-  tolerance: number = 18;
+
+  get tolerance(): number {
+    return this.gm.options.settings.snapDistance;
+  }
   lineSnappingShapes: ReadonlyArray<FeatureShape> = [
     'circle',
     'line',
