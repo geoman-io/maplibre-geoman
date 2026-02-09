@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Snapping tolerance and DOM marker width conflict ([#136](https://github.com/geoman-io/maplibre-geoman/issues/136))
+  - When drawing a polygon with snapping enabled, clicking within the snapping tolerance (18px) but outside the marker DOM element (~10.5px) now correctly closes the polygon
+  - Previously, this created a duplicate vertex that permanently blocked polygon closure
+  - Added proximity-based fallback marker detection consistent with the snapping system's tolerance
+
+### Added
+
+- Configurable snapping tolerance via `settings.snapDistance` option
+  - Default remains 18px for backward compatibility
+  - Developers can now set the snapping tolerance at initialization or change it at runtime
+  - The dev panel "Snap Distance (px)" input is now wired to this setting
+
 ## [0.6.2] - 2026-02-01
 
 ### Added
