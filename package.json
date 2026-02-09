@@ -38,7 +38,7 @@
     "test:headed": "cross-env VITE_GEOMAN_VERSION=free playwright test --headed",
     "test:ui": "cross-env VITE_GEOMAN_VERSION=free playwright test --ui",
     "test:debug": "cross-env VITE_GEOMAN_VERSION=free playwright test --debug",
-    "prepare": "shx test -f dist/maplibre-geoman.es.js || npm run build"
+    "prepare": "husky && shx test -f dist/maplibre-geoman.es.js || npm run build"
   },
   "dependencies": {
     "@turf/area": "^7.3.3",
@@ -94,6 +94,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-svelte": "^3.14.0",
     "globals": "^17.2.0",
+    "husky": "^9.1.7",
     "maplibre-gl": "^5.17.0",
     "playwright": "1.58.1",
     "prettier": "^3.8.1",
