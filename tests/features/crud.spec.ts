@@ -582,7 +582,7 @@ test.describe('Feature Management - CRUD Operations', () => {
         ({ featureId, coords }) => {
           const fd = window.geoman.features.get('gm_main', featureId);
           if (fd) {
-            fd.updateGeoJsonGeometry({
+            fd.updateGeometry({
               type: 'Point',
               coordinates: coords,
             });

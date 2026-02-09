@@ -1,7 +1,7 @@
 import { SOURCES } from '@/core/features/constants.ts';
 import { FEATURE_ID_PROPERTY, type Geoman } from '@/main.ts';
 import type { FeatureSourceName, GeoJSONFeatureDiff, GeoJSONSourceDiffHashed } from '@/types';
-import { typedValues } from '@/utils/typing.ts';
+import { typedKeys, typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
 import { throttle } from 'lodash-es';
 
@@ -23,10 +23,17 @@ export class SourceUpdateManager {
   // Track pending update promises per source to allow waiting for MapLibre to commit data
   // Using an array to track multiple concurrent promises (prevents overwriting if rapid updates occur)
   pendingUpdatePromises: { [key in FeatureSourceName]?: Promise<void>[] };
+  // Track per-call promise resolvers so each updateSource() call gets its own Promise
+  pendingResolvers: {
+    [key in FeatureSourceName]: Array<{ resolve: () => void; reject: (error: Error) => void }>;
+  };
 
   constructor(gm: Geoman) {
     this.gm = gm;
     this.pendingUpdatePromises = {};
+    this.pendingResolvers = Object.fromEntries(typedValues(SOURCES).map((name) => [name, []])) as {
+      [key in FeatureSourceName]: Array<{ resolve: () => void; reject: (error: Error) => void }>;
+    };
     this.updateStorage = Object.fromEntries(
       typedValues(SOURCES).map((name) => [name, { diff: null, method: 'automatic' }]),
     );
@@ -65,13 +72,24 @@ export class SourceUpdateManager {
     return id;
   }
 
+  /**
+   * Queue a diff for a source and return a Promise that resolves when the data
+   * has been committed to MapLibre.
+   *
+   * The diff is queued and processed by the throttled updateSourceActual().
+   * The returned Promise resolves after source.updateData() completes for the
+   * batch containing this diff.
+   *
+   * If no diff is provided, still triggers the throttle to flush any previously
+   * queued diffs (used by withAtomicSourcesUpdate).
+   */
   updateSource({
     sourceName,
     diff,
   }: {
     sourceName: FeatureSourceName;
     diff?: GeoJSONSourceDiffHashed;
-  }) {
+  }): Promise<void> {
     if (diff) {
       if (this.updateStorage[sourceName].method === 'transactional-set') {
         if (!this.updateStorage[sourceName].diff) {
@@ -82,19 +100,36 @@ export class SourceUpdateManager {
         }
         // Merge is processed by mutating the diff object.
         // This is essential for performance - avoiding mutation would significantly degrade the improvements
-        this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
+        this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff!, diff);
       } else {
         if (!this.updateStorage[sourceName].diff) {
           this.updateStorage[sourceName].diff = {};
         }
         // Idem
-        this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
+        this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff!, diff);
       }
     }
 
     if (this.updateStorage[sourceName].method === 'automatic') {
-      this.delayedSourceUpdateMethods[sourceName]();
+      if (!diff) {
+        // No diff to queue - still trigger throttle to flush any previously queued diffs
+        this.delayedSourceUpdateMethods[sourceName]();
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve, reject) => {
+        this.pendingResolvers[sourceName].push({ resolve, reject });
+        this.delayedSourceUpdateMethods[sourceName]();
+      });
     }
+
+    // For transactional modes, the promise resolves when commitTransaction is called
+    if (!diff) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      this.pendingResolvers[sourceName].push({ resolve, reject });
+    });
   }
 
   updateSourceActual(sourceName: FeatureSourceName) {
@@ -109,11 +144,18 @@ export class SourceUpdateManager {
       }
 
       if (this.updateStorage[sourceName].diff) {
-        // Track the update promise so callers can wait for MapLibre to commit the data
-        // MapLibre's updateData with waitForCompletion=true returns a Promise that
-        // resolves when the data is committed to the source
+        const resolvers = this.pendingResolvers[sourceName].splice(0);
         const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
         this.addPendingPromise(sourceName, updatePromise);
+
+        updatePromise
+          .then(() => {
+            resolvers.forEach((r) => r.resolve());
+          })
+          .catch((error: Error) => {
+            console.error(`[Geoman] Failed to update source "${sourceName}":`, error);
+            resolvers.forEach((r) => r.reject(error));
+          });
 
         this.updateStorage[sourceName].diff = null;
       }
@@ -157,7 +199,7 @@ export class SourceUpdateManager {
    * because updateSourceActual() checks `!source.loaded` and may delay processing.
    * When waiting for pending updates (e.g., for event handlers), we need immediate processing.
    *
-   * This is safe and won't cause duplicates because getCombinedDiff() atomically drains
+   * This is safe and won't cause duplicates because we atomically drain
    * the storage - whoever calls it first gets the diffs, subsequent calls get null.
    *
    * IMPORTANT: MapLibre's _updateWorkerData() has a guard that returns early if already
@@ -170,6 +212,15 @@ export class SourceUpdateManager {
     const source = this.gm.features.sources[sourceName];
     if (!source) return;
 
+    // Early exit if nothing pending - no need to wait for frame
+    // This makes waitForAllPendingUpdates() efficient: sources without pending work return immediately
+    if (
+      this.updateStorage[sourceName].diff === null &&
+      !this.pendingUpdatePromises[sourceName]?.length
+    ) {
+      return;
+    }
+
     // Loop until all pending work is complete.
     // This handles the case where MapLibre's _updateWorkerData returns early due to
     // _isUpdatingWorker being true, and the actual data gets processed via the
@@ -177,8 +228,19 @@ export class SourceUpdateManager {
     while (this.updateStorage[sourceName].diff || this.pendingUpdatePromises[sourceName]?.length) {
       // Flush any queued updates that haven't been processed yet
       if (this.updateStorage[sourceName].diff) {
+        const resolvers = this.pendingResolvers[sourceName].splice(0);
         const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
         this.addPendingPromise(sourceName, updatePromise);
+
+        updatePromise
+          .then(() => {
+            resolvers.forEach((r) => r.resolve());
+          })
+          .catch((error: Error) => {
+            resolvers.forEach((r) => r.reject(error));
+          });
+
+        this.updateStorage[sourceName].diff = null;
       }
 
       // Wait for all pending promises to complete
@@ -197,6 +259,17 @@ export class SourceUpdateManager {
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
 
+  /**
+   * Wait for all pending MapLibre source updates across ALL sources to complete.
+   * Useful when operations affect multiple sources (e.g., changeSource moves features
+   * between main and temporary sources).
+   */
+  async waitForAllPendingUpdates(): Promise<void> {
+    await Promise.all(
+      typedKeys(this.updateStorage).map((sourceName) => this.waitForPendingUpdates(sourceName)),
+    );
+  }
+
   commitTransaction(sourceName?: FeatureSourceName) {
     const sourceNames = sourceName ? [sourceName] : Object.values(SOURCES);
 
@@ -205,18 +278,30 @@ export class SourceUpdateManager {
 
       if (!source || !this.updateStorage[sourceName].diff) {
         this.updateStorage[sourceName].method = 'automatic';
+        // Resolve any pending resolvers even if no diff (e.g. transaction with no changes)
+        const resolvers = this.pendingResolvers[sourceName].splice(0);
+        resolvers.forEach((r) => r.resolve());
         return;
       }
 
       if (this.updateStorage[sourceName].method === 'transactional-set') {
-        const features = this.updateStorage[sourceName].diff.add?.values() ?? [];
+        const features = this.updateStorage[sourceName].diff!.add?.values() ?? [];
         source.setData({
           type: 'FeatureCollection',
           features: Array.from(features),
         });
-        // source.updateData(this.updateStorage[sourceName].diff);
       } else if (this.updateStorage[sourceName].method === 'transactional-update') {
-        source.updateData(this.updateStorage[sourceName].diff);
+        const resolvers = this.pendingResolvers[sourceName].splice(0);
+        const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
+        this.addPendingPromise(sourceName, updatePromise);
+
+        updatePromise
+          .then(() => {
+            resolvers.forEach((r) => r.resolve());
+          })
+          .catch((error: Error) => {
+            resolvers.forEach((r) => r.reject(error));
+          });
       }
 
       this.updateStorage[sourceName].diff = null;

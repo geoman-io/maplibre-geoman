@@ -73,7 +73,7 @@ export class DrawCircle extends BaseCircle {
   updateFeatureGeoJson(rimLngLat: LngLatTuple) {
     if (this.featureData && this.circleCenterLngLat) {
       const featureGeoJson = this.getCircleGeoJson(this.circleCenterLngLat, rimLngLat);
-      this.featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
+      this.featureData.updateGeometry(featureGeoJson.geometry);
 
       const markerData = this.getControlMarkerData();
       if (markerData) {

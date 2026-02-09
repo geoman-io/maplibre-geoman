@@ -151,9 +151,9 @@ export class EditCut extends BaseEdit {
 
     if (isCut && coordinates.length) {
       if (coordinates.length === 1) {
-        featureData.updateGeoJsonGeometry({ type: 'LineString', coordinates: coordinates[0] });
+        featureData.updateGeometry({ type: 'LineString', coordinates: coordinates[0] });
       } else {
-        featureData.updateGeoJsonGeometry({ type: 'MultiLineString', coordinates: coordinates });
+        featureData.updateGeometry({ type: 'MultiLineString', coordinates: coordinates });
       }
       this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
@@ -174,7 +174,7 @@ export class EditCut extends BaseEdit {
     const shapeGeoJson = featureData.getGeoJson() as PolygonFeature;
     const geoJsonDifference = this.getGeoJsonDifference(shapeGeoJson, cutGeoJson);
     if (geoJsonDifference) {
-      featureData.updateGeoJsonGeometry(geoJsonDifference.geometry);
+      featureData.updateGeometry(geoJsonDifference.geometry);
       this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
         targetFeatures: [featureData],
