@@ -88,12 +88,18 @@ export const defaultOptions: GmOptionsData = {
         icon: controlIcons.change,
         uiEnabled: true,
         active: false,
+        settings: {
+          bodyDragEnabled: false,
+        },
       },
       rotate: {
         title: 'Rotate',
         icon: controlIcons.rotate,
         uiEnabled: true,
         active: false,
+        settings: {
+          bodyDragEnabled: false,
+        },
       },
 
       cut: {

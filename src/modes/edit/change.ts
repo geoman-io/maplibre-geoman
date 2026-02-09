@@ -69,6 +69,10 @@ export class EditChange extends BaseDrag {
       return { next: true };
     }
 
+    if (this.getSettingValue('bodyDragEnabled') === true) {
+      return super.onMouseDown(event);
+    }
+
     const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
     if (!featureData || !this.pointBasedShapes.includes(featureData.shape)) {
       return { next: true };

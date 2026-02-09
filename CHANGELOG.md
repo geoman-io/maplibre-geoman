@@ -18,6 +18,11 @@ All notable changes to this project will be documented in this file.
   - Developers can now set the snapping tolerance at initialization or change it at runtime
   - The dev panel "Snap Distance (px)" input is now wired to this setting
 
+- Per-mode opt-in body drag settings for edit modes
+  - `controls.edit.change.settings.bodyDragEnabled`
+  - `controls.edit.rotate.settings.bodyDragEnabled`
+  - Both default to `false`, preserving the safer edit UX defaults
+
 ### Changed
 
 - Edit UX defaults aligned with Issue [#125](https://github.com/geoman-io/maplibre-geoman/issues/125)
