@@ -13,13 +13,14 @@ import {
   type MapHandlerReturnData,
   type MarkerData,
   type MarkerId,
+  type ScreenPoint,
   type ShapeName,
   SOURCES,
 } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
+import { getEuclideanDistance, getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -164,7 +165,16 @@ export class LineDrawer extends BaseDraw {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.featureData) {
-      const markerInfo = this.getClickedMarkerInfo(event);
+      let markerInfo = this.getClickedMarkerInfo(event);
+
+      // When snapping is active and no DOM marker was directly clicked,
+      // check if the click is within snapping tolerance of any marker.
+      // This handles the case where snapping visual feedback indicates a snap
+      // but the click doesn't land on the marker's DOM element (issue #136).
+      if (markerInfo.index === -1 && this.snappingHelper) {
+        markerInfo = this.getMarkerInfoByProximity(event);
+      }
+
       this.handleNextVertex(lngLat, markerInfo);
     } else if (this.isFeatureAllowed(lngLatToGeoJsonPoint(lngLat))) {
       this.startShape(lngLat);
@@ -317,6 +327,43 @@ export class LineDrawer extends BaseDraw {
     }
 
     return { index: -1, path: null };
+  }
+
+  /**
+   * Fallback marker detection using screen-space proximity.
+   * When snapping is active and the DOM-based detection fails (because the click
+   * landed outside the marker element but within snapping tolerance), this method
+   * checks if the click position is within the snapping tolerance of any marker.
+   */
+  getMarkerInfoByProximity(event: BaseMapPointerEvent): MarkerInfo {
+    if (!this.featureData || !this.snappingHelper) {
+      return { index: -1, path: null };
+    }
+
+    const clickPoint: ScreenPoint = [event.point.x, event.point.y];
+    const tolerance = this.snappingHelper.tolerance;
+
+    let closestIndex = -1;
+    let closestPath: MarkerId | null = null;
+    let closestDistance = Infinity;
+    let markerIndex = 0;
+
+    for (const [key, markerData] of this.featureData.markers) {
+      if (markerData.instance instanceof BaseDomMarker) {
+        const markerLngLat = markerData.instance.getLngLat();
+        const markerPoint = this.gm.mapAdapter.project(markerLngLat);
+        const distance = getEuclideanDistance(clickPoint, markerPoint);
+
+        if (distance < tolerance && distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = markerIndex;
+          closestPath = key;
+        }
+      }
+      markerIndex++;
+    }
+
+    return { index: closestIndex, path: closestPath };
   }
 
   addPoint(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo) {
