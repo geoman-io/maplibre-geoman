@@ -34,6 +34,13 @@ export abstract class BaseDrag extends BaseEdit {
   mode: EditModeName = 'drag';
   previousLngLat: LngLatTuple | null = null;
 
+  /**
+   * When true, clicking and dragging the feature body directly (not a marker)
+   * will translate the entire feature. Set to false in modes that should
+   * never allow body-drag translation (for example EditRotate).
+   */
+  bodyDragEnabled: boolean = true;
+
   pointBasedShapes: Array<FeatureShape> = ['marker', 'circle_marker', 'text_marker'];
 
   throttledMethods = convertToThrottled(
@@ -69,7 +76,7 @@ export abstract class BaseDrag extends BaseEdit {
   };
 
   onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
-    if (!isMapPointerEvent(event)) {
+    if (!this.bodyDragEnabled || !isMapPointerEvent(event)) {
       return { next: true };
     }
     const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });

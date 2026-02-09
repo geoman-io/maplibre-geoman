@@ -24,8 +24,10 @@ import {
   removeVertexFromGeoJsonFeature,
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
+import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import { toMod } from '@/utils/number.ts';
+import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, get } from 'lodash-es';
 import log from 'loglevel';
@@ -60,6 +62,19 @@ export class EditChange extends BaseDrag {
 
   onEndAction() {
     this.snapGuidesInstance?.removeSnapGuides();
+  }
+
+  override onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
+    if (!isMapPointerEvent(event)) {
+      return { next: true };
+    }
+
+    const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
+    if (!featureData || !this.pointBasedShapes.includes(featureData.shape)) {
+      return { next: true };
+    }
+
+    return super.onMouseDown(event);
   }
 
   handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {

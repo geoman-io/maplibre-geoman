@@ -20,6 +20,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Edit UX defaults aligned with Issue [#125](https://github.com/geoman-io/maplibre-geoman/issues/125)
+  - `shape_markers` are no longer auto-enabled in `edit:drag`, so drag mode does not show misleading vertex markers
+  - Body-drag translation is disabled by default for non-point features in `edit:change` and `edit:rotate`
+  - Point features (`marker`, `circle_marker`, `text_marker`) remain draggable in `edit:change` for practical editability
+
 - Update all dependencies
   - @turf/* packages from 7.3.3 to 7.3.4
   - @playwright/test and playwright from 1.58.1 to 1.58.2

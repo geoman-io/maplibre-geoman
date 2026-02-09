@@ -23,6 +23,7 @@ type RotateShapeHandler = (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature 
 
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
+  override bodyDragEnabled: boolean = false;
   allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon', 'ellipse'];
   convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
 
