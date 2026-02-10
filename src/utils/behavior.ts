@@ -75,8 +75,17 @@ export const convertToDebounced = <T extends object>(
   return debouncedMethods;
 };
 
-export const withPromiseTimeoutRace = async (promise: Promise<unknown>, errorMessage?: string) => {
+export const withPromiseTimeoutRace = async ({
+  promise,
+  errorMessage,
+  timeout,
+}: {
+  promise: Promise<unknown>;
+  errorMessage?: string;
+  timeout?: number;
+}) => {
   const defaultErrorMessage = 'Promise race timeout';
+  const effectiveTimeout = timeout || LOAD_TIMEOUT;
 
   await Promise.race([
     promise,
@@ -85,10 +94,10 @@ export const withPromiseTimeoutRace = async (promise: Promise<unknown>, errorMes
         () =>
           reject(
             new Error(
-              `Timeout ${LOAD_TIMEOUT / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
+              `Timeout ${effectiveTimeout / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
             ),
           ),
-        LOAD_TIMEOUT,
+        effectiveTimeout,
       );
     }),
   ]);

@@ -153,8 +153,8 @@ export class Geoman {
     // the 'load' event listener. Since MapLibre's 'load' event only fires once, we would
     // miss it and timeout after 60 seconds. Solution: re-check isLoaded() after
     // registering the listener to close the race window.
-    await withPromiseTimeoutRace(
-      new Promise((resolve) => {
+    await withPromiseTimeoutRace({
+      promise: new Promise((resolve) => {
         const onLoad = () => resolve(map);
         map.once('load', onLoad);
 
@@ -166,8 +166,8 @@ export class Geoman {
           resolve(map);
         }
       }),
-      'waitForBaseMap failed',
-    );
+      errorMessage: 'waitForBaseMap failed',
+    });
     return map;
   }
 
@@ -191,8 +191,8 @@ export class Geoman {
     // Same race condition fix as waitForBaseMap - check loaded state after
     // registering the listener to close the timing window
     const eventName = `${GM_PREFIX}:loaded`;
-    await withPromiseTimeoutRace(
-      new Promise((resolve) => {
+    await withPromiseTimeoutRace({
+      promise: new Promise((resolve) => {
         const onLoaded = () => resolve(this);
         map.once(eventName, onLoaded);
 
@@ -203,8 +203,8 @@ export class Geoman {
           resolve(this);
         }
       }),
-      'waitForGeomanLoaded failed',
-    );
+      errorMessage: 'waitForGeomanLoaded failed',
+    });
     return this;
   }
 
