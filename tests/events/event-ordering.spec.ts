@@ -3,7 +3,7 @@ import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
 import { dragAndDrop, enableMode, type ScreenCoordinates } from '@tests/utils/basic.ts';
-import { getRenderedFeaturesData } from '@tests/utils/features.ts';
+import { getRenderedFeaturesData, waitForRenderedFeatureData } from '@tests/utils/features.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 import { GM_PREFIX } from '@/core/constants.ts';
@@ -204,8 +204,27 @@ test.describe('Event Ordering', () => {
     // Wait for first drag events to complete
     await page.waitForTimeout(300);
 
-    const targetPoint2: ScreenCoordinates = [targetPoint1[0] + dX, targetPoint1[1] + dY];
-    await dragAndDrop(page, targetPoint1, targetPoint2);
+    const updatedFeature = await waitForRenderedFeatureData({
+      page,
+      featureId: feature.id,
+      temporary: false,
+    });
+    expect(updatedFeature, 'Feature should be available after first drag').not.toBeNull();
+    if (!updatedFeature) return;
+
+    const updatedPosition =
+      updatedFeature.shape === 'circle'
+        ? (centroid(updatedFeature.geoJson).geometry.coordinates as LngLatTuple)
+        : getGeoJsonFirstPoint(updatedFeature.geoJson);
+    expect(updatedPosition, 'Updated position should exist after first drag').not.toBeNull();
+    if (!updatedPosition) return;
+
+    const startPoint2 = await getScreenCoordinatesByLngLat({ page, position: updatedPosition });
+    expect(startPoint2, 'Second drag start point should be calculable').not.toBeNull();
+    if (!startPoint2) return;
+
+    const targetPoint2: ScreenCoordinates = [startPoint2[0] + dX, startPoint2[1] + dY];
+    await dragAndDrop(page, startPoint2, targetPoint2);
 
     // Wait for second drag events to complete
     await page.waitForTimeout(300);

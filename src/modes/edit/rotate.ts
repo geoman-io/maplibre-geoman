@@ -38,7 +38,7 @@ export class EditRotate extends BaseDrag {
   };
 
   onStartAction(): void {
-    // ...
+    this.bodyDragEnabled = this.getSettingValue('bodyDragEnabled') === true;
   }
 
   onEndAction(): void {

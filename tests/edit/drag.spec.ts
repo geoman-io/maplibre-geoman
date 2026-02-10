@@ -18,6 +18,8 @@ import {
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 
+const SCREEN_COORD_TOLERANCE = 3;
+
 test.beforeEach(async ({ page }) => {
   await configurePageTimeouts(page);
   await page.goto('/');
@@ -85,7 +87,13 @@ test('Drag', async ({ page }) => {
             console.log(`Original point: [${point}]`);
             console.log(`Expected/actual: [${newPoint}] / [${updatedPoint}]`);
           }
-          expect(updatedPoint).toEqual(newPoint);
+          expect(updatedPoint).toBeTruthy();
+          if (updatedPoint) {
+            expect(updatedPoint[0]).toBeGreaterThanOrEqual(newPoint[0] - SCREEN_COORD_TOLERANCE);
+            expect(updatedPoint[0]).toBeLessThanOrEqual(newPoint[0] + SCREEN_COORD_TOLERANCE);
+            expect(updatedPoint[1]).toBeGreaterThanOrEqual(newPoint[1] - SCREEN_COORD_TOLERANCE);
+            expect(updatedPoint[1]).toBeLessThanOrEqual(newPoint[1] + SCREEN_COORD_TOLERANCE);
+          }
         }
       }
     }

@@ -27,7 +27,6 @@ import { compareGeoJsonGeometries } from '@tests/utils/geojson.ts';
 
 // Precision 1 means tolerance of 10^-1 = 0.1 degree difference allowed
 const GEOJSON_COORD_DEFAULT_PRECISION = 1;
-const SCREEN_COORD_TOLERANCE = 3;
 
 async function getFirstDraggableVertex(
   page: Page,
@@ -119,7 +118,7 @@ async function performRotationAndVerify(
   }
 }
 
-async function performMovementAndVerify(
+async function performMovementAndVerifyNoChange(
   page: Page,
   feature: FeatureCustomData,
   dragStartScreenPoint: ScreenCoordinates,
@@ -133,7 +132,7 @@ async function performMovementAndVerify(
   ];
 
   await dragAndDrop(page, dragStartScreenPoint, targetScreenPoint);
-  await waitForFeatureGeoJsonUpdate({ feature, originalGeoJson, page });
+  await waitForMapIdle(page);
 
   const updatedFeatureData = await waitForRenderedFeatureData({
     page,
@@ -142,44 +141,21 @@ async function performMovementAndVerify(
   });
   expect(
     updatedFeatureData,
-    `Feature ${feature.id} should be updated after movement`,
+    `Feature ${feature.id} should still exist after attempted movement`,
   ).not.toBeNull();
   if (!updatedFeatureData) {
     return;
   }
 
-  let referenceLngLat: LngLatTuple | null;
-  if (updatedFeatureData.geoJson.geometry.type === 'Point') {
-    referenceLngLat = updatedFeatureData.geoJson.geometry.coordinates as LngLatTuple;
-  } else if (
-    updatedFeatureData.shape === 'circle' ||
-    updatedFeatureData.shape === 'polygon' ||
-    updatedFeatureData.shape === 'rectangle'
-  ) {
-    referenceLngLat = centroid(updatedFeatureData.geoJson).geometry.coordinates as LngLatTuple;
-  } else {
-    referenceLngLat = getGeoJsonFirstPoint(updatedFeatureData.geoJson);
-  }
+  const geometriesMatch = compareGeoJsonGeometries({
+    geometry1: updatedFeatureData.geoJson.geometry,
+    geometry2: originalGeoJson.geometry,
+    precision: GEOJSON_COORD_DEFAULT_PRECISION,
+  });
   expect(
-    referenceLngLat,
-    `Reference LngLat for ${feature.shape} (ID: ${feature.id}) should exist`,
-  ).not.toBeNull();
-  if (!referenceLngLat) {
-    return;
-  }
-
-  const newScreenPos = await getScreenCoordinatesByLngLat({ page, position: referenceLngLat });
-  expect(
-    newScreenPos,
-    `New screen position for ${feature.shape} (ID: ${feature.id}) should be calculable`,
-  ).not.toBeNull();
-
-  if (newScreenPos) {
-    expect(newScreenPos[0]).toBeGreaterThanOrEqual(targetScreenPoint[0] - SCREEN_COORD_TOLERANCE);
-    expect(newScreenPos[0]).toBeLessThanOrEqual(targetScreenPoint[0] + SCREEN_COORD_TOLERANCE);
-    expect(newScreenPos[1]).toBeGreaterThanOrEqual(targetScreenPoint[1] - SCREEN_COORD_TOLERANCE);
-    expect(newScreenPos[1]).toBeLessThanOrEqual(targetScreenPoint[1] + SCREEN_COORD_TOLERANCE);
-  }
+    geometriesMatch,
+    `Feature ${feature.shape} (ID: ${feature.id}) should not move in rotate mode via body drag`,
+  ).toBe(true);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -222,7 +198,7 @@ test('Rotate Polygon, Line, Rectangle, Circle via vertex drag', async ({ page })
   await page.evaluate(() => window.geoman.options.disableMode('edit', 'rotate'));
 });
 
-test('Move Marker, CircleMarker, TextMarker via body drag', async ({ page }) => {
+test('Do not move Marker, CircleMarker, TextMarker via body drag', async ({ page }) => {
   const dragOffsetX = -25;
   const dragOffsetY = 35;
   const pointBasedShapes = ['marker', 'circle_marker', 'text_marker'];
@@ -255,7 +231,13 @@ test('Move Marker, CircleMarker, TextMarker via body drag', async ({ page }) => 
       if (!dragStartScreenPoint) {
         continue;
       }
-      await performMovementAndVerify(page, feature, dragStartScreenPoint, dragOffsetX, dragOffsetY);
+      await performMovementAndVerifyNoChange(
+        page,
+        feature,
+        dragStartScreenPoint,
+        dragOffsetX,
+        dragOffsetY,
+      );
     }
   }
   await page.evaluate(() => window.geoman.options.disableMode('edit', 'rotate'));
