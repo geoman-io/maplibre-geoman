@@ -76,7 +76,7 @@
     "type-fest": "^5.4.4"
   },
   "peerDependencies": {
-    "maplibre-gl": "5.17.0"
+    "maplibre-gl": "5.18.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.2",
