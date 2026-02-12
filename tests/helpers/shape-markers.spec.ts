@@ -147,7 +147,7 @@ test.describe('Shape Markers Helper', () => {
     }
   });
 
-  test('should create markers when drag mode is enabled', async () => {
+  test('should not create markers when drag mode is enabled', async () => {
     await enableMode(page, 'edit', 'drag');
 
     const features = await getRenderedFeaturesData({ page, temporary: false });
@@ -164,8 +164,8 @@ test.describe('Shape Markers Helper', () => {
 
         expect(
           markers.length,
-          `Feature ${feature.shape} should have vertex markers in drag mode`,
-        ).toBeGreaterThan(0);
+          `Feature ${feature.shape} should not have vertex markers in drag mode`,
+        ).toBe(0);
       }
     }
   });

@@ -1,13 +1,6 @@
 name: Development
 
 on:
-  push:
-    branches:
-      - "feature/**"
-      - "feat/**"
-      - "fix/**"
-      - "hotfix/**"
-      - "dev/**"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [develop]

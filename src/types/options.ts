@@ -52,6 +52,13 @@ export type GmOptionsData = {
     controlsCollapsible: boolean;
     controlsStyles: ControlStyles;
     idGenerator: null | ((shapeGeoJson: GeoJsonShapeFeature) => string);
+    /**
+     * The snapping tolerance in pixels. When the cursor is within this distance
+     * of a snappable point or line, snapping will activate.
+     *
+     * @default 18
+     */
+    snapDistance: number;
     markerIcons: {
       default: string;
       control: string;

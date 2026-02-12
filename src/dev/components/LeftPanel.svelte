@@ -23,7 +23,7 @@
   let throttlingDelay = $state(10);
   let awaitDataUpdates = $state(true);
   let snappingEnabled = $state(false);
-  let snappingDistance = $state(20);
+  let snappingDistance = $state(18);
   let allowSelfIntersection = $state(true);
 
   // Active modes tracking
@@ -37,6 +37,14 @@
       activeDrawModes = geoman.getActiveDrawModes();
       activeEditModes = geoman.getActiveEditModes();
       activeHelperModes = geoman.getActiveHelperModes();
+      snappingDistance = geoman.options.settings.snapDistance;
+    }
+  });
+
+  // Sync snap distance changes back to geoman
+  $effect(() => {
+    if (geoman && snappingDistance > 0) {
+      geoman.options.settings.snapDistance = snappingDistance;
     }
   });
 

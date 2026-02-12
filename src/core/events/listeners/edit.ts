@@ -50,6 +50,10 @@ export class EditEventListener extends BaseEventListener {
     if (!actionInstance) {
       return;
     }
+    const controlOptions = this.getControlOptions(payload);
+    if (controlOptions?.settings) {
+      actionInstance.settings = controlOptions.settings;
+    }
 
     if (actionInstanceKey in this.gm.actionInstances) {
       log.error(`Action instance "${actionInstanceKey}" already exists`);

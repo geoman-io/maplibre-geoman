@@ -188,7 +188,7 @@ export const systemControls: SystemControls = {
       targetMode: 'shape_markers',
       settings: {
         exclusive: false,
-        enabledBy: ['drag', 'change', 'rotate', 'scale', 'line_simplification'],
+        enabledBy: ['change', 'rotate', 'scale', 'line_simplification'],
       },
     },
     snapping: {
