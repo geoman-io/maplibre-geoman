@@ -57,7 +57,7 @@ export const moveFeatureData = (featureData: FeatureData, lngLatDiff: LngLatDiff
     featureData.setShapeProperty('center', shapeCenter[1] + lngLatDiff.lat);
   }
   // Set the updated data back to the source
-  featureData.updateGeoJsonGeometry(featureGeoJson.geometry);
+  featureData.updateGeometry(featureGeoJson.geometry);
 };
 
 export const getAllFeatureCoordinates = (featureData: FeatureData): Array<Position> => {

@@ -220,7 +220,7 @@ export class Features {
     throw new Error(`Features: failed to create the source: "${sourceName}"`);
   }
 
-  delete(featureIdOrFeatureData: FeatureData | FeatureId) {
+  async delete(featureIdOrFeatureData: FeatureData | FeatureId) {
     let featureData: FeatureData | null;
 
     if (featureIdOrFeatureData instanceof FeatureData) {
@@ -231,17 +231,17 @@ export class Features {
 
     if (featureData) {
       this.featureStore.delete(featureData.id);
-      featureData.delete();
+      await featureData.delete();
       // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
       log.error(`features.delete: feature "${featureIdOrFeatureData}" not found`);
     }
   }
 
-  deleteAll() {
-    this.featureStore.forEach((featureData) => {
-      featureData.delete();
-    });
+  async deleteAll() {
+    await Promise.all(
+      Array.from(this.featureStore.values(), (featureData) => featureData.delete()),
+    );
     this.featureStore.clear();
   }
 
@@ -743,7 +743,7 @@ export class Features {
   }
 
   updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLatTuple) {
-    markerFeatureData.updateGeoJsonGeometry({
+    markerFeatureData.updateGeometry({
       type: 'Point',
       coordinates,
     });

@@ -68,12 +68,14 @@ export class SourceUpdateManager {
     return id;
   }
 
-  updateSource({
+  async updateSource({
     sourceName,
     diff,
+    waitForCompletion = true,
   }: {
     sourceName: FeatureSourceName;
     diff: GeoJSONSourceDiffHashed;
+    waitForCompletion?: boolean;
   }) {
     const updateMethod = this.updateStorage[sourceName].method;
 
@@ -92,6 +94,10 @@ export class SourceUpdateManager {
 
     if (updateMethod === 'automatic') {
       this.delayedSourceUpdateMethods[sourceName]();
+    }
+
+    if (waitForCompletion) {
+      await this.waitForPendingUpdates(sourceName);
     }
   }
 

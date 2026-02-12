@@ -165,7 +165,7 @@ export class DrawRectangle extends BaseDraw {
       [bounds[0], bounds[1]],
       [bounds[2], bounds[3]],
     );
-    this.featureData.updateGeoJsonGeometry(rectangleData.geometry);
+    this.featureData.updateGeometry(rectangleData.geometry);
     const markerData = this.getControlMarkerData(['geometry', 'coordinates', 4]);
     this.fireUpdateEvent(this.featureData, markerData);
   }

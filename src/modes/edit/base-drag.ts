@@ -85,7 +85,7 @@ export abstract class BaseDrag extends BaseEdit {
       this.featureData = featureData;
 
       this.gm.features.updateManager.beginTransaction('transactional-update');
-      this.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      this.featureData.changeSource({ sourceName: SOURCES.temporary });
       this.gm.features.updateManager.commitTransaction();
 
       this.gm.mapAdapter.setDragPan(false);
@@ -112,7 +112,7 @@ export abstract class BaseDrag extends BaseEdit {
 
     this.snappingHelper?.clearExcludedFeatures();
     this.gm.features.updateManager.beginTransaction('transactional-update');
-    this.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+    this.featureData.changeSource({ sourceName: SOURCES.main });
     this.gm.features.updateManager.commitTransaction();
 
     this.previousLngLat = null;

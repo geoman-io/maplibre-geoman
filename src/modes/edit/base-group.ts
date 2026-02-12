@@ -32,7 +32,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
 
   onEndAction() {
     this.features.forEach((featureData) => {
-      featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+      featureData.changeSource({ sourceName: SOURCES.main });
     });
     this.features = [];
   }
@@ -51,7 +51,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
     // if a feature is regular, convert it to temporary and add to the features array
     const featureData = this.getAllowedFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
     if (featureData && this.isFeatureAllowedToGroup(featureData)) {
-      featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      featureData.changeSource({ sourceName: SOURCES.temporary });
       this.features.push(featureData);
     }
 
@@ -74,7 +74,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
       if (featureIndex > -1) {
         this.features.splice(featureIndex, 1);
       }
-      tmpFeatureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+      tmpFeatureData.changeSource({ sourceName: SOURCES.main });
       return true;
     }
     return false;

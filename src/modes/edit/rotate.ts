@@ -63,12 +63,12 @@ export class EditRotate extends BaseDrag {
       }
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      event.featureData.changeSource({ sourceName: SOURCES.temporar });
       this.setCursorToPointer();
       this.flags.actionInProgress = true;
       this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {
-      event.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+      event.featureData.changeSource({ sourceName: SOURCES.main });
       this.fireFeatureEditEndEvent({ feature: event.featureData });
       this.flags.actionInProgress = false;
     }

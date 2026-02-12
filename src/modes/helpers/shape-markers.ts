@@ -577,7 +577,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     if (markerData) {
       if (!isEqualPosition(markerData.position.coordinate, segmentData.middle.coordinate)) {
-        markerData.instance.updateGeoJsonGeometry({
+        markerData.instance.updateGeometry({
           type: 'Point',
           coordinates: segmentData.middle.coordinate,
         });
@@ -602,7 +602,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     const shapeCenter = featureData.getShapeProperty('center');
 
     if (markerData && markerData.type !== 'dom' && shapeCenter) {
-      markerData.instance.updateGeoJsonGeometry({
+      markerData.instance.updateGeometry({
         type: 'Point',
         coordinates: shapeCenter,
       });

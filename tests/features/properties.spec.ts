@@ -416,7 +416,7 @@ test.describe('Feature Properties Management', () => {
         if (!fd) return null;
 
         // Using deprecated method
-        fd.updateGeoJsonCustomProperties({ newProp: 'added' });
+        fd.updateProperties({ newProp: 'added' });
         return fd.getGeoJson().properties;
       });
 
@@ -445,7 +445,7 @@ test.describe('Feature Properties Management', () => {
         if (!fd) return null;
 
         // Using deprecated method
-        fd.setGeoJsonCustomProperties({ replaced: true });
+        fd.setProperties({ replaced: true });
         return fd.getGeoJson().properties;
       });
 
@@ -474,7 +474,7 @@ test.describe('Feature Properties Management', () => {
         if (!fd) return null;
 
         // Using deprecated method
-        fd.deleteGeoJsonCustomProperties(['toDelete']);
+        fd.updateProperties({ toDelete: undefined });
         return fd.getGeoJson().properties;
       });
 
@@ -649,7 +649,7 @@ test.describe('Feature Properties Management', () => {
         if (!fd) return null;
 
         // Using deprecated method
-        fd.updateGeoJsonGeometry({ type: 'Point', coordinates: [7, 53] });
+        fd.updateGeometry({ type: 'Point', coordinates: [7, 53] });
 
         return fd.getGeoJson().geometry;
       });
