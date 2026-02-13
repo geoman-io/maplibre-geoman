@@ -64,6 +64,8 @@ export class Geoman {
   _pendingBaseMapCleanup: (() => void) | undefined;
   /** @internal Abort handle for a pending waitForBaseMap promise. */
   _pendingBaseMapAbort: (() => void) | undefined;
+  /** @internal Cached promise so concurrent callers share the same wait. */
+  _pendingBaseMapWait: Promise<unknown> | undefined;
 
   constructor(map: AnyMapInstance, options: PartialDeep<GmOptionsData> = {}) {
     this.options = this.initCoreOptions(options);
@@ -160,9 +162,17 @@ export class Geoman {
       return map;
     }
 
+    // If a wait is already in progress, join the same promise so concurrent
+    // callers (e.g. the constructor's fire-and-forget call and an explicit
+    // await) don't clobber each other's cleanup/abort handles.
+    if (this._pendingBaseMapWait) {
+      await this._pendingBaseMapWait;
+      return map;
+    }
+
     // We store cleanup handles so destroy() can abort the wait if the Geoman
     // instance is torn down before the map finishes loading.
-    await withPromiseTimeoutRace(
+    this._pendingBaseMapWait = withPromiseTimeoutRace(
       new Promise<unknown>((resolve, reject) => {
         // --- 1. Listen for the 'load' event (primary signal) -----------------
         const onLoad = () => {
@@ -215,16 +225,20 @@ export class Geoman {
 
         // --- Cleanup helper --------------------------------------------------
         // Removes all listeners/timers. Safe to call multiple times.
+        // Each step is wrapped individually so that a failure in one
+        // (e.g. map.off throwing) does not prevent the others from running.
         let cleaned = false;
         const cleanup = () => {
           if (cleaned) return;
           cleaned = true;
-          map.off('load', onLoad);
-          if (typeof mapAny.off === 'function') {
-            (mapAny.off as (type: string, fn: (e: unknown) => void) => void)('error', onError);
-          }
-          clearInterval(pollTimer);
-          document.removeEventListener('visibilitychange', onVisibilityChange);
+          try { map.off('load', onLoad); } catch { /* best-effort */ }
+          try {
+            if (typeof mapAny.off === 'function') {
+              (mapAny.off as (type: string, fn: (e: unknown) => void) => void)('error', onError);
+            }
+          } catch { /* best-effort */ }
+          try { clearInterval(pollTimer); } catch { /* best-effort */ }
+          try { document.removeEventListener('visibilitychange', onVisibilityChange); } catch { /* best-effort */ }
         };
 
         // Store the handles so destroy() can abort and settle immediately.
@@ -251,8 +265,13 @@ export class Geoman {
       },
     );
 
-    this._pendingBaseMapCleanup = undefined;
-    this._pendingBaseMapAbort = undefined;
+    try {
+      await this._pendingBaseMapWait;
+    } finally {
+      this._pendingBaseMapWait = undefined;
+      this._pendingBaseMapCleanup = undefined;
+      this._pendingBaseMapAbort = undefined;
+    }
     return map;
   }
 
@@ -340,6 +359,7 @@ export class Geoman {
     this._pendingBaseMapAbort?.();
     this._pendingBaseMapAbort = undefined;
     this._pendingBaseMapCleanup = undefined;
+    this._pendingBaseMapWait = undefined;
 
     // Only perform full cleanup if initialization completed
     if (this.loaded) {
