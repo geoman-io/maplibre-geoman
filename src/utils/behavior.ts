@@ -93,12 +93,17 @@ export const withPromiseTimeoutRace = async (
       promise,
       new Promise((_, reject) => {
         timerId = setTimeout(() => {
-          onTimeout?.();
-          reject(
-            new Error(
-              `Timeout ${LOAD_TIMEOUT / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
-            ),
-          );
+          try {
+            onTimeout?.();
+          } catch (error) {
+            log.error('withPromiseTimeoutRace onTimeout callback failed', error);
+          } finally {
+            reject(
+              new Error(
+                `Timeout ${LOAD_TIMEOUT / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
+              ),
+            );
+          }
         }, LOAD_TIMEOUT);
       }),
     ]);

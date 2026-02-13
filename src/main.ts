@@ -38,6 +38,8 @@ import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
+const BASE_MAP_WAIT_ABORTED = 'waitForBaseMap aborted';
+
 // declare module 'maplibre-gl' {
 //   interface Map {
 //     gm?: Geoman;
@@ -60,6 +62,8 @@ export class Geoman {
 
   /** @internal Cleanup handle for a pending waitForBaseMap promise. */
   _pendingBaseMapCleanup: (() => void) | undefined;
+  /** @internal Abort handle for a pending waitForBaseMap promise. */
+  _pendingBaseMapAbort: (() => void) | undefined;
 
   constructor(map: AnyMapInstance, options: PartialDeep<GmOptionsData> = {}) {
     this.options = this.initCoreOptions(options);
@@ -74,6 +78,11 @@ export class Geoman {
     this.waitForBaseMap()
       .then(this.init.bind(this))
       .catch((error) => {
+        const isAbortError =
+          error instanceof Error && error.message.includes(BASE_MAP_WAIT_ABORTED);
+        if (isAbortError && this.destroyed) {
+          return;
+        }
         log.error('Geoman initialization failed:', error);
         // Use destroy() for proper cleanup of any registered events/resources.
         // Note: destroy() is async but we don't need to await it here since
@@ -154,7 +163,7 @@ export class Geoman {
     // We store cleanup handles so destroy() can abort the wait if the Geoman
     // instance is torn down before the map finishes loading.
     await withPromiseTimeoutRace(
-      new Promise<unknown>((resolve) => {
+      new Promise<unknown>((resolve, reject) => {
         // --- 1. Listen for the 'load' event (primary signal) -----------------
         const onLoad = () => {
           cleanup();
@@ -218,8 +227,12 @@ export class Geoman {
           document.removeEventListener('visibilitychange', onVisibilityChange);
         };
 
-        // Store the cleanup function so destroy() can abort the wait.
+        // Store the handles so destroy() can abort and settle immediately.
         this._pendingBaseMapCleanup = cleanup;
+        this._pendingBaseMapAbort = () => {
+          cleanup();
+          reject(new Error(BASE_MAP_WAIT_ABORTED));
+        };
 
         // --- 5. Race-condition double-check ----------------------------------
         // Close the window between the isLoaded() check at the top and the
@@ -234,10 +247,12 @@ export class Geoman {
       () => {
         this._pendingBaseMapCleanup?.();
         this._pendingBaseMapCleanup = undefined;
+        this._pendingBaseMapAbort = undefined;
       },
     );
 
     this._pendingBaseMapCleanup = undefined;
+    this._pendingBaseMapAbort = undefined;
     return map;
   }
 
@@ -322,10 +337,9 @@ export class Geoman {
 
     // Clean up any pending waitForBaseMap listeners/timers that were
     // registered directly on the map instance (not via the event bus).
-    if (this._pendingBaseMapCleanup) {
-      this._pendingBaseMapCleanup();
-      this._pendingBaseMapCleanup = undefined;
-    }
+    this._pendingBaseMapAbort?.();
+    this._pendingBaseMapAbort = undefined;
+    this._pendingBaseMapCleanup = undefined;
 
     // Only perform full cleanup if initialization completed
     if (this.loaded) {
