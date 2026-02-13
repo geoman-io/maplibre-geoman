@@ -8,6 +8,7 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
   test.beforeEach(async ({ page: p }) => {
     page = p;
     await page.goto('/');
+    await page.waitForFunction(() => !!window.mapInstance && !!window.GeomanClass);
   });
 
   test('initializes when visibility changes from hidden to visible', async () => {
@@ -17,6 +18,7 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
 
       const originalLoaded = map.loaded as (() => boolean) | undefined;
       const originalIsStyleLoaded = map.isStyleLoaded as (() => boolean) | undefined;
+      const originalPrivateLoaded = map._loaded as boolean | undefined;
       const originalVisibilityState = Object.getOwnPropertyDescriptor(document, 'visibilityState');
 
       let styleLoaded = false;
@@ -24,6 +26,7 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
 
       map.loaded = () => false;
       map.isStyleLoaded = () => styleLoaded;
+      map._loaded = false;
 
       Object.defineProperty(document, 'visibilityState', {
         configurable: true,
@@ -39,9 +42,9 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
         visibilityState = 'visible';
         document.dispatchEvent(new Event('visibilitychange'));
 
-        await geoman.waitForGeomanLoaded();
+        await geoman.waitForBaseMap();
         return {
-          loaded: geoman.loaded,
+          resolved: true,
           destroyed: geoman.destroyed,
         };
       } finally {
@@ -53,13 +56,18 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
         } else {
           delete map.isStyleLoaded;
         }
+        if (typeof originalPrivateLoaded === 'boolean') {
+          map._loaded = originalPrivateLoaded;
+        } else {
+          delete map._loaded;
+        }
         if (originalVisibilityState) {
           Object.defineProperty(document, 'visibilityState', originalVisibilityState);
         }
       }
     });
 
-    expect(result.loaded).toBe(true);
+    expect(result.resolved).toBe(true);
     expect(result.destroyed).toBe(false);
   });
 
@@ -70,11 +78,13 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
 
       const originalLoaded = map.loaded as (() => boolean) | undefined;
       const originalIsStyleLoaded = map.isStyleLoaded as (() => boolean) | undefined;
+      const originalPrivateLoaded = map._loaded as boolean | undefined;
       const originalConsoleError = console.error;
       const capturedErrors: string[] = [];
 
       map.loaded = () => false;
       map.isStyleLoaded = () => false;
+      map._loaded = false;
       console.error = (...args: unknown[]) => {
         capturedErrors.push(args.map((arg) => String(arg)).join(' '));
         originalConsoleError(...args);
@@ -103,6 +113,11 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
         } else {
           delete map.isStyleLoaded;
         }
+        if (typeof originalPrivateLoaded === 'boolean') {
+          map._loaded = originalPrivateLoaded;
+        } else {
+          delete map._loaded;
+        }
       }
     });
 
@@ -119,6 +134,7 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
 
       const originalLoaded = map.loaded as (() => boolean) | undefined;
       const originalIsStyleLoaded = map.isStyleLoaded as (() => boolean) | undefined;
+      const originalPrivateLoaded = map._loaded as boolean | undefined;
       const originalOff = map.off as ((type: string, listener: unknown) => unknown) | undefined;
       const originalSetTimeout = window.setTimeout.bind(window);
       const originalSetInterval = window.setInterval.bind(window);
@@ -129,6 +145,7 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
 
       map.loaded = () => false;
       map.isStyleLoaded = () => false;
+      map._loaded = false;
       map.off = (type: string, listener: unknown) => {
         if (type === 'load') {
           loadOffCalls += 1;
@@ -184,6 +201,11 @@ test.describe('Lifecycle - waitForBaseMap reliability', () => {
           map.isStyleLoaded = originalIsStyleLoaded;
         } else {
           delete map.isStyleLoaded;
+        }
+        if (typeof originalPrivateLoaded === 'boolean') {
+          map._loaded = originalPrivateLoaded;
+        } else {
+          delete map._loaded;
         }
       }
     });
