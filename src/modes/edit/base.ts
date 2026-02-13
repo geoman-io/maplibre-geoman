@@ -36,15 +36,15 @@ export abstract class BaseEdit extends BaseAction {
     callback: () => void;
   }> = [];
 
-  startAction() {
+  async startAction() {
     this.setEventsForLayers('mouseenter', this.setCursorToPointer.bind(this));
     this.setEventsForLayers('mouseleave', this.setCursorToEmpty.bind(this));
-    super.startAction();
+    await super.startAction();
   }
 
-  endAction() {
+  async endAction() {
     this.clearEventsForLayers();
-    super.endAction();
+    await super.endAction();
   }
 
   setCursorToPointer() {
@@ -99,7 +99,7 @@ export abstract class BaseEdit extends BaseAction {
     this.layerEventHandlersData = [];
   }
 
-  updateFeatureGeoJson({
+  async updateFeatureGeoJson({
     featureData,
     featureGeoJson,
     forceMode = undefined,
@@ -107,18 +107,18 @@ export abstract class BaseEdit extends BaseAction {
     featureData: FeatureData;
     featureGeoJson: GeoJsonShapeFeature;
     forceMode?: EditModeName;
-  }): boolean {
+  }) {
     if (!this.flags.featureUpdateAllowed) {
       // used for geofencing violations, other modes could be added in the future
       return false;
     }
 
-    featureData.updateGeometry(featureGeoJson.geometry);
+    await featureData.updateGeometry(featureGeoJson.geometry);
     if (!isEqual(featureData.getGeoJson().properties, featureGeoJson.properties)) {
-      featureData._updateAllProperties(featureGeoJson.properties);
+      await featureData._updateAllProperties(featureGeoJson.properties);
     }
 
-    this.fireFeatureUpdatedEvent({
+    await this.fireFeatureUpdatedEvent({
       sourceFeatures: [featureData],
       targetFeatures: [featureData],
       forceMode,
@@ -127,7 +127,7 @@ export abstract class BaseEdit extends BaseAction {
     return true;
   }
 
-  fireBeforeFeatureUpdate({
+  async fireBeforeFeatureUpdate({
     features,
     geoJsonFeatures,
     forceMode = undefined,
@@ -147,10 +147,10 @@ export abstract class BaseEdit extends BaseAction {
       features,
       geoJsonFeatures,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${this.actionType}`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${this.actionType}`, payload);
   }
 
-  fireFeatureUpdatedEvent({
+  async fireFeatureUpdatedEvent({
     sourceFeatures,
     targetFeatures,
     markerData = undefined,
@@ -172,10 +172,10 @@ export abstract class BaseEdit extends BaseAction {
       markerData: markerData || null,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  fireFeatureEditStartEvent({
+  async fireFeatureEditStartEvent({
     feature,
     forceMode = undefined,
   }: {
@@ -191,10 +191,10 @@ export abstract class BaseEdit extends BaseAction {
       feature,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  fireFeatureEditEndEvent({
+  async fireFeatureEditEndEvent({
     feature,
     forceMode = undefined,
   }: {
@@ -210,10 +210,10 @@ export abstract class BaseEdit extends BaseAction {
       feature,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  fireMarkerPointerUpdateEvent() {
+  async fireMarkerPointerUpdateEvent() {
     if (!this.gm.markerPointer.marker) {
       return;
     }
@@ -236,10 +236,10 @@ export abstract class BaseEdit extends BaseAction {
       },
       featureData: null,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
-  forwardLineDrawerEvent(payload: GmSystemEvent) {
+  async forwardLineDrawerEvent(payload: GmSystemEvent) {
     if (!isGmDrawLineDrawerEvent(payload) || !['cut', 'split'].includes(this.mode)) {
       return { next: true };
     }
@@ -255,7 +255,7 @@ export abstract class BaseEdit extends BaseAction {
         featureData: payload.featureData,
         markerData: payload.markerData,
       };
-      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, eventData);
+      await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, eventData);
     } else if (payload.action === 'finish' || payload.action === 'cancel') {
       const eventData: GmDrawShapeEvent = {
         name: `${GM_SYSTEM_PREFIX}:draw:shape`,
@@ -265,13 +265,13 @@ export abstract class BaseEdit extends BaseAction {
         variant: null,
         action: payload.action,
       };
-      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, eventData);
+      await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, eventData);
     }
 
     return { next: true };
   }
 
-  fireFeatureRemovedEvent(featureData: FeatureData) {
+  async fireFeatureRemovedEvent(featureData: FeatureData) {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GmEditFeatureRemovedEvent = {
         name: `${GM_SYSTEM_PREFIX}:edit:feature_removed`,
@@ -281,7 +281,7 @@ export abstract class BaseEdit extends BaseAction {
         action: 'feature_removed',
         featureData,
       };
-      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+      await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
     }
   }
 

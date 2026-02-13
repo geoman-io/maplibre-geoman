@@ -231,7 +231,7 @@ test.describe('Feature Properties Management', () => {
           const fd = window.geoman.features.get('gm_main', 'props-test-encoding');
           if (!fd) return 'feature not found';
 
-          fd.updateProperties({ willDelete: undefined });
+          await fd.updateProperties({ willDelete: undefined });
 
           // Wait a bit for any async errors
           await new Promise((resolve) => setTimeout(resolve, 100));

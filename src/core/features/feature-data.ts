@@ -85,7 +85,7 @@ export class FeatureData {
   }
 
   set shape(shape: FeatureShape) {
-    this.setShapeProperty('shape', shape);
+    this.setShapeProperty('shape', shape).then();
   }
 
   get temporary(): boolean {
@@ -111,7 +111,7 @@ export class FeatureData {
     return undefined;
   }
 
-  setShapeProperty<T extends keyof FeatureShapeProperties>(
+  async setShapeProperty<T extends keyof FeatureShapeProperties>(
     name: T,
     value: ShapeGeoJsonProperties[`${typeof FEATURE_PROPERTY_PREFIX}${T}`],
   ) {
@@ -120,15 +120,15 @@ export class FeatureData {
       return;
     }
     this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`] = value;
-    this._updateAllProperties(this._geoJson.properties);
+    await this._updateAllProperties(this._geoJson.properties);
   }
 
-  deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
+  async deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
     if (!this._geoJson) {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    this.removeProperties([`${FEATURE_PROPERTY_PREFIX}${name}`], false);
+    await this.removeProperties([`${FEATURE_PROPERTY_PREFIX}${name}`], false);
   }
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
@@ -408,13 +408,13 @@ export class FeatureData {
     });
   }
 
-  convertToPolygon(): boolean {
+  async convertToPolygon() {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
-      this.deleteShapeProperty('center');
-      this.deleteShapeProperty('angle');
-      this.deleteShapeProperty('xSemiAxis');
-      this.deleteShapeProperty('ySemiAxis');
+      await this.deleteShapeProperty('center');
+      await this.deleteShapeProperty('angle');
+      await this.deleteShapeProperty('xSemiAxis');
+      await this.deleteShapeProperty('ySemiAxis');
       return true;
     }
 
@@ -462,7 +462,7 @@ export class FeatureData {
     }
   }
 
-  fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
+  async fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
     const payload: GmEditFeatureUpdatedEvent = {
       name: `${GM_SYSTEM_PREFIX}:edit:feature_updated`,
       level: 'system',
@@ -474,7 +474,7 @@ export class FeatureData {
       markerData: null,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
   async delete() {

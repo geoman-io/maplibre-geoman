@@ -5,8 +5,8 @@ import {
   type FeatureId,
   type GeoJsonImportFeature,
   type GeoJsonShapeFeature,
-  type LngLatTuple,
   type LngLatDiff,
+  type LngLatTuple,
 } from '@/main.ts';
 import {
   eachCoordinateWithPath,
@@ -49,15 +49,15 @@ export const getMovedGeoJson = (featureData: FeatureData, lngLatDiff: LngLatDiff
   return featureGeoJson;
 };
 
-export const moveFeatureData = (featureData: FeatureData, lngLatDiff: LngLatDiff): void => {
+export const moveFeatureData = async (featureData: FeatureData, lngLatDiff: LngLatDiff) => {
   const featureGeoJson = getMovedGeoJson(featureData, lngLatDiff);
   const shapeCenter = featureData.getShapeProperty('center');
   if (shapeCenter) {
-    featureData.setShapeProperty('center', shapeCenter[0] + lngLatDiff.lng);
-    featureData.setShapeProperty('center', shapeCenter[1] + lngLatDiff.lat);
+    await featureData.setShapeProperty('center', shapeCenter[0] + lngLatDiff.lng);
+    await featureData.setShapeProperty('center', shapeCenter[1] + lngLatDiff.lat);
   }
   // Set the updated data back to the source
-  featureData.updateGeometry(featureGeoJson.geometry);
+  await featureData.updateGeometry(featureGeoJson.geometry);
 };
 
 export const getAllFeatureCoordinates = (featureData: FeatureData): Array<Position> => {

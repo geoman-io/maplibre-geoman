@@ -6,7 +6,6 @@ import {
   type GmEditMarkerMoveEvent,
   type GmSystemEvent,
   type LngLatTuple,
-  type MapHandlerReturnData,
   type ShapeName,
   SOURCES,
 } from '@/main.ts';
@@ -45,7 +44,7 @@ export class EditRotate extends BaseDrag {
     // ...
   }
 
-  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
+  async handleGmEdit(event: GmSystemEvent) {
     if (!isGmEditEvent(event)) {
       log.error('EditChange.handleGmEdit: not an edit event', event);
       return { next: false };
@@ -57,19 +56,19 @@ export class EditRotate extends BaseDrag {
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
       if (event.markerData?.type === 'vertex') {
-        this.moveVertex(event);
+        await this.moveVertex(event);
       } else {
         this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
       }
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      event.featureData.changeSource({ sourceName: SOURCES.temporar });
+      await event.featureData.changeSource({ sourceName: SOURCES.temporar });
       this.setCursorToPointer();
       this.flags.actionInProgress = true;
-      this.fireFeatureEditStartEvent({ feature: event.featureData });
+      await this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {
-      event.featureData.changeSource({ sourceName: SOURCES.main });
-      this.fireFeatureEditEndEvent({ feature: event.featureData });
+      await event.featureData.changeSource({ sourceName: SOURCES.main });
+      await this.fireFeatureEditEndEvent({ feature: event.featureData });
       this.flags.actionInProgress = false;
     }
     return { next: true };
@@ -81,20 +80,23 @@ export class EditRotate extends BaseDrag {
     );
   }
 
-  moveVertex(event: GmEditMarkerMoveEvent) {
+  async moveVertex(event: GmEditMarkerMoveEvent) {
     const featureData = event.featureData;
     const updatedGeoJson = this.shapeRotateHandlers[featureData.shape]?.(event) || null;
 
     if (updatedGeoJson) {
-      this.fireBeforeFeatureUpdate({
+      await this.fireBeforeFeatureUpdate({
         features: [featureData],
         geoJsonFeatures: [updatedGeoJson],
       });
 
-      const isUpdated = this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
+      const isUpdated = await this.updateFeatureGeoJson({
+        featureData,
+        featureGeoJson: updatedGeoJson,
+      });
 
       if (isUpdated && this.convertFeaturesTypes.includes(featureData.shape)) {
-        featureData.convertToPolygon(); // if possible
+        await featureData.convertToPolygon(); // if possible
       }
     } else {
       log.error('EditRotate.moveVertex: invalid geojson', updatedGeoJson, event);

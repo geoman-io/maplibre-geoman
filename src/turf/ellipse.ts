@@ -1,16 +1,16 @@
 import {
-  polygon,
-  isObject,
-  isNumber,
   type Coord,
-  type Units,
+  isNumber,
+  isObject,
   point,
+  polygon,
   radiansToDegrees,
+  type Units,
 } from '@turf/helpers';
 import { destination } from '@turf/destination';
 import { transformRotate } from '@turf/transform-rotate';
 import { getCoord } from '@turf/invariant';
-import type { GeoJsonProperties, Feature, Polygon, Position } from 'geojson';
+import type { Feature, GeoJsonProperties, Polygon, Position } from 'geojson';
 
 /**
  * Included to resolve issues

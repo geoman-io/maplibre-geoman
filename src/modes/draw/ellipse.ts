@@ -1,10 +1,4 @@
-import type {
-  DrawModeName,
-  LngLatTuple,
-  MapHandlerReturnData,
-  ScreenPoint,
-  ShapeName,
-} from '@/types';
+import type { DrawModeName, LngLatTuple, ScreenPoint, ShapeName } from '@/types';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import { BaseCircle } from './base-circle.ts';
 import { convertToThrottled, isMapPointerEvent } from '@/main.ts';
@@ -25,29 +19,29 @@ export class DrawEllipse extends BaseCircle {
     this.gm.options.settings.throttlingDelay,
   );
 
-  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
     const lngLat: LngLatTuple = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.circleCenterLngLat && this.xSemiAxisLngLat) {
-      this.fireBeforeFeatureCreate({
+      await this.fireBeforeFeatureCreate({
         geoJsonFeatures: [
           this.getEllipseGeoJson(this.circleCenterLngLat, this.xSemiAxisLngLat, lngLat),
         ],
       });
 
       if (this.flags.featureCreateAllowed) {
-        this.saveEllipseFeature(lngLat);
+        await this.saveEllipseFeature(lngLat);
         this.circleCenterLngLat = null;
         this.circleCenterPoint = null;
         this.xSemiAxisPoint = null;
         this.xSemiAxisLngLat = null;
-        this.fireFinishEvent();
+        await this.fireFinishEvent();
       }
     } else if (this.circleCenterLngLat) {
-      this.fireBeforeFeatureCreate({
+      await this.fireBeforeFeatureCreate({
         geoJsonFeatures: [this.getEllipseGeoJson(this.circleCenterLngLat, lngLat)],
       });
 
@@ -56,16 +50,16 @@ export class DrawEllipse extends BaseCircle {
         this.xSemiAxisPoint = this.gm.mapAdapter.project(this.circleCenterLngLat);
       }
     } else {
-      this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
+      await this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 
       if (this.flags.featureCreateAllowed) {
         this.circleCenterLngLat = lngLat;
         this.circleCenterPoint = this.gm.mapAdapter.project(this.circleCenterLngLat);
-        this.featureData = this.createFeature();
+        this.featureData = await this.createFeature();
 
         const markerData = this.getControlMarkerData();
         if (this.featureData && markerData) {
-          this.fireStartEvent(this.featureData, markerData);
+          await this.fireStartEvent(this.featureData, markerData);
         }
       }
     }
@@ -73,11 +67,11 @@ export class DrawEllipse extends BaseCircle {
     return { next: false };
   }
 
-  onMouseMove(): MapHandlerReturnData {
+  async onMouseMove() {
     if (this.circleCenterLngLat && this.gm.markerPointer.marker) {
       const markerLngLat = this.gm.markerPointer.marker.getLngLat();
 
-      this.fireBeforeFeatureCreate({
+      await this.fireBeforeFeatureCreate({
         geoJsonFeatures: [
           this.xSemiAxisLngLat
             ? this.getEllipseGeoJson(this.circleCenterLngLat, this.xSemiAxisLngLat, markerLngLat)
@@ -86,18 +80,18 @@ export class DrawEllipse extends BaseCircle {
       });
 
       if (this.flags.featureCreateAllowed) {
-        this.throttledMethods.updateFeatureGeoJson(markerLngLat);
+        await this.throttledMethods.updateFeatureGeoJson(markerLngLat);
       }
     }
 
     if (!this.circleCenterLngLat) {
-      this.fireMarkerPointerUpdateEvent();
+      await this.fireMarkerPointerUpdateEvent();
     }
 
     return { next: false };
   }
 
-  updateFeatureGeoJson(eventLngLat: LngLatTuple) {
+  async updateFeatureGeoJson(eventLngLat: LngLatTuple) {
     if (!this.featureData || !this.circleCenterLngLat) {
       return;
     }
@@ -105,26 +99,26 @@ export class DrawEllipse extends BaseCircle {
     const featureGeoJson = this.xSemiAxisLngLat
       ? this.getEllipseGeoJson(this.circleCenterLngLat, this.xSemiAxisLngLat, eventLngLat)
       : this.getEllipseGeoJson(this.circleCenterLngLat, eventLngLat);
-    this.featureData.updateGeometry(featureGeoJson.geometry);
+    await this.featureData.updateGeometry(featureGeoJson.geometry);
 
-    this.featureData._updateAllProperties({
+    await this.featureData._updateAllProperties({
       __gm_shape: featureGeoJson.properties.__gm_shape,
     });
 
     const markerData = this.getControlMarkerData();
     if (markerData) {
-      this.fireUpdateEvent(this.featureData, markerData);
+      await this.fireUpdateEvent(this.featureData, markerData);
     }
   }
 
-  saveEllipseFeature(eventLngLat: LngLatTuple) {
+  async saveEllipseFeature(eventLngLat: LngLatTuple) {
     if (!this.circleCenterLngLat || !this.xSemiAxisLngLat) {
       return;
     }
 
     if (this.featureData) {
       const lngLat = this.gm.markerPointer.marker?.getLngLat() || eventLngLat;
-      this.updateFeatureGeoJson(lngLat);
+      await this.updateFeatureGeoJson(lngLat);
 
       const { xSemiAxis, ySemiAxis, angle } = getEllipseParameters({
         center: this.circleCenterLngLat,
@@ -132,15 +126,15 @@ export class DrawEllipse extends BaseCircle {
         rimLngLat: lngLat,
       });
 
-      this.featureData.setShapeProperty('center', this.circleCenterLngLat);
-      this.featureData.setShapeProperty('xSemiAxis', xSemiAxis);
-      this.featureData.setShapeProperty('ySemiAxis', ySemiAxis);
-      this.featureData.setShapeProperty('angle', angle);
+      await this.featureData.setShapeProperty('center', this.circleCenterLngLat);
+      await this.featureData.setShapeProperty('xSemiAxis', xSemiAxis);
+      await this.featureData.setShapeProperty('ySemiAxis', ySemiAxis);
+      await this.featureData.setShapeProperty('angle', angle);
 
       if (this.isFeatureGeoJsonValid()) {
-        this.saveFeature();
+        await this.saveFeature();
       } else {
-        this.removeTmpFeature();
+        await this.removeTmpFeature();
       }
     }
   }

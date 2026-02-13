@@ -28,7 +28,7 @@ type UpdateShapeHandler = (
   featureData: FeatureData,
   lngLatStart: LngLatTuple,
   lngLatEnd: LngLatTuple,
-) => GeoJsonShapeFeature | null;
+) => Promise<GeoJsonShapeFeature | null> | GeoJsonShapeFeature | null;
 
 export abstract class BaseDrag extends BaseEdit {
   mode: EditModeName = 'drag';
@@ -75,7 +75,7 @@ export abstract class BaseDrag extends BaseEdit {
     polygon: this.moveSource.bind(this),
   };
 
-  onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseDown(event: BaseMapEvent) {
     if (!this.bodyDragEnabled || !isMapPointerEvent(event)) {
       return { next: true };
     }
@@ -85,7 +85,7 @@ export abstract class BaseDrag extends BaseEdit {
       this.featureData = featureData;
 
       this.gm.features.updateManager.beginTransaction('transactional-update');
-      this.featureData.changeSource({ sourceName: SOURCES.temporary });
+      await this.featureData.changeSource({ sourceName: SOURCES.temporary });
       this.gm.features.updateManager.commitTransaction();
 
       this.gm.mapAdapter.setDragPan(false);
@@ -95,35 +95,35 @@ export abstract class BaseDrag extends BaseEdit {
       // This ensures correct internal event ordering: dragstart -> drag -> dragend.
       // alignShapeCenterWithControlMarker calls onMouseMove which can fire drag events,
       // so dragstart must be fired first.
-      this.fireFeatureEditStartEvent({ feature: this.featureData, forceMode: 'drag' });
+      await this.fireFeatureEditStartEvent({ feature: this.featureData, forceMode: 'drag' });
       this.flags.actionInProgress = true;
       if (this.isPointBasedShape()) {
-        this.alignShapeCenterWithControlMarker(this.featureData, event);
+        await this.alignShapeCenterWithControlMarker(this.featureData, event);
       }
       return { next: false };
     }
     return { next: true };
   }
 
-  onMouseUp(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseUp(event: BaseMapEvent): Promise<MapHandlerReturnData> {
     if (!this.featureData || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
     this.snappingHelper?.clearExcludedFeatures();
     this.gm.features.updateManager.beginTransaction('transactional-update');
-    this.featureData.changeSource({ sourceName: SOURCES.main });
+    await this.featureData.changeSource({ sourceName: SOURCES.main });
     this.gm.features.updateManager.commitTransaction();
 
     this.previousLngLat = null;
     this.gm.mapAdapter.setDragPan(true);
-    this.fireFeatureEditEndEvent({ feature: this.featureData, forceMode: 'drag' });
+    await this.fireFeatureEditEndEvent({ feature: this.featureData, forceMode: 'drag' });
     this.flags.actionInProgress = false;
     this.featureData = null;
     return { next: true };
   }
 
-  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseMove(event: BaseMapEvent) {
     if (!this.flags.actionInProgress || !isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -133,7 +133,7 @@ export abstract class BaseDrag extends BaseEdit {
       // see "relatedModes" in options
       const endLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
       this.gm.features.updateManager.beginTransaction('transactional-update', SOURCES.temporary);
-      this.moveFeature(this.featureData, endLngLat);
+      await this.moveFeature(this.featureData, endLngLat);
       this.gm.features.updateManager.commitTransaction(SOURCES.temporary);
     }
     return { next: false };
@@ -145,17 +145,17 @@ export abstract class BaseDrag extends BaseEdit {
     return !!this.featureData && this.pointBasedShapes.includes(this.featureData.shape);
   }
 
-  abstract handleGmEdit(event: GmSystemEvent): MapHandlerReturnData;
+  abstract handleGmEdit(event: GmSystemEvent): Promise<MapHandlerReturnData> | MapHandlerReturnData;
 
-  alignShapeCenterWithControlMarker(featureData: FeatureData, event: BaseMapEvent) {
+  async alignShapeCenterWithControlMarker(featureData: FeatureData, event: BaseMapEvent) {
     const shapeLngLat = getFeatureFirstPoint(featureData);
     if (shapeLngLat) {
       this.gm.markerPointer.marker?.setLngLat(shapeLngLat);
-      this.onMouseMove(event); // align control marker and feature center
+      await this.onMouseMove(event); // align control marker and feature center
     }
   }
 
-  moveFeature(featureData: FeatureData, newLngLat: LngLatTuple) {
+  async moveFeature(featureData: FeatureData, newLngLat: LngLatTuple) {
     if (!this.flags.actionInProgress) {
       return;
     }
@@ -167,25 +167,29 @@ export abstract class BaseDrag extends BaseEdit {
 
     const shapeUpdateMethod = this.getUpdatedGeoJsonHandlers[featureData.shape];
     if (shapeUpdateMethod) {
-      const updatedGeoJson = shapeUpdateMethod(featureData, this.previousLngLat, newLngLat);
+      let updatedGeoJson = shapeUpdateMethod(featureData, this.previousLngLat, newLngLat);
+      if (updatedGeoJson instanceof Promise) {
+        updatedGeoJson = await updatedGeoJson;
+      }
+
       if (!updatedGeoJson) {
         log.error('BaseDrag.moveFeature: invalid updatedGeoJson', featureData);
         return;
       }
 
-      this.fireBeforeFeatureUpdate({
+      await this.fireBeforeFeatureUpdate({
         features: [featureData],
         geoJsonFeatures: [updatedGeoJson],
         forceMode: 'drag',
       });
 
-      const isUpdated = this.updateFeatureGeoJson({
+      const isUpdated = await this.updateFeatureGeoJson({
         featureData,
         featureGeoJson: updatedGeoJson,
         forceMode: 'drag',
       });
       if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
-        featureData._updateAllProperties(updatedGeoJson.properties);
+        await featureData._updateAllProperties(updatedGeoJson.properties);
       }
 
       if (isUpdated) {
@@ -243,11 +247,11 @@ export abstract class BaseDrag extends BaseEdit {
     });
   }
 
-  moveCircle(
+  async moveCircle(
     featureData: FeatureData,
     oldLngLat: LngLatTuple,
     newLngLat: LngLatTuple,
-  ): GeoJsonShapeFeature | null {
+  ): Promise<GeoJsonShapeFeature | null> {
     if (featureData.shape !== 'circle') {
       log.error('BaseDrag.moveCircle: invalid shape type', featureData);
       return null;
@@ -271,7 +275,7 @@ export abstract class BaseDrag extends BaseEdit {
       shapeCenter[0] + lngLatDiff.lng,
       shapeCenter[1] + lngLatDiff.lat,
     ];
-    featureData.setShapeProperty('center', newCenterCoords);
+    await featureData.setShapeProperty('center', newCenterCoords);
 
     const circlePolygon = getGeoJsonCircle({
       center: newCenterCoords,

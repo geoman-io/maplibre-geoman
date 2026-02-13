@@ -24,29 +24,29 @@ export class DrawPolygon extends BaseDraw {
     mousemove: this.onMouseMove.bind(this),
   };
 
-  onEndAction(): void {
-    this.lineDrawer.endAction();
+  async onEndAction() {
+    await this.lineDrawer.endAction();
   }
 
-  onStartAction(): void {
-    this.lineDrawer.startAction();
+  async onStartAction() {
+    await this.lineDrawer.startAction();
     this.lineDrawer.on('firstMarkerClick', this.polygonFinished.bind(this));
     this.lineDrawer.on('lastMarkerClick', this.polygonFinished.bind(this));
   }
 
-  onMouseMove(event: BaseMapEvent) {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
 
     if (!this.lineDrawer.featureData) {
-      this.fireMarkerPointerUpdateEvent();
+      await this.fireMarkerPointerUpdateEvent();
     }
     return { next: true };
   }
 
-  polygonFinished(event: LineEventHandlerArguments) {
-    this.lineDrawer.endShape();
+  async polygonFinished(event: LineEventHandlerArguments) {
+    await this.lineDrawer.endShape();
 
     if (event.shapeCoordinates.length < 3) {
       // polygons with less than 3 points are discarded
@@ -58,7 +58,7 @@ export class DrawPolygon extends BaseDraw {
       return;
     }
 
-    this.gm.features.createFeature({
+    await this.gm.features.createFeature({
       shapeGeoJson: {
         ...geoJsonPolygon,
         properties: {

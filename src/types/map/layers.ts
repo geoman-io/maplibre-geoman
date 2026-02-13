@@ -1,8 +1,8 @@
 import type { SourcesStorage } from '@/types/features.ts';
 import type {
   PartialCircleLayer,
-  PartialLineLayer,
   PartialFillLayer,
+  PartialLineLayer,
   PartialSymbolLayer,
 } from '@mapLib/types/layers.ts';
 

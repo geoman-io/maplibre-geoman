@@ -299,7 +299,7 @@ export class Features {
     });
   }
 
-  createFeature({
+  async createFeature({
     featureId,
     shapeGeoJson,
     parent,
@@ -311,7 +311,7 @@ export class Features {
     parent?: FeatureData;
     sourceName: FeatureSourceName;
     imported?: boolean;
-  }): FeatureData | null {
+  }) {
     const source = this.sources[sourceName];
     if (!source) {
       log.error('Features.createFeature Missing source for feature creation');
@@ -341,13 +341,13 @@ export class Features {
 
     this.add(featureData);
     if (!featureData.temporary && !imported) {
-      this.fireFeatureCreatedEvent(featureData);
+      await this.fireFeatureCreatedEvent(featureData);
     }
     this.featureCounter += 1;
     return featureData;
   }
 
-  importGeoJson(
+  async importGeoJson(
     geoJson: GeoJsonImportFeatureCollection | GeoJsonImportFeature,
     options?: ImportGeoJsonOptions,
   ) {
@@ -366,7 +366,7 @@ export class Features {
 
     this.updateManager.beginTransaction('transactional-update', SOURCES.main);
 
-    features.forEach((feature) => {
+    for (const feature of features) {
       let featureData: FeatureData | null = null;
       result.stats.total += 1;
 
@@ -384,12 +384,12 @@ export class Features {
           const featureId = (featureGeoJson.id ??
             featureGeoJson.properties?.[FEATURE_ID_PROPERTY]) as FeatureId | undefined;
           if (featureId && this.featureStore.has(featureId)) {
-            this.delete(featureId);
+            await this.delete(featureId);
             result.stats.overwritten += 1;
           }
         }
 
-        featureData = this.importGeoJsonFeature(featureGeoJson);
+        featureData = await this.importGeoJsonFeature(featureGeoJson);
       }
 
       if (featureData) {
@@ -398,14 +398,14 @@ export class Features {
       } else {
         result.stats.failed += 1;
       }
-    });
+    }
 
     this.updateManager.commitTransaction('gm_main');
 
     return result;
   }
 
-  importGeoJsonFeature(shapeGeoJson: GeoJsonImportFeature): FeatureData | null {
+  async importGeoJsonFeature(shapeGeoJson: GeoJsonImportFeature) {
     // add an externally created GeoJSON
     const sourceName: FeatureSourceName = this.defaultSourceName;
 
@@ -559,7 +559,7 @@ export class Features {
     return resultFeatureCollection;
   }
 
-  convertSourceToGm(inputSource: BaseSource): Array<FeatureData> {
+  async convertSourceToGm(inputSource: BaseSource) {
     // adds an externally created source to the features store
     // the method converts the source/layers to internal format
     // original source/layers are removed
@@ -571,8 +571,8 @@ export class Features {
     const baseSource = this.gm.mapAdapter.getSource(inputSource.id);
     baseSource.remove();
 
-    sourceGeoJsonFeatures.forEach((sourceFeature) => {
-      const featureData = this.addGeoJsonFeature({
+    for (const sourceFeature of sourceGeoJsonFeatures) {
+      const featureData = await this.addGeoJsonFeature({
         shapeGeoJson: sourceFeature as GeoJsonImportFeature,
         defaultSource: true,
       });
@@ -580,11 +580,11 @@ export class Features {
       if (featureData) {
         features.push(featureData);
       }
-    });
+    }
     return features;
   }
 
-  addGeoJsonFeature({
+  async addGeoJsonFeature({
     shapeGeoJson,
     sourceName,
     defaultSource,
@@ -592,7 +592,7 @@ export class Features {
     shapeGeoJson: GeoJsonImportFeature;
     sourceName?: FeatureSourceName;
     defaultSource?: boolean;
-  }): FeatureData | null {
+  }) {
     let targetSourceName: FeatureSourceName | null;
     if (defaultSource) {
       targetSourceName = this.defaultSourceName;
@@ -742,14 +742,14 @@ export class Features {
     });
   }
 
-  updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLatTuple) {
-    markerFeatureData.updateGeometry({
+  async updateMarkerFeaturePosition(markerFeatureData: FeatureData, coordinates: LngLatTuple) {
+    await markerFeatureData.updateGeometry({
       type: 'Point',
       coordinates,
     });
   }
 
-  fireFeatureCreatedEvent(featureData: FeatureData) {
+  async fireFeatureCreatedEvent(featureData: FeatureData) {
     if (includesWithType(featureData.shape, SHAPE_NAMES)) {
       const payload: GmDrawFeatureCreatedEvent = {
         name: `${GM_SYSTEM_PREFIX}:draw:feature_created`,
@@ -759,7 +759,7 @@ export class Features {
         action: 'feature_created',
         featureData,
       };
-      this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
+      await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
     }
   }
 }

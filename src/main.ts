@@ -76,7 +76,7 @@ export class Geoman {
         // Note: destroy() is async but we don't need to await it here since
         // we're in a fire-and-forget catch block and destroy() handles the
         // not-yet-loaded case synchronously for the critical cleanup paths.
-        this.destroy();
+        this.destroy().then();
       });
   }
 
@@ -124,7 +124,7 @@ export class Geoman {
     return new Promise<void>((resolve) => {
       const handleCreateControls = async () => {
         if (controlsElement) {
-          this.control.createControls(controlsElement);
+          await this.control.createControls(controlsElement);
         } else {
           this.mapAdapter.addControl(this.control);
         }
@@ -245,7 +245,7 @@ export class Geoman {
     // Only perform full cleanup if initialization completed
     if (this.loaded) {
       // removeControls() will detach events via control.onRemove()
-      this.removeControls();
+      await this.removeControls();
       // Remove images that were added during initialization
       this.mapAdapter.removeImage('default-marker');
     } else {
@@ -262,8 +262,8 @@ export class Geoman {
     }
   }
 
-  removeControls() {
-    this.disableAllModes();
+  async removeControls() {
+    await this.disableAllModes();
     this.mapAdapter.removeControl(this.control);
   }
 
@@ -288,18 +288,18 @@ export class Geoman {
       actionType: 'control',
       action: 'loaded',
     };
-    this.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
+    await this.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
     this.loaded = true;
   }
 
-  disableAllModes() {
-    typedKeys(this.actionInstances).forEach((key) => {
+  async disableAllModes() {
+    for (const key of typedKeys(this.actionInstances)) {
       const [actionType, mode] = key.split('__');
 
       if (isModeType(actionType) && isModeName(mode)) {
-        this.options.disableMode(actionType, mode);
+        await this.options.disableMode(actionType, mode);
       }
-    });
+    }
   }
 
   getActiveDrawModes(): Array<DrawModeName> {
@@ -374,16 +374,16 @@ export class Geoman {
     return element;
   }
 
-  enableMode(actionType: ModeType, modeName: ModeName) {
-    this.options.enableMode(actionType, modeName);
+  async enableMode(actionType: ModeType, modeName: ModeName) {
+    await this.options.enableMode(actionType, modeName);
   }
 
-  disableMode(actionType: ModeType, modeName: ModeName) {
-    this.options.disableMode(actionType, modeName);
+  async disableMode(actionType: ModeType, modeName: ModeName) {
+    await this.options.disableMode(actionType, modeName);
   }
 
-  toggleMode(actionType: ModeType, modeName: ModeName) {
-    this.options.toggleMode(actionType, modeName);
+  async toggleMode(actionType: ModeType, modeName: ModeName) {
+    await this.options.toggleMode(actionType, modeName);
   }
 
   isModeEnabled(actionType: ModeType, modeName: ModeName) {
@@ -392,16 +392,18 @@ export class Geoman {
 
   // helper methods for compatibility with the old API
   // draw (draw:*)
-  enableDraw(shape: DrawModeName) {
-    this.options.enableMode('draw', shape);
+  async enableDraw(shape: DrawModeName) {
+    await this.options.enableMode('draw', shape);
   }
 
-  disableDraw() {
-    this.getActiveDrawModes().forEach((shape) => this.options.disableMode('draw', shape));
+  async disableDraw() {
+    for (const shape of this.getActiveDrawModes()) {
+      await this.options.disableMode('draw', shape);
+    }
   }
 
-  toggleDraw(shape: DrawModeName) {
-    this.options.toggleMode('draw', shape);
+  async toggleDraw(shape: DrawModeName) {
+    await this.options.toggleMode('draw', shape);
   }
 
   drawEnabled(shape: DrawModeName) {
@@ -409,16 +411,16 @@ export class Geoman {
   }
 
   // drag(edit:drag)
-  enableGlobalDragMode() {
-    this.options.enableMode('edit', 'drag');
+  async enableGlobalDragMode() {
+    await this.options.enableMode('edit', 'drag');
   }
 
-  disableGlobalDragMode() {
-    this.options.disableMode('edit', 'drag');
+  async disableGlobalDragMode() {
+    await this.options.disableMode('edit', 'drag');
   }
 
-  toggleGlobalDragMode() {
-    this.options.toggleMode('edit', 'drag');
+  async toggleGlobalDragMode() {
+    await this.options.toggleMode('edit', 'drag');
   }
 
   globalDragModeEnabled() {
@@ -426,16 +428,16 @@ export class Geoman {
   }
 
   // edit (edit:change)
-  enableGlobalEditMode() {
-    this.options.enableMode('edit', 'change');
+  async enableGlobalEditMode() {
+    await this.options.enableMode('edit', 'change');
   }
 
-  disableGlobalEditMode() {
-    this.options.disableMode('edit', 'change');
+  async disableGlobalEditMode() {
+    await this.options.disableMode('edit', 'change');
   }
 
-  toggleGlobalEditMode() {
-    this.options.toggleMode('edit', 'change');
+  async toggleGlobalEditMode() {
+    await this.options.toggleMode('edit', 'change');
   }
 
   globalEditModeEnabled() {
@@ -443,16 +445,16 @@ export class Geoman {
   }
 
   // rotate (edit:rotate)
-  enableGlobalRotateMode() {
-    this.options.enableMode('edit', 'rotate');
+  async enableGlobalRotateMode() {
+    await this.options.enableMode('edit', 'rotate');
   }
 
-  disableGlobalRotateMode() {
-    this.options.disableMode('edit', 'rotate');
+  async disableGlobalRotateMode() {
+    await this.options.disableMode('edit', 'rotate');
   }
 
-  toggleGlobalRotateMode() {
-    this.options.toggleMode('edit', 'rotate');
+  async toggleGlobalRotateMode() {
+    await this.options.toggleMode('edit', 'rotate');
   }
 
   globalRotateModeEnabled() {
@@ -460,16 +462,16 @@ export class Geoman {
   }
 
   // cut (edit:cut)
-  enableGlobalCutMode() {
-    this.options.enableMode('edit', 'cut');
+  async enableGlobalCutMode() {
+    await this.options.enableMode('edit', 'cut');
   }
 
-  disableGlobalCutMode() {
-    this.options.disableMode('edit', 'cut');
+  async disableGlobalCutMode() {
+    await this.options.disableMode('edit', 'cut');
   }
 
-  toggleGlobalCutMode() {
-    this.options.toggleMode('edit', 'cut');
+  async toggleGlobalCutMode() {
+    await this.options.toggleMode('edit', 'cut');
   }
 
   globalCutModeEnabled() {
@@ -477,16 +479,16 @@ export class Geoman {
   }
 
   // remove (edit:delete)
-  enableGlobalRemovalMode() {
-    this.options.enableMode('edit', 'delete');
+  async enableGlobalRemovalMode() {
+    await this.options.enableMode('edit', 'delete');
   }
 
-  disableGlobalRemovalMode() {
-    this.options.disableMode('edit', 'delete');
+  async disableGlobalRemovalMode() {
+    await this.options.disableMode('edit', 'delete');
   }
 
-  toggleGlobalRemovalMode() {
-    this.options.toggleMode('edit', 'delete');
+  async toggleGlobalRemovalMode() {
+    await this.options.toggleMode('edit', 'delete');
   }
 
   globalRemovalModeEnabled() {

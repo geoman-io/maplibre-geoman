@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ActionInstance, SubAction } from '@/main.ts';
+  import type {ActionInstance, SubAction} from '@/main.ts';
   import log from 'loglevel';
 
   const { name, actionInstance, subAction }: {

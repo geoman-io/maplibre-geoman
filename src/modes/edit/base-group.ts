@@ -4,7 +4,6 @@ import {
   type FeatureShape,
   type FeatureSourceName,
   isMapPointerEvent,
-  type MapHandlerReturnData,
 } from '@/main.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
@@ -30,20 +29,20 @@ export abstract class BaseGroupEdit extends BaseEdit {
     // ...
   }
 
-  onEndAction() {
-    this.features.forEach((featureData) => {
-      featureData.changeSource({ sourceName: SOURCES.main });
-    });
+  async onEndAction() {
+    for (const featureData of this.features) {
+      await featureData.changeSource({ sourceName: SOURCES.main });
+    }
     this.features = [];
   }
 
-  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
 
     // check if a clicked feature temporary, if yes, convert it to regular
-    const featureUnselected = this.unselectFeature(event);
+    const featureUnselected = await this.unselectFeature(event);
     if (featureUnselected) {
       return { next: true };
     }
@@ -51,20 +50,20 @@ export abstract class BaseGroupEdit extends BaseEdit {
     // if a feature is regular, convert it to temporary and add to the features array
     const featureData = this.getAllowedFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
     if (featureData && this.isFeatureAllowedToGroup(featureData)) {
-      featureData.changeSource({ sourceName: SOURCES.temporary });
+      await featureData.changeSource({ sourceName: SOURCES.temporary });
       this.features.push(featureData);
     }
 
     // if there are two features in the array, group them
     if (this.features.length > 1) {
-      this.groupFeatures();
+      await this.groupFeatures();
       return { next: true };
     }
 
     return { next: true };
   }
 
-  unselectFeature(event: BaseMapPointerEvent) {
+  async unselectFeature(event: BaseMapPointerEvent) {
     const tmpFeatureData = this.getAllowedFeatureByMouseEvent({
       event,
       sourceNames: [SOURCES.temporary],
@@ -74,7 +73,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
       if (featureIndex > -1) {
         this.features.splice(featureIndex, 1);
       }
-      tmpFeatureData.changeSource({ sourceName: SOURCES.main });
+      await tmpFeatureData.changeSource({ sourceName: SOURCES.main });
       return true;
     }
     return false;
@@ -108,7 +107,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
     );
   }
 
-  groupFeatures() {
+  async groupFeatures() {
     if (!this.features.length) {
       log.error('BaseGroupEdit.groupFeatures: no features to group');
       return;
@@ -135,7 +134,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
     }
 
     if (resultGeoJson) {
-      const featureData = this.gm.features.createFeature({
+      const featureData = await this.gm.features.createFeature({
         shapeGeoJson: {
           ...resultGeoJson,
           properties: {
@@ -146,12 +145,12 @@ export abstract class BaseGroupEdit extends BaseEdit {
         sourceName: SOURCES.main,
       });
 
-      this.features.forEach((feature) => {
-        this.gm.features.delete(feature);
-      });
+      for (const feature of this.features) {
+        await this.gm.features.delete(feature);
+      }
 
       if (featureData && isNonEmptyArray(this.features)) {
-        this.fireFeatureUpdatedEvent({
+        await this.fireFeatureUpdatedEvent({
           sourceFeatures: this.features,
           targetFeatures: [featureData],
         });

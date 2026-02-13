@@ -3,7 +3,6 @@ import {
   FEATURE_PROPERTY_PREFIX,
   type GeoJsonShapeFeature,
   type LngLatTuple,
-  type MapHandlerReturnData,
   type ScreenPoint,
   type ShapeName,
 } from '@/main.ts';
@@ -26,40 +25,40 @@ export class DrawTextMarker extends BaseDraw {
     this.gm.markerPointer.enable({ invisibleMarker: true });
   }
 
-  onEndAction() {
+  async onEndAction() {
     this.removeTextarea();
-    this.removeTmpFeature();
+    await this.removeTmpFeature();
     this.featureData = null;
     this.gm.markerPointer.disable();
-    this.fireMarkerPointerFinishEvent();
+    await this.fireMarkerPointerFinishEvent();
   }
 
-  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
-    this.fireMarkerPointerUpdateEvent();
+    await this.fireMarkerPointerUpdateEvent();
     return { next: true };
   }
 
-  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapEvent) {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
     if (this.textarea) {
-      this.endShape();
+      await this.endShape();
       this.gm.markerPointer.enable({ invisibleMarker: true, lngLat: event.lngLat.toArray() });
-      this.fireMarkerPointerUpdateEvent();
+      await this.fireMarkerPointerUpdateEvent();
     } else {
       const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
-      this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
+      await this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 
       if (this.flags.featureCreateAllowed) {
-        this.featureData = this.createFeature(lngLat);
+        this.featureData = await this.createFeature(lngLat);
         this.gm.markerPointer.disable();
-        this.fireMarkerPointerFinishEvent();
+        await this.fireMarkerPointerFinishEvent();
       }
     }
     return { next: false };
@@ -74,15 +73,15 @@ export class DrawTextMarker extends BaseDraw {
     });
   }
 
-  endShape() {
+  async endShape() {
     const text = this.textarea?.value || '';
     this.removeTextarea();
 
     if (text.trim()) {
-      this.updateFeatureSource(text);
-      this.saveFeature();
+      await this.updateFeatureSource(text);
+      await this.saveFeature();
     } else {
-      this.removeTmpFeature();
+      await this.removeTmpFeature();
     }
   }
 
@@ -115,11 +114,11 @@ export class DrawTextMarker extends BaseDraw {
     };
   }
 
-  updateFeatureSource(text: string) {
+  async updateFeatureSource(text: string) {
     if (!this.featureData) {
       return;
     }
-    this.featureData._updateAllProperties({
+    await this.featureData._updateAllProperties({
       [`${FEATURE_PROPERTY_PREFIX}shape`]: this.shape,
       [`${FEATURE_PROPERTY_PREFIX}text`]: text,
     });

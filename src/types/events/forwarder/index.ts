@@ -4,9 +4,9 @@ import type { FeatureFwdEvent } from '@/types/events/forwarder/features.ts';
 import type { GlobalModeToggledFwdEvent } from '@/types/events/forwarder/mode.ts';
 import type { SystemFwdEvent } from '@/types/events/forwarder/system.ts';
 import type {
-  GmSystemEvent,
   GmEventNameWithoutPrefix,
   GmPrefix,
+  GmSystemEvent,
   GmSystemPrefix,
 } from '@/types/events/index.ts';
 import type { HelperModeName } from '@/types/modes/index.ts';

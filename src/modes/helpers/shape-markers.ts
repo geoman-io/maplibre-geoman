@@ -95,22 +95,22 @@ export class ShapeMarkersHelper extends BaseHelper {
     return Object.values(this.gm.actionInstances).find(isPinHelper) || null;
   }
 
-  onStartAction() {
+  async onStartAction() {
     if (this.isShapeMarkerAllowed()) {
       this.gm.markerPointer.enable({ invisibleMarker: true });
     }
 
     this.edgeMarkersAllowed = this.gm.getActiveEditModes().includes('change');
     this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
-    this.addMarkers();
+    await this.addMarkers();
     this.gm.features.updateManager.commitTransaction(SOURCES.internal);
   }
 
-  onEndAction() {
+  async onEndAction() {
     this.gm.markerPointer.disable();
 
     this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
-    this.removeMarkers();
+    await this.removeMarkers();
     this.gm.features.updateManager.commitTransaction(SOURCES.internal);
   }
 
@@ -118,7 +118,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.pinEnabled = enabled;
   }
 
-  onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseDown(event: BaseMapEvent) {
     const allowedEventNames = ['mousedown', 'touchstart'];
     if (
       !isMapPointerEvent(event, { warning: true }) ||
@@ -144,7 +144,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.gm.mapAdapter.setDragPan(false);
 
     if (this.activeMarker.type === 'edge') {
-      this.sendMarkerEvent('edge_marker_click', this.activeFeatureData, this.activeMarker);
+      await this.sendMarkerEvent('edge_marker_click', this.activeFeatureData, this.activeMarker);
     }
 
     if (this.pinEnabled && this.pinHelperInstance) {
@@ -158,11 +158,11 @@ export class ShapeMarkersHelper extends BaseHelper {
       this.snappingHelper?.addExcludedFeature(this.activeFeatureData);
     }
 
-    this.sendMarkerEvent('marker_captured', this.activeFeatureData, this.activeMarker);
+    await this.sendMarkerEvent('marker_captured', this.activeFeatureData, this.activeMarker);
     return { next: false };
   }
 
-  onMouseUp(): MapHandlerReturnData {
+  async onMouseUp() {
     if (!this.activeMarker) {
       return { next: true };
     }
@@ -180,7 +180,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.gm.mapAdapter.setDragPan(true);
 
     if (eventData.featureData && eventData.markerData) {
-      this.sendMarkerEvent('marker_released', eventData.featureData, eventData.markerData);
+      await this.sendMarkerEvent('marker_released', eventData.featureData, eventData.markerData);
       return { next: false };
     } else {
       log.debug('ShapeMarkersHelper.onMouseUp: no active marker or featureData', eventData);
@@ -220,13 +220,13 @@ export class ShapeMarkersHelper extends BaseHelper {
     return intersection(this.shapeMarkerAllowedModes, this.gm.getActiveEditModes()).length > 0;
   }
 
-  convertToVertexMarker(markerData: MarkerData): MarkerData {
+  async convertToVertexMarker(markerData: MarkerData) {
     if (markerData.type === 'edge' && markerData.instance.parent) {
       const oldPosition = markerData.position;
       const featureData = markerData.instance.parent;
-      this.removeMarker(markerData);
+      await this.removeMarker(markerData);
 
-      const newMarkerData = this.createMarker({
+      const newMarkerData = await this.createMarker({
         type: 'vertex',
         positionData: oldPosition,
         parentFeature: featureData,
@@ -239,7 +239,7 @@ export class ShapeMarkersHelper extends BaseHelper {
         const markerKey = position.path.join('.');
         const existingMarker = featureData.markers.get(markerKey);
         if (existingMarker) {
-          this.removeMarker(existingMarker);
+          await this.removeMarker(existingMarker);
         }
 
         featureData.markers.set(markerKey, newMarkerData);
@@ -271,22 +271,23 @@ export class ShapeMarkersHelper extends BaseHelper {
     return null;
   }
 
-  addMarkers() {
-    this.gm.features.forEach((featureData) => {
+  async addMarkers() {
+    for (const [, featureData] of this.gm.features.featureStore) {
       if (
         !featureData ||
+        featureData.temporary ||
         !this.allowedShapes.includes(featureData.shape) ||
         featureData.getShapeProperty('disableEdit') === true
       ) {
-        return;
+        continue;
       }
 
-      this.addCenterMarker(featureData);
+      await this.addCenterMarker(featureData);
       const shapeSegments = this.getAllShapeSegments(featureData);
 
       const endMarkerIndexes = this.getEndMarkerIndexes(featureData);
 
-      shapeSegments.forEach((segmentData, index) => {
+      for (const [index, segmentData] of shapeSegments.entries()) {
         // generic vertex marker
         const isVertexMarkerAllowed = this.isMarkerIndexAllowed(
           featureData.shape,
@@ -295,11 +296,14 @@ export class ShapeMarkersHelper extends BaseHelper {
         );
 
         if (isVertexMarkerAllowed) {
-          const marker = this.createOrUpdateVertexMarker(segmentData.segment.start, featureData);
+          const marker = await this.createOrUpdateVertexMarker(
+            segmentData.segment.start,
+            featureData,
+          );
           featureData.markers.set(marker.markerKey, marker.markerData);
 
           if (endMarkerIndexes.has(index)) {
-            const lineEndMarker = this.createOrUpdateVertexMarker(
+            const lineEndMarker = await this.createOrUpdateVertexMarker(
               segmentData.segment.end,
               featureData,
             );
@@ -309,17 +313,17 @@ export class ShapeMarkersHelper extends BaseHelper {
 
         // edge middle marker
         if (this.isEdgeMarkerAllowed(featureData)) {
-          const marker = this.createOrUpdateEdgeMarker(segmentData, featureData);
+          const marker = await this.createOrUpdateEdgeMarker(segmentData, featureData);
           featureData.markers.set(marker.markerKey, marker.markerData);
         }
-      });
-    });
+      }
+    }
   }
 
-  addCenterMarker(featureData: FeatureData) {
+  async addCenterMarker(featureData: FeatureData) {
     const shapeCenter = featureData.getShapeProperty('center');
     if (shapeCenter) {
-      const markerData = this.createMarker({
+      const markerData = await this.createMarker({
         type: 'center',
         positionData: {
           path: [],
@@ -408,7 +412,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     };
   }
 
-  removeMarkers() {
+  async removeMarkers() {
     this.gm.features.forEach((_, featureId) => {
       const featureData = this.gm.features.get(SOURCES.main, featureId);
 
@@ -425,7 +429,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     });
   }
 
-  removeMarker(markerData: MarkerData) {
+  async removeMarker(markerData: MarkerData) {
     if (markerData.type === 'dom') {
       log.error('Wrong marker type', markerData);
       return;
@@ -437,57 +441,53 @@ export class ShapeMarkersHelper extends BaseHelper {
       return;
     }
 
-    try {
-      featureData.markers.forEach((markerItem, key) => {
-        if (markerItem === markerData) {
-          this.gm.features.delete(markerItem.instance);
-          featureData.markers.delete(key);
-          throw new Error('break');
-        }
-      });
-    } catch {
-      // ...
+    for (const [key, markerItem] of featureData.markers.entries()) {
+      if (markerItem === markerData) {
+        await this.gm.features.delete(markerItem.instance);
+        featureData.markers.delete(key);
+        break;
+      }
     }
   }
 
-  handleGmDraw(event: GmSystemEvent): MapHandlerReturnData {
+  async handleGmDraw(event: GmSystemEvent) {
     if (!isGmDrawEvent(event)) {
       log.error('ShapeMarkersHelper.handleGmDraw: not a draw event', event);
       return { next: true };
     }
 
     if (['feature_created', 'mode_start'].includes(event.action)) {
-      this.debouncedMethods.refreshMarkers();
+      await this.debouncedMethods.refreshMarkers();
     }
 
     return { next: true };
   }
 
-  refreshMarkers() {
+  async refreshMarkers() {
     const isEnabled = this.gm.options.isModeEnabled('helper', 'shape_markers');
 
     if (isEnabled) {
       this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
-      this.removeMarkers();
-      this.addMarkers();
+      await this.removeMarkers();
+      await this.addMarkers();
       this.gm.features.updateManager.commitTransaction(SOURCES.internal);
     }
   }
 
-  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
+  async handleGmEdit(event: GmSystemEvent) {
     if (!isGmEditEvent(event)) {
       log.error('ShapeMarkersHelper.handleGmEdit: not an edit event', event);
       return { next: true };
     }
 
     if (event.action === 'feature_updated') {
-      this.handleShapeUpdate(event);
+      await this.handleShapeUpdate(event);
     }
 
     return { next: true };
   }
 
-  handleShapeUpdate(event: GmEditFeatureUpdatedEvent) {
+  async handleShapeUpdate(event: GmEditFeatureUpdatedEvent) {
     const featureData = event.targetFeatures[0];
 
     if (!featureData) {
@@ -496,7 +496,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     if (this.activeMarker?.type === 'edge') {
-      this.activeMarker = this.convertToVertexMarker(this.activeMarker);
+      this.activeMarker = await this.convertToVertexMarker(this.activeMarker);
     }
 
     const shapeSegments = this.getAllShapeSegments(featureData);
@@ -504,7 +504,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     const endMarkerIndexes = this.getEndMarkerIndexes(featureData);
 
-    shapeSegments.forEach((segmentData, index) => {
+    for (const [index, segmentData] of shapeSegments.entries()) {
       const isVertexMarkerAllowed = this.isMarkerIndexAllowed(
         featureData.shape,
         index,
@@ -512,10 +512,13 @@ export class ShapeMarkersHelper extends BaseHelper {
       );
 
       if (isVertexMarkerAllowed) {
-        const marker = this.createOrUpdateVertexMarker(segmentData.segment.start, featureData);
+        const marker = await this.createOrUpdateVertexMarker(
+          segmentData.segment.start,
+          featureData,
+        );
         currentMarkerKeys.delete(marker.markerKey);
         if (endMarkerIndexes.has(index)) {
-          const lineEndMarker = this.createOrUpdateVertexMarker(
+          const lineEndMarker = await this.createOrUpdateVertexMarker(
             segmentData.segment.end,
             featureData,
           );
@@ -524,27 +527,26 @@ export class ShapeMarkersHelper extends BaseHelper {
       }
 
       if (this.isEdgeMarkerAllowed(featureData)) {
-        const marker = this.createOrUpdateEdgeMarker(segmentData, featureData);
+        const marker = await this.createOrUpdateEdgeMarker(segmentData, featureData);
         currentMarkerKeys.delete(marker.markerKey);
       }
-    });
+    }
 
-    this.updateCenterMarkerPosition(featureData);
+    await this.updateCenterMarkerPosition(featureData);
     currentMarkerKeys.delete('center');
 
-    currentMarkerKeys.forEach((markerKey) => {
+    for (const markerKey of currentMarkerKeys) {
       const markerData = featureData.markers.get(markerKey);
       if (markerData && markerData.type !== 'dom') {
-        this.gm.features.delete(markerData.instance);
+        await this.gm.features.delete(markerData.instance);
       } else {
         log.error('Non a FeatureData marker');
       }
-
       featureData.markers.delete(markerKey);
-    });
+    }
   }
 
-  createOrUpdateVertexMarker(position: PositionData, featureData: FeatureData) {
+  async createOrUpdateVertexMarker(position: PositionData, featureData: FeatureData) {
     const markerKey = position.path.join('.');
     let markerData = featureData.markers.get(markerKey) || null;
 
@@ -554,11 +556,14 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     if (markerData) {
       if (!isEqualPosition(markerData.position.coordinate, position.coordinate)) {
-        this.gm.features.updateMarkerFeaturePosition(markerData.instance, position.coordinate);
+        await this.gm.features.updateMarkerFeaturePosition(
+          markerData.instance,
+          position.coordinate,
+        );
       }
       markerData.position = position;
     } else {
-      markerData = this.createMarker({
+      markerData = await this.createMarker({
         type: 'vertex',
         positionData: position,
         parentFeature: featureData,
@@ -568,7 +573,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     return { markerKey, markerData };
   }
 
-  createOrUpdateEdgeMarker(segmentData: SegmentData, featureData: FeatureData) {
+  async createOrUpdateEdgeMarker(segmentData: SegmentData, featureData: FeatureData) {
     let markerData = featureData.markers.get(segmentData.edgeMarkerKey) || null;
 
     if (markerData && markerData?.type !== 'edge') {
@@ -577,7 +582,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
     if (markerData) {
       if (!isEqualPosition(markerData.position.coordinate, segmentData.middle.coordinate)) {
-        markerData.instance.updateGeometry({
+        await markerData.instance.updateGeometry({
           type: 'Point',
           coordinates: segmentData.middle.coordinate,
         });
@@ -585,7 +590,7 @@ export class ShapeMarkersHelper extends BaseHelper {
       markerData.position = segmentData.middle;
       markerData.segment = segmentData.segment;
     } else {
-      markerData = this.createMarker({
+      markerData = await this.createMarker({
         type: 'edge',
         positionData: segmentData.middle,
         segment: segmentData.segment,
@@ -597,12 +602,12 @@ export class ShapeMarkersHelper extends BaseHelper {
     return { markerKey: segmentData.edgeMarkerKey, markerData };
   }
 
-  updateCenterMarkerPosition(featureData: FeatureData) {
+  async updateCenterMarkerPosition(featureData: FeatureData) {
     const markerData = featureData.markers.get('center') || null;
     const shapeCenter = featureData.getShapeProperty('center');
 
     if (markerData && markerData.type !== 'dom' && shapeCenter) {
-      markerData.instance.updateGeometry({
+      await markerData.instance.updateGeometry({
         type: 'Point',
         coordinates: shapeCenter,
       });
@@ -610,7 +615,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
   }
 
-  sendMarkerEvent(
+  async sendMarkerEvent(
     action: GmEditMarkerEvent['action'],
     featureData: FeatureData,
     markerData: MarkerData,
@@ -624,10 +629,10 @@ export class ShapeMarkersHelper extends BaseHelper {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  sendMarkerRightClickEvent(featureData: FeatureData, markerData: MarkerData) {
+  async sendMarkerRightClickEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GmEditMarkerEvent = {
       name: `${GM_SYSTEM_PREFIX}:edit:marker`,
       level: 'system',
@@ -637,10 +642,10 @@ export class ShapeMarkersHelper extends BaseHelper {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  sendMarkerMoveEvent(event: BaseMapPointerEvent) {
+  async sendMarkerMoveEvent(event: BaseMapPointerEvent) {
     const markerLngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.activeMarker && this.activeFeatureData) {
@@ -653,7 +658,7 @@ export class ShapeMarkersHelper extends BaseHelper {
             },
           ];
 
-      targetMarkers.forEach((item) => {
+      for (const item of targetMarkers) {
         if (this.previousPosition) {
           const payload: GmEditMarkerMoveEvent = {
             name: `${GM_SYSTEM_PREFIX}:edit:marker_move`,
@@ -666,23 +671,23 @@ export class ShapeMarkersHelper extends BaseHelper {
             lngLatStart: this.previousPosition,
             lngLatEnd: markerLngLat,
           };
-          this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+          await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
         }
-      });
+      }
     }
 
     this.previousPosition = markerLngLat;
   }
 
-  protected createMarker({
+  protected async createMarker({
     type,
     segment,
     positionData,
     parentFeature,
-  }: CreateMarkerParams): MarkerData {
+  }: CreateMarkerParams): Promise<MarkerData> {
     const coordinate = positionData.coordinate;
 
-    const featureData = this.gm.features.createMarkerFeature({
+    const featureData = await this.gm.features.createMarkerFeature({
       sourceName: SOURCES.internal,
       parentFeature,
       type,

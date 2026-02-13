@@ -168,7 +168,11 @@ export class SourceUpdateManager {
     // This handles the case where MapLibre's _updateWorkerData returns early due to
     // _isUpdatingWorker being true, and the actual data gets processed via the
     // recursive call in the finally block.
-    while (this.updateStorage[sourceName].diff || this.pendingUpdatePromises[sourceName].size) {
+    while (
+      this.updateStorage[sourceName].diff ||
+      this.pendingUpdatePromises[sourceName].size ||
+      !source.loaded
+    ) {
       // we can't force updateData directly here, cause there are transactional methods,
       // which are manual by design
 
@@ -215,13 +219,15 @@ export class SourceUpdateManager {
 
       if (this.updateStorage[sourceName].method === 'transactional-set') {
         const features = this.updateStorage[sourceName].diff.add?.values() ?? [];
-        source.setData({
-          type: 'FeatureCollection',
-          features: Array.from(features),
-        });
+        source
+          .setData({
+            type: 'FeatureCollection',
+            features: Array.from(features),
+          })
+          .then();
         // source.updateData(this.updateStorage[sourceName].diff);
       } else if (this.updateStorage[sourceName].method === 'transactional-update') {
-        source.updateData(this.updateStorage[sourceName].diff);
+        source.updateData(this.updateStorage[sourceName].diff).then();
       }
 
       this.updateStorage[sourceName].diff = null;

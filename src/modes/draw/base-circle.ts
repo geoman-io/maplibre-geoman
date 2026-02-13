@@ -29,15 +29,15 @@ export abstract class BaseCircle extends BaseDraw {
     this.gm.markerPointer.enable();
   }
 
-  onEndAction() {
-    this.removeTmpFeature();
+  async onEndAction() {
+    await this.removeTmpFeature();
     this.gm.markerPointer.disable();
-    this.fireFinishEvent();
+    await this.fireFinishEvent();
   }
 
-  abstract onMouseMove(event: BaseMapEvent): MapHandlerReturnData;
+  abstract onMouseMove(event: BaseMapEvent): Promise<MapHandlerReturnData> | MapHandlerReturnData;
 
-  abstract onMouseClick(event: BaseMapEvent): MapHandlerReturnData;
+  abstract onMouseClick(event: BaseMapEvent): Promise<MapHandlerReturnData> | MapHandlerReturnData;
 
   getFeatureGeoJson(position: LngLatTuple): GeoJsonShapeFeature {
     return {
@@ -68,14 +68,14 @@ export abstract class BaseCircle extends BaseDraw {
     };
   }
 
-  protected createFeature(): FeatureData | null {
-    const featureData = this.gm.features.createFeature({
+  protected async createFeature(): Promise<FeatureData | null> {
+    const featureData = await this.gm.features.createFeature({
       shapeGeoJson: this.getFeatureGeoJson(this.circleCenterLngLat || [0, 0]),
       sourceName: SOURCES.temporary,
     });
 
     if (featureData && this.circleCenterLngLat) {
-      featureData.setShapeProperty('center', this.circleCenterLngLat);
+      await featureData.setShapeProperty('center', this.circleCenterLngLat);
     }
     return featureData;
   }
