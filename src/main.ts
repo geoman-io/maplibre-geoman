@@ -58,6 +58,9 @@ export class Geoman {
   actionInstances: { [key in ActionInstanceKey]?: ActionInstance } = {};
   markerPointer: MarkerPointer;
 
+  /** @internal Cleanup handle for a pending waitForBaseMap promise. */
+  _pendingBaseMapCleanup: (() => void) | undefined;
+
   constructor(map: AnyMapInstance, options: PartialDeep<GmOptionsData> = {}) {
     this.options = this.initCoreOptions(options);
     this.events = this.initCoreEvents();
@@ -148,26 +151,93 @@ export class Geoman {
       return map;
     }
 
-    // Fix for race condition (see https://github.com/maplibre/maplibre-gl-js/issues/4024):
-    // The map might finish loading between our isLoaded() check above and registering
-    // the 'load' event listener. Since MapLibre's 'load' event only fires once, we would
-    // miss it and timeout after 60 seconds. Solution: re-check isLoaded() after
-    // registering the listener to close the race window.
+    // We store cleanup handles so destroy() can abort the wait if the Geoman
+    // instance is torn down before the map finishes loading.
     await withPromiseTimeoutRace(
-      new Promise((resolve) => {
-        const onLoad = () => resolve(map);
+      new Promise<unknown>((resolve) => {
+        // --- 1. Listen for the 'load' event (primary signal) -----------------
+        const onLoad = () => {
+          cleanup();
+          resolve(map);
+        };
         map.once('load', onLoad);
 
-        // Check if map loaded between the isLoaded() check above and the once() call.
-        // If so, remove the listener and resolve immediately. Since the map is already
-        // loaded, the 'load' event won't fire again, so we must clean up the listener.
-        if (this.mapAdapter.isLoaded()) {
+        // --- 2. Listen for 'error' events (logging only) ---------------------
+        // MapLibre fires ErrorEvent when the style URL is unreachable, CORS
+        // fails, etc.  We log these for debugging but do NOT reject the
+        // promise — non-critical errors (e.g. failed sprite load) can fire
+        // before the 'load' event and would falsely kill initialization.
+        const onError = (event: unknown) => {
+          const errorObj =
+            event && typeof event === 'object' && 'error' in event
+              ? (event as { error: Error }).error
+              : event;
+          log.warn('waitForBaseMap: map error during initialization', errorObj);
+        };
+        const mapAny = map as unknown as Record<string, unknown>;
+        if (typeof mapAny.on === 'function') {
+          (mapAny.on as (type: string, fn: (e: unknown) => void) => void)('error', onError);
+        }
+
+        // --- 3. Polling fallback ---------------------------------------------
+        // MapLibre only fires the 'load' event from within _render(), which is
+        // driven by requestAnimationFrame. Browsers heavily throttle or pause
+        // rAF for background tabs, so the 'load' event may never fire even
+        // though the style data has already been downloaded. We periodically
+        // poll isLoaded() as a safety net.
+        const POLL_INTERVAL_MS = 2000;
+        const pollTimer = setInterval(() => {
+          if (this.mapAdapter.isLoaded()) {
+            cleanup();
+            resolve(map);
+          }
+        }, POLL_INTERVAL_MS);
+
+        // --- 4. Visibility change handler ------------------------------------
+        // When the user returns to the tab after it was backgrounded, check
+        // immediately rather than waiting for the next poll tick.
+        const onVisibilityChange = () => {
+          if (document.visibilityState === 'visible' && this.mapAdapter.isLoaded()) {
+            cleanup();
+            resolve(map);
+          }
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        // --- Cleanup helper --------------------------------------------------
+        // Removes all listeners/timers. Safe to call multiple times.
+        let cleaned = false;
+        const cleanup = () => {
+          if (cleaned) return;
+          cleaned = true;
           map.off('load', onLoad);
+          if (typeof mapAny.off === 'function') {
+            (mapAny.off as (type: string, fn: (e: unknown) => void) => void)('error', onError);
+          }
+          clearInterval(pollTimer);
+          document.removeEventListener('visibilitychange', onVisibilityChange);
+        };
+
+        // Store the cleanup function so destroy() can abort the wait.
+        this._pendingBaseMapCleanup = cleanup;
+
+        // --- 5. Race-condition double-check ----------------------------------
+        // Close the window between the isLoaded() check at the top and the
+        // once('load') registration above (see maplibre-gl-js#4024).
+        if (this.mapAdapter.isLoaded()) {
+          cleanup();
           resolve(map);
         }
       }),
       'waitForBaseMap failed',
+      // onTimeout: clean up dangling listeners when the race times out
+      () => {
+        this._pendingBaseMapCleanup?.();
+        this._pendingBaseMapCleanup = undefined;
+      },
     );
+
+    this._pendingBaseMapCleanup = undefined;
     return map;
   }
 
@@ -191,9 +261,11 @@ export class Geoman {
     // Same race condition fix as waitForBaseMap - check loaded state after
     // registering the listener to close the timing window
     const eventName = `${GM_PREFIX}:loaded`;
+    let onLoaded: (() => void) | undefined;
+
     await withPromiseTimeoutRace(
       new Promise((resolve) => {
-        const onLoaded = () => resolve(this);
+        onLoaded = () => resolve(this);
         map.once(eventName, onLoaded);
 
         // Check if loaded between the this.loaded check above and the once() call.
@@ -204,6 +276,12 @@ export class Geoman {
         }
       }),
       'waitForGeomanLoaded failed',
+      // onTimeout: clean up the dangling once() listener
+      () => {
+        if (onLoaded) {
+          map.off(eventName, onLoaded);
+        }
+      },
     );
     return this;
   }
@@ -240,6 +318,13 @@ export class Geoman {
     // This is critical for React StrictMode compatibility
     if (this.mapAdapterInstance && 'gm' in this.mapAdapterInstance.mapInstance) {
       delete this.mapAdapterInstance.mapInstance.gm;
+    }
+
+    // Clean up any pending waitForBaseMap listeners/timers that were
+    // registered directly on the map instance (not via the event bus).
+    if (this._pendingBaseMapCleanup) {
+      this._pendingBaseMapCleanup();
+      this._pendingBaseMapCleanup = undefined;
     }
 
     // Only perform full cleanup if initialization completed
