@@ -143,11 +143,11 @@ export const loadGeoJsonFeatures = async ({
   geoJsonFeatures: Array<GeoJsonImportFeature>;
 }) => {
   await page.evaluate(
-    (context) => {
+    async (context) => {
       const geoman = window.geoman;
-      context.geoJsonFeatures.forEach((shapeGeoJson) => {
-        geoman.features.importGeoJsonFeature(shapeGeoJson);
-      });
+      for (const shapeGeoJson of context.geoJsonFeatures) {
+        await geoman.features.importGeoJsonFeature(shapeGeoJson);
+      }
     },
     { geoJsonFeatures, SOURCES },
   );

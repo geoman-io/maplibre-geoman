@@ -167,5 +167,5 @@ test('Change/Drag each shape type', async ({ page }) => {
   }
 
   // Disable mode to reset state for the next feature
-  await page.evaluate(() => window.geoman.options.disableMode('edit', 'change'));
+  await page.evaluate(async () => await window.geoman.options.disableMode('edit', 'change'));
 });

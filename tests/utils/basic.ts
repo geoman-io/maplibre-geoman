@@ -57,9 +57,9 @@ export const waitForLocalFunction = async (callback: () => boolean) => {
 
 export const enableMode = async (page: Page, modeType: ModeType, modeName: ModeName) => {
   const isModeEnabled = await page.evaluate(
-    (context) => {
+    async (context) => {
       const geoman = window.geoman;
-      geoman.options.enableMode(context.modeType, context.modeName);
+      await geoman.options.enableMode(context.modeType, context.modeName);
       return geoman.options.isModeEnabled(context.modeType, context.modeName);
     },
     { modeType, modeName },
@@ -70,9 +70,9 @@ export const enableMode = async (page: Page, modeType: ModeType, modeName: ModeN
 
 export const disableMode = async (page: Page, modeType: ModeType, modeName: ModeName) => {
   const isModeDisabled = await page.evaluate(
-    (context) => {
+    async (context) => {
       const geoman = window.geoman;
-      geoman.options.disableMode(context.modeType, context.modeName);
+      await geoman.options.disableMode(context.modeType, context.modeName);
       return !geoman.options.isModeEnabled(context.modeType, context.modeName);
     },
     { modeType, modeName },

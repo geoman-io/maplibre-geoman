@@ -23,16 +23,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // Update properties
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'props-test-1');
         if (!fd) return null;
 
-        fd.updateProperties({ color: 'red', size: 10, name: 'Test Marker' });
+        await fd.updateProperties({ color: 'red', size: 10, name: 'Test Marker' });
 
         return fd.getGeoJson().properties;
       });
@@ -67,16 +67,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // Update with new property, existing should remain
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'props-test-2');
         if (!fd) return null;
 
-        fd.updateProperties({ newProp: 'added' });
+        await fd.updateProperties({ newProp: 'added' });
         return fd.getGeoJson().properties;
       });
 
@@ -96,16 +96,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // Delete property by setting to undefined
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'props-test-3');
         if (!fd) return null;
 
-        fd.updateProperties({ toDelete: undefined });
+        await fd.updateProperties({ toDelete: undefined });
         return fd.getGeoJson().properties;
       });
 
@@ -137,16 +137,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // Mix of updates and deletions
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'props-test-4');
         if (!fd) return null;
 
-        fd.updateProperties({
+        await fd.updateProperties({
           a: 100, // update
           b: undefined, // delete
           d: 'new', // add
@@ -172,19 +172,19 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // Try to modify protected properties
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'props-test-5');
         if (!fd) return null;
 
         const beforeId = fd.id; // Use id getter
         const beforeShape = fd.shape; // Use the shape getter
 
-        fd.updateProperties({
+        await fd.updateProperties({
           gm_shape: 'polygon', // Should be ignored
           gm_id: 'hacked-id', // Should be ignored
           customProp: 'allowed',
@@ -221,8 +221,8 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // This should not throw "unknown feature value" error
@@ -257,16 +257,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       // Replace all properties
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'set-props-test-1');
         if (!fd) return null;
 
-        fd.setProperties({ newProp: 'new-value' });
+        await fd.setProperties({ newProp: 'new-value' });
 
         return {
           properties: fd.getGeoJson().properties,
@@ -306,15 +306,15 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, circleFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'set-props-test-2');
         if (!fd) return null;
 
-        fd.setProperties({ brand: 'new' });
+        await fd.setProperties({ brand: 'new' });
 
         return {
           brand: fd.getGeoJson().properties.brand,
@@ -342,13 +342,13 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      await page.evaluate(() => {
+      await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'set-props-test-3');
-        fd?.setProperties({ replaced: true });
+        await fd?.setProperties({ replaced: true });
       });
 
       // Wait for MapLibre to commit and verify internal state
@@ -376,15 +376,15 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'set-props-test-4');
         if (!fd) return null;
 
-        fd.setProperties({ validProp: 'yes', invalidProp: undefined });
+        await fd.setProperties({ validProp: 'yes', invalidProp: undefined });
         return fd.getGeoJson().properties;
       });
 
@@ -407,16 +407,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'deprecated-test-1');
         if (!fd) return null;
 
         // Using deprecated method
-        fd.updateProperties({ newProp: 'added' });
+        await fd.updateProperties({ newProp: 'added' });
         return fd.getGeoJson().properties;
       });
 
@@ -436,16 +436,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'deprecated-test-2');
         if (!fd) return null;
 
         // Using deprecated method
-        fd.setProperties({ replaced: true });
+        await fd.setProperties({ replaced: true });
         return fd.getGeoJson().properties;
       });
 
@@ -465,16 +465,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'deprecated-test-3');
         if (!fd) return null;
 
         // Using deprecated method
-        fd.updateProperties({ toDelete: undefined });
+        await fd.updateProperties({ toDelete: undefined });
         return fd.getGeoJson().properties;
       });
 
@@ -496,16 +496,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       const newCoords = [10, 52];
-      const result = await page.evaluate((coords) => {
+      const result = await page.evaluate(async (coords) => {
         const fd = window.geoman.features.get('gm_main', 'geom-test-1');
         if (!fd) return null;
 
-        fd.updateGeometry({ type: 'Point', coordinates: coords });
+        await fd.updateGeometry({ type: 'Point', coordinates: coords });
 
         return fd.getGeoJson().geometry;
       }, newCoords);
@@ -534,8 +534,8 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, polygonFeature);
 
       const newCoords = [
@@ -548,11 +548,11 @@ test.describe('Feature Properties Management', () => {
         ],
       ];
 
-      const result = await page.evaluate((coords) => {
+      const result = await page.evaluate(async (coords) => {
         const fd = window.geoman.features.get('gm_main', 'geom-test-2');
         if (!fd) return null;
 
-        fd.updateGeometry({ type: 'Polygon', coordinates: coords });
+        await fd.updateGeometry({ type: 'Polygon', coordinates: coords });
 
         return fd.getGeoJson().geometry;
       }, newCoords);
@@ -573,15 +573,15 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'geom-test-3');
         if (!fd) return null;
 
-        fd.updateGeometry({ type: 'Point', coordinates: [5, 55] });
+        await fd.updateGeometry({ type: 'Point', coordinates: [5, 55] });
 
         return {
           geometry: fd.getGeoJson().geometry,
@@ -607,13 +607,13 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      await page.evaluate(() => {
+      await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'geom-test-4');
-        fd?.updateGeometry({ type: 'Point', coordinates: [15, 60] });
+        await fd?.updateGeometry({ type: 'Point', coordinates: [15, 60] });
       });
 
       // Wait for MapLibre to commit
@@ -640,16 +640,16 @@ test.describe('Feature Properties Management', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const fd = window.geoman.features.get('gm_main', 'geom-test-deprecated');
         if (!fd) return null;
 
         // Using deprecated method
-        fd.updateGeometry({ type: 'Point', coordinates: [7, 53] });
+        await fd.updateGeometry({ type: 'Point', coordinates: [7, 53] });
 
         return fd.getGeoJson().geometry;
       });

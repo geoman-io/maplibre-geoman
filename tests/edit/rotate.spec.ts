@@ -195,7 +195,7 @@ test('Rotate Polygon, Line, Rectangle, Circle via vertex drag', async ({ page })
       }
     }
   }
-  await page.evaluate(() => window.geoman.options.disableMode('edit', 'rotate'));
+  await page.evaluate(async () => await window.geoman.options.disableMode('edit', 'rotate'));
 });
 
 test('Do not move Marker, CircleMarker, TextMarker via body drag', async ({ page }) => {
@@ -240,5 +240,5 @@ test('Do not move Marker, CircleMarker, TextMarker via body drag', async ({ page
       );
     }
   }
-  await page.evaluate(() => window.geoman.options.disableMode('edit', 'rotate'));
+  await page.evaluate(async () => await window.geoman.options.disableMode('edit', 'rotate'));
 });

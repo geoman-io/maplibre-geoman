@@ -71,7 +71,7 @@ export class SourceUpdateManager {
   async updateSource({
     sourceName,
     diff,
-    waitForCompletion = true,
+    waitForCompletion = false,
   }: {
     sourceName: FeatureSourceName;
     diff: GeoJSONSourceDiffHashed;
