@@ -17,7 +17,6 @@
   const menuPosition = gm.control.getDefaultPosition();
 
   const handleClick = async () => {
-    log.debug('svelte handleClick');
     if (control && controlOptions) {
       await gm.options.toggleMode(control.type, control.targetMode);
     } else {

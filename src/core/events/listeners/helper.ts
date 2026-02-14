@@ -21,8 +21,6 @@ export class HelperEventListener extends BaseEventListener {
   constructor(gm: Geoman, bus: EventBus) {
     super(gm);
     bus.attachEvents(this.eventHandlers);
-    log.debug(bus.mapEventHandlers);
-    log.debug(bus.gmEventHandlers);
   }
 
   async handleHelperEvent(payload: GmSystemEvent) {
@@ -31,7 +29,6 @@ export class HelperEventListener extends BaseEventListener {
     }
 
     const actionInstanceKey: ActionInstanceKey = `${payload.actionType}__${payload.mode}`;
-    // log.trace('HelperEventListener.handleHelperEvent', actionInstanceKey, payload.action);
 
     if (payload.action === 'mode_start') {
       await this.trackExclusiveModes(payload);
@@ -58,7 +55,6 @@ export class HelperEventListener extends BaseEventListener {
 
     this.gm.actionInstances[actionInstanceKey] = actionInstance;
     await actionInstance.startAction();
-    log.debug('started', actionInstanceKey);
   }
 
   async end(actionInstanceKey: ActionInstanceKey) {
