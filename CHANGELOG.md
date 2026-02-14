@@ -4,12 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Fixed
-
-- Snapping tolerance and DOM marker width conflict ([#136](https://github.com/geoman-io/maplibre-geoman/issues/136))
-  - When drawing a polygon with snapping enabled, clicking within the snapping tolerance (18px) but outside the marker DOM element (~10.5px) now correctly closes the polygon
-  - Previously, this created a duplicate vertex that permanently blocked polygon closure
-  - Added proximity-based fallback marker detection consistent with the snapping system's tolerance
+## [0.6.3] - 2026-02-14
 
 ### Added
 
@@ -23,12 +18,32 @@ All notable changes to this project will be documented in this file.
   - `controls.edit.rotate.settings.bodyDragEnabled`
   - Both default to `false`, preserving the safer edit UX defaults
 
+- Polygon draw mode now allows double-clicking the last point to close geometry ([#137](https://github.com/geoman-io/maplibre-geoman/pull/137))
+
+### Fixed
+
+- Snapping tolerance and DOM marker width conflict ([#136](https://github.com/geoman-io/maplibre-geoman/issues/136))
+  - When drawing a polygon with snapping enabled, clicking within the snapping tolerance (18px) but outside the marker DOM element (~10.5px) now correctly closes the polygon
+  - Previously, this created a duplicate vertex that permanently blocked polygon closure
+  - Added proximity-based fallback marker detection consistent with the snapping system's tolerance
+
+- Improved `waitForBaseMap` reliability for background tabs and slow loads ([#144](https://github.com/geoman-io/maplibre-geoman/pull/144))
+  - Adds polling and visibility-change fallback checks when `load` is throttled in background tabs
+  - Ensures timeout/listener cleanup and makes concurrent `waitForBaseMap()` calls share one pending promise
+
+- Source update and diff edge cases from transactional update work were fixed ([#88](https://github.com/geoman-io/maplibre-geoman/pull/88))
+  - Avoids infinite loops in `waitForPendingUpdates`
+  - Fixes `removeProperties`-only diffs for MapLibre update compatibility
+  - Handles no-op `commitTransaction()` safely and resolves feature data conflicts
+
 ### Changed
 
 - Edit UX defaults aligned with Issue [#125](https://github.com/geoman-io/maplibre-geoman/issues/125)
   - `shape_markers` are no longer auto-enabled in `edit:drag`, so drag mode does not show misleading vertex markers
   - Body-drag translation is disabled by default for non-point features in `edit:change` and `edit:rotate`
   - Point features (`marker`, `circle_marker`, `text_marker`) remain draggable in `edit:change` for practical editability
+
+- Transactional source updates and internal shape-marker source handling for better update performance and consistency ([#88](https://github.com/geoman-io/maplibre-geoman/pull/88))
 
 - Update all dependencies
   - @turf/* packages from 7.3.3 to 7.3.4
@@ -37,6 +52,8 @@ All notable changes to this project will be documented in this file.
   - svelte from 5.49.1 to 5.50.0
   - type-fest from 5.4.3 to 5.4.4
   - globals from 17.2.0 to 17.3.0
+
+- Bump `maplibre-gl` peer dependency to `5.18.0` ([#143](https://github.com/geoman-io/maplibre-geoman/pull/143))
 
 ## [0.6.2] - 2026-02-01
 
