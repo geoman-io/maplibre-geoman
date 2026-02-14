@@ -52,7 +52,20 @@ export class MaplibreAdapter extends BaseMapAdapter<
   }
 
   isLoaded(): boolean {
-    return this.mapInstance._loaded;
+    // Prefer public APIs and only fall back to private internals.
+    // This keeps initialization resilient across MapLibre versions/wrappers.
+    const map = this.mapInstance as ml.Map & {
+      _loaded?: boolean;
+      isStyleLoaded?: () => boolean;
+    };
+
+    if (typeof map.loaded === 'function' && map.loaded()) {
+      return true;
+    }
+    if (typeof map.isStyleLoaded === 'function' && map.isStyleLoaded()) {
+      return true;
+    }
+    return map._loaded === true;
   }
 
   getContainer(): HTMLElement {

@@ -75,30 +75,43 @@ export const convertToDebounced = <T extends object>(
   return debouncedMethods;
 };
 
-export const withPromiseTimeoutRace = async ({
-  promise,
-  errorMessage,
-  timeout,
-}: {
-  promise: Promise<unknown>;
-  errorMessage?: string;
-  timeout?: number;
-}) => {
+/**
+ * Races a promise against a timeout. Properly cleans up the timer on resolution
+ * and calls an optional cleanup callback on timeout so callers can remove
+ * dangling event listeners.
+ */
+export const withPromiseTimeoutRace = async (
+  promise: Promise<unknown>,
+  errorMessage?: string,
+  onTimeout?: () => void,
+) => {
   const defaultErrorMessage = 'Promise race timeout';
-  const effectiveTimeout = timeout || LOAD_TIMEOUT;
+  let timerId: ReturnType<typeof setTimeout> | undefined;
 
-  await Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(
-        () =>
-          reject(
-            new Error(
-              `Timeout ${effectiveTimeout / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
-            ),
-          ),
-        effectiveTimeout,
-      );
-    }),
-  ]);
+  try {
+    await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timerId = setTimeout(() => {
+          try {
+            onTimeout?.();
+          } catch (error) {
+            log.error('withPromiseTimeoutRace onTimeout callback failed', error);
+          } finally {
+            reject(
+              new Error(
+                `Timeout ${LOAD_TIMEOUT / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
+              ),
+            );
+          }
+        }, LOAD_TIMEOUT);
+      }),
+    ]);
+  } finally {
+    // Always clear the timer — prevents the dangling setTimeout from firing
+    // after the promise has already resolved.
+    if (timerId !== undefined) {
+      clearTimeout(timerId);
+    }
+  }
 };
