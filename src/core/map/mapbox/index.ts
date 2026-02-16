@@ -4,10 +4,10 @@ import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
-import { MaplibreLayer } from '@/core/map/maplibre/layer.ts';
-import { MaplibreDomMarker } from '@/core/map/maplibre/marker.ts';
-import { MaplibrePopup } from '@/core/map/maplibre/popup.ts';
-import { MaplibreSource } from '@/core/map/maplibre/source.ts';
+import { MapboxLayer } from '@/core/map/mapbox/layer.ts';
+import { MapboxDomMarker } from '@/core/map/mapbox/marker.ts';
+import { MapboxPopup } from '@/core/map/mapbox/popup.ts';
+import { MapboxSource } from '@/core/map/mapbox/source.ts';
 import {
   type BaseDomMarkerOptions,
   type BaseEventListener,
@@ -26,37 +26,36 @@ import {
   type MapTypes,
   type ScreenPoint,
 } from '@/main.ts';
-import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
+import type { MapboxAnyLayer } from '@mapLib/types/layers.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';
-import ml from 'maplibre-gl';
-import { isMaplibreSupportedPointerEventName } from '@/core/map/maplibre/guards.ts';
+import mapboxgl from 'mapbox-gl';
+import { isMapboxSupportedPointerEventName } from '@/core/map/mapbox/guards.ts';
 
-export { MaplibreAdapter as MapAdapter };
+type MapboxAddLayerObject = Parameters<mapboxgl.Map['addLayer']>[0];
 
-export class MaplibreAdapter extends BaseMapAdapter<
-  MapInstanceWithGeoman<ml.Map>,
-  ml.GeoJSONSource,
-  MaplibreAnyLayer
+export class MapboxAdapter extends BaseMapAdapter<
+  MapInstanceWithGeoman<mapboxgl.Map>,
+  mapboxgl.GeoJSONSource,
+  MapboxAnyLayer
 > {
   gm: Geoman;
-  mapType: keyof MapTypes = 'maplibre';
-  mapInstance: MapInstanceWithGeoman<ml.Map>;
+  mapType: keyof MapTypes = 'mapbox';
+  mapInstance: MapInstanceWithGeoman<mapboxgl.Map>;
 
   constructor(map: unknown, gm: Geoman) {
     super();
     this.gm = gm;
-    this.mapInstance = map as MapInstanceWithGeoman<ml.Map>;
+    this.mapInstance = map as MapInstanceWithGeoman<mapboxgl.Map>;
   }
 
-  getMapInstance(): MapInstanceWithGeoman<ml.Map> {
+  getMapInstance(): MapInstanceWithGeoman<mapboxgl.Map> {
     return this.mapInstance;
   }
 
   isLoaded(): boolean {
     // Prefer public APIs and only fall back to private internals.
-    // This keeps initialization resilient across MapLibre versions/wrappers.
-    const map = this.mapInstance as ml.Map & {
+    const map = this.mapInstance as mapboxgl.Map & {
       _loaded?: boolean;
       isStyleLoaded?: () => boolean;
     };
@@ -88,8 +87,17 @@ export class MaplibreAdapter extends BaseMapAdapter<
 
   async loadImage({ id, image }: { id: string; image: string }) {
     if (!this.mapInstance.hasImage(id)) {
-      const loadedImage = await this.mapInstance.loadImage(image);
-      this.mapInstance.addImage(id, loadedImage.data);
+      // Mapbox GL JS uses a callback-based loadImage API
+      const loadedImage = await new Promise<ImageBitmap | HTMLImageElement | ImageData>(
+        (resolve, reject) => {
+          this.mapInstance.loadImage(image, (error, result) => {
+            if (error) reject(error);
+            else if (result) resolve(result);
+            else reject(new Error('loadImage returned no result'));
+          });
+        },
+      );
+      this.mapInstance.addImage(id, loadedImage);
     }
   }
 
@@ -104,7 +112,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
   }
 
   getBounds(): [LngLatTuple, LngLatTuple] {
-    const mapBounds = this.mapInstance.getBounds();
+    const mapBounds = this.mapInstance.getBounds()!;
     return mapBounds.toArray() as [LngLatTuple, LngLatTuple];
   }
 
@@ -136,6 +144,13 @@ export class MaplibreAdapter extends BaseMapAdapter<
     }
   }
 
+  private queryRendered(queryCoordinates?: ScreenPoint | [ScreenPoint, ScreenPoint]) {
+    if (queryCoordinates) {
+      return this.mapInstance.queryRenderedFeatures(queryCoordinates);
+    }
+    return this.mapInstance.queryRenderedFeatures();
+  }
+
   queryFeaturesByScreenCoordinates({
     queryCoordinates = undefined,
     sourceNames,
@@ -144,8 +159,8 @@ export class MaplibreAdapter extends BaseMapAdapter<
     sourceNames: Array<FeatureSourceName>;
   }): Array<FeatureData> {
     const features = uniqWith(
-      this.mapInstance.queryRenderedFeatures(queryCoordinates).map((feature) => ({
-        featureId: feature.properties[FEATURE_ID_PROPERTY] as FeatureId | undefined,
+      this.queryRendered(queryCoordinates).map((feature) => ({
+        featureId: (feature.properties ?? {})[FEATURE_ID_PROPERTY] as FeatureId | undefined,
         featureSourceName: feature.source as FeatureSourceName,
       })),
       isEqual,
@@ -177,13 +192,13 @@ export class MaplibreAdapter extends BaseMapAdapter<
     };
 
     const features: Array<GeoJsonFeatureData | null> = uniqWith(
-      this.mapInstance.queryRenderedFeatures(queryCoordinates).map((feature) => {
+      this.queryRendered(queryCoordinates).map((feature) => {
         const geoJson = this.convertToGeoJsonImportFeature(feature);
         if (!geoJson) {
           return null;
         }
         return {
-          id: feature.properties[FEATURE_ID_PROPERTY] as FeatureId | undefined,
+          id: (feature.properties ?? {})[FEATURE_ID_PROPERTY] as FeatureId | undefined,
           sourceName: feature.source as FeatureSourceName,
           geoJson,
         };
@@ -198,8 +213,8 @@ export class MaplibreAdapter extends BaseMapAdapter<
     });
   }
 
-  convertToGeoJsonImportFeature(feature: ml.MapGeoJSONFeature): GeoJsonImportFeature | null {
-    const featureId = feature.properties[FEATURE_ID_PROPERTY] as FeatureId | undefined;
+  convertToGeoJsonImportFeature(feature: mapboxgl.GeoJSONFeature): GeoJsonImportFeature | null {
+    const featureId = (feature.properties ?? {})[FEATURE_ID_PROPERTY] as FeatureId | undefined;
     if (featureId === undefined || feature.geometry.type === 'GeometryCollection') {
       return null;
     }
@@ -207,27 +222,27 @@ export class MaplibreAdapter extends BaseMapAdapter<
     return {
       id: featureId,
       type: 'Feature',
-      properties: feature.properties,
+      properties: feature.properties ?? {},
       geometry: feature.geometry,
     };
   }
 
-  addSource(sourceId: string, geoJson: GeoJSON): MaplibreSource {
-    return new MaplibreSource({ gm: this.gm, sourceId, geoJson });
+  addSource(sourceId: string, geoJson: GeoJSON): MapboxSource {
+    return new MapboxSource({ gm: this.gm, sourceId, geoJson });
   }
 
-  getSource(sourceId: string): MaplibreSource {
-    return new MaplibreSource({ gm: this.gm, sourceId });
+  getSource(sourceId: string): MapboxSource {
+    return new MapboxSource({ gm: this.gm, sourceId });
   }
 
-  addLayer(options: ml.AddLayerObject): MaplibreLayer {
+  addLayer(options: MapboxAddLayerObject): MapboxLayer {
     const layerId = options.id;
-    return new MaplibreLayer({ gm: this.gm, layerId, options });
+    return new MapboxLayer({ gm: this.gm, layerId, options });
   }
 
-  getLayer(layerId: string): BaseLayer<MaplibreAnyLayer> | null {
+  getLayer(layerId: string): BaseLayer<MapboxAnyLayer> | null {
     if (this.mapInstance.getLayer(layerId)) {
-      return new MaplibreLayer({ gm: this.gm, layerId });
+      return new MapboxLayer({ gm: this.gm, layerId });
     }
     return null;
   }
@@ -239,14 +254,14 @@ export class MaplibreAdapter extends BaseMapAdapter<
     }
   }
 
-  eachLayer(callback: (layer: BaseLayer<MaplibreAnyLayer>) => void) {
+  eachLayer(callback: (layer: BaseLayer<MapboxAnyLayer>) => void) {
     this.mapInstance.getStyle().layers.forEach((layer) => {
-      callback(new MaplibreLayer({ gm: this.gm, layerId: layer.id }));
+      callback(new MapboxLayer({ gm: this.gm, layerId: layer.id }));
     });
   }
 
   createDomMarker(options: BaseDomMarkerOptions, lngLat: LngLatTuple): BaseDomMarker {
-    return new MaplibreDomMarker({
+    return new MapboxDomMarker({
       mapInstance: this.mapInstance,
       options,
       lngLat,
@@ -254,7 +269,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
   }
 
   createPopup(options: BasePopupOptions, lngLat?: LngLatTuple): BasePopup {
-    return new MaplibrePopup({
+    return new MapboxPopup({
       mapInstance: this.mapInstance,
       options,
       lngLat,
@@ -272,9 +287,9 @@ export class MaplibreAdapter extends BaseMapAdapter<
   }
 
   coordBoundsToScreenBounds(bounds: [LngLatTuple, LngLatTuple]): [ScreenPoint, ScreenPoint] {
-    const mlBounds = new ml.LngLatBounds(bounds);
-    const sw = this.project(mlBounds.getSouthWest().toArray());
-    const ne = this.project(mlBounds.getNorthEast().toArray());
+    const mbBounds = new mapboxgl.LngLatBounds(bounds);
+    const sw = this.project(mbBounds.getSouthWest().toArray() as LngLatTuple);
+    const ne = this.project(mbBounds.getNorthEast().toArray() as LngLatTuple);
     return [sw, ne];
   }
 
@@ -285,7 +300,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
   on(type: string, listener: BaseEventListener): void;
   on(type: string, layerId: string, listener: BaseEventListener): void;
   on(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
-    if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
+    if (typeof arg2 === 'string' && listener && isMapboxSupportedPointerEventName(type)) {
       this.mapInstance.on(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
       this.mapInstance.on(type, arg2);
@@ -297,9 +312,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
   once(type: string, listener: BaseEventListener): void;
   once(type: string, layerId: string, listener: BaseEventListener): void;
   once(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
-    // note: it's possible to have promise returned from maplibre-gl
-    // (it's not implemented for this adapter)
-    if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
+    if (typeof arg2 === 'string' && listener && isMapboxSupportedPointerEventName(type)) {
       this.mapInstance.once(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
       this.mapInstance.once(type, arg2);
@@ -311,7 +324,7 @@ export class MaplibreAdapter extends BaseMapAdapter<
   off(type: string, listener: BaseEventListener): void;
   off(type: string, layerId: string, listener: BaseEventListener): void;
   off(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
-    if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
+    if (typeof arg2 === 'string' && listener && isMapboxSupportedPointerEventName(type)) {
       this.mapInstance.off(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
       this.mapInstance.off(type, arg2);
@@ -320,3 +333,5 @@ export class MaplibreAdapter extends BaseMapAdapter<
     }
   }
 }
+
+export { MapboxAdapter as MapAdapter };

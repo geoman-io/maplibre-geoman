@@ -58,6 +58,7 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/core/map/mapbox"
   ]
 }

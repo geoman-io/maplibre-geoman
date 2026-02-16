@@ -15,7 +15,7 @@ export type Options = {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
-  const baseMap = 'maplibre';
+  const baseMap = (env.VITE_BASE_MAP as 'maplibre' | 'mapbox') || 'maplibre';
   const gmVersion = (env.VITE_GEOMAN_VERSION as Options['GmVersion']) || null;
 
   return {

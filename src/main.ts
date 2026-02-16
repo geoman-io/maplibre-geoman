@@ -17,7 +17,7 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 import { editClassMap } from '@/modes/edit/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { helperClassMap } from '@/modes/helpers/index.ts';
-import '@/styles/map/maplibre.css';
+import '@mapLib/style.css';
 import '@/styles/style.css';
 import type { ModeName } from '@/types/controls.ts';
 import type { GmControlLoadEvent } from '@/types/index.ts';

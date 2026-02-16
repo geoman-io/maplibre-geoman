@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ],
+      "@mapLib/*": [
+        "src/core/map/mapbox/*"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/core/map/maplibre"
+  ]
+}

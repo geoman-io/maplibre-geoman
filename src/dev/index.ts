@@ -1,9 +1,15 @@
 import log from 'loglevel';
 import '@/dev/styles/style.css';
-import '@/styles/map/maplibre.css';
+import '@mapLib/style.css';
+
+const baseMap = import.meta.env.VITE_BASE_MAP || 'maplibre';
 
 if (import.meta.env.MODE === 'development') {
-  await import('./index.maplibre.dev.ts');
+  if (baseMap === 'mapbox') {
+    await import('./index.mapbox.dev.ts');
+  } else {
+    await import('./index.maplibre.dev.ts');
+  }
 } else if (import.meta.env.MODE === 'test') {
   await import('./index.maplibre.test.ts');
 } else {
