@@ -172,8 +172,8 @@ export class Geoman {
 
     // We store cleanup handles so destroy() can abort the wait if the Geoman
     // instance is torn down before the map finishes loading.
-    this._pendingBaseMapWait = withPromiseTimeoutRace(
-      new Promise<unknown>((resolve, reject) => {
+    this._pendingBaseMapWait = withPromiseTimeoutRace({
+      promise: new Promise<unknown>((resolve, reject) => {
         // --- 1. Listen for the 'load' event (primary signal) -----------------
         const onLoad = () => {
           cleanup();
@@ -231,14 +231,28 @@ export class Geoman {
         const cleanup = () => {
           if (cleaned) return;
           cleaned = true;
-          try { map.off('load', onLoad); } catch { /* best-effort */ }
+          try {
+            map.off('load', onLoad);
+          } catch {
+            /* best-effort */
+          }
           try {
             if (typeof mapAny.off === 'function') {
               (mapAny.off as (type: string, fn: (e: unknown) => void) => void)('error', onError);
             }
-          } catch { /* best-effort */ }
-          try { clearInterval(pollTimer); } catch { /* best-effort */ }
-          try { document.removeEventListener('visibilitychange', onVisibilityChange); } catch { /* best-effort */ }
+          } catch {
+            /* best-effort */
+          }
+          try {
+            clearInterval(pollTimer);
+          } catch {
+            /* best-effort */
+          }
+          try {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+          } catch {
+            /* best-effort */
+          }
         };
 
         // Store the handles so destroy() can abort and settle immediately.
@@ -256,14 +270,14 @@ export class Geoman {
           resolve(map);
         }
       }),
-      'waitForBaseMap failed',
+      errorMessage: 'waitForBaseMap failed',
       // onTimeout: clean up dangling listeners when the race times out
-      () => {
+      onTimeout: () => {
         this._pendingBaseMapCleanup?.();
         this._pendingBaseMapCleanup = undefined;
         this._pendingBaseMapAbort = undefined;
       },
-    );
+    });
 
     try {
       await this._pendingBaseMapWait;
@@ -297,8 +311,8 @@ export class Geoman {
     const eventName = `${GM_PREFIX}:loaded`;
     let onLoaded: (() => void) | undefined;
 
-    await withPromiseTimeoutRace(
-      new Promise((resolve) => {
+    await withPromiseTimeoutRace({
+      promise: new Promise((resolve) => {
         onLoaded = () => resolve(this);
         map.once(eventName, onLoaded);
 
@@ -309,14 +323,14 @@ export class Geoman {
           resolve(this);
         }
       }),
-      'waitForGeomanLoaded failed',
+      errorMessage: 'waitForGeomanLoaded failed',
       // onTimeout: clean up the dangling once() listener
-      () => {
+      onTimeout: () => {
         if (onLoaded) {
           map.off(eventName, onLoaded);
         }
       },
-    );
+    });
     return this;
   }
 

@@ -80,12 +80,20 @@ export const convertToDebounced = <T extends object>(
  * and calls an optional cleanup callback on timeout so callers can remove
  * dangling event listeners.
  */
-export const withPromiseTimeoutRace = async (
-  promise: Promise<unknown>,
-  errorMessage?: string,
-  onTimeout?: () => void,
-) => {
+
+export const withPromiseTimeoutRace = async ({
+  promise,
+  errorMessage,
+  timeout,
+  onTimeout,
+}: {
+  promise: Promise<unknown>;
+  errorMessage?: string;
+  timeout?: number;
+  onTimeout?: () => void;
+}) => {
   const defaultErrorMessage = 'Promise race timeout';
+  const effectiveTimeout = timeout || LOAD_TIMEOUT;
   let timerId: ReturnType<typeof setTimeout> | undefined;
 
   try {
@@ -100,11 +108,11 @@ export const withPromiseTimeoutRace = async (
           } finally {
             reject(
               new Error(
-                `Timeout ${LOAD_TIMEOUT / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
+                `Timeout ${effectiveTimeout / 1000} seconds: ${errorMessage || defaultErrorMessage}`,
               ),
             );
           }
-        }, LOAD_TIMEOUT);
+        }, effectiveTimeout);
       }),
     ]);
   } finally {
