@@ -24,7 +24,7 @@ export class EditEventListener extends BaseEventListener {
   }
 
   handleEditEvent(payload: GmSystemEvent) {
-    if (!isGmEditEvent(payload)) {
+    if (!isGmEditEvent(payload) || !payload.mode) {
       return { next: true };
     }
 

@@ -179,6 +179,8 @@ const initGeoman = async () => {
     console.log('source geojson', event.feature.source.getGeoJson());
   });
 
+  // geoman.features.setSelection([1, 2, 3, 4, 5, 6, 7, 151]);
+
   return { geoman, map };
 };
 

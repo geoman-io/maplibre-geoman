@@ -23,6 +23,7 @@ export type GmFwdEventName =
   | `global${HelperModeName}modetoggled`
   | 'create'
   | 'remove'
+  | 'selection'
   | FwdEditModeName
   | `${FwdEditModeName}start`
   | `${FwdEditModeName}end`

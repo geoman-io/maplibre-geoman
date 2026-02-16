@@ -56,6 +56,7 @@ export class DrawEllipse extends BaseCircle {
         this.xSemiAxisPoint = this.gm.mapAdapter.project(this.circleCenterLngLat);
       }
     } else {
+      this.gm.features.clearSelection();
       this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 
       if (this.flags.featureCreateAllowed) {

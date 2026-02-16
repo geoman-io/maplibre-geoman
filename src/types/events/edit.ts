@@ -3,6 +3,7 @@ import { type GmBaseEvent, type GmSystemPrefix, type NonEmptyArray } from '@/typ
 import type { GmBaseModeEvent } from '@/types/events/mode.ts';
 import type { LngLatTuple } from '@/types/map/index.ts';
 import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index.ts';
+import type { FeatureId } from '../features';
 
 // Edit events
 export interface GmEditModeEvent extends GmBaseModeEvent {
@@ -20,6 +21,7 @@ export interface GmEditMarkerMoveEvent extends GmBaseEvent {
   markerData: MarkerData;
   lngLatStart: LngLatTuple;
   lngLatEnd: LngLatTuple;
+  linkedFeatures: FeatureData[];
 }
 
 export interface GmEditMarkerEvent extends GmBaseEvent {
@@ -29,6 +31,7 @@ export interface GmEditMarkerEvent extends GmBaseEvent {
   action: 'edge_marker_click' | 'marker_right_click' | 'marker_captured' | 'marker_released';
   featureData: FeatureData;
   markerData: MarkerData;
+  linkedFeatures?: Array<FeatureData>;
 }
 
 export interface GmEditFeatureRemovedEvent extends GmBaseEvent {
@@ -80,6 +83,14 @@ export interface GmEditFeatureEditEndEvent extends GmBaseEvent {
   feature: FeatureData;
 }
 
+export interface GmEditSelectionChangeEvent extends GmBaseEvent {
+  name: `${GmSystemPrefix}:edit:selection_change`;
+  actionType: 'edit';
+  mode: null;
+  action: 'selection_change';
+  selection: FeatureId[];
+}
+
 export type GmEditEvent =
   | GmEditModeEvent
   | GmEditMarkerEvent
@@ -87,4 +98,5 @@ export type GmEditEvent =
   | GmEditFeatureUpdatedEvent
   | GmEditFeatureEditStartEvent
   | GmEditFeatureEditEndEvent
-  | GmEditFeatureRemovedEvent;
+  | GmEditFeatureRemovedEvent
+  | GmEditSelectionChangeEvent;

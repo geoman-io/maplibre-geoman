@@ -320,10 +320,10 @@
     }
   },
   {
+    "id": "custom-feature-31",
     "type": "Feature",
     "properties": {
-      "__gm_id": "feature-63",
-      "__gm_shape": "line"
+      "shape": "line"
     },
     "geometry": {
       "type": "MultiLineString",
@@ -341,7 +341,41 @@
           [10, 50]
         ]
       ]
+    }
+  },
+  {
+    "id": "custom-feature-32",
+    "type": "Feature",
+    "properties": {
+      "shape": "rectangle",
+      "group": "group-1"
     },
-    "id": "feature-63"
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [10.5, 53],
+          [11.5, 53],
+          [11.5, 54],
+          [10.5, 54],
+          [10.5, 53]
+        ]
+      ]
+    }
+  },
+  {
+    "id": "custom-feature-33",
+    "type": "Feature",
+    "properties": {
+      "shape": "line",
+      "group": "group-1"
+    },
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [10, 54.2],
+        [12, 54.2]
+      ]
+    }
   }
 ]

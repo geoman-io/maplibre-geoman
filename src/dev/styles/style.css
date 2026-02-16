@@ -28,6 +28,10 @@ body {
     opacity 0.2s ease;
 }
 
+body.ci :is(#dev-left-panel, #dev-right-panel) {
+  display: none;
+}
+
 #dev-left-panel {
   border-right: 1px solid #d0d0d0;
 }

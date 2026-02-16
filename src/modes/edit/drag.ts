@@ -1,5 +1,6 @@
 import {
   type EditModeName,
+  getLngLatDiff,
   type GmSystemEvent,
   type MapHandlerReturnData,
   SOURCES,
@@ -26,20 +27,31 @@ export class EditDrag extends BaseDrag {
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
-      if (!this.previousLngLat) {
-        this.previousLngLat = event.lngLatStart;
+      const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
+
+      event.linkedFeatures.map((featureData) => {
+        this.moveFeature(featureData, lngLatDiff);
+      });
+
+      const isUpdated = this.moveFeature(event.featureData, lngLatDiff);
+
+      if (isUpdated) {
+        this.previousLngLat = event.lngLatEnd;
       }
-      this.moveFeature(event.featureData, event.lngLatEnd);
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      [event.featureData, ...(event.linkedFeatures ?? [])].map((featureData) => {
+        featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+        this.fireFeatureEditStartEvent({ feature: featureData });
+      });
       this.flags.actionInProgress = true;
-      this.fireFeatureEditStartEvent({ feature: event.featureData });
       this.setCursorToPointer();
     } else if (event.action === 'marker_released') {
       this.previousLngLat = null;
-      event.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
-      this.fireFeatureEditEndEvent({ feature: event.featureData });
+      [event.featureData, ...(event.linkedFeatures ?? [])].map((featureData) => {
+        featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
+        this.fireFeatureEditEndEvent({ feature: featureData });
+      });
       this.flags.actionInProgress = false;
     }
     return { next: true };
