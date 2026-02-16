@@ -134,7 +134,14 @@ export abstract class BaseDrag extends BaseEdit {
     this.gm.features.updateManager.commitTransaction();
 
     if (this.initialPoint && this.initialPoint.dist(event.point) < 1) {
-      this.gm.features.setSelection([this.featureData.id], true);
+      if (event.originalEvent.ctrlKey) {
+        const currentSelection = this.gm.features.selection;
+        if (!currentSelection.has(this.featureData.id)) {
+          this.gm.features.setSelection([...currentSelection, this.featureData.id], true);
+        }
+      } else {
+        this.gm.features.setSelection([this.featureData.id], true);
+      }
     }
 
     this.initialPoint = null;
