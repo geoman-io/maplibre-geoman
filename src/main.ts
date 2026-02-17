@@ -231,14 +231,28 @@ export class Geoman {
         const cleanup = () => {
           if (cleaned) return;
           cleaned = true;
-          try { map.off('load', onLoad); } catch { /* best-effort */ }
+          try {
+            map.off('load', onLoad);
+          } catch {
+            /* best-effort */
+          }
           try {
             if (typeof mapAny.off === 'function') {
               (mapAny.off as (type: string, fn: (e: unknown) => void) => void)('error', onError);
             }
-          } catch { /* best-effort */ }
-          try { clearInterval(pollTimer); } catch { /* best-effort */ }
-          try { document.removeEventListener('visibilitychange', onVisibilityChange); } catch { /* best-effort */ }
+          } catch {
+            /* best-effort */
+          }
+          try {
+            clearInterval(pollTimer);
+          } catch {
+            /* best-effort */
+          }
+          try {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+          } catch {
+            /* best-effort */
+          }
         };
 
         // Store the handles so destroy() can abort and settle immediately.

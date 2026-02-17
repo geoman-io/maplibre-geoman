@@ -1,16 +1,13 @@
 <script lang="ts">
-  import type { Geoman, GeoJsonImportFeature } from '@/main.ts';
-  import type { Map as MaplibreMap } from 'maplibre-gl';
+  import type {GeoJsonImportFeature, Geoman} from '@/main.ts';
+  import type {DevMapInstance} from '@/dev/common.ts';
   import commonShapes from '@tests/fixtures/common-shapes.json';
   import oneOfEachShape from '@tests/fixtures/one-shape-of-each-type.json';
-  import {
-    loadStressTestFeatureCollection,
-    loadStressTestCircleMarkers,
-  } from '@/dev/fixtures/shapes.ts';
+  import {loadStressTestCircleMarkers, loadStressTestFeatureCollection,} from '@/dev/fixtures/shapes.ts';
 
   interface Props {
     geoman: Geoman | null;
-    map: MaplibreMap | null;
+    map: DevMapInstance | null;
   }
 
   interface EventLogEntry {
@@ -33,7 +30,7 @@
     isInternal: boolean;
   }
 
-  let { geoman, map }: Props = $props();
+  let {geoman, map}: Props = $props();
 
   // Section collapse states
   let layersExpanded = $state(true);
@@ -159,11 +156,12 @@
     ];
 
     events.forEach((eventName) => {
-      map.on(eventName, (e: { type: string; feature?: { id?: string }; action?: string }) => {
+      map.on(eventName, (e: unknown) => {
+        const ev = e as { type: string; feature?: { id?: string }; action?: string };
         const eventData = {
-          type: e.type,
-          featureId: e.feature?.id,
-          action: e.action,
+          type: ev.type,
+          featureId: ev.feature?.id,
+          action: ev.action,
         };
         logEvent(eventName, eventData);
         updateDebugInfo();
@@ -171,9 +169,10 @@
     });
 
     // Track mouse position
-    map.on('mousemove', (e) => {
-      cursorLng = Math.round(e.lngLat.lng * 10000) / 10000;
-      cursorLat = Math.round(e.lngLat.lat * 10000) / 10000;
+    map.on('mousemove', (e: unknown) => {
+      const ev = e as { lngLat: { lng: number; lat: number } };
+      cursorLng = Math.round(ev.lngLat.lng * 10000) / 10000;
+      cursorLat = Math.round(ev.lngLat.lat * 10000) / 10000;
     });
 
     // Initial layer info update
@@ -200,7 +199,7 @@
       let featureCount = 0;
 
       try {
-        const source = map.getSource(name);
+        const source = map.getSource(name) as Record<string, unknown> | undefined;
         if (source && 'serialize' in source) {
           const serialized = (source as { serialize: () => { data?: { features?: unknown[] } } }).serialize();
           if (serialized?.data && 'features' in serialized.data) {
@@ -275,7 +274,7 @@
       features: commonShapes as GeoJsonImportFeature[],
     });
     updateDebugInfo();
-    logEvent('shapes:loaded', { type: 'common-shapes', count: commonShapes.length });
+    logEvent('shapes:loaded', {type: 'common-shapes', count: commonShapes.length});
   };
 
   const loadOneOfEach = () => {
@@ -285,21 +284,21 @@
       features: oneOfEachShape as GeoJsonImportFeature[],
     });
     updateDebugInfo();
-    logEvent('shapes:loaded', { type: 'one-of-each', count: oneOfEachShape.length });
+    logEvent('shapes:loaded', {type: 'one-of-each', count: oneOfEachShape.length});
   };
 
   const loadStressTest = () => {
     if (!geoman) return;
     loadStressTestFeatureCollection(geoman, 0.5, 0.4);
     updateDebugInfo();
-    logEvent('shapes:loaded', { type: 'stress-test-polygons' });
+    logEvent('shapes:loaded', {type: 'stress-test-polygons'});
   };
 
   const loadMarkerStressTest = () => {
     if (!geoman) return;
     loadStressTestCircleMarkers(geoman, 0.5);
     updateDebugInfo();
-    logEvent('shapes:loaded', { type: 'stress-test-markers' });
+    logEvent('shapes:loaded', {type: 'stress-test-markers'});
   };
 
   const clearAllShapes = () => {
@@ -307,7 +306,7 @@
     const count = geoman.features.featureStore.size;
     geoman.features.deleteAll();
     updateDebugInfo();
-    logEvent('shapes:cleared', { count });
+    logEvent('shapes:cleared', {count});
   };
 
   // GeoJSON tools
@@ -315,7 +314,7 @@
     if (!geoman) return;
     const geoJson = geoman.features.exportGeoJson();
     geojsonInput = prettyPrint ? JSON.stringify(geoJson, null, 2) : JSON.stringify(geoJson);
-    logEvent('geojson:exported', { featureCount: geoJson?.features?.length || 0 });
+    logEvent('geojson:exported', {featureCount: geoJson?.features?.length || 0});
   };
 
   const copyToClipboard = () => {
@@ -323,7 +322,7 @@
     const geoJson = geoman.features.exportGeoJson();
     const text = prettyPrint ? JSON.stringify(geoJson, null, 2) : JSON.stringify(geoJson);
     navigator.clipboard.writeText(text);
-    logEvent('geojson:copied', { featureCount: geoJson?.features?.length || 0 });
+    logEvent('geojson:copied', {featureCount: geoJson?.features?.length || 0});
   };
 
   const importGeoJson = () => {
@@ -332,9 +331,9 @@
       const parsed = JSON.parse(geojsonInput);
       geoman.features.importGeoJson(parsed);
       updateDebugInfo();
-      logEvent('geojson:imported', { featureCount: parsed?.features?.length || 1 });
+      logEvent('geojson:imported', {featureCount: parsed?.features?.length || 1});
     } catch (e) {
-      logEvent('geojson:import-error', { error: String(e) });
+      logEvent('geojson:import-error', {error: String(e)});
     }
   };
 
@@ -346,12 +345,12 @@
     if (!geoman) return;
     const source = geoman.features.sources['gm_main'];
     if (!source) {
-      logEvent('source:geojson-error', { error: 'gm_main source not found' });
+      logEvent('source:geojson-error', {error: 'gm_main source not found'});
       return;
     }
     const geoJson = source.getGeoJson();
     geojsonInput = prettyPrint ? JSON.stringify(geoJson, null, 2) : JSON.stringify(geoJson);
-    logEvent('source:geojson', { source: 'gm_main', featureCount: geoJson?.features?.length || 0 });
+    logEvent('source:geojson', {source: 'gm_main', featureCount: geoJson?.features?.length || 0});
   };
 </script>
 
@@ -481,7 +480,9 @@
             {/each}
             {#if layers.filter(l => !l.isInternal).length > 10}
               <div class="dev-layer-item">
-                <span class="name" style="color: #888; font-style: italic;">...and {layers.filter(l => !l.isInternal).length - 10} more</span>
+                <span class="name"
+                      style="color: #888; font-style: italic;">...and {layers.filter(l => !l.isInternal).length - 10}
+                  more</span>
               </div>
             {/if}
           {/if}

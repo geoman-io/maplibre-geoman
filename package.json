@@ -22,7 +22,8 @@
   "main": "dist/maplibre-geoman.umd.js",
   "types": "dist/maplibre-geoman.d.ts",
   "scripts": {
-    "dev": "vite",
+    "dev": "cross-env VITE_BASE_MAP=maplibre vite",
+    "dev:mapbox": "cross-env VITE_BASE_MAP=mapbox vite",
     "build": "vite build && npm run build:types",
     "build:types": "tsc --emitDeclarationOnly && tsc-alias && rollup -c rollup.config.dts.js && rimraf dist/types",
     "build:mapbox": "cross-env VITE_BASE_MAP=mapbox vite build && npm run build:types:mapbox",

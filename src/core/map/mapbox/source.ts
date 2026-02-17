@@ -137,9 +137,7 @@ export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
 
     if (diff.update) {
       for (const patch of diff.update.values()) {
-        const idx = features.findIndex(
-          (f) => f.properties?.[FEATURE_ID_PROPERTY] === patch.id,
-        );
+        const idx = features.findIndex((f) => f.properties?.[FEATURE_ID_PROPERTY] === patch.id);
         if (idx === -1) continue;
         const feature = { ...features[idx] };
 

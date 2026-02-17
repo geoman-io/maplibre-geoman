@@ -2,13 +2,17 @@ import log from 'loglevel';
 import '@/dev/styles/style.css';
 import '@mapLib/style.css';
 
-const baseMap = import.meta.env.VITE_BASE_MAP || 'maplibre';
+const baseMap = import.meta.env.VITE_BASE_MAP;
+
+log.debug(`Map library: "${baseMap}"`);
 
 if (import.meta.env.MODE === 'development') {
   if (baseMap === 'mapbox') {
     await import('./index.mapbox.dev.ts');
-  } else {
+  } else if (baseMap === 'maplibre') {
     await import('./index.maplibre.dev.ts');
+  } else {
+    log.debug(`Wrong map library: "${baseMap}"`);
   }
 } else if (import.meta.env.MODE === 'test') {
   await import('./index.maplibre.test.ts');
