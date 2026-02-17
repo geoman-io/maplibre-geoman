@@ -50,13 +50,13 @@ test('Drag', async ({ page }) => {
 
     expect(position).toBeTruthy();
     if (!position) {
-      return;
+      continue;
     }
 
     const point = await getScreenCoordinatesByLngLat({ page, position });
     expect(point).toBeTruthy();
     if (!point) {
-      return;
+      continue;
     }
 
     const newPoint: ScreenCoordinates = [point[0] + dX, point[1] + dY];

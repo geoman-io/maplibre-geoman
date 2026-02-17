@@ -27,7 +27,6 @@ export const waitForMapIdle = async (page: Page) => {
       }
 
       const sources = geoman.features.sources || null;
-      // (source) => !(source?.sourceInstance as GeoJSONSource)?.loaded(),
       for (const source of Object.values(sources)) {
         if (source) {
           await geoman.features.updateManager.waitForPendingUpdates(source.id);

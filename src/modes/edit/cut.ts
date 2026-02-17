@@ -78,25 +78,25 @@ export class EditCut extends BaseEdit {
   async cutFeaturesByPolygon(bBoxfeatures: Array<FeatureData>, cutGeoJson: PolygonFeature) {
     for (const featureData of bBoxfeatures) {
       if (featureData.getShapeProperty('disableEdit') === true) {
-        return;
+        continue;
       }
       if (isGeoJsonFeatureInPolygon(featureData.getGeoJson(), cutGeoJson)) {
         await this.gm.features.delete(featureData);
         await this.fireFeatureRemovedEvent(featureData);
-        return;
+        continue;
       }
 
       if (!booleanIntersects(featureData.getGeoJson(), cutGeoJson)) {
-        return;
+        continue;
       }
 
       if (!this.cutShapesAllowed.includes(featureData.shape)) {
-        return;
+        continue;
       }
 
       if (featureData.shape === 'line') {
         await this.cutLineFeatureByPolygon(featureData, cutGeoJson);
-        return;
+        continue;
       }
 
       await this.cutPolygonFeatureByPolygon(featureData.id, cutGeoJson);
