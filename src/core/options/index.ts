@@ -50,7 +50,7 @@ export class GmOptions {
     return mergeWith(defaultOptions, options, mergeByTypeCustomizer);
   }
 
-  enableMode(modeType: ModeType, modeName: ModeName) {
+  async enableMode(modeType: ModeType, modeName: ModeName) {
     const isModeEnabled = this.isModeEnabled(modeType, modeName);
     const isModeAvailable = this.isModeAvailable(modeType, modeName);
 
@@ -66,15 +66,15 @@ export class GmOptions {
     const controlOptions = sectionOptions[modeName];
     if (controlOptions) {
       controlOptions.active = true;
-      this.fireModeEvent(modeType, modeName, 'mode_start');
-      this.fireControlEvent(modeType, modeName, 'on');
-      this.fireModeEvent(modeType, modeName, 'mode_started');
+      await this.fireModeEvent(modeType, modeName, 'mode_start');
+      await this.fireControlEvent(modeType, modeName, 'on');
+      await this.fireModeEvent(modeType, modeName, 'mode_started');
     } else {
       log.error("Can't find control section for", modeType, modeName);
     }
   }
 
-  disableMode(modeType: ModeType, modeName: ModeName) {
+  async disableMode(modeType: ModeType, modeName: ModeName) {
     const isModeEnabled = this.isModeEnabled(modeType, modeName);
     const isModeAvailable = this.isModeAvailable(modeType, modeName);
 
@@ -86,15 +86,15 @@ export class GmOptions {
     const controlOptions = sectionOptions[modeName];
     if (controlOptions) {
       controlOptions.active = false;
-      this.fireModeEvent(modeType, modeName, 'mode_end');
-      this.fireControlEvent(modeType, modeName, 'off');
-      this.fireModeEvent(modeType, modeName, 'mode_ended');
+      await this.fireModeEvent(modeType, modeName, 'mode_end');
+      await this.fireControlEvent(modeType, modeName, 'off');
+      await this.fireModeEvent(modeType, modeName, 'mode_ended');
     } else {
       log.error("Can't find control section for", modeType, modeName);
     }
   }
 
-  syncModeState(modeType: ModeType, modeName: ModeName) {
+  async syncModeState(modeType: ModeType, modeName: ModeName) {
     // align options with current state
     // it' possible to have "active" mode in options
     // when it's not available (in free version for example)
@@ -105,9 +105,9 @@ export class GmOptions {
     if (controlOptions) {
       if (isModeAvailable) {
         if (controlOptions.active) {
-          this.enableMode(modeType, modeName);
+          await this.enableMode(modeType, modeName);
         } else {
-          this.disableMode(modeType, modeName);
+          await this.disableMode(modeType, modeName);
         }
       } else {
         console.log(`Not available mode: ${modeType}:${modeName}`);
@@ -117,11 +117,11 @@ export class GmOptions {
     }
   }
 
-  toggleMode(modeType: ModeType, modeName: ModeName) {
+  async toggleMode(modeType: ModeType, modeName: ModeName) {
     if (this.isModeEnabled(modeType, modeName)) {
-      this.disableMode(modeType, modeName);
+      await this.disableMode(modeType, modeName);
     } else {
-      this.enableMode(modeType, modeName);
+      await this.enableMode(modeType, modeName);
     }
   }
 
@@ -158,7 +158,7 @@ export class GmOptions {
     return null;
   }
 
-  fireModeEvent(sectionName: ActionType, modeName: ModeName, action: ModeAction) {
+  async fireModeEvent(sectionName: ActionType, modeName: ModeName, action: ModeAction) {
     const payload: GmBaseModeEvent & { mode: ModeName } = {
       name: `${GM_SYSTEM_PREFIX}:${modeName}:mode`,
       level: 'system',
@@ -169,18 +169,18 @@ export class GmOptions {
 
     if (isGmModeEvent(payload)) {
       if (isGmDrawEvent(payload)) {
-        this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
+        await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
       } else if (isGmEditEvent(payload)) {
-        this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
+        await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
       } else if (isGmHelperEvent(payload)) {
-        this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
+        await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${sectionName}`, payload);
       } else {
         log.warn('Unknown mode event: ', payload);
       }
     }
   }
 
-  fireControlEvent(
+  async fireControlEvent(
     sectionName: ModeType,
     modeName: ModeName,
     action: GmControlSwitchEvent['action'],
@@ -193,6 +193,6 @@ export class GmOptions {
       mode: modeName,
       action,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:control`, payload);
   }
 }

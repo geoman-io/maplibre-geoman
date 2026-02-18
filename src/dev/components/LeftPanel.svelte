@@ -1,11 +1,6 @@
 <script lang="ts">
-  import type {
-    Geoman,
-    DrawModeName,
-    EditModeName,
-    HelperModeName,
-  } from '@/main.ts';
-  import { DRAW_MODES, EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
+  import type {DrawModeName, EditModeName, Geoman, HelperModeName,} from '@/main.ts';
+  import {DRAW_MODES, EDIT_MODES, HELPER_MODES} from '@/modes/constants.ts';
 
   interface Props {
     geoman: Geoman | null;

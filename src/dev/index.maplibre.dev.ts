@@ -134,13 +134,13 @@ const mountPanels = (geoman: Geoman, map: ml.Map) => {
   }
 };
 
-const unmountPanels = () => {
+const unmountPanels = async () => {
   if (leftPanelComponent) {
-    unmount(leftPanelComponent);
+    await unmount(leftPanelComponent);
     leftPanelComponent = null;
   }
   if (rightPanelComponent) {
-    unmount(rightPanelComponent);
+    await unmount(rightPanelComponent);
     rightPanelComponent = null;
   }
   // Clear panel content
@@ -169,9 +169,10 @@ const initGeoman = async () => {
     console.error('Geoman is already initialized', window.geoman);
   }
 
-  let geoman = new Geoman(map, gmOptions);
-  await geoman.destroy();
-  geoman = new Geoman(map, gmOptions);
+  const geoman = new Geoman(map, gmOptions);
+  // todo: check load/unload
+  // await geoman.destroy();
+  // geoman = new Geoman(map, gmOptions);
   await geoman.waitForGeomanLoaded();
 
   map.on('gm:create', (event) => {

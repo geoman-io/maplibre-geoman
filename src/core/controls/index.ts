@@ -32,8 +32,9 @@ export default class GMControl extends BaseControl {
   };
 
   onAdd(): HTMLElement {
-    this.createControls();
-    this.gm.events.bus.attachEvents(this.eventHandlers);
+    this.createControls().then(() => {
+      this.gm.events.bus.attachEvents(this.eventHandlers);
+    });
 
     if (!this.container) {
       // container must be created in .createControls()
@@ -42,22 +43,22 @@ export default class GMControl extends BaseControl {
     return this.container;
   }
 
-  createControls(containerElement: HTMLElement | undefined = undefined) {
+  async createControls(containerElement: HTMLElement | undefined = undefined) {
     if (this.controlsAdded()) {
       log.warn("Can't add controls: controls already added");
       return;
     }
 
     this.container = containerElement || this.createHtmlContainer();
-    this.createReactivePanel();
+    await this.createReactivePanel();
   }
 
-  onRemove() {
+  async onRemove() {
     this.gm.events.bus.detachEvents(this.eventHandlers);
 
     // Destroy the Svelte component
     if (this.reactiveControls) {
-      unmount(this.reactiveControls);
+      await unmount(this.reactiveControls);
       this.reactiveControls = null;
     }
 
@@ -86,13 +87,13 @@ export default class GMControl extends BaseControl {
     return !!this.reactiveControls;
   }
 
-  createReactivePanel() {
+  async createReactivePanel() {
     if (!this.container) {
       log.error("Can't create reactive panel: container is not initialized");
       return;
     }
 
-    this.syncModeStates();
+    await this.syncModeStates();
 
     const controlsContext = new Map();
     controlsContext.set('gm', this.gm);
@@ -119,39 +120,34 @@ export default class GMControl extends BaseControl {
     return container;
   }
 
-  syncModeStates() {
-    this.eachControlWithOptions(({ control }) => {
+  async syncModeStates() {
+    await this.eachControlWithOptions(({ control }) => {
       this.gm.options.syncModeState(control.type, control.targetMode);
     });
   }
 
-  eachControlWithOptions(
+  async eachControlWithOptions(
     callback: ({
       control,
+      controlOptions,
     }: {
       control: GenericSystemControl;
       controlOptions: ControlOptions;
-    }) => void,
+    }) => Promise<void> | void,
   ) {
-    return typedKeys(this.controls).forEach((modeType) => {
+    for (const modeType of typedKeys(this.controls)) {
       const section = this.controls[modeType];
 
-      return Object.keys(section).forEach((modeName) => {
+      for (const modeName of Object.keys(section)) {
         const mode = modeName as ModeName;
-        const control = this.getControl({ modeType: modeType, modeName: mode });
-        const controlOptions = this.gm.options.getControlOptions({
-          modeType: modeType,
-          modeName: mode,
-        });
+        const control = this.getControl({ modeType, modeName: mode });
+        const controlOptions = this.gm.options.getControlOptions({ modeType, modeName: mode });
 
         if (control && controlOptions) {
-          callback({ control, controlOptions });
+          await callback({ control, controlOptions });
         }
-        // else {
-        //   log.warn(`Can't find control section for: ${actionType}:${modeName}`, !!actionType, !!modeName);
-        // }
-      });
-    });
+      }
+    }
   }
 
   getControl({

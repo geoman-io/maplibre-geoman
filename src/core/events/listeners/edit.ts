@@ -23,25 +23,25 @@ export class EditEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleEditEvent(payload: GmSystemEvent) {
+  async handleEditEvent(payload: GmSystemEvent) {
     if (!isGmEditEvent(payload)) {
       return { next: true };
     }
 
     const actionInstanceKey: ActionInstanceKey = `${payload.actionType}__${payload.mode}`;
     if (payload.action === 'mode_start') {
-      this.trackExclusiveModes(payload);
-      this.start(actionInstanceKey, payload);
-      this.trackRelatedModes(payload);
+      await this.trackExclusiveModes(payload);
+      await this.start(actionInstanceKey, payload);
+      await this.trackRelatedModes(payload);
     } else if (payload.action === 'mode_end') {
-      this.trackRelatedModes(payload);
-      this.end(actionInstanceKey);
+      await this.trackRelatedModes(payload);
+      await this.end(actionInstanceKey);
     }
 
     return { next: true };
   }
 
-  start(actionInstanceKey: ActionInstanceKey, payload: GmEditEvent) {
+  async start(actionInstanceKey: ActionInstanceKey, payload: GmEditEvent) {
     if (payload.action !== 'mode_start') {
       return;
     }
@@ -60,14 +60,14 @@ export class EditEventListener extends BaseEventListener {
     }
 
     this.gm.actionInstances[actionInstanceKey] = actionInstance;
-    actionInstance.startAction();
+    await actionInstance.startAction();
   }
 
-  end(actionInstanceKey: ActionInstanceKey) {
+  async end(actionInstanceKey: ActionInstanceKey) {
     const actionInstance = this.gm.actionInstances[actionInstanceKey];
 
     if (actionInstance instanceof BaseEdit) {
-      actionInstance.endAction();
+      await actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
       console.error(

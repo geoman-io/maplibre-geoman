@@ -7,9 +7,9 @@ test.describe('Draw Mode - Layer Styles', () => {
     await waitForGeoman(page);
 
     // Destroy and recreate Geoman with custom temporary marker opacity
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const mapInstance = window.mapInstance;
-      window.geoman.destroy({ removeSources: true });
+      await window.geoman.destroy({ removeSources: true });
 
       // Create new Geoman with custom temporary marker opacity
       const GeomanClass = window.GeomanClass;
@@ -45,8 +45,8 @@ test.describe('Draw Mode - Layer Styles', () => {
     const centerY = height / 2;
 
     // Enable marker draw mode
-    await page.evaluate(() => {
-      window.geoman.enableMode('draw', 'marker');
+    await page.evaluate(async () => {
+      await window.geoman.enableMode('draw', 'marker');
     });
 
     // Move mouse to trigger the marker pointer to appear
@@ -72,9 +72,9 @@ test.describe('Draw Mode - Layer Styles', () => {
     await waitForGeoman(page);
 
     // Destroy and recreate Geoman with custom temporary marker size
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const mapInstance = window.mapInstance;
-      window.geoman.destroy({ removeSources: true });
+      await window.geoman.destroy({ removeSources: true });
 
       // Create new Geoman with larger icon-size (0.36 = 2x default of 0.18)
       const GeomanClass = window.GeomanClass;
@@ -107,8 +107,8 @@ test.describe('Draw Mode - Layer Styles', () => {
     const centerY = height / 2;
 
     // Enable marker draw mode
-    await page.evaluate(() => {
-      window.geoman.enableMode('draw', 'marker');
+    await page.evaluate(async () => {
+      await window.geoman.enableMode('draw', 'marker');
     });
 
     // Move mouse to trigger the marker pointer to appear

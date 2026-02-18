@@ -6,10 +6,10 @@ import {
   type GmControlSwitchEvent,
   type GmDrawModeEvent,
   type GmEditModeEvent,
-  type GmSystemEvent,
   type GmHelperModeEvent,
-  type ModeName,
+  type GmSystemEvent,
   isGmModeEvent,
+  type ModeName,
 } from '@/main.ts';
 import { isGmControlEvent } from '@/utils/guards/events/index.ts';
 import log from 'loglevel';
@@ -21,7 +21,7 @@ export abstract class BaseEventListener {
     this.gm = gm;
   }
 
-  trackExclusiveModes(payload: GmSystemEvent) {
+  async trackExclusiveModes(payload: GmSystemEvent) {
     // if an exclusive mode is started, turn off all other exclusive modes
     if (payload.action !== 'mode_start') {
       return;
@@ -35,7 +35,7 @@ export abstract class BaseEventListener {
       return;
     }
 
-    this.gm.control.eachControlWithOptions((item) => {
+    await this.gm.control.eachControlWithOptions(async (item) => {
       const actionType = item.control.type;
       const targetMode = item.control.targetMode;
 
@@ -44,17 +44,17 @@ export abstract class BaseEventListener {
       }
 
       if (item.controlOptions.active && item.control.settings.exclusive) {
-        this.gm.options.disableMode(actionType, targetMode);
+        await this.gm.options.disableMode(actionType, targetMode);
       }
     });
   }
 
-  trackRelatedModes(payload: GmSystemEvent) {
+  async trackRelatedModes(payload: GmSystemEvent) {
     if (!isGmModeEvent(payload)) {
       return;
     }
 
-    this.gm.control.eachControlWithOptions((item) => {
+    await this.gm.control.eachControlWithOptions(async (item) => {
       const control = item.control;
       const { type: actionType, targetMode: modeName } = control;
 
@@ -63,11 +63,11 @@ export abstract class BaseEventListener {
           if (this.gm.options.isModeEnabled(actionType, modeName)) {
             // disable a mode if it's enabled already
             // log.debug(`force disable ${actionType}:${modeName}`);
-            this.gm.options.disableMode(actionType, modeName);
+            await this.gm.options.disableMode(actionType, modeName);
           }
-          this.gm.options.enableMode(actionType, modeName);
+          await this.gm.options.enableMode(actionType, modeName);
         } else if (payload.action === 'mode_end') {
-          this.gm.options.disableMode(actionType, modeName);
+          await this.gm.options.disableMode(actionType, modeName);
         } else {
           log.error('Unknown mode action', payload.action);
         }

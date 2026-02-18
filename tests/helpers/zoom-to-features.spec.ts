@@ -108,14 +108,14 @@ test.describe('Zoom To Features Helper', () => {
 
   test('should work with single feature', async () => {
     // Remove all features except one
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const features: Array<{ id: string | number }> = [];
       window.geoman.features.forEach((f) => features.push({ id: f.id }));
       // Keep only the first feature
       for (let i = 1; i < features.length; i++) {
         const featureData = window.geoman.features.get('gm_main', features[i].id as string);
         if (featureData) {
-          window.geoman.features.delete(featureData);
+          await window.geoman.features.delete(featureData);
         }
       }
     });
@@ -147,13 +147,13 @@ test.describe('Zoom To Features Helper', () => {
 
   test('should handle empty features gracefully', async () => {
     // Remove all features
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const features: Array<{ id: string | number }> = [];
       window.geoman.features.forEach((f) => features.push({ id: f.id }));
       for (const f of features) {
         const featureData = window.geoman.features.get('gm_main', f.id as string);
         if (featureData) {
-          window.geoman.features.delete(featureData);
+          await window.geoman.features.delete(featureData);
         }
       }
     });
@@ -166,8 +166,8 @@ test.describe('Zoom To Features Helper', () => {
     // Enable zoom_to_features - should not throw
     let errorOccurred = false;
     try {
-      await page.evaluate(() => {
-        window.geoman.options.enableMode('helper', 'zoom_to_features');
+      await page.evaluate(async () => {
+        await window.geoman.options.enableMode('helper', 'zoom_to_features');
       });
       await page.waitForTimeout(200);
     } catch {

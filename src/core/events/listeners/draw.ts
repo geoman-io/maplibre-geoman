@@ -23,7 +23,7 @@ export class DrawEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleDrawEvent(payload: GmSystemEvent) {
+  async handleDrawEvent(payload: GmSystemEvent) {
     if (!isGmDrawEvent(payload)) {
       return { next: true };
     }
@@ -31,18 +31,18 @@ export class DrawEventListener extends BaseEventListener {
     const actionInstanceKey: ActionInstanceKey = `${payload.actionType}__${payload.mode}`;
 
     if (payload.action === 'mode_start') {
-      this.trackExclusiveModes(payload);
-      this.start(actionInstanceKey, payload);
-      this.trackRelatedModes(payload);
+      await this.trackExclusiveModes(payload);
+      await this.start(actionInstanceKey, payload);
+      await this.trackRelatedModes(payload);
     } else if (payload.action === 'mode_end') {
-      this.trackRelatedModes(payload);
-      this.end(actionInstanceKey);
+      await this.trackRelatedModes(payload);
+      await this.end(actionInstanceKey);
     }
 
     return { next: true };
   }
 
-  start(actionInstanceKey: ActionInstanceKey, payload: GmDrawEvent) {
+  async start(actionInstanceKey: ActionInstanceKey, payload: GmDrawEvent) {
     const actionInstance = createDrawInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
@@ -53,13 +53,13 @@ export class DrawEventListener extends BaseEventListener {
     }
 
     this.gm.actionInstances[actionInstanceKey] = actionInstance;
-    actionInstance.startAction();
+    await actionInstance.startAction();
   }
 
-  end(actionInstanceKey: ActionInstanceKey) {
+  async end(actionInstanceKey: ActionInstanceKey) {
     const actionInstance = this.gm.actionInstances[actionInstanceKey];
     if (actionInstance instanceof BaseDraw) {
-      actionInstance.endAction();
+      await actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
       console.error(`Wrong action instance for draw event "${actionInstanceKey}":`, actionInstance);

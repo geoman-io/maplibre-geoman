@@ -1,10 +1,8 @@
-import { FeatureData } from '@/core/features/feature-data.ts';
 import {
   type DrawModeName,
   type FeatureSourceName,
   type GeoJsonShapeFeature,
   type LngLatTuple,
-  type MapHandlerReturnData,
   type ShapeName,
   SOURCES,
 } from '@/main.ts';
@@ -20,41 +18,41 @@ export class DrawMarker extends BaseDraw {
     mousemove: this.onMouseMove.bind(this),
   };
 
-  onStartAction() {
+  async onStartAction() {
     const customMarker = this.createMarker();
     this.gm.markerPointer.enable({ customMarker });
-    this.fireMarkerPointerStartEvent();
+    await this.fireMarkerPointerStartEvent();
   }
 
-  onEndAction() {
+  async onEndAction() {
     this.gm.markerPointer.disable();
-    this.fireMarkerPointerFinishEvent();
+    await this.fireMarkerPointerFinishEvent();
   }
 
-  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapEvent) {
     if (isMapPointerEvent(event)) {
-      this.featureData = this.createFeature(event);
+      this.featureData = await this.createFeature(event);
       if (this.featureData) {
-        this.saveFeature();
+        await this.saveFeature();
       }
     }
     return { next: false };
   }
 
-  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event) || !this.gm.markerPointer.marker) {
       return { next: true };
     }
-    this.fireMarkerPointerUpdateEvent();
+    await this.fireMarkerPointerUpdateEvent();
     return { next: true };
   }
 
-  createFeature(event: BaseMapPointerEvent): FeatureData | null {
+  async createFeature(event: BaseMapPointerEvent) {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
     const geoJson = this.getFeatureGeoJson(lngLat);
 
     if (geoJson) {
-      this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
+      await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
         return this.gm.features.createFeature({

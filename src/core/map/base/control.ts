@@ -9,5 +9,5 @@ export abstract class BaseControl {
 
   abstract onAdd(): HTMLElement;
 
-  abstract onRemove(): void;
+  abstract onRemove(): Promise<void>;
 }

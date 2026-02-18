@@ -1,12 +1,9 @@
 <script lang="ts">
-  import type { Geoman, GeoJsonImportFeature } from '@/main.ts';
-  import type { Map as MaplibreMap } from 'maplibre-gl';
+  import type {GeoJsonImportFeature, Geoman} from '@/main.ts';
+  import type {Map as MaplibreMap} from 'maplibre-gl';
   import commonShapes from '@tests/fixtures/common-shapes.json';
   import oneOfEachShape from '@tests/fixtures/one-shape-of-each-type.json';
-  import {
-    loadStressTestFeatureCollection,
-    loadStressTestCircleMarkers,
-  } from '@/dev/fixtures/shapes.ts';
+  import {loadStressTestCircleMarkers, loadStressTestFeatureCollection,} from '@/dev/fixtures/shapes.ts';
 
   interface Props {
     geoman: Geoman | null;

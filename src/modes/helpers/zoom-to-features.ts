@@ -9,11 +9,11 @@ export class ZoomToFeaturesHelper extends BaseHelper {
   mode: HelperModeName = 'zoom_to_features';
   eventHandlers = {};
 
-  onStartAction() {
+  async onStartAction() {
     this.fitMapToFeatures();
 
     setTimeout(() => {
-      this.gm.options.disableMode('helper', 'zoom_to_features');
+      this.gm.options.disableMode('helper', 'zoom_to_features').then();
     });
   }
 
