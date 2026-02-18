@@ -1,18 +1,13 @@
 import { layerStyles } from '@/dev/styles/layer-styles.ts';
-import { Geoman, type GmOptionsData, type MapInstanceWithGeoman, type MapTypes } from '@/main.ts';
+import { Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { mount, unmount } from 'svelte';
 import LeftPanel from '@/dev/components/LeftPanel.svelte';
 import RightPanel from '@/dev/components/RightPanel.svelte';
+import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';
 
 log.setLevel(log.levels.DEBUG);
-
-const baseMap: keyof MapTypes = import.meta.env.VITE_BASE_MAP;
-const CONTROL_GROUP_CLASSES: { [key in keyof MapTypes]: string } = {
-  maplibre: 'maplibregl-ctrl maplibregl-ctrl-group',
-  mapbox: 'mapboxgl-ctrl mapboxgl-ctrl-group',
-};
 
 export function createGmOptions(): PartialDeep<GmOptionsData> {
   return {
@@ -22,7 +17,7 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
       controlsUiEnabledByDefault: true,
       controlsCollapsible: true,
       controlsStyles: {
-        controlGroupClass: CONTROL_GROUP_CLASSES[baseMap],
+        controlGroupClass: CONTROL_GROUP_CLASS,
         controlContainerClass: 'gm-control-container',
         controlButtonClass: 'gm-control-button',
       },

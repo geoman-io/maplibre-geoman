@@ -9,7 +9,7 @@
         "tests/*"
       ],
       "@mapLib/*": [
-        "src/core/map/mapbox/*"
+        "src/core/map/maplibre/*"
       ]
     },
     "declaration": true,
@@ -59,6 +59,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/core/map/maplibre"
+    "src/core/map/mapbox"
   ]
 }

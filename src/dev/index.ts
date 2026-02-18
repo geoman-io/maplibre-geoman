@@ -12,10 +12,16 @@ if (import.meta.env.MODE === 'development') {
   } else if (baseMap === 'maplibre') {
     await import('./index.maplibre.dev.ts');
   } else {
-    log.debug(`Wrong map library: "${baseMap}"`);
+    log.error(`Wrong map library: "${baseMap}"`);
   }
 } else if (import.meta.env.MODE === 'test') {
-  await import('./index.maplibre.test.ts');
+  if (baseMap === 'mapbox') {
+    await import('./index.mapbox.test.ts');
+  } else if (baseMap === 'maplibre') {
+    await import('./index.maplibre.test.ts');
+  } else {
+    log.error(`Wrong map library: "${baseMap}"`);
+  }
 } else {
   log.error('Only development and test modes are supported');
 }

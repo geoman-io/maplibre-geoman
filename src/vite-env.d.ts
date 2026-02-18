@@ -5,6 +5,7 @@ import type { Options } from '../vite.config.ts';
 import type { Geoman } from '@/main.ts';
 import type * as geojsonUtils from '@/utils/geojson.ts';
 import type ml from 'maplibre-gl';
+import mapboxgl from 'mapbox-gl';
 
 declare global {
   declare const __GEOMAN_VERSION__: Options['GmVersion'];
@@ -14,6 +15,6 @@ declare global {
     geomanUtils: typeof geojsonUtils;
     // Test environment only
     GeomanClass: typeof Geoman;
-    mapInstance: ml.Map;
+    mapInstance: ml.Map | mapboxgl.Map;
   }
 }
