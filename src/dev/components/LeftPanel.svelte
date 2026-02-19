@@ -211,7 +211,7 @@
     </div>
     <div class="dev-section-content" class:collapsed={!drawModesExpanded}>
       <div class="dev-mode-grid">
-        {#each DRAW_MODES as mode}
+        {#each DRAW_MODES as mode (mode)}
           {@const isActive = activeDrawModes.includes(mode)}
           {@const isAvailable = isModeAvailable('draw', mode)}
           <button
@@ -243,7 +243,7 @@
     </div>
     <div class="dev-section-content" class:collapsed={!editModesExpanded}>
       <div class="dev-mode-grid">
-        {#each EDIT_MODES as mode}
+        {#each EDIT_MODES as mode (mode)}
           {@const isActive = activeEditModes.includes(mode)}
           {@const isAvailable = isModeAvailable('edit', mode)}
           <button
@@ -275,7 +275,7 @@
     </div>
     <div class="dev-section-content" class:collapsed={!helperModesExpanded}>
       <div class="dev-mode-grid">
-        {#each HELPER_MODES as mode}
+        {#each HELPER_MODES as mode (mode)}
           {@const isActive = activeHelperModes.includes(mode)}
           {@const isAvailable = isModeAvailable('helper', mode)}
           <button

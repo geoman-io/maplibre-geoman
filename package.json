@@ -28,8 +28,8 @@
     "ts": "tsc --noEmit",
     "ts-watch": "tsc --noEmit --watch",
     "ts:autofix": "ts-autofix",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.svelte --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "formatter": "prettier src tests --check",
     "formatter:fix": "prettier src tests --write",
     "check": "npm run formatter:fix && npm run lint && npm run ts",
@@ -79,20 +79,14 @@
     "maplibre-gl": "5.18.0"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.0.2",
-    "@eslint/eslintrc": "^3.3.3",
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "1.58.2",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^25.2.2",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
     "cross-env": "^10.1.0",
-    "eslint": "^9.39.2",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-svelte": "^3.14.0",
+    "eslint": "^10.0.0",
+    "eslint-plugin-svelte": "^3.15.0",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "maplibre-gl": "^5.17.0",
@@ -103,13 +97,18 @@
     "sass": "^1.97.3",
     "shx": "^0.4.0",
     "svelte": "^5.50.0",
-    "svelte-eslint-parser": "^1.4.1",
     "svelte-preprocess": "^6.0.3",
+    "typescript-eslint": "^8.56.0",
     "ts-autofix": "^1.0.0",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-svg-loader": "^5.1.0"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^10.2.1"
+    }
   },
   "publishConfig": {
     "access": "public",

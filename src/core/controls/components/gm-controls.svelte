@@ -56,6 +56,7 @@
   {#if controlsCollapsible}
     <div class={`${controlsStyles.controlGroupClass} group-settings`}>
       <button class="gm-control-button" onclick={toggleExpanded}>
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized with DOMPurify -->
         {@html getToggleExpandedIcon()}
       </button>
     </div>

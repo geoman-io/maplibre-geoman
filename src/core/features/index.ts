@@ -685,13 +685,10 @@ export class Features {
     const shapeName = shapeNames.length === 1 ? shapeNames[0] : 'mixed';
     const getLayerId = (index: number) =>
       `${sourceName}-${shapeName}__${partialStyle.type}-layer-${index}`;
-    let layerId: string | null = null;
-
     for (let i = 0; i < MAX_LAYERS; i += 1) {
       const tmpLayerId = getLayerId(i);
       if (!this.gm.mapAdapter.getLayer(tmpLayerId)) {
-        layerId = tmpLayerId;
-        return layerId;
+        return tmpLayerId;
       }
     }
 
