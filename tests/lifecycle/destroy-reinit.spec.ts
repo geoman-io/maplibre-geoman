@@ -54,18 +54,20 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
 
       const result = await page.evaluate(async () => {
         const geoman = window.geoman;
-        const mapInstance = window.mapInstance;
 
         // Check sources exist before destroy
-        const hasMainSourceBefore = !!mapInstance.getSource('gm_main');
-        const hasTemporarySourceBefore = !!mapInstance.getSource('gm_temporary');
+        const hasMainSourceBefore = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
+
+        const hasTemporarySourceBefore =
+          !!geoman.mapAdapter.getSource('gm_temporary').sourceInstance;
 
         // Destroy with removeSources: true
         await geoman.destroy({ removeSources: true });
 
         // Check sources after destroy
-        const hasMainSourceAfter = !!mapInstance.getSource('gm_main');
-        const hasTemporarySourceAfter = !!mapInstance.getSource('gm_temporary');
+        const hasMainSourceAfter = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
+        const hasTemporarySourceAfter =
+          !!geoman.mapAdapter.getSource('gm_temporary').sourceInstance;
 
         return {
           hasMainSourceBefore,
@@ -97,16 +99,15 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
 
       const result = await page.evaluate(async () => {
         const geoman = window.geoman;
-        const mapInstance = window.mapInstance;
 
         // Check sources exist before destroy
-        const hasMainSourceBefore = !!mapInstance.getSource('gm_main');
+        const hasMainSourceBefore = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         // Destroy with removeSources: false (default)
         await geoman.destroy({ removeSources: false });
 
         // Check sources after destroy
-        const hasMainSourceAfter = !!mapInstance.getSource('gm_main');
+        const hasMainSourceAfter = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         return {
           hasMainSourceBefore,
@@ -134,16 +135,15 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
 
       const result = await page.evaluate(async () => {
         const geoman = window.geoman;
-        const mapInstance = window.mapInstance;
 
         // Check sources exist before destroy
-        const hasMainSourceBefore = !!mapInstance.getSource('gm_main');
+        const hasMainSourceBefore = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         // Destroy without options (should default to removeSources: false)
         await geoman.destroy();
 
         // Check sources after destroy
-        const hasMainSourceAfter = !!mapInstance.getSource('gm_main');
+        const hasMainSourceAfter = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         return {
           hasMainSourceBefore,
@@ -188,11 +188,11 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
       await waitForGeoman(page);
 
       const result = await page.evaluate(() => {
-        const mapInstance = window.mapInstance;
+        const geoman = window.geoman;
         return {
           loaded: window.geoman.loaded,
           destroyed: window.geoman.destroyed,
-          hasMainSource: !!mapInstance.getSource('gm_main'),
+          hasMainSource: !!geoman.mapAdapter.getSource('gm_main').sourceInstance,
         };
       });
 
@@ -232,11 +232,11 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
       await waitForGeoman(page);
 
       const result = await page.evaluate(() => {
-        const mapInstance = window.mapInstance;
+        const geoman = window.geoman;
         return {
           loaded: window.geoman.loaded,
           destroyed: window.geoman.destroyed,
-          hasMainSource: !!mapInstance.getSource('gm_main'),
+          hasMainSource: !!geoman.mapAdapter.getSource('gm_main').sourceInstance,
         };
       });
 
