@@ -7,7 +7,6 @@ import type {
   GmDrawShapeEvent,
   GmDrawShapeEventWithData,
   LngLatTuple,
-  MapHandlerReturnData,
   MarkerData,
   ShapeName,
 } from '@/main.ts';
@@ -44,14 +43,14 @@ export class DrawRectangle extends BaseDraw {
     this.gm.markerPointer.enable();
   }
 
-  onEndAction() {
-    this.removeTmpFeature();
+  async onEndAction() {
+    await this.removeTmpFeature();
     this.startLngLat = null;
     this.gm.markerPointer.disable();
-    this.fireFinishEvent();
+    await this.fireFinishEvent();
   }
 
-  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapEvent) {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: false };
     }
@@ -60,33 +59,33 @@ export class DrawRectangle extends BaseDraw {
 
     if (this.startLngLat) {
       const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(this.startLngLat, lngLat));
-      this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
+      await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
-        this.finishShape(lngLat);
+        await this.finishShape(lngLat);
       }
     } else {
       const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(lngLat, lngLat));
-      this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
+      await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
-        const featureData = this.startShape(lngLat);
+        const featureData = await this.startShape(lngLat);
         if (featureData) {
           const markerData = this.getControlMarkerData(['geometry', 'coordinates', 4]);
-          this.fireStartEvent(featureData, markerData);
+          await this.fireStartEvent(featureData, markerData);
         }
       }
     }
     return { next: false };
   }
 
-  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: false };
     }
 
     if (!this.startLngLat) {
-      this.fireMarkerPointerUpdateEvent();
+      await this.fireMarkerPointerUpdateEvent();
       return { next: false };
     }
 
@@ -94,39 +93,39 @@ export class DrawRectangle extends BaseDraw {
     const bounds = getBboxFromTwoCoords(this.startLngLat, lngLat);
 
     const geoJson = this.getFeatureGeoJson(bounds);
-    this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
+    await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
     if (this.flags.featureCreateAllowed) {
-      this.throttledMethods.updateFeaturePosition(bounds);
+      await this.throttledMethods.updateFeaturePosition(bounds);
     }
     return { next: false };
   }
 
-  startShape(lngLat: LngLatTuple) {
+  async startShape(lngLat: LngLatTuple) {
     this.startLngLat = lngLat;
     const bounds = getBboxFromTwoCoords(this.startLngLat, this.startLngLat);
-    this.featureData = this.createFeature(bounds);
+    this.featureData = await this.createFeature(bounds);
     return this.featureData;
   }
 
-  finishShape(lngLat: LngLatTuple) {
+  async finishShape(lngLat: LngLatTuple) {
     if (this.startLngLat) {
       const bounds = getBboxFromTwoCoords(this.startLngLat, lngLat);
-      this.throttledMethods.updateFeaturePosition(bounds);
+      await this.throttledMethods.updateFeaturePosition(bounds);
     }
 
     if (this.featureData) {
       if (this.isFeatureGeoJsonValid()) {
-        this.saveFeature();
+        await this.saveFeature();
       } else {
-        this.removeTmpFeature();
+        await this.removeTmpFeature();
       }
     }
     this.startLngLat = null;
-    this.fireFinishEvent();
+    await this.fireFinishEvent();
   }
 
-  createFeature(bounds: BBox): FeatureData | null {
+  async createFeature(bounds: BBox) {
     return this.gm.features.createFeature({
       shapeGeoJson: this.getFeatureGeoJson(bounds),
       sourceName: SOURCES.temporary,
@@ -156,7 +155,7 @@ export class DrawRectangle extends BaseDraw {
     };
   }
 
-  updateFeaturePosition(bounds: BBox) {
+  async updateFeaturePosition(bounds: BBox) {
     if (!this.featureData) {
       return;
     }
@@ -165,9 +164,9 @@ export class DrawRectangle extends BaseDraw {
       [bounds[0], bounds[1]],
       [bounds[2], bounds[3]],
     );
-    this.featureData.updateGeoJsonGeometry(rectangleData.geometry);
+    await this.featureData.updateGeometry(rectangleData.geometry);
     const markerData = this.getControlMarkerData(['geometry', 'coordinates', 4]);
-    this.fireUpdateEvent(this.featureData, markerData);
+    await this.fireUpdateEvent(this.featureData, markerData);
   }
 
   getControlMarkerData(path: Array<string | number>): MarkerData | null {
@@ -186,7 +185,7 @@ export class DrawRectangle extends BaseDraw {
     };
   }
 
-  fireStartEvent(featureData: FeatureData, markerData: MarkerData | null) {
+  async fireStartEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GmDrawShapeEventWithData = {
       name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
@@ -197,10 +196,10 @@ export class DrawRectangle extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 
-  fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null) {
+  async fireUpdateEvent(featureData: FeatureData, markerData: MarkerData | null) {
     const event: GmDrawShapeEventWithData = {
       name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
@@ -211,10 +210,10 @@ export class DrawRectangle extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 
-  fireFinishEvent() {
+  async fireFinishEvent() {
     const event: GmDrawShapeEvent = {
       name: `${GM_SYSTEM_PREFIX}:draw:shape`,
       level: 'system',
@@ -223,6 +222,6 @@ export class DrawRectangle extends BaseDraw {
       variant: null,
       action: 'finish',
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, event);
   }
 }

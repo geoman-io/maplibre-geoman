@@ -6,7 +6,6 @@ import {
   type GmEditMarkerMoveEvent,
   type GmSystemEvent,
   type LngLatTuple,
-  type MapHandlerReturnData,
   type MarkerData,
   SOURCES,
 } from '@/main.ts';
@@ -64,13 +63,13 @@ export class EditChange extends BaseDrag {
     this.snapGuidesInstance?.removeSnapGuides();
   }
 
-  override onMouseDown(event: BaseMapEvent): MapHandlerReturnData {
+  override async onMouseDown(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
 
     if (this.getSettingValue('bodyDragEnabled') === true) {
-      return super.onMouseDown(event);
+      return await super.onMouseDown(event);
     }
 
     const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
@@ -78,17 +77,17 @@ export class EditChange extends BaseDrag {
       return { next: true };
     }
 
-    return super.onMouseDown(event);
+    return await super.onMouseDown(event);
   }
 
-  handleGmEdit(event: GmSystemEvent): MapHandlerReturnData {
+  async handleGmEdit(event: GmSystemEvent) {
     if (!isGmEditEvent(event)) {
       return { next: true };
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.markerData) {
       if (event.markerData.type === 'vertex') {
-        this.moveVertex(event);
+        await this.moveVertex(event);
         return { next: false };
       } else if (event.lngLatEnd) {
         this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
@@ -97,27 +96,27 @@ export class EditChange extends BaseDrag {
     }
 
     if (event.action === 'marker_right_click') {
-      this.cutVertex(event);
-      this.fireFeatureEditEndEvent({ feature: event.featureData });
+      await this.cutVertex(event);
+      await this.fireFeatureEditEndEvent({ feature: event.featureData });
     } else if (event.action === 'edge_marker_click') {
-      this.insertVertex(event);
+      await this.insertVertex(event);
     } else if (event.action === 'marker_captured') {
       this.setCursorToPointer();
-      event.featureData.changeSource({ sourceName: SOURCES.temporary, atomic: true });
+      await event.featureData.changeSource({ sourceName: SOURCES.temporary });
       this.flags.actionInProgress = true;
-      this.fireFeatureEditStartEvent({ feature: event.featureData });
+      await this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {
       this.markerData = null;
       this.snapGuidesInstance?.removeSnapGuides();
-      event.featureData.changeSource({ sourceName: SOURCES.main, atomic: true });
-      this.fireFeatureEditEndEvent({ feature: event.featureData });
+      await event.featureData.changeSource({ sourceName: SOURCES.main });
+      await this.fireFeatureEditEndEvent({ feature: event.featureData });
       this.flags.actionInProgress = false;
     }
 
     return { next: true };
   }
 
-  moveVertex(event: GmEditMarkerMoveEvent) {
+  async moveVertex(event: GmEditMarkerMoveEvent) {
     if (!this.markerData) {
       this.markerData = event.markerData || null;
       this.snapGuidesInstance?.updateSnapGuides(event.featureData.getGeoJson(), event.lngLatStart);
@@ -128,7 +127,7 @@ export class EditChange extends BaseDrag {
     const updatedGeoJson = this.shapeUpdateHandlers[shape]?.(event) || null;
 
     if (updatedGeoJson) {
-      this.fireBeforeFeatureUpdate({
+      await this.fireBeforeFeatureUpdate({
         features: [featureData],
         geoJsonFeatures: [updatedGeoJson],
       });
@@ -139,7 +138,7 @@ export class EditChange extends BaseDrag {
     }
   }
 
-  cutVertex(event: GmEditMarkerEvent) {
+  async cutVertex(event: GmEditMarkerEvent) {
     const featureData = event.featureData;
     if (event.markerData.type !== 'vertex') {
       return;
@@ -156,17 +155,17 @@ export class EditChange extends BaseDrag {
 
     if (isLineStringFeature(geoJson)) {
       if (getGeoJsonCoordinatesCount(geoJson) <= 2) {
-        this.gm.features.delete(featureData);
+        await this.gm.features.delete(featureData);
         return;
       }
     } else if (isMultiPolygonFeature(geoJson)) {
       if (getGeoJsonCoordinatesCount(geoJson) <= 3) {
-        this.gm.features.delete(featureData);
+        await this.gm.features.delete(featureData);
         return;
       }
     } else if (isPolygonFeature(geoJson)) {
       if (getGeoJsonCoordinatesCount(geoJson) <= 3) {
-        this.gm.features.delete(featureData);
+        await this.gm.features.delete(featureData);
         return;
       }
     }
@@ -177,9 +176,9 @@ export class EditChange extends BaseDrag {
     }
 
     if (featureUpdated) {
-      featureData.convertToPolygon(); // if possible
-      featureData.updateGeoJsonGeometry(geoJson.geometry);
-      this.fireFeatureUpdatedEvent({
+      await featureData.convertToPolygon(); // if possible
+      await featureData.updateGeometry(geoJson.geometry);
+      await this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
         targetFeatures: [featureData],
         markerData: event.markerData,
@@ -189,7 +188,7 @@ export class EditChange extends BaseDrag {
     }
   }
 
-  insertVertex(event: GmEditMarkerEvent) {
+  async insertVertex(event: GmEditMarkerEvent) {
     if (event.markerData.type !== 'edge') {
       return;
     }
@@ -203,9 +202,9 @@ export class EditChange extends BaseDrag {
 
     if (typeof insertIndex === 'number') {
       coordinates.splice(insertIndex, 0, [...event.markerData.position.coordinate]);
-      event.featureData.updateGeoJsonGeometry(geoJson.geometry);
-      event.featureData.convertToPolygon(); // if possible
-      this.fireFeatureUpdatedEvent({
+      await event.featureData.updateGeometry(geoJson.geometry);
+      await event.featureData.convertToPolygon(); // if possible
+      await this.fireFeatureUpdatedEvent({
         sourceFeatures: [event.featureData],
         targetFeatures: [event.featureData],
         markerData: event.markerData,

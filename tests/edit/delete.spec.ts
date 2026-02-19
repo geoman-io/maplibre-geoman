@@ -86,6 +86,6 @@ test("should correctly 'delete' each shape type", async ({ page }) => {
     await performDeleteAndVerify(page, feature);
   }
 
-  await page.evaluate(() => window.geoman.options.disableMode('edit', 'delete'));
+  await page.evaluate(async () => await window.geoman.options.disableMode('edit', 'delete'));
   await waitForMapIdle(page);
 });

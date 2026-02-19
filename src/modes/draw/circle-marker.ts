@@ -1,4 +1,4 @@
-import type { DrawModeName, LngLatTuple, MapHandlerReturnData, ShapeName } from '@/main.ts';
+import type { DrawModeName, LngLatTuple, ShapeName } from '@/main.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 
@@ -12,36 +12,36 @@ export class DrawCircleMarker extends BaseCircle {
     });
   }
 
-  onEndAction() {
-    this.fireMarkerPointerFinishEvent();
-    super.onEndAction();
+  async onEndAction() {
+    await this.fireMarkerPointerFinishEvent();
+    await super.onEndAction();
   }
 
-  onMouseMove(): MapHandlerReturnData {
-    this.fireMarkerPointerUpdateEvent();
+  async onMouseMove() {
+    await this.fireMarkerPointerUpdateEvent();
     return { next: true };
   }
 
-  onMouseClick(event: BaseMapPointerEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapPointerEvent) {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
-    this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
+    await this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 
     if (this.flags.featureCreateAllowed) {
-      this.featureData = this.createFeature();
+      this.featureData = await this.createFeature();
       this.circleCenterLngLat = lngLat;
       this.circleCenterPoint = this.gm.mapAdapter.project(this.circleCenterLngLat);
-      this.updateFeaturePosition(this.circleCenterLngLat);
-      this.saveFeature();
+      await this.updateFeaturePosition(this.circleCenterLngLat);
+      await this.saveFeature();
     }
     return { next: false };
   }
 
-  updateFeaturePosition(lngLat: LngLatTuple) {
+  async updateFeaturePosition(lngLat: LngLatTuple) {
     if (!this.featureData) {
       return;
     }
 
     const shapeGeoJson = this.getFeatureGeoJson(lngLat);
-    this.featureData.updateGeoJsonGeometry(shapeGeoJson.geometry);
+    await this.featureData.updateGeometry(shapeGeoJson.geometry);
   }
 }

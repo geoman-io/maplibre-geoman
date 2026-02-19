@@ -6,7 +6,7 @@ import { EditEventListener } from '@/core/events/listeners/edit.ts';
 import { HelperEventListener } from '@/core/events/listeners/helper.ts';
 import type { ActionType, Geoman } from '@/main.ts';
 import log from 'loglevel';
-import type { GmSystemEvent, GmEventName } from 'src/types/events';
+import type { GmEventName, GmSystemEvent } from 'src/types/events';
 
 export default class GmEvents {
   gm: Geoman;
@@ -25,13 +25,13 @@ export default class GmEvents {
     };
   }
 
-  fire(eventName: GmEventName, payload: GmSystemEvent) {
+  async fire(eventName: GmEventName, payload: GmSystemEvent) {
     if (!this.listeners[payload.actionType]) {
       log.error(`Can't find event listener for "${payload.actionType}" event type`);
     }
 
     // events are sent to the bus and then are handler by the listeners
     // check events.bus.attachEvents() in required classes
-    this.bus.fireEvent(eventName, payload);
+    await this.bus.fireEvent(eventName, payload);
   }
 }

@@ -1,10 +1,10 @@
 <script lang="ts">
   import ControlMenu from '@/core/controls/components/control-menu.svelte';
-  import type { ControlOptions, GenericSystemControl, Geoman } from '@/main.ts';
+  import type {ControlOptions, GenericSystemControl, Geoman} from '@/main.ts';
   import DOMPurify from 'dompurify';
   import log from 'loglevel';
-  import { getContext } from 'svelte';
-  import { controlsStore } from '@/core/controls/components/controls-store.ts';
+  import {getContext} from 'svelte';
+  import {controlsStore} from '@/core/controls/components/controls-store.ts';
 
   const { control, controlOptions }: {
     control: GenericSystemControl,
@@ -16,9 +16,9 @@
   const gm: Geoman = getContext('gm');
   const menuPosition = gm.control.getDefaultPosition();
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (control && controlOptions) {
-      gm.options.toggleMode(control.type, control.targetMode);
+      await gm.options.toggleMode(control.type, control.targetMode);
     } else {
       log.error('Control or controlOptions not defined', control, controlOptions);
     }

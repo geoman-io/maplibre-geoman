@@ -39,31 +39,31 @@ export class EditCut extends BaseEdit {
     mousemove: this.onMouseMove.bind(this),
   };
 
-  onStartAction() {
-    this.lineDrawer.startAction();
+  async onStartAction() {
+    await this.lineDrawer.startAction();
     this.lineDrawer.on('firstMarkerClick', this.cutPolygonFinished.bind(this));
   }
 
-  onEndAction() {
-    this.lineDrawer.endAction();
+  async onEndAction() {
+    await this.lineDrawer.endAction();
   }
 
-  onMouseMove(event: BaseMapEvent) {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
 
     if (!this.lineDrawer.featureData) {
-      this.fireMarkerPointerUpdateEvent();
+      await this.fireMarkerPointerUpdateEvent();
     }
     return { next: true };
   }
 
-  cutPolygonFinished(event: LineEventHandlerArguments) {
-    this.lineDrawer.endShape();
+  async cutPolygonFinished(event: LineEventHandlerArguments) {
+    await this.lineDrawer.endShape();
     const geoJsonPolygon = lineToPolygon(event.geoJson);
     const bBoxfeatures = this.getBBoxFeaturesByPolygon(geoJsonPolygon);
-    this.cutFeaturesByPolygon(bBoxfeatures, geoJsonPolygon);
+    await this.cutFeaturesByPolygon(bBoxfeatures, geoJsonPolygon);
   }
 
   getBBoxFeaturesByPolygon(geoJson: PolygonFeature): Array<FeatureData> {
@@ -75,35 +75,35 @@ export class EditCut extends BaseEdit {
     });
   }
 
-  cutFeaturesByPolygon(bBoxfeatures: Array<FeatureData>, cutGeoJson: PolygonFeature) {
-    bBoxfeatures.forEach((featureData) => {
+  async cutFeaturesByPolygon(bBoxfeatures: Array<FeatureData>, cutGeoJson: PolygonFeature) {
+    for (const featureData of bBoxfeatures) {
       if (featureData.getShapeProperty('disableEdit') === true) {
-        return;
+        continue;
       }
       if (isGeoJsonFeatureInPolygon(featureData.getGeoJson(), cutGeoJson)) {
-        this.gm.features.delete(featureData);
-        this.fireFeatureRemovedEvent(featureData);
-        return;
+        await this.gm.features.delete(featureData);
+        await this.fireFeatureRemovedEvent(featureData);
+        continue;
       }
 
       if (!booleanIntersects(featureData.getGeoJson(), cutGeoJson)) {
-        return;
+        continue;
       }
 
       if (!this.cutShapesAllowed.includes(featureData.shape)) {
-        return;
+        continue;
       }
 
       if (featureData.shape === 'line') {
-        this.cutLineFeatureByPolygon(featureData, cutGeoJson);
-        return;
+        await this.cutLineFeatureByPolygon(featureData, cutGeoJson);
+        continue;
       }
 
-      this.cutPolygonFeatureByPolygon(featureData.id, cutGeoJson);
-    });
+      await this.cutPolygonFeatureByPolygon(featureData.id, cutGeoJson);
+    }
   }
 
-  cutLineFeatureByPolygon(featureData: FeatureData, cutGeoJson: PolygonFeature) {
+  async cutLineFeatureByPolygon(featureData: FeatureData, cutGeoJson: PolygonFeature) {
     const shapeGeoJson = featureData.getGeoJson() as Feature<LineString | MultiLineString>;
     const bufferedCutGeoJson = getBufferedOuterPolygon(this.gm.mapAdapter, cutGeoJson);
 
@@ -151,18 +151,18 @@ export class EditCut extends BaseEdit {
 
     if (isCut && coordinates.length) {
       if (coordinates.length === 1) {
-        featureData.updateGeoJsonGeometry({ type: 'LineString', coordinates: coordinates[0] });
+        await featureData.updateGeometry({ type: 'LineString', coordinates: coordinates[0] });
       } else {
-        featureData.updateGeoJsonGeometry({ type: 'MultiLineString', coordinates: coordinates });
+        await featureData.updateGeometry({ type: 'MultiLineString', coordinates: coordinates });
       }
-      this.fireFeatureUpdatedEvent({
+      await this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
         targetFeatures: [featureData],
       });
     }
   }
 
-  cutPolygonFeatureByPolygon(featureId: FeatureId, cutGeoJson: PolygonFeature) {
+  async cutPolygonFeatureByPolygon(featureId: FeatureId, cutGeoJson: PolygonFeature) {
     const featureData = this.gm.features.get(SOURCES.main, featureId);
 
     if (!featureData) {
@@ -170,12 +170,12 @@ export class EditCut extends BaseEdit {
       return;
     }
 
-    featureData.convertToPolygon(); // if possible
+    await featureData.convertToPolygon(); // if possible
     const shapeGeoJson = featureData.getGeoJson() as PolygonFeature;
     const geoJsonDifference = this.getGeoJsonDifference(shapeGeoJson, cutGeoJson);
     if (geoJsonDifference) {
-      featureData.updateGeoJsonGeometry(geoJsonDifference.geometry);
-      this.fireFeatureUpdatedEvent({
+      await featureData.updateGeometry(geoJsonDifference.geometry);
+      await this.fireFeatureUpdatedEvent({
         sourceFeatures: [featureData],
         targetFeatures: [featureData],
       });

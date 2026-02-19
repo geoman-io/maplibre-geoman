@@ -2,10 +2,10 @@
   import caretDown from '@/assets/images/controls2/caret-down.svg';
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
-  import { controlsStore } from '@/core/controls/components/controls-store.ts';
-  import type { ActionType, ControlOptions, GenericSystemControls, ModeName } from '@/main.ts';
+  import {controlsStore} from '@/core/controls/components/controls-store.ts';
+  import type {ActionType, ControlOptions, GenericSystemControls, ModeName} from '@/main.ts';
   import DOMPurify from 'dompurify';
-  import { slide } from 'svelte/transition';
+  import {slide} from 'svelte/transition';
 
   // const gm: Geoman = getContext('gm');
   let expanded = $state(true);
@@ -56,6 +56,7 @@
   {#if controlsCollapsible}
     <div class={`${controlsStyles.controlGroupClass} group-settings`}>
       <button class="gm-control-button" onclick={toggleExpanded}>
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized with DOMPurify -->
         {@html getToggleExpandedIcon()}
       </button>
     </div>

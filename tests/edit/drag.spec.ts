@@ -40,7 +40,7 @@ test('Drag', async ({ page }) => {
   await enableMode(page, 'edit', 'drag');
   const features = await getRenderedFeaturesData({ page, temporary: false });
 
-  for await (const feature of features) {
+  for (const feature of features) {
     let position;
     if (feature.shape === 'circle') {
       position = centroid(feature.geoJson).geometry.coordinates as LngLatTuple;
@@ -50,50 +50,52 @@ test('Drag', async ({ page }) => {
 
     expect(position).toBeTruthy();
     if (!position) {
-      return;
+      continue;
     }
 
     const point = await getScreenCoordinatesByLngLat({ page, position });
+    expect(point).toBeTruthy();
+    if (!point) {
+      continue;
+    }
 
-    if (point) {
-      const newPoint: ScreenCoordinates = [point[0] + dX, point[1] + dY];
-      await dragAndDrop(page, point, newPoint);
+    const newPoint: ScreenCoordinates = [point[0] + dX, point[1] + dY];
+    await dragAndDrop(page, point, newPoint);
 
-      const updatedFeature = await waitForRenderedFeatureData({
-        page,
-        featureId: feature.id,
-        temporary: false,
-      });
-      expect(updatedFeature).toBeTruthy();
+    const updatedFeature = await waitForRenderedFeatureData({
+      page,
+      featureId: feature.id,
+      temporary: false,
+    });
+    expect(updatedFeature).toBeTruthy();
 
-      if (updatedFeature) {
-        let updatedPosition;
-        if (feature.shape === 'circle') {
-          updatedPosition = centroid(updatedFeature.geoJson).geometry.coordinates as LngLatTuple;
-        } else {
-          updatedPosition = getGeoJsonFirstPoint(updatedFeature.geoJson);
+    if (updatedFeature) {
+      let updatedPosition;
+      if (feature.shape === 'circle') {
+        updatedPosition = centroid(updatedFeature.geoJson).geometry.coordinates as LngLatTuple;
+      } else {
+        updatedPosition = getGeoJsonFirstPoint(updatedFeature.geoJson);
+      }
+      expect(updatedPosition).toBeTruthy();
+
+      if (updatedPosition) {
+        const updatedPoint = await getScreenCoordinatesByLngLat({
+          page,
+          position: updatedPosition,
+        });
+
+        expect(updatedPoint).toBeTruthy();
+        if (!isEqual(updatedPoint, newPoint)) {
+          console.log('Shape', feature.shape);
+          console.log(`Original point: [${point}]`);
+          console.log(`Expected/actual: [${newPoint}] / [${updatedPoint}]`);
         }
-        expect(updatedPosition).toBeTruthy();
-
-        if (updatedPosition) {
-          const updatedPoint = await getScreenCoordinatesByLngLat({
-            page,
-            position: updatedPosition,
-          });
-
-          expect(updatedPoint).toBeTruthy();
-          if (!isEqual(updatedPoint, newPoint)) {
-            console.log('Shape', feature.shape);
-            console.log(`Original point: [${point}]`);
-            console.log(`Expected/actual: [${newPoint}] / [${updatedPoint}]`);
-          }
-          expect(updatedPoint).toBeTruthy();
-          if (updatedPoint) {
-            expect(updatedPoint[0]).toBeGreaterThanOrEqual(newPoint[0] - SCREEN_COORD_TOLERANCE);
-            expect(updatedPoint[0]).toBeLessThanOrEqual(newPoint[0] + SCREEN_COORD_TOLERANCE);
-            expect(updatedPoint[1]).toBeGreaterThanOrEqual(newPoint[1] - SCREEN_COORD_TOLERANCE);
-            expect(updatedPoint[1]).toBeLessThanOrEqual(newPoint[1] + SCREEN_COORD_TOLERANCE);
-          }
+        expect(updatedPoint).toBeTruthy();
+        if (updatedPoint) {
+          expect(updatedPoint[0]).toBeGreaterThanOrEqual(newPoint[0] - SCREEN_COORD_TOLERANCE);
+          expect(updatedPoint[0]).toBeLessThanOrEqual(newPoint[0] + SCREEN_COORD_TOLERANCE);
+          expect(updatedPoint[1]).toBeGreaterThanOrEqual(newPoint[1] - SCREEN_COORD_TOLERANCE);
+          expect(updatedPoint[1]).toBeLessThanOrEqual(newPoint[1] + SCREEN_COORD_TOLERANCE);
         }
       }
     }

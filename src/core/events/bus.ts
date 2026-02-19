@@ -34,14 +34,14 @@ export class EventBus {
   // Events are processed sequentially to ensure dragstart fires before drag, etc.
   private pendingForward: Promise<void> = Promise.resolve();
 
-  fireEvent(eventName: GmEventName, payload: GmSystemEvent) {
+  async fireEvent(eventName: GmEventName, payload: GmSystemEvent) {
     const eventHandler = this.gmEventHandlers[eventName];
     if (!eventHandler) {
       return;
     }
 
     const { controlHandler } = eventHandler;
-    controlHandler(payload);
+    await controlHandler(payload);
 
     // Chain event forwarding to maintain order
     // This ensures dragstart completes before drag events are forwarded
@@ -151,7 +151,7 @@ export class EventBus {
   createEventSection(eventName: MapEventName | GmEventName) {
     return {
       handlers: [],
-      controlHandler: (event: GmSystemEvent | GmEvent | BaseMapEvent) => {
+      controlHandler: async (event: GmSystemEvent | GmEvent | BaseMapEvent) => {
         let eventHandler: EventControls;
         if (isGmEvent(event) && eventName.startsWith(`${GM_SYSTEM_PREFIX}`)) {
           eventHandler = this.gmEventHandlers[eventName as GmEventName];
@@ -164,24 +164,25 @@ export class EventBus {
         }
 
         // controlHandler calls all handlers for the events type
-        eventHandler.handlers.some((handlerItem: GmEventHadler | MapEventHadler) => {
+        // note: here it's possible to have updated eventHandler.handlers on each iteration
+        // to prevent errors we keep an original handlers for an event
+        for (const handlerItem of [...eventHandler.handlers]) {
           let result;
           if (isGmEvent(event)) {
-            result = (handlerItem as GmEventHadler)(event);
+            result = await (handlerItem as GmEventHadler)(event);
           } else if (isBaseMapEvent(event)) {
-            result = (handlerItem as MapEventHadler)(event);
+            result = await (handlerItem as MapEventHadler)(event);
           } else {
             log.error('EventsBus: unknown event type', event);
           }
 
           if (result && typeof result === 'object' && 'next' in result) {
             // if handler returns "{next: false}", then don't call the next handler
-            return !result.next; // true means "stop calling the next handlers" here
+            if (!result.next) break;
           } else {
             log.error('EventsBus: handler should return an object with a "next" property');
-            return false; // don't prevent the next handler
           }
-        });
+        }
       },
     };
   }

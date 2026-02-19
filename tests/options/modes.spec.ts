@@ -46,8 +46,8 @@ test.describe('GmOptions - Mode Management', () => {
       await enableMode(page, 'draw', 'marker');
 
       // Try to enable again
-      await page.evaluate(() => {
-        window.geoman.options.enableMode('draw', 'marker');
+      await page.evaluate(async () => {
+        await window.geoman.options.enableMode('draw', 'marker');
       });
 
       const isEnabled = await page.evaluate(() => {
@@ -99,8 +99,8 @@ test.describe('GmOptions - Mode Management', () => {
       });
       expect(isEnabledBefore).toBe(false);
 
-      await page.evaluate(() => {
-        window.geoman.options.disableMode('draw', 'marker');
+      await page.evaluate(async () => {
+        await window.geoman.options.disableMode('draw', 'marker');
       });
 
       const isEnabledAfter = await page.evaluate(() => {
@@ -117,8 +117,8 @@ test.describe('GmOptions - Mode Management', () => {
       });
       expect(isEnabledBefore).toBe(false);
 
-      await page.evaluate(() => {
-        window.geoman.options.toggleMode('draw', 'marker');
+      await page.evaluate(async () => {
+        await window.geoman.options.toggleMode('draw', 'marker');
       });
       await waitForMapIdle(page);
 
@@ -131,8 +131,8 @@ test.describe('GmOptions - Mode Management', () => {
     test('should toggle mode from on to off', async () => {
       await enableMode(page, 'draw', 'marker');
 
-      await page.evaluate(() => {
-        window.geoman.options.toggleMode('draw', 'marker');
+      await page.evaluate(async () => {
+        await window.geoman.options.toggleMode('draw', 'marker');
       });
       await waitForMapIdle(page);
 

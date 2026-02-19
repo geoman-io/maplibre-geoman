@@ -1,9 +1,11 @@
-import { SOURCES } from '@/core/features/constants.ts';
+import { LOAD_TIMEOUT, SOURCES } from '@/core/features/constants.ts';
 import { FEATURE_ID_PROPERTY, type Geoman } from '@/main.ts';
 import type { FeatureSourceName, GeoJSONFeatureDiff, GeoJSONSourceDiffHashed } from '@/types';
 import { typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
 import { throttle } from 'lodash-es';
+import log from 'loglevel';
+import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
 type SourceUpdateMethods = {
   [key in FeatureSourceName]: () => void;
@@ -22,15 +24,16 @@ export class SourceUpdateManager {
   delayedSourceUpdateMethods: SourceUpdateMethods;
   // Track pending update promises per source to allow waiting for MapLibre to commit data
   // Using an array to track multiple concurrent promises (prevents overwriting if rapid updates occur)
-  pendingUpdatePromises: { [key in FeatureSourceName]?: Promise<void>[] };
+  pendingUpdatePromises: { [key in FeatureSourceName]: Set<Promise<void>> };
 
   constructor(gm: Geoman) {
     this.gm = gm;
-    this.pendingUpdatePromises = {};
+    this.pendingUpdatePromises = Object.fromEntries(
+      typedValues(SOURCES).map((name) => [name, new Set()]),
+    );
     this.updateStorage = Object.fromEntries(
       typedValues(SOURCES).map((name) => [name, { diff: null, method: 'automatic' }]),
     );
-
     this.delayedSourceUpdateMethods = Object.fromEntries(
       typedValues(SOURCES).map((sourceName) => [
         sourceName,
@@ -53,7 +56,7 @@ export class SourceUpdateManager {
   updatesPending(sourceName: FeatureSourceName): boolean {
     return (
       this.updateStorage[sourceName].diff !== null ||
-      !!(this.pendingUpdatePromises[sourceName]?.length ?? 0)
+      !!(this.pendingUpdatePromises[sourceName]?.size ?? 0)
     );
   }
 
@@ -65,35 +68,36 @@ export class SourceUpdateManager {
     return id;
   }
 
-  updateSource({
+  async updateSource({
     sourceName,
     diff,
+    waitForCompletion = false,
   }: {
     sourceName: FeatureSourceName;
-    diff?: GeoJSONSourceDiffHashed;
+    diff: GeoJSONSourceDiffHashed;
+    waitForCompletion?: boolean;
   }) {
-    if (diff) {
-      if (this.updateStorage[sourceName].method === 'transactional-set') {
-        if (!this.updateStorage[sourceName].diff) {
-          this.updateStorage[sourceName].diff = {};
-        }
-        if (diff.update) {
-          console.error('In transactional-set updates are not allowed');
-        }
-        // Merge is processed by mutating the diff object.
-        // This is essential for performance - avoiding mutation would significantly degrade the improvements
-        this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
-      } else {
-        if (!this.updateStorage[sourceName].diff) {
-          this.updateStorage[sourceName].diff = {};
-        }
-        // Idem
-        this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
-      }
+    const updateMethod = this.updateStorage[sourceName].method;
+
+    if (updateMethod === 'transactional-set' && diff.update) {
+      log.error('In transactional-set updates are not allowed');
+      delete diff.update;
     }
 
-    if (this.updateStorage[sourceName].method === 'automatic') {
+    if (!this.updateStorage[sourceName].diff) {
+      this.updateStorage[sourceName].diff = {};
+    }
+
+    // Merge is processed by mutating the diff object.
+    // This is essential for performance - avoiding mutation would significantly degrade the improvements
+    this.mergeGeoJsonDiff(this.updateStorage[sourceName].diff, diff);
+
+    if (updateMethod === 'automatic') {
       this.delayedSourceUpdateMethods[sourceName]();
+    }
+
+    if (waitForCompletion) {
+      await this.waitForPendingUpdates(sourceName);
     }
   }
 
@@ -113,52 +117,37 @@ export class SourceUpdateManager {
         // MapLibre's updateData with waitForCompletion=true returns a Promise that
         // resolves when the data is committed to the source
         const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
-        this.addPendingPromise(sourceName, updatePromise);
-
+        this.addPendingPromise(sourceName, updatePromise).then();
         this.updateStorage[sourceName].diff = null;
       }
     }
   }
 
   /**
-   * Add a pending promise to the tracking array for a source.
-   * Automatically removes the promise from the array when it resolves.
+   * Add a pending promise to the tracking set for a source.
+   * Automatically removes the promise from the set when it resolves.
    */
-  private addPendingPromise(sourceName: FeatureSourceName, promise: Promise<void>): void {
-    if (!this.pendingUpdatePromises[sourceName]) {
-      this.pendingUpdatePromises[sourceName] = [];
-    }
-    this.pendingUpdatePromises[sourceName].push(promise);
-
-    // Remove from array when the promise resolves (success or failure)
-    promise.finally(() => {
-      const promises = this.pendingUpdatePromises[sourceName];
-      if (promises) {
-        const idx = promises.indexOf(promise);
-        if (idx !== -1) {
-          promises.splice(idx, 1);
-        }
-        // Clean up empty arrays
-        if (promises.length === 0) {
-          delete this.pendingUpdatePromises[sourceName];
-        }
-      }
+  private addPendingPromise(sourceName: FeatureSourceName, promise: Promise<void>): Promise<void> {
+    const trackedPromise = withPromiseTimeoutRace({
+      promise,
+      errorMessage: `Source update timeout for "${sourceName}"`,
     });
+
+    this.pendingUpdatePromises[sourceName].add(trackedPromise);
+
+    trackedPromise.catch((error) => log.error('addPendingPromise: pending promise error', error));
+
+    // Remove from set when the promise resolves (success or failure)
+    trackedPromise.finally(() => {
+      this.pendingUpdatePromises[sourceName].delete(trackedPromise);
+    });
+
+    return trackedPromise;
   }
 
   /**
    * Wait for any pending MapLibre source updates to complete.
    * This ensures data is committed before events are fired.
-   *
-   * When there are queued updates in updateStorage that haven't been processed yet
-   * (due to throttling), this method flushes them immediately and waits for completion.
-   *
-   * Note: We call updateData() directly here rather than going through updateSourceActual()
-   * because updateSourceActual() checks `!source.loaded` and may delay processing.
-   * When waiting for pending updates (e.g., for event handlers), we need immediate processing.
-   *
-   * This is safe and won't cause duplicates because getCombinedDiff() atomically drains
-   * the storage - whoever calls it first gets the diffs, subsequent calls get null.
    *
    * IMPORTANT: MapLibre's _updateWorkerData() has a guard that returns early if already
    * updating (`if (this._isUpdatingWorker) return`). This means updateData() can return
@@ -168,23 +157,43 @@ export class SourceUpdateManager {
    */
   async waitForPendingUpdates(sourceName: FeatureSourceName): Promise<void> {
     const source = this.gm.features.sources[sourceName];
-    if (!source) return;
+    if (!source) {
+      log.error(`Missing source for name: "${sourceName}"`);
+      return;
+    }
+
+    const startTime = Date.now();
 
     // Loop until all pending work is complete.
     // This handles the case where MapLibre's _updateWorkerData returns early due to
     // _isUpdatingWorker being true, and the actual data gets processed via the
     // recursive call in the finally block.
-    while (this.updateStorage[sourceName].diff || this.pendingUpdatePromises[sourceName]?.length) {
-      // Flush any queued updates that haven't been processed yet
-      if (this.updateStorage[sourceName].diff) {
-        const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
-        this.addPendingPromise(sourceName, updatePromise);
-      }
+    while (
+      this.updateStorage[sourceName].diff ||
+      this.pendingUpdatePromises[sourceName].size ||
+      !source.loaded
+    ) {
+      // we can't force updateData directly here, cause there are transactional methods,
+      // which are manual by design
 
       // Wait for all pending promises to complete
       const pendingPromises = this.pendingUpdatePromises[sourceName];
-      if (pendingPromises?.length) {
-        await Promise.all(pendingPromises);
+      if (pendingPromises.size) {
+        await Promise.all(
+          Array.from(pendingPromises).map((promise) =>
+            promise.catch((error) => {
+              log.error('waitForPendingUpdates: pending promise error', error);
+            }),
+          ),
+        );
+      }
+
+      if (Date.now() - startTime > LOAD_TIMEOUT) {
+        log.error(
+          `waitForPendingUpdates timeout error,
+          can't wait more than ${LOAD_TIMEOUT}ms for ${sourceName}`,
+        );
+        return;
       }
 
       // Yield to allow MapLibre's recursive _updateWorkerData calls to process
@@ -210,13 +219,15 @@ export class SourceUpdateManager {
 
       if (this.updateStorage[sourceName].method === 'transactional-set') {
         const features = this.updateStorage[sourceName].diff.add?.values() ?? [];
-        source.setData({
-          type: 'FeatureCollection',
-          features: Array.from(features),
-        });
+        source
+          .setData({
+            type: 'FeatureCollection',
+            features: Array.from(features),
+          })
+          .then();
         // source.updateData(this.updateStorage[sourceName].diff);
       } else if (this.updateStorage[sourceName].method === 'transactional-update') {
-        source.updateData(this.updateStorage[sourceName].diff);
+        source.updateData(this.updateStorage[sourceName].diff).then();
       }
 
       this.updateStorage[sourceName].diff = null;

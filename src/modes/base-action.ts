@@ -40,18 +40,18 @@ export abstract class BaseAction {
     return (this.gm.actionInstances.helper__snapping || null) as SnappingHelper | null;
   }
 
-  abstract onStartAction(): void;
+  abstract onStartAction(): Promise<void> | void;
 
-  abstract onEndAction(): void;
+  abstract onEndAction(): Promise<void> | void;
 
-  startAction() {
+  async startAction() {
     this.gm.events.bus.attachEvents(this.internalEventHandlers);
     this.gm.events.bus.attachEvents(this.eventHandlers);
-    this.onStartAction();
+    await this.onStartAction();
   }
 
-  endAction() {
-    this.onEndAction();
+  async endAction() {
+    await this.onEndAction();
     this.gm.events.bus.detachEvents(this.eventHandlers);
     this.gm.events.bus.detachEvents(this.internalEventHandlers);
   }

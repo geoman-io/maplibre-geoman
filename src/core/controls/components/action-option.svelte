@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { ActionInstance, ActionOption } from '@/main.ts';
+  import type {ActionInstance, ActionOption} from '@/main.ts';
   import log from 'loglevel';
-  import { onMount } from 'svelte';
+  import {onMount} from 'svelte';
 
   const { name, actionInstance, actionOption }: {
     name: string,
@@ -47,7 +47,7 @@
         id={name}
         bind:value={selectedValue}
         onchange={handleOptionChange}>
-        {#each actionOption.choices as choiceItem}
+        {#each actionOption.choices as choiceItem (choiceItem.value)}
           <option value={choiceItem.value}>{choiceItem.title}</option>
         {/each}
       </select>

@@ -21,28 +21,28 @@ export class DrawLine extends BaseDraw {
     mousemove: this.onMouseMove.bind(this),
   };
 
-  onStartAction(): void {
-    this.lineDrawer.startAction();
+  async onStartAction() {
+    await this.lineDrawer.startAction();
     this.lineDrawer.on('nMarkerClick', this.lineFinished.bind(this));
   }
 
-  onEndAction(): void {
-    this.lineDrawer.endAction();
+  async onEndAction() {
+    await this.lineDrawer.endAction();
   }
 
-  onMouseMove(event: BaseMapEvent) {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
 
     if (!this.lineDrawer.featureData) {
-      this.fireMarkerPointerUpdateEvent();
+      await this.fireMarkerPointerUpdateEvent();
     }
     return { next: true };
   }
 
-  lineFinished(event: LineEventHandlerArguments) {
-    this.lineDrawer.endShape();
+  async lineFinished(event: LineEventHandlerArguments) {
+    await this.lineDrawer.endShape();
 
     let shapeCoordinates = event.shapeCoordinates;
     if (event.markerIndex > 0) {

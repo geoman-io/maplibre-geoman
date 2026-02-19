@@ -388,7 +388,7 @@
             <span class="count">{sources.filter(s => s.isInternal).reduce((sum, s) => sum + s.featureCount, 0)}</span>
           </div>
           {#if gmSourcesExpanded}
-            {#each sources.filter(s => s.isInternal) as source}
+            {#each sources.filter(s => s.isInternal) as source (source.name)}
               <div class="dev-layer-item internal">
                 <span class="name">{source.name}</span>
                 <span class="count">{source.featureCount} features</span>
@@ -416,7 +416,7 @@
             <span class="count">{sources.filter(s => !s.isInternal).length}</span>
           </div>
           {#if otherSourcesExpanded}
-            {#each sources.filter(s => !s.isInternal) as source}
+            {#each sources.filter(s => !s.isInternal) as source (source.name)}
               <div class="dev-layer-item">
                 <span class="name">{source.name}</span>
                 <span class="count">{source.featureCount > 0 ? `${source.featureCount} features` : '-'}</span>
@@ -444,7 +444,7 @@
             <span class="count">{layers.filter(l => l.isInternal).length}</span>
           </div>
           {#if gmLayersExpanded}
-            {#each layers.filter(l => l.isInternal) as layer}
+            {#each layers.filter(l => l.isInternal) as layer (layer.id)}
               <div class="dev-layer-item internal">
                 <span class="name">{layer.id}</span>
                 <span class="count">{layer.type}</span>
@@ -472,7 +472,7 @@
             <span class="count">{layers.filter(l => !l.isInternal).length}</span>
           </div>
           {#if otherLayersExpanded}
-            {#each layers.filter(l => !l.isInternal).slice(0, 10) as layer}
+            {#each layers.filter(l => !l.isInternal).slice(0, 10) as layer (layer.id)}
               <div class="dev-layer-item">
                 <span class="name">{layer.id}</span>
                 <span class="count">{layer.type}</span>

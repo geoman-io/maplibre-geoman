@@ -111,9 +111,9 @@ export class LineDrawer extends BaseDraw {
     this.gm.markerPointer.enable();
   }
 
-  onEndAction() {
+  async onEndAction() {
     this.gm.markerPointer.disable();
-    this.endShape();
+    await this.endShape();
     this.snapGuidesInstance?.removeSnapGuides();
     this.clearDrawerHandlers();
   }
@@ -157,7 +157,7 @@ export class LineDrawer extends BaseDraw {
     this.drawerEventHandlers[eventType] = handler;
   }
 
-  onMouseClick(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseClick(event: BaseMapEvent) {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
@@ -175,16 +175,16 @@ export class LineDrawer extends BaseDraw {
         markerInfo = this.getMarkerInfoByProximity(event);
       }
 
-      this.handleNextVertex(lngLat, markerInfo);
-    } else if (this.isFeatureAllowed(lngLatToGeoJsonPoint(lngLat))) {
-      this.startShape(lngLat);
+      await this.handleNextVertex(lngLat, markerInfo);
+    } else if (await this.isFeatureAllowed(lngLatToGeoJsonPoint(lngLat))) {
+      await this.startShape(lngLat);
     }
 
     this.updateSnapGuides();
     return { next: true };
   }
 
-  handleNextVertex(lngLat: LngLatTuple, clickedMarkerInfo: MarkerInfo) {
+  async handleNextVertex(lngLat: LngLatTuple, clickedMarkerInfo: MarkerInfo) {
     if (!this.featureData) {
       log.error('LineDrawer.handleNextVertex: no featureData');
       return;
@@ -195,7 +195,7 @@ export class LineDrawer extends BaseDraw {
 
     if (clickedMarkerInfo.index < totalMarkersCount - 1) {
       // a point should be added all cases except the last marker clicked (including -1 index)
-      this.addPoint(lngLat, clickedMarkerInfo);
+      await this.addPoint(lngLat, clickedMarkerInfo);
     }
 
     if (clickedMarkerInfo.index === -1) {
@@ -223,21 +223,21 @@ export class LineDrawer extends BaseDraw {
     };
   }
 
-  onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
+  async onMouseMove(event: BaseMapEvent) {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
 
     if (this.featureData && this.shapeLngLats.length) {
-      this.updateFeatureSource();
+      await this.updateFeatureSource();
     }
     return { next: true };
   }
 
-  startShape(startLngLat: LngLatTuple) {
+  async startShape(startLngLat: LngLatTuple) {
     this.shapeLngLats = [startLngLat];
 
-    this.featureData = this.gm.features.createFeature({
+    this.featureData = await this.gm.features.createFeature({
       shapeGeoJson: this.getFeatureGeoJson({ withControlMarker: true }),
       sourceName: SOURCES.temporary,
     });
@@ -255,19 +255,19 @@ export class LineDrawer extends BaseDraw {
       this.featureData.markers.set(markerData.position.path.join('.'), markerData);
 
       this.setSnapping();
-      this.fireStartEvent(this.featureData, markerData);
+      await this.fireStartEvent(this.featureData, markerData);
     }
     this.gm.mapAdapter.disableMapInteractions(['doubleClickZoom']);
   }
 
-  endShape() {
+  async endShape() {
     const featureGeoJson = this.getFeatureGeoJson({ withControlMarker: false });
 
     this.removeSnapping();
-    this.removeTmpFeature();
+    await this.removeTmpFeature();
     this.shapeLngLats = [];
     this.gm.mapAdapter.enableMapInteractions(['doubleClickZoom']);
-    this.fireStopEvent(featureGeoJson);
+    await this.fireStopEvent(featureGeoJson);
   }
 
   setSnapping() {
@@ -366,7 +366,7 @@ export class LineDrawer extends BaseDraw {
     return { index: closestIndex, path: closestPath };
   }
 
-  addPoint(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo) {
+  async addPoint(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo) {
     const featureData = this.featureData;
     if (!featureData) {
       log.error('LineDrawer.addPoint: no featureData');
@@ -379,19 +379,19 @@ export class LineDrawer extends BaseDraw {
       coordinates: this.shapeLngLats.concat(addedLngLats),
     });
 
-    if (this.isFeatureAllowed(featureGeoJson)) {
-      addedLngLats.forEach((lngLat) => {
+    if (await this.isFeatureAllowed(featureGeoJson)) {
+      for (const lngLat of addedLngLats) {
         this.shapeLngLats.push(lngLat);
         const markerData = this.addMarker(lngLat, featureData);
-        this.fireUpdateEvent(featureData, markerData);
-      });
-      this.updateFeatureSource();
+        await this.fireUpdateEvent(featureData, markerData);
+      }
+      await this.updateFeatureSource();
     }
   }
 
-  isFeatureAllowed(featureGeoJson: GeoJsonShapeFeature) {
+  async isFeatureAllowed(featureGeoJson: GeoJsonShapeFeature) {
     if (this.gm.getActiveDrawModes().length) {
-      this.fireBeforeFeatureCreate({ geoJsonFeatures: [featureGeoJson] });
+      await this.fireBeforeFeatureCreate({ geoJsonFeatures: [featureGeoJson] });
       return this.flags.featureCreateAllowed;
     }
 
@@ -467,12 +467,12 @@ export class LineDrawer extends BaseDraw {
     );
   }
 
-  updateFeatureSource() {
+  async updateFeatureSource() {
     if (!this.featureData) {
       return;
     }
 
-    this.featureData.updateGeoJsonGeometry(
+    await this.featureData.updateGeometry(
       this.getFeatureGeoJson({ withControlMarker: true }).geometry,
     );
 
@@ -486,7 +486,7 @@ export class LineDrawer extends BaseDraw {
         },
       };
 
-      this.fireUpdateEvent(this.featureData, markerData);
+      await this.fireUpdateEvent(this.featureData, markerData);
     }
   }
 
@@ -540,7 +540,7 @@ export class LineDrawer extends BaseDraw {
     return coordinates;
   }
 
-  fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
+  async fireStartEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GmDrawLineDrawerEventWithData = {
       name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
@@ -552,10 +552,10 @@ export class LineDrawer extends BaseDraw {
       markerData,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
-  fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
+  async fireUpdateEvent(featureData: FeatureData, markerData: MarkerData) {
     const payload: GmDrawLineDrawerEventWithData = {
       name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
@@ -566,10 +566,10 @@ export class LineDrawer extends BaseDraw {
       featureData,
       markerData,
     };
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 
-  fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
+  async fireStopEvent(featureGeoJson: GeoJsonLineFeature) {
     const payload: GmDrawLineDrawerEventWithData = {
       name: `${GM_SYSTEM_PREFIX}:draw:shape_with_data`,
       level: 'system',
@@ -582,6 +582,6 @@ export class LineDrawer extends BaseDraw {
       featureData: null,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:draw`, payload);
   }
 }

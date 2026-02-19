@@ -5,8 +5,8 @@ import type {
   ActionInstanceKey,
   EventHandlers,
   Geoman,
-  GmSystemEvent,
   GmHelperModeEvent,
+  GmSystemEvent,
 } from '@/main.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { createHelperInstance } from '@/modes/helpers/index.ts';
@@ -23,7 +23,7 @@ export class HelperEventListener extends BaseEventListener {
     bus.attachEvents(this.eventHandlers);
   }
 
-  handleHelperEvent(payload: GmSystemEvent) {
+  async handleHelperEvent(payload: GmSystemEvent) {
     if (!isGmHelperEvent(payload)) {
       return { next: true };
     }
@@ -31,18 +31,18 @@ export class HelperEventListener extends BaseEventListener {
     const actionInstanceKey: ActionInstanceKey = `${payload.actionType}__${payload.mode}`;
 
     if (payload.action === 'mode_start') {
-      this.trackExclusiveModes(payload);
-      this.start(actionInstanceKey, payload);
-      this.trackRelatedModes(payload);
+      await this.trackExclusiveModes(payload);
+      await this.start(actionInstanceKey, payload);
+      await this.trackRelatedModes(payload);
     } else if (payload.action === 'mode_end') {
-      this.trackRelatedModes(payload);
-      this.end(actionInstanceKey);
+      await this.trackRelatedModes(payload);
+      await this.end(actionInstanceKey);
     }
 
     return { next: true };
   }
 
-  start(actionInstanceKey: ActionInstanceKey, payload: GmHelperModeEvent) {
+  async start(actionInstanceKey: ActionInstanceKey, payload: GmHelperModeEvent) {
     const actionInstance = createHelperInstance(this.gm, payload.mode);
     if (!actionInstance) {
       return;
@@ -50,16 +50,17 @@ export class HelperEventListener extends BaseEventListener {
 
     if (actionInstanceKey in this.gm.actionInstances) {
       log.error(`Action instance "${actionInstanceKey}" already exists`);
+      throw new Error('Action instance already exists');
     }
 
     this.gm.actionInstances[actionInstanceKey] = actionInstance;
-    actionInstance.startAction();
+    await actionInstance.startAction();
   }
 
-  end(actionInstanceKey: ActionInstanceKey) {
+  async end(actionInstanceKey: ActionInstanceKey) {
     const actionInstance = this.gm.actionInstances[actionInstanceKey];
     if (actionInstance instanceof BaseHelper) {
-      actionInstance.endAction();
+      await actionInstance.endAction();
       delete this.gm.actionInstances[actionInstanceKey];
     } else {
       console.error(`Wrong action instance for edit event "${actionInstanceKey}":`, actionInstance);

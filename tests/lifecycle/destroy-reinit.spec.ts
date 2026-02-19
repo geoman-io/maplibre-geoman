@@ -16,7 +16,7 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
 
   test.describe('destroy() cleanup', () => {
     test('should properly destroy Geoman instance', async () => {
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const geoman = window.geoman;
         const mapInstance = geoman.mapAdapter.getMapInstance();
 
@@ -24,7 +24,7 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
         const hasGmBefore = 'gm' in mapInstance;
 
         // Destroy
-        geoman.destroy();
+        await geoman.destroy();
 
         // Verify Geoman is detached from map
         const hasGmAfter = 'gm' in mapInstance;
@@ -46,26 +46,28 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
         geometry: { type: 'Point', coordinates: [0, 51] },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       await waitForMapIdle(page);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const geoman = window.geoman;
-        const mapInstance = window.mapInstance;
 
         // Check sources exist before destroy
-        const hasMainSourceBefore = !!mapInstance.getSource('gm_main');
-        const hasTemporarySourceBefore = !!mapInstance.getSource('gm_temporary');
+        const hasMainSourceBefore = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
+
+        const hasTemporarySourceBefore =
+          !!geoman.mapAdapter.getSource('gm_temporary').sourceInstance;
 
         // Destroy with removeSources: true
-        geoman.destroy({ removeSources: true });
+        await geoman.destroy({ removeSources: true });
 
         // Check sources after destroy
-        const hasMainSourceAfter = !!mapInstance.getSource('gm_main');
-        const hasTemporarySourceAfter = !!mapInstance.getSource('gm_temporary');
+        const hasMainSourceAfter = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
+        const hasTemporarySourceAfter =
+          !!geoman.mapAdapter.getSource('gm_temporary').sourceInstance;
 
         return {
           hasMainSourceBefore,
@@ -89,24 +91,23 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
         geometry: { type: 'Point', coordinates: [0, 51] },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       await waitForMapIdle(page);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const geoman = window.geoman;
-        const mapInstance = window.mapInstance;
 
         // Check sources exist before destroy
-        const hasMainSourceBefore = !!mapInstance.getSource('gm_main');
+        const hasMainSourceBefore = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         // Destroy with removeSources: false (default)
-        geoman.destroy({ removeSources: false });
+        await geoman.destroy({ removeSources: false });
 
         // Check sources after destroy
-        const hasMainSourceAfter = !!mapInstance.getSource('gm_main');
+        const hasMainSourceAfter = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         return {
           hasMainSourceBefore,
@@ -126,24 +127,23 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
         geometry: { type: 'Point', coordinates: [0, 51] },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       await waitForMapIdle(page);
 
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const geoman = window.geoman;
-        const mapInstance = window.mapInstance;
 
         // Check sources exist before destroy
-        const hasMainSourceBefore = !!mapInstance.getSource('gm_main');
+        const hasMainSourceBefore = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         // Destroy without options (should default to removeSources: false)
-        geoman.destroy();
+        await geoman.destroy();
 
         // Check sources after destroy
-        const hasMainSourceAfter = !!mapInstance.getSource('gm_main');
+        const hasMainSourceAfter = !!geoman.mapAdapter.getSource('gm_main').sourceInstance;
 
         return {
           hasMainSourceBefore,
@@ -166,18 +166,18 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
         geometry: { type: 'Point', coordinates: [0, 51] },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       await waitForMapIdle(page);
 
       // Destroy and reinit
-      await page.evaluate(() => {
+      await page.evaluate(async () => {
         const mapInstance = window.mapInstance;
 
         // Destroy with removeSources
-        window.geoman.destroy({ removeSources: true });
+        await window.geoman.destroy({ removeSources: true });
 
         // Reinit using the exposed GeomanClass
         const newGeoman = new window.GeomanClass(mapInstance, {});
@@ -188,11 +188,11 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
       await waitForGeoman(page);
 
       const result = await page.evaluate(() => {
-        const mapInstance = window.mapInstance;
+        const geoman = window.geoman;
         return {
           loaded: window.geoman.loaded,
           destroyed: window.geoman.destroyed,
-          hasMainSource: !!mapInstance.getSource('gm_main'),
+          hasMainSource: !!geoman.mapAdapter.getSource('gm_main').sourceInstance,
         };
       });
 
@@ -210,18 +210,18 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
         geometry: { type: 'Point', coordinates: [0, 51] },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       await waitForMapIdle(page);
 
       // Destroy and reinit
-      await page.evaluate(() => {
+      await page.evaluate(async () => {
         const mapInstance = window.mapInstance;
 
         // Destroy without removing sources
-        window.geoman.destroy({ removeSources: false });
+        await window.geoman.destroy({ removeSources: false });
 
         // Reinit using the exposed GeomanClass
         const newGeoman = new window.GeomanClass(mapInstance, {});
@@ -232,11 +232,11 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
       await waitForGeoman(page);
 
       const result = await page.evaluate(() => {
-        const mapInstance = window.mapInstance;
+        const geoman = window.geoman;
         return {
           loaded: window.geoman.loaded,
           destroyed: window.geoman.destroyed,
-          hasMainSource: !!mapInstance.getSource('gm_main'),
+          hasMainSource: !!geoman.mapAdapter.getSource('gm_main').sourceInstance,
         };
       });
 
@@ -254,8 +254,8 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
       for (let i = 0; i < cycles; i++) {
         try {
           // Add a feature
-          await page.evaluate((idx) => {
-            window.geoman.features.importGeoJsonFeature({
+          await page.evaluate(async (idx) => {
+            await window.geoman.features.importGeoJsonFeature({
               type: 'Feature',
               properties: { shape: 'marker' },
               geometry: { type: 'Point', coordinates: [idx, 51] },
@@ -265,8 +265,8 @@ test.describe('Lifecycle - Destroy and Reinit', () => {
           await waitForMapIdle(page);
 
           // Destroy
-          await page.evaluate(() => {
-            window.geoman.destroy({ removeSources: true });
+          await page.evaluate(async () => {
+            await window.geoman.destroy({ removeSources: true });
           });
 
           // Reinit

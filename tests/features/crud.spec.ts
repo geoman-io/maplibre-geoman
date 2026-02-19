@@ -24,7 +24,7 @@ test.describe('Feature Management - CRUD Operations', () => {
         },
       };
 
-      const result = await page.evaluate((feature) => {
+      const result = await page.evaluate(async (feature) => {
         return window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
@@ -58,8 +58,8 @@ test.describe('Feature Management - CRUD Operations', () => {
         ],
       };
 
-      const result = await page.evaluate((fc) => {
-        const res = window.geoman.features.importGeoJson(fc);
+      const result = await page.evaluate(async (fc) => {
+        const res = await window.geoman.features.importGeoJson(fc);
         return {
           total: res.stats.total,
           success: res.stats.success,
@@ -87,8 +87,8 @@ test.describe('Feature Management - CRUD Operations', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       const features = await getRenderedFeaturesData({ page, temporary: false });
@@ -112,9 +112,9 @@ test.describe('Feature Management - CRUD Operations', () => {
       };
 
       const result = await page.evaluate(
-        ({ f1, f2 }) => {
-          const r1 = window.geoman.features.importGeoJsonFeature(f1);
-          const r2 = window.geoman.features.importGeoJsonFeature(f2);
+        async ({ f1, f2 }) => {
+          const r1 = await window.geoman.features.importGeoJsonFeature(f1);
+          const r2 = await window.geoman.features.importGeoJsonFeature(f2);
           return {
             firstResult: r1 !== null,
             secondResult: r2 !== null,
@@ -149,12 +149,12 @@ test.describe('Feature Management - CRUD Operations', () => {
       };
 
       const result = await page.evaluate(
-        ({ f1, f2 }) => {
+        async ({ f1, f2 }) => {
           // Import first feature
-          window.geoman.features.importGeoJson(f1);
+          await window.geoman.features.importGeoJson(f1);
 
           // Import second feature with overwrite option
-          const importResult = window.geoman.features.importGeoJson(f2, { overwrite: true });
+          const importResult = await window.geoman.features.importGeoJson(f2, { overwrite: true });
 
           // Get the feature and check its coordinates
           const fd = window.geoman.features.get('gm_main', f2.id as string);
@@ -194,9 +194,9 @@ test.describe('Feature Management - CRUD Operations', () => {
       };
 
       const result = await page.evaluate(
-        ({ f1, f2 }) => {
-          window.geoman.features.importGeoJson(f1);
-          const importResult = window.geoman.features.importGeoJson(f2, { overwrite: false });
+        async ({ f1, f2 }) => {
+          await window.geoman.features.importGeoJson(f1);
+          const importResult = await window.geoman.features.importGeoJson(f2, { overwrite: false });
 
           return {
             success: importResult.stats.success,
@@ -255,9 +255,11 @@ test.describe('Feature Management - CRUD Operations', () => {
       };
 
       const result = await page.evaluate(
-        ({ initial, updated }) => {
-          window.geoman.features.importGeoJson(initial);
-          const importResult = window.geoman.features.importGeoJson(updated, { overwrite: true });
+        async ({ initial, updated }) => {
+          await window.geoman.features.importGeoJson(initial);
+          const importResult = await window.geoman.features.importGeoJson(updated, {
+            overwrite: true,
+          });
 
           // Get coordinates of batch-1 to verify it was updated
           const fd = window.geoman.features.get('gm_main', 'batch-1');
@@ -294,8 +296,8 @@ test.describe('Feature Management - CRUD Operations', () => {
         ],
       };
 
-      const result = await page.evaluate((fc) => {
-        const importResult = window.geoman.features.importGeoJson(fc, {
+      const result = await page.evaluate(async (fc) => {
+        const importResult = await window.geoman.features.importGeoJson(fc, {
           idPropertyName: 'customId',
         });
         const fd = window.geoman.features.get('gm_main', 'custom-id-1');
@@ -335,9 +337,9 @@ test.describe('Feature Management - CRUD Operations', () => {
       };
 
       const result = await page.evaluate(
-        ({ f1, f2 }) => {
-          window.geoman.features.importGeoJson(f1, { idPropertyName: 'myId' });
-          const importResult = window.geoman.features.importGeoJson(f2, {
+        async ({ f1, f2 }) => {
+          await window.geoman.features.importGeoJson(f1, { idPropertyName: 'myId' });
+          const importResult = await window.geoman.features.importGeoJson(f2, {
             idPropertyName: 'myId',
             overwrite: true,
           });
@@ -444,10 +446,10 @@ test.describe('Feature Management - CRUD Operations', () => {
       expect(featuresBefore.length).toBeGreaterThan(0);
 
       const deletedId = featuresBefore[0].id;
-      await page.evaluate((featureId) => {
+      await page.evaluate(async (featureId) => {
         const featureData = window.geoman.features.get('gm_main', featureId);
         if (featureData) {
-          window.geoman.features.delete(featureData);
+          await window.geoman.features.delete(featureData);
         }
       }, deletedId);
 
@@ -467,8 +469,8 @@ test.describe('Feature Management - CRUD Operations', () => {
       const featuresBefore = await getRenderedFeaturesData({ page, temporary: false });
       expect(featuresBefore.length).toBeGreaterThan(0);
 
-      await page.evaluate(() => {
-        window.geoman.features.deleteAll();
+      await page.evaluate(async () => {
+        await window.geoman.features.deleteAll();
       });
 
       await waitForMapIdle(page);
@@ -573,16 +575,16 @@ test.describe('Feature Management - CRUD Operations', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, markerFeature);
 
       const newCoordinates: LngLatTuple = [5, 55];
       const updatedGeoJson = await page.evaluate(
-        ({ featureId, coords }) => {
+        async ({ featureId, coords }) => {
           const fd = window.geoman.features.get('gm_main', featureId);
           if (fd) {
-            fd.updateGeoJsonGeometry({
+            await fd.updateGeometry({
               type: 'Point',
               coordinates: coords,
             });
@@ -619,8 +621,8 @@ test.describe('Feature Management - CRUD Operations', () => {
         },
       };
 
-      await page.evaluate((feature) => {
-        window.geoman.features.importGeoJsonFeature(feature);
+      await page.evaluate(async (feature) => {
+        await window.geoman.features.importGeoJsonFeature(feature);
       }, circleFeature);
 
       const shapeProperty = await page.evaluate((featureId) => {
@@ -648,9 +650,9 @@ test.describe('Feature Management - CRUD Operations', () => {
       };
 
       const ids = await page.evaluate(
-        ({ f1, f2 }) => {
-          const r1 = window.geoman.features.importGeoJsonFeature(f1);
-          const r2 = window.geoman.features.importGeoJsonFeature(f2);
+        async ({ f1, f2 }) => {
+          const r1 = await window.geoman.features.importGeoJsonFeature(f1);
+          const r2 = await window.geoman.features.importGeoJsonFeature(f2);
           return {
             id1: r1?.id,
             id2: r2?.id,

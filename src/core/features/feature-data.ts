@@ -72,7 +72,7 @@ export class FeatureData {
         this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
       }
     } else {
-      this.addGeoJson(geoJson);
+      this.addGeoJson(geoJson).then();
     }
   }
 
@@ -85,7 +85,7 @@ export class FeatureData {
   }
 
   set shape(shape: FeatureShape) {
-    this.setShapeProperty('shape', shape);
+    this.setShapeProperty('shape', shape).then();
   }
 
   get temporary(): boolean {
@@ -111,7 +111,7 @@ export class FeatureData {
     return undefined;
   }
 
-  setShapeProperty<T extends keyof FeatureShapeProperties>(
+  async setShapeProperty<T extends keyof FeatureShapeProperties>(
     name: T,
     value: ShapeGeoJsonProperties[`${typeof FEATURE_PROPERTY_PREFIX}${T}`],
   ) {
@@ -120,15 +120,15 @@ export class FeatureData {
       return;
     }
     this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}${name}`] = value;
-    this._updateAllProperties(this._geoJson.properties);
+    await this._updateAllProperties(this._geoJson.properties);
   }
 
-  deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
+  async deleteShapeProperty<T extends keyof FeatureShapeProperties>(name: T) {
     if (!this._geoJson) {
       log.error(`FeatureData.deleteShapeProperty(): geojson is not set`);
       return;
     }
-    this.removeProperties([`${FEATURE_PROPERTY_PREFIX}${name}`], false);
+    await this.removeProperties([`${FEATURE_PROPERTY_PREFIX}${name}`], false);
   }
 
   parseGmShapeProperties(geoJson: GeoJsonShapeFeature): PrefixedFeatureShapeProperties {
@@ -173,7 +173,7 @@ export class FeatureData {
     }
   }
 
-  addGeoJson(geoJson: GeoJsonShapeFeature) {
+  async addGeoJson(geoJson: GeoJsonShapeFeature) {
     this._geoJson = {
       ...geoJson,
       id: this.id,
@@ -188,31 +188,35 @@ export class FeatureData {
     }
 
     const add = new Map<FeatureId, Feature>().set(this.id, this._geoJson);
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { add },
       sourceName: this.sourceName,
     });
   }
 
-  removeGeoJson() {
+  async removeGeoJson() {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
 
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { remove: new Set([this.id]) },
       sourceName: this.sourceName,
     });
   }
 
-  removeMarkers() {
-    this.markers.forEach((markerData) => {
-      if (markerData.instance instanceof BaseDomMarker) {
-        markerData.instance.remove();
-      } else {
-        this.gm.features.delete(markerData.instance);
-      }
-    });
+  async removeMarkers() {
+    await Promise.all(
+      Array.from(this.markers.values(), (markerData) => {
+        if (markerData.instance instanceof BaseDomMarker) {
+          markerData.instance.remove(); // sync remove a dom marker
+          return;
+        } else {
+          return this.gm.features.delete(markerData.instance);
+        }
+      }),
+    );
+
     this.markers = new Map();
   }
 
@@ -231,7 +235,7 @@ export class FeatureData {
    *   coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
    * });
    */
-  updateGeometry(geometry: BasicGeometry) {
+  async updateGeometry(geometry: BasicGeometry) {
     const featureGeoJson = this.getGeoJson();
     if (!featureGeoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
@@ -244,17 +248,10 @@ export class FeatureData {
       newGeometry: this._geoJson.geometry,
     });
 
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { update },
       sourceName: this.sourceName,
     });
-  }
-
-  /**
-   * @deprecated Use `updateGeometry()` instead.
-   */
-  updateGeoJsonGeometry(geometry: BasicGeometry) {
-    this.updateGeometry(geometry);
   }
 
   /**
@@ -275,7 +272,7 @@ export class FeatureData {
    * // Mix of updates and deletions
    * feature.updateProperties({ color: 'blue', oldProp: undefined });
    */
-  updateProperties(properties: Record<string, unknown>) {
+  async updateProperties(properties: Record<string, unknown>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -307,7 +304,7 @@ export class FeatureData {
     const update = new Map<FeatureId, GeoJSONFeatureDiff>().set(this.id, featureDiff);
 
     this._geoJson.properties = nextProperties;
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { update },
       sourceName: this.sourceName,
     });
@@ -325,7 +322,7 @@ export class FeatureData {
    * // Replace all custom properties
    * feature.setProperties({ name: 'New Feature', category: 'poi' });
    */
-  setProperties(properties: Record<string, unknown>) {
+  async setProperties(properties: Record<string, unknown>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -347,13 +344,13 @@ export class FeatureData {
 
     const add = new Map<FeatureId, Feature>().set(this.id, this._geoJson);
 
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { add },
       sourceName: this.sourceName,
     });
   }
 
-  removeProperties(fieldNames: Array<string>, preserveInternals = true) {
+  async removeProperties(fieldNames: Array<string>, preserveInternals = true) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -377,7 +374,7 @@ export class FeatureData {
     });
 
     this._geoJson.properties = nextProperties;
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { update },
       sourceName: this.sourceName,
     });
@@ -390,7 +387,7 @@ export class FeatureData {
    * @internal
    * @param properties - Properties to merge with existing ones
    */
-  _updateAllProperties(properties: Partial<ShapeGeoJsonProperties>) {
+  async _updateAllProperties(properties: Partial<ShapeGeoJsonProperties>) {
     if (!this._geoJson) {
       throw new Error(`Feature not found: "${this.id}"`);
     }
@@ -405,51 +402,19 @@ export class FeatureData {
       })),
     });
 
-    this.gm.features.updateManager.updateSource({
+    await this.gm.features.updateManager.updateSource({
       diff: { update },
       sourceName: this.sourceName,
     });
   }
 
-  /**
-   * @deprecated Use `updateProperties()` instead. Set property value to `undefined` to delete it.
-   */
-  updateGeoJsonProperties(properties: Partial<ShapeGeoJsonProperties>) {
-    this._updateAllProperties(properties);
-  }
-
-  /**
-   * @deprecated Use `setProperties()` instead.
-   */
-  setGeoJsonCustomProperties(properties: Feature['properties']) {
-    this.setProperties(properties || {});
-  }
-
-  /**
-   * @deprecated Use `updateProperties()` instead.
-   */
-  updateGeoJsonCustomProperties(properties: Feature['properties']) {
-    this.updateProperties(properties || {});
-  }
-
-  /**
-   * @deprecated Use `updateProperties({ propName: undefined })` instead.
-   */
-  deleteGeoJsonCustomProperties(fieldNames: Array<string>) {
-    const deleteProps: Record<string, undefined> = {};
-    for (const fieldName of fieldNames) {
-      deleteProps[fieldName] = undefined;
-    }
-    this.updateProperties(deleteProps);
-  }
-
-  convertToPolygon(): boolean {
+  async convertToPolygon() {
     if (this.isConvertableToPolygon()) {
       this.shape = 'polygon';
-      this.deleteShapeProperty('center');
-      this.deleteShapeProperty('angle');
-      this.deleteShapeProperty('xSemiAxis');
-      this.deleteShapeProperty('ySemiAxis');
+      await this.deleteShapeProperty('center');
+      await this.deleteShapeProperty('angle');
+      await this.deleteShapeProperty('xSemiAxis');
+      await this.deleteShapeProperty('ySemiAxis');
       return true;
     }
 
@@ -460,17 +425,7 @@ export class FeatureData {
     return toPolygonAllowedShapes.includes(this.shape);
   }
 
-  // changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
-  //   if (atomic) {
-  //     this.gm.features.updateManager.withAtomicSourcesUpdate(() =>
-  //       this.actualChangeSource({ sourceName, atomic }),
-  //     );
-  //   } else {
-  //     this.actualChangeSource({ sourceName, atomic });
-  //   }
-  // }
-
-  changeSource({ sourceName, atomic }: { sourceName: FeatureSourceName; atomic: boolean }) {
+  async changeSource({ sourceName }: { sourceName: FeatureSourceName }) {
     if (this.source.id === sourceName) {
       log.error(
         `FeatureData.changeSource: feature "${this.id}" already has the source "${sourceName}"`,
@@ -490,21 +445,24 @@ export class FeatureData {
       return;
     }
 
-    this.removeGeoJson();
+    await this.removeGeoJson();
     this.source = source;
-    this.addGeoJson(shapeGeoJson);
+    await this.addGeoJson(shapeGeoJson);
 
-    this.markers.forEach((markerData) => {
-      if (markerData.instance instanceof FeatureData) {
-        markerData.instance.changeSource({
-          sourceName: sourceName === SOURCES.temporary ? SOURCES.temporary : SOURCES.internal,
-          atomic,
-        });
-      }
-    });
+    if (this.markers.size) {
+      await Promise.all(
+        Array.from(this.markers.values(), (markerData) => {
+          if (markerData.instance instanceof FeatureData) {
+            return markerData.instance.changeSource({
+              sourceName: sourceName === SOURCES.temporary ? SOURCES.temporary : SOURCES.internal,
+            });
+          }
+        }),
+      );
+    }
   }
 
-  fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
+  async fireFeatureUpdatedEvent({ mode }: { mode: EditModeName }) {
     const payload: GmEditFeatureUpdatedEvent = {
       name: `${GM_SYSTEM_PREFIX}:edit:feature_updated`,
       level: 'system',
@@ -516,11 +474,11 @@ export class FeatureData {
       markerData: null,
     };
 
-    this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
+    await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:edit`, payload);
   }
 
-  delete() {
-    this.removeGeoJson();
-    this.removeMarkers();
+  async delete() {
+    await this.removeGeoJson();
+    await this.removeMarkers();
   }
 }

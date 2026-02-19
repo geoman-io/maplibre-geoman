@@ -7,7 +7,11 @@ import {
 } from '@/main.ts';
 import log from 'loglevel';
 
-export const loadStressTestFeatureCollection = (geoman: Geoman, step: number, size: number) => {
+export const loadStressTestFeatureCollection = async (
+  geoman: Geoman,
+  step: number,
+  size: number,
+) => {
   const targetSource = geoman.features.sources.gm_main;
   if (!targetSource) {
     log.error('Target source is not available');
@@ -54,10 +58,10 @@ export const loadStressTestFeatureCollection = (geoman: Geoman, step: number, si
   geoJson.features = geoJson.features.concat(
     currentGeoJson.features as Array<GeoJsonImportFeature>,
   );
-  geoman.features.importGeoJson(geoJson);
+  await geoman.features.importGeoJson(geoJson);
 };
 
-export const loadStressTestCircleMarkers = (geoman: Geoman, step: number) => {
+export const loadStressTestCircleMarkers = async (geoman: Geoman, step: number) => {
   const geoJson: GeoJsonImportFeatureCollection = {
     type: 'FeatureCollection',
     features: [],
@@ -84,29 +88,27 @@ export const loadStressTestCircleMarkers = (geoman: Geoman, step: number) => {
   }
 
   log.debug('total features count', geoJson.features.length);
-  geoman.features.importGeoJson(geoJson);
+  await geoman.features.importGeoJson(geoJson);
 };
 
-export const loadDevShapes = (geoman: Geoman, devShapes: Array<GeoJsonImportFeature>) => {
+export const loadDevShapes = async (geoman: Geoman, devShapes: Array<GeoJsonImportFeature>) => {
   // const result = geoman.features.importGeoJson({
   //   type: 'FeatureCollection',
   //   features: devShapes,
   // });
   // log.debug(result);
 
-  devShapes.forEach((shapeGeoJson, index) => {
+  for (const [index, shapeGeoJson] of devShapes.entries()) {
     const allowedFeatureIds: Array<number> = [];
-    // const allowedFeatureIds: Array<number> = [1];
-    // const allowedFeatureIds: Array<number> = Array(10).fill(0).map((_, i) => i).slice(3);
 
     if (allowedFeatureIds.length) {
       if (allowedFeatureIds.includes(index)) {
-        geoman.features.importGeoJson(shapeGeoJson);
+        await geoman.features.importGeoJson(shapeGeoJson);
       }
     } else {
-      geoman.features.importGeoJson(shapeGeoJson);
+      await geoman.features.importGeoJson(shapeGeoJson);
     }
-  });
+  }
 };
 
 export const loadExternalGeoJson = (geoman: Geoman) => {
@@ -117,7 +119,7 @@ export const loadExternalGeoJson = (geoman: Geoman) => {
   const loadCapitals = async () => {
     const response = await fetch(capitalsUrl);
     const data = await response.json();
-    geoman.features.importGeoJson(data);
+    await geoman.features.importGeoJson(data);
   };
 
   loadCapitals().then();

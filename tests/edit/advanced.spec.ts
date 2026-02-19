@@ -458,8 +458,8 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
       await enableMode(page, 'edit', 'change');
 
       // Add a new feature
-      await page.evaluate(() => {
-        window.geoman.features.importGeoJsonFeature({
+      await page.evaluate(async () => {
+        await window.geoman.features.importGeoJsonFeature({
           type: 'Feature',
           properties: { shape: 'marker' },
           geometry: { type: 'Point', coordinates: [0.5, 51.5] },
@@ -481,9 +481,9 @@ test.describe('Edit Mode - Advanced Scenarios', () => {
       const markerFeature = features.find((f) => f.shape === 'marker');
 
       if (markerFeature) {
-        await page.evaluate((featureId) => {
+        await page.evaluate(async (featureId) => {
           const fd = window.geoman.features.get('gm_main', featureId);
-          if (fd) window.geoman.features.delete(fd);
+          if (fd) await window.geoman.features.delete(fd);
         }, markerFeature.id);
         await waitForMapIdle(page);
 
