@@ -1,4 +1,4 @@
-import type { ModeName, ModeType } from '@/main.ts';
+import type { FeatureSourceName, ModeName, ModeType } from '@/main.ts';
 import { expect, type Page } from '@playwright/test';
 
 export type ScreenCoordinates = [number, number];
@@ -29,7 +29,7 @@ export const waitForMapIdle = async (page: Page) => {
       const sources = geoman.features.sources || null;
       for (const source of Object.values(sources)) {
         if (source) {
-          await geoman.features.updateManager.waitForPendingUpdates(source.id);
+          await geoman.features.updateManager.waitForPendingUpdates(source.id as FeatureSourceName);
         } else {
           return null;
         }

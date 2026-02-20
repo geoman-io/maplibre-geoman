@@ -7,8 +7,6 @@ import LeftPanel from '@/dev/components/LeftPanel.svelte';
 import RightPanel from '@/dev/components/RightPanel.svelte';
 import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';
 
-log.setLevel(log.levels.DEBUG);
-
 export function createGmOptions(): PartialDeep<GmOptionsData> {
   return {
     settings: {

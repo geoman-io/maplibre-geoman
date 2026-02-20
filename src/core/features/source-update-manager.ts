@@ -8,32 +8,35 @@ import log from 'loglevel';
 import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
 type SourceUpdateMethods = {
-  [key in FeatureSourceName]: () => void;
+  [key in FeatureSourceName]: ReturnType<typeof throttle<() => void>>;
 };
+
+type UpdateStorage = {
+  [key in FeatureSourceName]: {
+    diff: GeoJSONSourceDiffHashed | null;
+    method: UpdateMethod;
+  };
+};
+
+type PendingUpdatePromises = { [key in FeatureSourceName]: Set<Promise<void>> };
 
 type UpdateMethod = 'automatic' | 'transactional-update' | 'transactional-set';
 
 export class SourceUpdateManager {
   gm: Geoman;
-  updateStorage: {
-    [key in FeatureSourceName]: {
-      diff: GeoJSONSourceDiffHashed | null;
-      method: UpdateMethod;
-    };
-  };
+  updateStorage: UpdateStorage;
   delayedSourceUpdateMethods: SourceUpdateMethods;
   // Track pending update promises per source to allow waiting for MapLibre to commit data
   // Using an array to track multiple concurrent promises (prevents overwriting if rapid updates occur)
-  pendingUpdatePromises: { [key in FeatureSourceName]: Set<Promise<void>> };
+  pendingUpdatePromises: PendingUpdatePromises;
 
   constructor(gm: Geoman) {
     this.gm = gm;
-    this.pendingUpdatePromises = Object.fromEntries(
-      typedValues(SOURCES).map((name) => [name, new Set()]),
-    );
+
     this.updateStorage = Object.fromEntries(
       typedValues(SOURCES).map((name) => [name, { diff: null, method: 'automatic' }]),
-    );
+    ) as UpdateStorage;
+
     this.delayedSourceUpdateMethods = Object.fromEntries(
       typedValues(SOURCES).map((sourceName) => [
         sourceName,
@@ -43,6 +46,10 @@ export class SourceUpdateManager {
         ),
       ]),
     ) as SourceUpdateMethods;
+
+    this.pendingUpdatePromises = Object.fromEntries(
+      typedValues(SOURCES).map((name) => [name, new Set()]),
+    ) as PendingUpdatePromises;
   }
 
   beginTransaction(method: UpdateMethod, sourceName?: FeatureSourceName) {

@@ -2,6 +2,8 @@ import log from 'loglevel';
 import '@/dev/styles/style.css';
 import '@mapLib/style.css';
 
+log.setLevel(log.levels.TRACE);
+
 const baseMap = import.meta.env.VITE_BASE_MAP;
 
 log.debug(`Map library: "${baseMap}"`);

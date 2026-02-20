@@ -4,10 +4,20 @@ export const FEATURE_PROPERTY_PREFIX = `__${GM_PREFIX}_` as const;
 export const FEATURE_ID_PROPERTY = `${FEATURE_PROPERTY_PREFIX}id` as const;
 export const LOAD_TIMEOUT = 60000;
 
-export const SOURCES: { [key: string]: string } = {
+const SOURCE_NAMES = [
   // order matters here, layers order will be aligned according to these items
-  ...(IS_PRO && { standby: `${GM_PREFIX}_standby` }), // available only in the pro version
-  main: `${GM_PREFIX}_main`,
-  temporary: `${GM_PREFIX}_temporary`,
-  internal: `${GM_PREFIX}_internal`,
-} as const;
+  'standby',
+  'main',
+  'temporary',
+  'internal',
+] as const;
+
+type SourceName = (typeof SOURCE_NAMES)[number];
+type SourcesMap = { readonly [K in SourceName]: `${typeof GM_PREFIX}_${K}` };
+
+export const SOURCES = Object.fromEntries(
+  SOURCE_NAMES.filter((name) => name !== 'standby' || IS_PRO).map((name) => [
+    name,
+    `${GM_PREFIX}_${name}`,
+  ]),
+) as SourcesMap;
