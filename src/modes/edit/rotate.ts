@@ -62,7 +62,7 @@ export class EditRotate extends BaseDrag {
       }
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      await event.featureData.changeSource({ sourceName: SOURCES.temporar });
+      await event.featureData.changeSource({ sourceName: SOURCES.temporary });
       this.setCursorToPointer();
       this.flags.actionInProgress = true;
       await this.fireFeatureEditStartEvent({ feature: event.featureData });
