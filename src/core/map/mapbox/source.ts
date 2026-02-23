@@ -7,7 +7,7 @@ import {
   SHAPE_NAMES,
   type ShapeName,
 } from '@/main.ts';
-import type { GeoJSON, Feature, FeatureCollection } from 'geojson';
+import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import type { GeoJSONSource as MapboxGeoJSONSource, Map as MapboxMap } from 'mapbox-gl';
 
@@ -47,6 +47,7 @@ export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
     } else {
       this.mapInstance.addSource(sourceId, {
         type: 'geojson',
+        dynamic: true,
         data: geoJson,
         promoteId: FEATURE_ID_PROPERTY,
       });

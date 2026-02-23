@@ -25,8 +25,8 @@
     "dev": "cross-env VITE_BASE_MAP=maplibre vite",
     "dev:mapbox": "cross-env VITE_BASE_MAP=mapbox vite",
     "build": "vite build && npm run build:types",
-    "build:types": "tsc --emitDeclarationOnly && tsc-alias && rollup -c rollup.config.dts.js && rimraf dist/types",
     "build:mapbox": "cross-env VITE_BASE_MAP=mapbox vite build && npm run build:types:mapbox",
+    "build:types": "tsc --emitDeclarationOnly && tsc-alias && rollup -c rollup.config.dts.js && rimraf dist/types",
     "build:types:mapbox": "cross-env VITE_BASE_MAP=mapbox tsc -p tsconfig.mapbox.json --emitDeclarationOnly && tsc-alias -p tsconfig.mapbox.json && cross-env VITE_BASE_MAP=mapbox rollup -c rollup.config.dts.js && rimraf dist/types",
     "ts": "tsc --noEmit",
     "ts-watch": "tsc --noEmit --watch",
@@ -37,10 +37,10 @@
     "formatter:fix": "prettier src tests --write",
     "check": "npm run formatter:fix && npm run lint && npm run ts",
     "testserver": "vite --port 4000 --mode test",
-    "test": "cross-env VITE_GEOMAN_VERSION=free playwright test",
-    "test:headed": "cross-env VITE_GEOMAN_VERSION=free playwright test --headed",
-    "test:ui": "cross-env VITE_GEOMAN_VERSION=free playwright test --ui",
-    "test:debug": "cross-env VITE_GEOMAN_VERSION=free playwright test --debug",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
     "prepare": "husky && shx test -f dist/maplibre-geoman.es.js || npm run build"
   },
   "dependencies": {
@@ -78,9 +78,7 @@
     "loglevel": "^1.9.2",
     "type-fest": "^5.4.4"
   },
-  "peerDependencies": {
-    "maplibre-gl": "5.18.0"
-  },
+  "peerDependencies": {},
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "1.58.2",
