@@ -3,6 +3,7 @@ import defaultLayerStyles from '@/core/options/layers/style.ts';
 import type { GmOptionsData } from '@/main.ts';
 import defaultMarker from '@/assets/images/markers/default-marker.svg';
 import defaultShapeMarker from '@/assets/images/markers/default-shape-marker.svg';
+import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';
 
 export const defaultOptions: GmOptionsData = {
   settings: {
@@ -13,7 +14,7 @@ export const defaultOptions: GmOptionsData = {
     controlsUiEnabledByDefault: true,
     controlsCollapsible: false,
     controlsStyles: {
-      controlGroupClass: 'maplibregl-ctrl maplibregl-ctrl-group',
+      controlGroupClass: CONTROL_GROUP_CLASS,
       controlContainerClass: 'gm-control-container',
       controlButtonClass: 'gm-control-button',
     },

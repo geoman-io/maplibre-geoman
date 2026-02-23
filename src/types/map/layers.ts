@@ -5,6 +5,8 @@ import type {
   PartialLineLayer,
   PartialSymbolLayer,
 } from '@mapLib/types/layers.ts';
+import type { SetOptional } from 'type-fest';
+import { SOURCES } from '@/core/features/constants.ts';
 
 export type { PartialCircleLayer, PartialLineLayer, PartialFillLayer, PartialSymbolLayer };
 
@@ -23,6 +25,12 @@ export type PartialLayerStyle =
   | PartialCircleLayer
   | PartialSymbolLayer;
 
-export type SourceStyles = Record<keyof SourcesStorage, StyleVariables>;
+export type SourceStyles = SetOptional<
+  Record<keyof SourcesStorage, StyleVariables>,
+  typeof SOURCES.standby
+>;
 
-export type LayerStyle = Record<keyof SourcesStorage, Array<PartialLayerStyle>>;
+export type LayerStyle = SetOptional<
+  Record<keyof SourcesStorage, Array<PartialLayerStyle>>,
+  typeof SOURCES.standby
+>;

@@ -1,6 +1,6 @@
 import type { Geoman, MapInstanceWithGeoman } from '@/main.ts';
-import { MaplibreAdapter } from '@/core/map/maplibre/index.ts';
+import { MapAdapter } from '@mapLib/index.ts';
 
 export const getMapAdapter = (gm: Geoman, map: MapInstanceWithGeoman) => {
-  return new MaplibreAdapter(map, gm);
+  return new MapAdapter(map, gm);
 };

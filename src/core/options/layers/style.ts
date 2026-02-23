@@ -16,41 +16,49 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
   polygon: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
+    [SOURCES.internal]: [],
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]!) }),
   },
   ellipse: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
+    [SOURCES.internal]: [],
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]!) }),
   },
   rectangle: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
+    [SOURCES.internal]: [],
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]!) }),
   },
   circle: {
     [SOURCES.main]: getPolygonStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getPolygonStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]) }),
+    [SOURCES.internal]: [],
+    ...(IS_PRO && { [SOURCES.standby]: getPolygonStyles(sourceStyles[SOURCES.standby]!) }),
   },
   circle_marker: {
     [SOURCES.main]: getCircleMarkerStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getCircleMarkerStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getCircleMarkerStyles(sourceStyles[SOURCES.standby]) }),
+    [SOURCES.internal]: [],
+    ...(IS_PRO && { [SOURCES.standby]: getCircleMarkerStyles(sourceStyles[SOURCES.standby]!) }),
   },
   line: {
     [SOURCES.main]: getLineStyles(sourceStyles[SOURCES.main]),
     [SOURCES.temporary]: getLineStyles(sourceStyles[SOURCES.temporary]),
-    ...(IS_PRO && { [SOURCES.standby]: getLineStyles(sourceStyles[SOURCES.standby]) }),
+    [SOURCES.internal]: [],
+    ...(IS_PRO && { [SOURCES.standby]: getLineStyles(sourceStyles[SOURCES.standby]!) }),
   },
   marker: {
     [SOURCES.temporary]: getMarkerStyles(),
     [SOURCES.main]: getMarkerStyles(),
+    [SOURCES.internal]: [],
     ...(IS_PRO && { [SOURCES.standby]: getMarkerStyles() }),
   },
   text_marker: {
     [SOURCES.main]: getTextMarkerStyles(),
     [SOURCES.temporary]: getTextMarkerStyles(),
+    [SOURCES.internal]: [],
     ...(IS_PRO && { [SOURCES.standby]: getTextMarkerStyles() }),
   },
   dom_marker: {
@@ -61,20 +69,23 @@ const styles: { [key in FeatureShape]: LayerStyle } = {
     ...(IS_PRO && { [SOURCES.standby]: [] }),
   },
   center_marker: {
+    [SOURCES.main]: [],
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
     [SOURCES.internal]: getControlMarkerStyles(sourceStyles[SOURCES.internal]),
-    ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
+    ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]!) }),
   },
   vertex_marker: {
+    [SOURCES.main]: [],
     [SOURCES.temporary]: getControlMarkerStyles(sourceStyles[SOURCES.temporary]),
     [SOURCES.internal]: getControlMarkerStyles(sourceStyles[SOURCES.internal]),
-    ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]) }),
+    ...(IS_PRO && { [SOURCES.standby]: getControlMarkerStyles(sourceStyles[SOURCES.standby]!) }),
   },
   edge_marker: {
+    [SOURCES.main]: [],
     [SOURCES.temporary]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.temporary]),
     [SOURCES.internal]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.internal]),
     ...(IS_PRO && {
-      [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]),
+      [SOURCES.standby]: getSecondaryControlMarkerStyles(sourceStyles[SOURCES.standby]!),
     }),
   },
   snap_guide: {

@@ -58,6 +58,7 @@ export type GeoJsonFeatureData = {
 
 export type MapTypes = {
   maplibre: object;
+  mapbox: object;
 };
 
 export type AnyMapInstance = MapTypes[keyof MapTypes];

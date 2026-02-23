@@ -49,7 +49,7 @@ test.describe('Rotate Events', () => {
   }) => {
     const dragOffsetX = 40;
     const dragOffsetY = -30;
-    const rotatableShapes = ['polygon', 'line', 'rectangle'];
+    const rotatableShapes = ['polygon', 'line', 'rectangle', 'ellipse'];
 
     await enableMode(page, 'edit', 'rotate');
 

@@ -1,11 +1,29 @@
 import log from 'loglevel';
 import '@/dev/styles/style.css';
-import '@/styles/map/maplibre.css';
+import '@mapLib/style.css';
+
+log.setLevel(log.levels.TRACE);
+
+const baseMap = import.meta.env.VITE_BASE_MAP;
+
+log.debug(`Map library: "${baseMap}"`);
 
 if (import.meta.env.MODE === 'development') {
-  await import('./index.maplibre.dev.ts');
+  if (baseMap === 'mapbox') {
+    await import('./index.mapbox.dev.ts');
+  } else if (baseMap === 'maplibre') {
+    await import('./index.maplibre.dev.ts');
+  } else {
+    log.error(`Wrong map library: "${baseMap}"`);
+  }
 } else if (import.meta.env.MODE === 'test') {
-  await import('./index.maplibre.test.ts');
+  if (baseMap === 'mapbox') {
+    await import('./index.mapbox.test.ts');
+  } else if (baseMap === 'maplibre') {
+    await import('./index.maplibre.test.ts');
+  } else {
+    log.error(`Wrong map library: "${baseMap}"`);
+  }
 } else {
   log.error('Only development and test modes are supported');
 }
