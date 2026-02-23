@@ -106,10 +106,10 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 
 ### Required Secrets
 
-Ensure these secrets are configured:
+No secrets are required for the current release workflow.
 
-- `NPM_TOKEN` - NPM publishing token
-- `GEOMAN_RELEASE_TOKEN` - GitHub release token (optional, falls back to GITHUB_TOKEN)
+- GitHub releases use the built-in `github.token`
+- NPM publish uses GitHub OIDC trusted publishing (`id-token: write` + `--provenance`)
 
 ### Required Labels
 

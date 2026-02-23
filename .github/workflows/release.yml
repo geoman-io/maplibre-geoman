@@ -158,7 +158,7 @@ jobs:
         with:
           name: v${{ needs.validate.outputs.version }}
           tag_name: v${{ needs.validate.outputs.version }}
-          token: ${{ secrets.GEOMAN_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
           prerelease: ${{ needs.validate.outputs.is-prerelease == 'true' }}
           body: ${{ steps.release-notes.outputs.release_notes }}
           files: |
