@@ -43,8 +43,11 @@ Or watch a demo video on [YouTube](https://youtu.be/VX7A_rb2Pis)
 ### Free Version
 
 ```shell
-# install free version
+# install maplibre free version
 npm install @geoman-io/maplibre-geoman-free
+
+# install mapbox free version
+npm install @geoman-io/mapbox-geoman-free
 ```
 
 ### Pro Version

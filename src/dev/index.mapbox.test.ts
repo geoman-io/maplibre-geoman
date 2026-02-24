@@ -44,6 +44,12 @@ window.mapInstance = map;
 const gmOptions: PartialDeep<GmOptionsData> = {};
 const geoman = new Geoman(map, gmOptions);
 
-map.on('load', () => {
+const exposeGeoman = () => {
   window.geoman = geoman;
-});
+};
+
+if (map.loaded()) {
+  exposeGeoman();
+} else {
+  map.once('load', exposeGeoman);
+}

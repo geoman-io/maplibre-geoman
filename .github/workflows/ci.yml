@@ -38,6 +38,9 @@ jobs:
       - name: TypeScript check
         run: npm run ts
 
+      - name: TypeScript check (Mapbox variant)
+        run: npm run ts:mapbox
+
       - name: ESLint check
         run: npm run lint
 
@@ -51,8 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    outputs:
-      dist-cache-key: ${{ steps.cache-dist.outputs.cache-hit }}
+    strategy:
+      matrix:
+        variant: [maplibre, mapbox]
 
     steps:
       - name: Checkout code
@@ -72,22 +76,27 @@ jobs:
         uses: actions/cache@v4
         with:
           path: dist
-          key: dist-${{ runner.os }}-${{ github.sha }}
+          key: dist-${{ runner.os }}-${{ matrix.variant }}-${{ github.sha }}
 
-      - name: Build project (MapLibre)
+      - name: Build project (${{ matrix.variant }})
         if: steps.cache-dist.outputs.cache-hit != 'true'
-        run: npm run build
-
-      - name: Verify build artifacts
         run: |
-          test -f dist/maplibre-geoman.es.js
-          test -f dist/maplibre-geoman.umd.js
-          test -f dist/maplibre-geoman.d.ts
+          if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
+            npm run build:mapbox
+          else
+            npm run build
+          fi
+
+      - name: Verify build artifacts (${{ matrix.variant }})
+        run: |
+          test -f dist/${{ matrix.variant }}-geoman.es.js
+          test -f dist/${{ matrix.variant }}-geoman.umd.js
+          test -f dist/${{ matrix.variant }}-geoman.d.ts
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: build-artifacts-${{ matrix.variant }}
           path: dist/
           retention-days: 7
 
@@ -101,6 +110,7 @@ jobs:
     strategy:
       matrix:
         browser: [chromium]
+        variant: [maplibre, mapbox]
       fail-fast: false
 
     steps:
@@ -120,13 +130,15 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright tests
+        env:
+          VITE_BASE_MAP: ${{ matrix.variant }}
         run: npx playwright test --project=${{ matrix.browser }}
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.variant }}
           path: playwright-report/
           retention-days: 7
 

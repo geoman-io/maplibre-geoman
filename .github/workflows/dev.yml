@@ -55,6 +55,9 @@ jobs:
       - name: TypeScript check
         run: npm run ts
 
+      - name: TypeScript check (Mapbox variant)
+        run: npm run ts:mapbox
+
       - name: ESLint check
         run: npm run lint
 
@@ -68,7 +71,7 @@ jobs:
 
     strategy:
       matrix:
-        variant: [maplibre]
+        variant: [maplibre, mapbox]
 
     steps:
       - name: Checkout code
@@ -85,7 +88,11 @@ jobs:
 
       - name: Build ${{ matrix.variant }}
         run: |
-          npm run build
+          if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
+            npm run build:mapbox
+          else
+            npm run build
+          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -101,6 +108,10 @@ jobs:
     needs: [check-skip, validate]
     if: needs.check-skip.outputs.should-skip == 'false'
     timeout-minutes: 30
+
+    strategy:
+      matrix:
+        variant: [maplibre, mapbox]
 
     steps:
       - name: Checkout code
@@ -119,13 +130,15 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run smoke tests
+        env:
+          VITE_BASE_MAP: ${{ matrix.variant }}
         run: npx playwright test --project=chromium --grep="@smoke"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: smoke-test-results
+          name: smoke-test-results-${{ matrix.variant }}
           path: playwright-report/
           retention-days: 3
 
@@ -198,7 +211,7 @@ jobs:
 
             ### Artifacts:
             - Build artifacts are available for 3 days
-            - MapLibre variant built successfully
+            - MapLibre and Mapbox variants built successfully
 
             ---
             *This comment is automatically updated on each push*`;

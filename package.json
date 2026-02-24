@@ -1,6 +1,10 @@
 {
   "name": "@geoman-io/maplibre-geoman-free",
   "private": false,
+  "workspaces": [
+    "packages/maplibre",
+    "packages/mapbox"
+  ],
   "version": "0.6.3",
   "type": "module",
   "description": "A MapLibre Plugin For Drawing and Editing Geometry Layers",
@@ -29,6 +33,7 @@
     "build:types": "tsc --emitDeclarationOnly && tsc-alias && rollup -c rollup.config.dts.js && rimraf dist/types",
     "build:types:mapbox": "cross-env VITE_BASE_MAP=mapbox tsc -p tsconfig.mapbox.json --emitDeclarationOnly && tsc-alias -p tsconfig.mapbox.json && cross-env VITE_BASE_MAP=mapbox rollup -c rollup.config.dts.js && rimraf dist/types",
     "ts": "tsc --noEmit",
+    "ts:mapbox": "tsc --noEmit -p tsconfig.mapbox.json",
     "ts-watch": "tsc --noEmit --watch",
     "ts:autofix": "ts-autofix",
     "lint": "eslint .",
@@ -36,7 +41,7 @@
     "formatter": "prettier src tests --check",
     "formatter:fix": "prettier src tests --write",
     "check": "npm run formatter:fix && npm run lint && npm run ts",
-    "testserver": "vite --port 4000 --mode test",
+    "testserver": "vite --host 127.0.0.1 --port 4000 --mode test",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
@@ -78,7 +83,10 @@
     "loglevel": "^1.9.2",
     "type-fest": "^5.4.4"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "maplibre-gl": ">=5.19.0",
+    "mapbox-gl": ">=3.18.0"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "1.58.2",
@@ -90,8 +98,6 @@
     "eslint-plugin-svelte": "^3.15.0",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
-    "mapbox-gl": "^3.18.1",
-    "maplibre-gl": "^5.17.0",
     "playwright": "1.58.2",
     "prettier": "^3.8.1",
     "rimraf": "^6.1.2",

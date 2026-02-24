@@ -30,7 +30,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:4000/',
+    baseURL: 'http://127.0.0.1:4000/',
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     /* Navigation timeout - increased for CI */
@@ -46,18 +46,23 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         headless: true,
-        // Additional CI-specific settings
-        ...(process.env.CI && {
-          launchOptions: {
-            args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',
-              '--disable-web-security',
-              '--disable-features=VizDisplayCompositor'
-            ]
-          }
-        })
+        launchOptions: {
+          args: [
+            // Force software WebGL so map rendering works in headless/sandboxed environments.
+            '--use-angle=swiftshader',
+            '--enable-unsafe-swiftshader',
+            '--ignore-gpu-blocklist',
+            ...(process.env.CI
+              ? [
+                  '--no-sandbox',
+                  '--disable-setuid-sandbox',
+                  '--disable-dev-shm-usage',
+                  '--disable-web-security',
+                  '--disable-features=VizDisplayCompositor',
+                ]
+              : []),
+          ],
+        },
       },
     },
 
@@ -75,7 +80,7 @@ export default defineConfig({
   /* Run the local dev server before starting the tests */
   webServer: {
     command: 'npm run testserver',
-    url: 'http://localhost:4000/',
+    url: 'http://127.0.0.1:4000/',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

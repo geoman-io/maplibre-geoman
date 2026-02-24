@@ -5,6 +5,8 @@ export type ScreenCoordinates = [number, number];
 
 // Helper to determine if we're in CI
 const isCI = !!process.env.CI;
+const geomanWaitTimeout = isCI ? 60000 : 30000;
+const mapIdleWaitTimeout = isCI ? 60000 : 30000;
 
 // Configure page timeouts for CI
 export const configurePageTimeouts = async (page: Page) => {
@@ -15,7 +17,39 @@ export const configurePageTimeouts = async (page: Page) => {
 };
 
 export const waitForGeoman = async (page: Page) => {
-  await page.waitForFunction(() => !!window.geoman?.loaded, { timeout: isCI ? 30000 : 10000 });
+  const startedAt = Date.now();
+  let state = {
+    hasMap: false,
+    hasMapGeoman: false,
+    hasGeoman: false,
+    loaded: false,
+    destroyed: false,
+  };
+
+  while (Date.now() - startedAt < geomanWaitTimeout) {
+    state = await page.evaluate(() => {
+      const mapGeoman = window.mapInstance?.gm;
+      if (!window.geoman && mapGeoman) {
+        window.geoman = mapGeoman;
+      }
+
+      return {
+        hasMap: !!window.mapInstance,
+        hasMapGeoman: !!mapGeoman,
+        hasGeoman: !!window.geoman,
+        loaded: !!window.geoman?.loaded,
+        destroyed: !!window.geoman?.destroyed,
+      };
+    });
+
+    if (state.hasGeoman && state.loaded && !state.destroyed) {
+      return;
+    }
+
+    await page.waitForTimeout(250);
+  }
+
+  throw new Error(`Geoman failed to initialize: ${JSON.stringify(state)}`);
 };
 
 export const waitForMapIdle = async (page: Page) => {
@@ -35,9 +69,8 @@ export const waitForMapIdle = async (page: Page) => {
         }
       }
     },
-    {
-      timeout: isCI ? 30000 : 10000,
-    },
+    undefined,
+    { timeout: mapIdleWaitTimeout },
   );
 };
 

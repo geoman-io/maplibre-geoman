@@ -16,7 +16,7 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 - **Browser Matrix**: Tests run across Chromium, Firefox, and WebKit
 - **Caching**: Aggressive caching of dependencies and build artifacts
 - **Security Scanning**: npm audit and TruffleHog secret scanning
-- **Build Verification**: MapLibre variant is built and verified
+- **Build Verification**: MapLibre and Mapbox variants are built and verified
 
 **Performance Improvements:**
 
@@ -33,14 +33,15 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 - **Pre-release Support**: Automatic detection and handling of pre-releases
 - **Better Validation**: Enhanced version checking and format validation
 - **NPM Provenance**: Added supply chain security with NPM provenance
-- **Artifact Reuse**: Build artifacts shared between GitHub release and NPM publish
+- **Split Package Publishing**: MapLibre and Mapbox variants are published as separate npm packages
+- **Artifact Isolation**: Variant-specific artifacts are verified before publish to prevent cross-contamination
 
 **New Features:**
 
 - Manual release dispatch with version input
 - Pre-release tagging and beta NPM tags
 - Automatic release notes generation
-- Improved error handling and validation
+- Improved error handling, validation, and package isolation checks
 
 ### 3. Development Workflow (`dev.yml`)
 
@@ -50,7 +51,7 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 
 - **Smart Triggering**: Skips CI on draft PRs unless explicitly requested
 - **Smoke Testing**: Quick validation tests for faster feedback
-- **Dual Builds**: MapLibre variant for comprehensive testing
+- **Dual Builds**: MapLibre and Mapbox variants for comprehensive testing
 - **PR Comments**: Automatic status updates on pull requests
 - **Performance Checks**: Bundle size analysis when labeled
 - **Short Retention**: 3-day artifact retention for development builds
@@ -103,6 +104,7 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 
 - Removed `test.yml` (functionality moved to `ci.yml`)
 - Changed release workflow job structure (now multi-job)
+- Added workspace package manifests under `packages/maplibre` and `packages/mapbox` for deterministic publishing
 
 ### Required Secrets
 

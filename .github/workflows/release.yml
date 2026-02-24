@@ -21,7 +21,8 @@ permissions:
   id-token: write # for npm provenance
 
 env:
-  FILE_NAME_PREFIX: geoman-io-maplibre-geoman-free
+  MAPLIBRE_FILE_NAME_PREFIX: geoman-io-maplibre-geoman-free
+  MAPBOX_FILE_NAME_PREFIX: geoman-io-mapbox-geoman-free
   NODE_VERSION: "24"
 
 jobs:
@@ -75,6 +76,16 @@ jobs:
             exit 1
           fi
 
+      - name: Check workspace package versions
+        run: |
+          ROOT_VERSION=$(node -p "require('./package.json').version")
+          MAPLIBRE_VERSION=$(node -p "require('./packages/maplibre/package.json').version")
+          MAPBOX_VERSION=$(node -p "require('./packages/mapbox/package.json').version")
+          if [[ "$ROOT_VERSION" != "$MAPLIBRE_VERSION" || "$ROOT_VERSION" != "$MAPBOX_VERSION" ]]; then
+            echo "Version mismatch across package manifests (root=$ROOT_VERSION, maplibre=$MAPLIBRE_VERSION, mapbox=$MAPBOX_VERSION)"
+            exit 1
+          fi
+
       - name: Check for pre-release
         id: check-prerelease
         run: |
@@ -114,6 +125,7 @@ jobs:
       - name: Run tests
         run: |
           npm run ts
+          npm run ts:mapbox
           npm run lint
           # Add test run here when uncommented in CI
 
@@ -122,14 +134,36 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Build and package
-        run: just pack
+      - name: Build and package (MapLibre)
+        run: just pack-maplibre
+
+      - name: Build and package (Mapbox)
+        run: just pack-mapbox
+
+      - name: Verify packaged artifacts (isolated variants)
+        run: |
+          test -f pub-maplibre/dist/maplibre-geoman.es.js
+          test -f pub-maplibre/dist/maplibre-geoman.umd.js
+          test -f pub-maplibre/dist/maplibre-geoman.d.ts
+          test ! -f pub-maplibre/dist/mapbox-geoman.es.js
+          test ! -f pub-maplibre/dist/mapbox-geoman.umd.js
+          test ! -f pub-maplibre/dist/mapbox-geoman.d.ts
+          test -f pub-mapbox/dist/mapbox-geoman.es.js
+          test -f pub-mapbox/dist/mapbox-geoman.umd.js
+          test -f pub-mapbox/dist/mapbox-geoman.d.ts
+          test ! -f pub-mapbox/dist/maplibre-geoman.es.js
+          test ! -f pub-mapbox/dist/maplibre-geoman.umd.js
+          test ! -f pub-mapbox/dist/maplibre-geoman.d.ts
+          test "$(node -p "require('./pub-maplibre/package.json').name")" = "@geoman-io/maplibre-geoman-free"
+          test "$(node -p "require('./pub-mapbox/package.json').name")" = "@geoman-io/mapbox-geoman-free"
+
       - name: Upload release artifacts
         uses: actions/upload-artifact@v5
         with:
           name: release-artifacts
           path: |
-            pub/
+            pub-maplibre/
+            pub-mapbox/
           retention-days: 7
 
   # Create GitHub release
@@ -147,7 +181,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: release-artifacts
-          path: pub/
+          path: ./
 
       - name: Extract release notes from CHANGELOG.md
         id: release-notes
@@ -162,12 +196,21 @@ jobs:
           prerelease: ${{ needs.validate.outputs.is-prerelease == 'true' }}
           body: ${{ steps.release-notes.outputs.release_notes }}
           files: |
-            pub/${{ env.FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
-            pub/LICENSE
+            pub-maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+            pub-mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+            pub-maplibre/LICENSE
+            pub-mapbox/dist/mapbox-geoman.es.js
+            pub-mapbox/dist/mapbox-geoman.umd.js
+            pub-mapbox/dist/mapbox-geoman.css
+            pub-mapbox/dist/mapbox-geoman.d.ts
+            pub-maplibre/dist/maplibre-geoman.es.js
+            pub-maplibre/dist/maplibre-geoman.umd.js
+            pub-maplibre/dist/maplibre-geoman.css
+            pub-maplibre/dist/maplibre-geoman.d.ts
 
-  # Publish to NPM
-  npm-publish:
-    name: Publish to NPM
+  # Publish MapLibre package to NPM
+  npm-publish-maplibre:
+    name: Publish MapLibre to NPM
     runs-on: ubuntu-latest
     needs: [validate, build-and-test]
     environment: release
@@ -188,15 +231,51 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: release-artifacts
-          path: ./pub
+          path: ./
 
       - name: Remove npm package tarball
-        run: rm -f pub/${{ env.FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+        run: rm -f pub-maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
 
-      - name: Publish to NPM
+      - name: Publish MapLibre to NPM
         run: |
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
-            cd pub && npm publish --tag beta --provenance --access public --ignore-scripts
+            cd pub-maplibre && npm publish --tag beta --provenance --access public --ignore-scripts
           else
-            cd pub && npm publish --provenance --access public --ignore-scripts
+            cd pub-maplibre && npm publish --provenance --access public --ignore-scripts
+          fi
+
+  # Publish Mapbox package to NPM
+  npm-publish-mapbox:
+    name: Publish Mapbox to NPM
+    runs-on: ubuntu-latest
+    needs: [validate, build-and-test]
+    environment: release
+    if: needs.validate.outputs.is-prerelease == 'false' || contains(github.event.inputs.prerelease, 'true')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: release-artifacts
+          path: ./
+
+      - name: Remove npm package tarball
+        run: rm -f pub-mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+
+      - name: Publish Mapbox to NPM
+        run: |
+          if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
+            cd pub-mapbox && npm publish --tag beta --provenance --access public --ignore-scripts
+          else
+            cd pub-mapbox && npm publish --provenance --access public --ignore-scripts
           fi
