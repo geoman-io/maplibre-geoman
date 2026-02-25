@@ -9,6 +9,7 @@ import {
 } from '@/main.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
+import type { MapInstanceWithGeoman } from '@/types/map/index.ts';
 import ml, { type GeoJSONSourceDiff } from 'maplibre-gl';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
@@ -19,7 +20,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   constructor({ gm, geoJson, sourceId }: { gm: Geoman; sourceId: string; geoJson?: GeoJSON }) {
     super();
     this.gm = gm;
-    this.mapInstance = this.gm.mapAdapter.mapInstance as ml.Map;
+    this.mapInstance = this.gm.mapAdapter.getMapInstance() as MapInstanceWithGeoman<ml.Map>;
 
     if (geoJson) {
       this.sourceInstance = this.createSource({ geoJson, sourceId });

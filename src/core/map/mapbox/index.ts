@@ -12,6 +12,7 @@ import {
   type BaseDomMarkerOptions,
   type BaseEventListener,
   type BaseFitBoundsOptions,
+  type BaseMapName,
   type BasePopupOptions,
   type CursorType,
   FEATURE_ID_PROPERTY,
@@ -19,11 +20,8 @@ import {
   type FeatureSourceName,
   type GeoJsonFeatureData,
   type GeoJsonImportFeature,
-  type Geoman,
   type LngLatTuple,
-  type MapInstanceWithGeoman,
   type MapInteraction,
-  type MapTypes,
   type ScreenPoint,
 } from '@/main.ts';
 import type { MapboxAnyLayer } from '@mapLib/types/layers.ts';
@@ -35,23 +33,11 @@ import { isMapboxSupportedPointerEventName } from '@/core/map/mapbox/guards.ts';
 type MapboxAddLayerObject = Parameters<mapboxgl.Map['addLayer']>[0];
 
 export class MapboxAdapter extends BaseMapAdapter<
-  MapInstanceWithGeoman<mapboxgl.Map>,
+  mapboxgl.Map,
   mapboxgl.GeoJSONSource,
   MapboxAnyLayer
 > {
-  gm: Geoman;
-  mapType: keyof MapTypes = 'mapbox';
-  mapInstance: MapInstanceWithGeoman<mapboxgl.Map>;
-
-  constructor(map: unknown, gm: Geoman) {
-    super();
-    this.gm = gm;
-    this.mapInstance = map as MapInstanceWithGeoman<mapboxgl.Map>;
-  }
-
-  getMapInstance(): MapInstanceWithGeoman<mapboxgl.Map> {
-    return this.mapInstance;
-  }
+  mapType: BaseMapName = 'mapbox';
 
   isLoaded(): boolean {
     // Prefer public APIs and only fall back to private internals.

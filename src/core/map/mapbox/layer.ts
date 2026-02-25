@@ -3,6 +3,7 @@ import type { Geoman } from '@/main.ts';
 import type { MapboxAnyLayer } from '@mapLib/types/layers.ts';
 import type { Map as MapboxMap } from 'mapbox-gl';
 import log from 'loglevel';
+import type { MapInstanceWithGeoman } from '@/types/map/index.ts';
 
 type MapboxAddLayerObject = Parameters<MapboxMap['addLayer']>[0];
 
@@ -22,7 +23,7 @@ export class MapboxLayer extends BaseLayer<MapboxAnyLayer> {
   }) {
     super();
     this.gm = gm;
-    this.mapInstance = this.gm.mapAdapter.mapInstance as MapboxMap;
+    this.mapInstance = this.gm.mapAdapter.getMapInstance() as MapInstanceWithGeoman<MapboxMap>;
 
     if (options) {
       this.layerInstance = this.createLayer(options);

@@ -10,6 +10,7 @@ import {
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import log from 'loglevel';
 import type { GeoJSONSource as MapboxGeoJSONSource, Map as MapboxMap } from 'mapbox-gl';
+import type { MapInstanceWithGeoman } from '@/types/map/index.ts';
 
 export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
   gm: Geoman;
@@ -19,7 +20,7 @@ export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
   constructor({ gm, geoJson, sourceId }: { gm: Geoman; sourceId: string; geoJson?: GeoJSON }) {
     super();
     this.gm = gm;
-    this.mapInstance = this.gm.mapAdapter.mapInstance as MapboxMap;
+    this.mapInstance = this.gm.mapAdapter.getMapInstance() as MapInstanceWithGeoman<MapboxMap>;
 
     if (geoJson) {
       this.sourceInstance = this.createSource({ geoJson, sourceId });

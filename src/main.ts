@@ -31,7 +31,6 @@ import {
 } from '@/types/modes/index.ts';
 import type { GmOptionsData, ModeType } from '@/types/options.ts';
 import { MarkerPointer } from '@/utils/draw/marker-pointer.ts';
-import { isMapWithOnceMethod } from '@/utils/guards/map.ts';
 import { isGmDrawEvent, isModeName, isModeType } from '@/utils/guards/modes.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import log from 'loglevel';
@@ -39,12 +38,6 @@ import type { PartialDeep } from 'type-fest';
 import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 
 const BASE_MAP_WAIT_ABORTED = 'waitForBaseMap aborted';
-
-// declare module 'maplibre-gl' {
-//   interface Map {
-//     gm?: Geoman;
-//   }
-// }
 
 export class Geoman {
   mapAdapterInstance: BaseMapAdapter<AnyMapInstance> | null = null;
@@ -74,8 +67,7 @@ export class Geoman {
     this.control = this.initCoreControls();
     this.markerPointer = this.initMarkerPointer();
 
-    const mapWithGeoman = Object.assign(map, { gm: this });
-    this.mapAdapterInstance = getMapAdapter(this, mapWithGeoman);
+    this.mapAdapterInstance = getMapAdapter(this, map);
 
     this.waitForBaseMap()
       .then(this.init.bind(this))
@@ -150,16 +142,10 @@ export class Geoman {
     });
   }
 
-  async waitForBaseMap() {
-    const map = this.mapAdapter.mapInstance;
-    if (!isMapWithOnceMethod(map)) {
-      log.error('Map instance does not have a "once" method', map);
-      return;
-    }
-
+  async waitForBaseMap(): Promise<boolean> {
     // Fast path: if already loaded, return immediately
     if (this.mapAdapter.isLoaded()) {
-      return map;
+      return true;
     }
 
     // If a wait is already in progress, join the same promise so concurrent
@@ -167,7 +153,7 @@ export class Geoman {
     // await) don't clobber each other's cleanup/abort handles.
     if (this._pendingBaseMapWait) {
       await this._pendingBaseMapWait;
-      return map;
+      return true;
     }
 
     // We store cleanup handles so destroy() can abort the wait if the Geoman
@@ -177,9 +163,9 @@ export class Geoman {
         // --- 1. Listen for the 'load' event (primary signal) -----------------
         const onLoad = () => {
           cleanup();
-          resolve(map);
+          resolve(true);
         };
-        map.once('load', onLoad);
+        this.mapAdapter.once('load', onLoad);
 
         // --- 2. Listen for 'error' events (logging only) ---------------------
         // MapLibre fires ErrorEvent when the style URL is unreachable, CORS
@@ -193,10 +179,7 @@ export class Geoman {
               : event;
           log.warn('waitForBaseMap: map error during initialization', errorObj);
         };
-        const mapAny = map as unknown as Record<string, unknown>;
-        if (typeof mapAny.on === 'function') {
-          (mapAny.on as (type: string, fn: (e: unknown) => void) => void)('error', onError);
-        }
+        this.mapAdapter.on('error', onError);
 
         // --- 3. Polling fallback ---------------------------------------------
         // MapLibre only fires the 'load' event from within _render(), which is
@@ -208,7 +191,7 @@ export class Geoman {
         const pollTimer = setInterval(() => {
           if (this.mapAdapter.isLoaded()) {
             cleanup();
-            resolve(map);
+            resolve(true);
           }
         }, POLL_INTERVAL_MS);
 
@@ -218,7 +201,7 @@ export class Geoman {
         const onVisibilityChange = () => {
           if (document.visibilityState === 'visible' && this.mapAdapter.isLoaded()) {
             cleanup();
-            resolve(map);
+            resolve(true);
           }
         };
         document.addEventListener('visibilitychange', onVisibilityChange);
@@ -232,14 +215,12 @@ export class Geoman {
           if (cleaned) return;
           cleaned = true;
           try {
-            map.off('load', onLoad);
+            this.mapAdapter.off('load', onLoad);
           } catch {
             /* best-effort */
           }
           try {
-            if (typeof mapAny.off === 'function') {
-              (mapAny.off as (type: string, fn: (e: unknown) => void) => void)('error', onError);
-            }
+            this.mapAdapter.off('error', onError);
           } catch {
             /* best-effort */
           }
@@ -267,7 +248,7 @@ export class Geoman {
         // once('load') registration above (see maplibre-gl-js#4024).
         if (this.mapAdapter.isLoaded()) {
           cleanup();
-          resolve(map);
+          resolve(true);
         }
       }),
       errorMessage: 'waitForBaseMap failed',
@@ -286,7 +267,7 @@ export class Geoman {
       this._pendingBaseMapCleanup = undefined;
       this._pendingBaseMapAbort = undefined;
     }
-    return map;
+    return true;
   }
 
   async waitForGeomanLoaded(): Promise<Geoman | undefined> {
@@ -300,26 +281,25 @@ export class Geoman {
       return;
     }
 
-    const map = await this.waitForBaseMap();
-    if (!map) {
-      log.error('Map instance is not available', map);
+    if (!(await this.waitForBaseMap())) {
+      log.error('Map instance is not available');
       return;
     }
 
     // Same race condition fix as waitForBaseMap - check loaded state after
     // registering the listener to close the timing window
-    const eventName = `${GM_PREFIX}:loaded`;
+    const eventName = `${GM_PREFIX}:loaded` as const;
     let onLoaded: (() => void) | undefined;
 
     await withPromiseTimeoutRace({
       promise: new Promise((resolve) => {
         onLoaded = () => resolve(this);
-        map.once(eventName, onLoaded);
+        this.mapAdapter.once(eventName, onLoaded);
 
         // Check if loaded between the this.loaded check above and the once() call.
         // If so, remove the listener and resolve immediately.
         if (this.loaded) {
-          map.off(eventName, onLoaded);
+          this.mapAdapter.off(eventName, onLoaded);
           resolve(this);
         }
       }),
@@ -327,7 +307,7 @@ export class Geoman {
       // onTimeout: clean up the dangling once() listener
       onTimeout: () => {
         if (onLoaded) {
-          map.off(eventName, onLoaded);
+          this.mapAdapter.off(eventName, onLoaded);
         }
       },
     });
@@ -364,8 +344,8 @@ export class Geoman {
 
     // Synchronously remove gm reference to allow re-initialization
     // This is critical for React StrictMode compatibility
-    if (this.mapAdapterInstance && 'gm' in this.mapAdapterInstance.mapInstance) {
-      delete this.mapAdapterInstance.mapInstance.gm;
+    if (this.mapAdapterInstance) {
+      this.mapAdapterInstance.removeGmInstance();
     }
 
     // Clean up any pending waitForBaseMap listeners/timers that were

@@ -1,12 +1,18 @@
-import type {
-  BaseMapEventName,
-  MapWithOnceMethod,
-  PartialLayerStyle,
-  PointerEventName,
+import {
+  type BaseMapEventName,
+  Geoman,
+  type MapInstanceWithGeoman,
+  type MapWithOnceMethod,
+  type PartialLayerStyle,
+  type PointerEventName,
 } from '@/main.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
 import type { BaseMapEvent, BaseMapMouseEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
+
+export const hasGeoman = <T extends object>(obj: T): obj is MapInstanceWithGeoman<T> => {
+  return 'gm' in obj && obj.gm instanceof Geoman;
+};
 
 export function isPointerEventName(key: string): key is PointerEventName {
   return pointerEvents.includes(key as PointerEventName);

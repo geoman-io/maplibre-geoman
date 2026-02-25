@@ -12,6 +12,7 @@ import {
   type BaseDomMarkerOptions,
   type BaseEventListener,
   type BaseFitBoundsOptions,
+  type BaseMapName,
   type BasePopupOptions,
   type CursorType,
   FEATURE_ID_PROPERTY,
@@ -19,11 +20,8 @@ import {
   type FeatureSourceName,
   type GeoJsonFeatureData,
   type GeoJsonImportFeature,
-  type Geoman,
   type LngLatTuple,
-  type MapInstanceWithGeoman,
   type MapInteraction,
-  type MapTypes,
   type ScreenPoint,
 } from '@/main.ts';
 import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
@@ -34,24 +32,8 @@ import { isMaplibreSupportedPointerEventName } from '@/core/map/maplibre/guards.
 
 export { MaplibreAdapter as MapAdapter };
 
-export class MaplibreAdapter extends BaseMapAdapter<
-  MapInstanceWithGeoman<ml.Map>,
-  ml.GeoJSONSource,
-  MaplibreAnyLayer
-> {
-  gm: Geoman;
-  mapType: keyof MapTypes = 'maplibre';
-  mapInstance: MapInstanceWithGeoman<ml.Map>;
-
-  constructor(map: unknown, gm: Geoman) {
-    super();
-    this.gm = gm;
-    this.mapInstance = map as MapInstanceWithGeoman<ml.Map>;
-  }
-
-  getMapInstance(): MapInstanceWithGeoman<ml.Map> {
-    return this.mapInstance;
-  }
+export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, MaplibreAnyLayer> {
+  mapType: BaseMapName = 'maplibre';
 
   isLoaded(): boolean {
     // Prefer public APIs and only fall back to private internals.

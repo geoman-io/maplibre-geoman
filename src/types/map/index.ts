@@ -9,8 +9,6 @@ import type { GeoJsonImportFeature } from '@/types/index.ts';
 import type { EventFor } from '@/types/map/events-map.ts';
 import type { Feature } from 'geojson';
 
-export type BaseMapName = 'maplibre' | 'mapbox';
-
 export type LngLatTuple = [number, number];
 export type ScreenPoint = [number, number];
 
@@ -33,7 +31,7 @@ export const pointerEvents = [
 
 export type PointerEventName = (typeof pointerEvents)[number];
 
-export const baseMapEventNames = ['load'] as const;
+export const baseMapEventNames = ['load', 'error'] as const;
 
 export type BaseMapEventName = (typeof baseMapEventNames)[number];
 
@@ -59,11 +57,14 @@ export type GeoJsonFeatureData = {
 };
 
 export type MapTypes = {
+  // custom map interfaces could be added here
   maplibre: object;
   mapbox: object;
 };
 
-export type AnyMapInstance = MapTypes[keyof MapTypes];
+export type BaseMapName = keyof MapTypes;
+
+export type AnyMapInstance = MapTypes[BaseMapName];
 
 export type BaseControlsPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type CursorType = 'move' | 'pointer' | 'grab' | 'crosshair' | '';

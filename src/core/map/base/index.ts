@@ -4,22 +4,23 @@ import type { BaseLayer } from '@/core/map/base/layer.ts';
 import type { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import type {
-  AnyEventName,
-  BaseDomMarkerOptions,
-  BaseEventListener,
-  BaseFitBoundsOptions,
-  BasePopupOptions,
-  CursorType,
-  FeatureSourceName,
-  GeoJsonFeatureData,
-  LineBasedGeometry,
-  LngLatTuple,
-  MapEventName,
-  MapInstanceWithGeoman,
-  MapInteraction,
-  MapTypes,
-  ScreenPoint,
+import {
+  type AnyEventName,
+  type AnyMapInstance,
+  type BaseDomMarkerOptions,
+  type BaseEventListener,
+  type BaseFitBoundsOptions,
+  type BaseMapName,
+  type BasePopupOptions,
+  type CursorType,
+  type FeatureSourceName,
+  type GeoJsonFeatureData,
+  Geoman,
+  type LineBasedGeometry,
+  type LngLatTuple,
+  type MapEventName,
+  type MapInteraction,
+  type ScreenPoint,
 } from '@/main.ts';
 import {
   eachSegmentWithPath,
@@ -30,15 +31,38 @@ import turfDistance from '@turf/distance';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 
 export abstract class BaseMapAdapter<
-  TMapInstance = MapInstanceWithGeoman,
+  TMapInstance extends object = AnyMapInstance,
   TSource = unknown,
   TLayer = unknown,
 > {
-  abstract mapType: keyof MapTypes;
+  gm: Geoman;
 
-  abstract mapInstance: TMapInstance;
+  protected readonly mapInstance: TMapInstance;
 
-  abstract getMapInstance(): TMapInstance;
+  abstract mapType: BaseMapName;
+
+  constructor(map: TMapInstance, gm: Geoman) {
+    this.gm = gm;
+    this.mapInstance = map;
+    this.addGmInstance(gm);
+  }
+
+  addGmInstance(gm: Geoman) {
+    Object.assign(this.mapInstance, { gm });
+  }
+
+  removeGmInstance() {
+    if ('gm' in this.mapInstance) {
+      delete this.mapInstance.gm;
+    }
+  }
+
+  getMapInstance(): TMapInstance {
+    if (this.mapInstance) {
+      return this.mapInstance;
+    }
+    throw new Error(`Missing a "${this.mapType}" map instance`);
+  }
 
   abstract isLoaded(): boolean;
 
