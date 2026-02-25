@@ -28,7 +28,9 @@ export const waitForGeoman = async (page: Page) => {
 
   while (Date.now() - startedAt < geomanWaitTimeout) {
     state = await page.evaluate(() => {
-      const mapGeoman = window.mapInstance?.gm;
+      const mapGeoman = (
+        window.mapInstance as (typeof window.mapInstance & { gm?: typeof window.geoman }) | undefined
+      )?.gm;
       if (!window.geoman && mapGeoman) {
         window.geoman = mapGeoman;
       }
