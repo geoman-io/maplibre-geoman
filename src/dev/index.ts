@@ -1,29 +1,27 @@
 import log from 'loglevel';
 import '@/dev/styles/style.css';
 import '@mapLib/style.css';
+import { get } from 'lodash-es';
 
 log.setLevel(log.levels.TRACE);
 
-const baseMap = import.meta.env.VITE_BASE_MAP;
+const MODE_MAP = {
+  development: 'dev',
+  test: 'test',
+} as const;
 
+const baseMap = import.meta.env.VITE_BASE_MAP;
+const mode = import.meta.env.MODE;
+const shortMode = get(MODE_MAP, mode, 'unknown');
+const importPath = `./index.${baseMap}.${shortMode}.ts`;
+
+log.debug(`Mode: "${mode}"`);
 log.debug(`Map library: "${baseMap}"`);
 
-if (import.meta.env.MODE === 'development') {
-  if (baseMap === 'mapbox') {
-    await import('./index.mapbox.dev.ts');
-  } else if (baseMap === 'maplibre') {
-    await import('./index.maplibre.dev.ts');
-  } else {
-    log.error(`Wrong map library: "${baseMap}"`);
-  }
-} else if (import.meta.env.MODE === 'test') {
-  if (baseMap === 'mapbox') {
-    await import('./index.mapbox.test.ts');
-  } else if (baseMap === 'maplibre') {
-    await import('./index.maplibre.test.ts');
-  } else {
-    log.error(`Wrong map library: "${baseMap}"`);
-  }
-} else {
-  log.error('Only development and test modes are supported');
+try {
+  await import(/* @vite-ignore */ importPath);
+} catch (error) {
+  log.error(`Can't import module for base map "${baseMap}" and mode "${mode}"`);
+  log.error(`import path: "${importPath}"`);
+  log.error(error);
 }

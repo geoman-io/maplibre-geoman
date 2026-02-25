@@ -9,6 +9,8 @@ import type { GeoJsonImportFeature } from '@/types/index.ts';
 import type { EventFor } from '@/types/map/events-map.ts';
 import type { Feature } from 'geojson';
 
+export type BaseMapName = 'maplibre' | 'mapbox';
+
 export type LngLatTuple = [number, number];
 export type ScreenPoint = [number, number];
 
