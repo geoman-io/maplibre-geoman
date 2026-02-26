@@ -13,7 +13,7 @@ test.describe('Draw Mode - Layer Styles', () => {
 
       // Create new Geoman with custom temporary marker opacity
       const GeomanClass = window.GeomanClass;
-      const gm = new GeomanClass(mapInstance, {
+      window.geoman = new GeomanClass(mapInstance, {
         layerStyles: {
           marker: {
             gm_temporary: [
@@ -33,8 +33,6 @@ test.describe('Draw Mode - Layer Styles', () => {
           },
         },
       });
-
-      window.geoman = gm;
     });
 
     await waitForGeoman(page);
@@ -78,7 +76,7 @@ test.describe('Draw Mode - Layer Styles', () => {
 
       // Create new Geoman with larger icon-size (0.36 = 2x default of 0.18)
       const GeomanClass = window.GeomanClass;
-      const gm = new GeomanClass(mapInstance, {
+      window.geoman = new GeomanClass(mapInstance, {
         layerStyles: {
           marker: {
             gm_temporary: [
@@ -95,8 +93,6 @@ test.describe('Draw Mode - Layer Styles', () => {
           },
         },
       });
-
-      window.geoman = gm;
     });
 
     await waitForGeoman(page);

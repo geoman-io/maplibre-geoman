@@ -4,11 +4,14 @@ import type { BaseLayer } from '@/core/map/base/layer.ts';
 import type { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
+import { Geoman } from '@/main.ts';
 import type {
   AnyEventName,
+  AnyMapInstance,
   BaseDomMarkerOptions,
   BaseEventListener,
   BaseFitBoundsOptions,
+  BaseMapName,
   BasePopupOptions,
   CursorType,
   FeatureSourceName,
@@ -16,9 +19,7 @@ import type {
   LineBasedGeometry,
   LngLatTuple,
   MapEventName,
-  MapInstanceWithGeoman,
   MapInteraction,
-  MapTypes,
   ScreenPoint,
 } from '@/main.ts';
 import {
@@ -30,15 +31,38 @@ import turfDistance from '@turf/distance';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 
 export abstract class BaseMapAdapter<
-  TMapInstance = MapInstanceWithGeoman,
+  TMapInstance extends object = AnyMapInstance,
   TSource = unknown,
   TLayer = unknown,
 > {
-  abstract mapType: keyof MapTypes;
+  gm: Geoman;
 
-  abstract mapInstance: TMapInstance;
+  protected readonly mapInstance: TMapInstance;
 
-  abstract getMapInstance(): TMapInstance;
+  abstract mapType: BaseMapName;
+
+  constructor(map: TMapInstance, gm: Geoman) {
+    this.gm = gm;
+    this.mapInstance = map;
+    this.addGmInstance(gm);
+  }
+
+  addGmInstance(gm: Geoman) {
+    Object.assign(this.mapInstance, { gm });
+  }
+
+  removeGmInstance() {
+    if ('gm' in this.mapInstance) {
+      delete this.mapInstance.gm;
+    }
+  }
+
+  getMapInstance(): TMapInstance {
+    if (this.mapInstance) {
+      return this.mapInstance;
+    }
+    throw new Error(`Missing a "${this.mapType}" map instance`);
+  }
 
   abstract isLoaded(): boolean;
 

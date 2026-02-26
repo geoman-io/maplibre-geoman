@@ -1,5 +1,6 @@
 import { BaseLayer } from '@/core/map/base/layer.ts';
 import type { Geoman } from '@/main.ts';
+import type { MapInstanceWithGeoman } from '@/types/map/index.ts';
 import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
 import ml from 'maplibre-gl';
 import log from 'loglevel';
@@ -20,7 +21,7 @@ export class MaplibreLayer extends BaseLayer<MaplibreAnyLayer> {
   }) {
     super();
     this.gm = gm;
-    this.mapInstance = this.gm.mapAdapter.mapInstance as ml.Map;
+    this.mapInstance = this.gm.mapAdapter.getMapInstance() as MapInstanceWithGeoman<ml.Map>;
 
     if (options) {
       this.layerInstance = this.createLayer(options);

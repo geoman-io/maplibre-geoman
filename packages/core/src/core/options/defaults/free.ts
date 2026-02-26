@@ -10,6 +10,7 @@ export const defaultOptions: GmOptionsData = {
     throttlingDelay: 10,
     awaitDataUpdatesOnEvents: true,
     useDefaultLayers: true,
+    useControlsUi: true,
     controlsPosition: 'top-left',
     controlsUiEnabledByDefault: true,
     controlsCollapsible: false,

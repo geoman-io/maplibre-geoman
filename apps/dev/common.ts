@@ -1,5 +1,10 @@
 import { layerStyles } from './styles/layer-styles.ts';
-import { Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
+import {
+  type AnyMapInstance,
+  Geoman,
+  type GmOptionsData,
+  type MapInstanceWithGeoman,
+} from '@/main.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { mount, unmount } from 'svelte';
@@ -12,6 +17,7 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
     settings: {
       controlsPosition: 'top-left',
       useDefaultLayers: true,
+      useControlsUi: true,
       controlsUiEnabledByDefault: true,
       controlsCollapsible: true,
       controlsStyles: {
@@ -165,7 +171,7 @@ export const unmountPanels = async () => {
 // --- Geoman init ---
 
 export async function initGeomanInstance(
-  map: object,
+  map: AnyMapInstance,
   gmOptions: PartialDeep<GmOptionsData>,
 ): Promise<Geoman> {
   if (window.geoman) {
@@ -177,16 +183,11 @@ export async function initGeomanInstance(
   geoman = new Geoman(map, gmOptions);
   await geoman.waitForGeomanLoaded();
 
-  (map as { on: (event: string, cb: (event: unknown) => void) => void }).on(
-    'gm:create',
-    (event: unknown) => {
-      const e = event as {
-        feature: { getGeoJson: () => unknown; source: { getGeoJson: () => unknown } };
-      };
-      console.log('feature geojson', e.feature.getGeoJson());
-      console.log('source geojson', e.feature.source.getGeoJson());
-    },
-  );
+  geoman.mapAdapter.on('gm:create', (event) => {
+    log.debug('Event: "gm:create"', event.name);
+    console.log('Feature geojson', event.feature.getGeoJson());
+    console.log('Source geojson', event.feature.source.getGeoJson());
+  });
 
   return geoman;
 }

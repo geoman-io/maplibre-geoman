@@ -187,7 +187,7 @@ export const getFeatureMarkersData = async ({
   return page.evaluate(
     (context) => {
       const geoman = window.geoman;
-      if (!geoman.mapAdapter.mapInstance) {
+      if (!geoman.mapAdapter.getMapInstance()) {
         console.error('Map is not initialized');
         return [];
       }
