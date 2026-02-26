@@ -1,1 +1,8 @@
+#!/usr/bin/env sh
+
+set -e
+
+npm run lint:all
+npm run typecheck:all
+npm run test:unit
 npm audit --audit-level=high
