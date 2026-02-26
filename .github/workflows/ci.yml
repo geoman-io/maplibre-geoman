@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Formatter checks
+        run: npm run formatter
+
       - name: TypeScript checks
         run: npm run typecheck:all
 

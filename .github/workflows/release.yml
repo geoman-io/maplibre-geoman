@@ -125,11 +125,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Formatter checks
+        run: npm run formatter
+
       - name: Run tests
         run: |
           npm run typecheck:all
           npm run lint:all
-          # Add test run here when uncommented in CI
+          npm run test:unit
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:all -- --project=chromium
 
       - name: Build and package (MapLibre)
         run: npm run pack -w @geoman-io/maplibre-geoman-free
