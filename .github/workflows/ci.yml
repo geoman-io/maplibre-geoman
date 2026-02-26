@@ -79,7 +79,7 @@ jobs:
 
       - name: Cache variant dist folder
         id: cache-dist
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: packages/${{ matrix.variant }}/dist
           key: dist-${{ runner.os }}-${{ matrix.variant }}-${{ github.sha }}
