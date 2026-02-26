@@ -5,7 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-      day: "first"
+      day: "monday"
       time: "00:00"
     open-pull-requests-limit: 10
     reviewers:
@@ -21,7 +21,7 @@ updates:
         patterns:
           - "*"
         update-types:
-          - "version-update:semver-major"
+          - "major"
       # Group minor and patch updates for dev dependencies
       dev-dependencies:
         patterns:
@@ -33,15 +33,15 @@ updates:
           - "playwright"
           - "@playwright/*"
         update-types:
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
+          - "minor"
+          - "patch"
       # Group Turf.js packages together
       turf:
         patterns:
           - "@turf/*"
         update-types:
-          - "version-update:semver-minor"
-          - "version-update:semver-patch"
+          - "minor"
+          - "patch"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"

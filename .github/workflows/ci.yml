@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main, master, develop]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -19,6 +20,7 @@ jobs:
   # Separate job for faster feedback on basic checks
   quick-checks:
     name: Quick Checks
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -54,6 +56,7 @@ jobs:
   # Build job with caching
   build:
     name: Build & Type Check
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -109,6 +112,7 @@ jobs:
   # Test job with Playwright
   test:
     name: Test Suite
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: large-test-runner
     timeout-minutes: 60
     needs: [quick-checks]
@@ -154,6 +158,7 @@ jobs:
   # Security scanning
   security:
     name: Security Scan
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -185,7 +190,7 @@ jobs:
     name: CI Success
     runs-on: ubuntu-latest
     needs: [quick-checks, build, test, security]
-    if: always()
+    if: ${{ always() && (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master') }}
 
     steps:
       - name: Check all jobs success
