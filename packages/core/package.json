@@ -1,6 +1,6 @@
 {
   "name": "@geoman-io/geoman-core",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "private": true,
   "description": "Shared core internals for Geoman MapLibre/Mapbox packages",
   "type": "module",

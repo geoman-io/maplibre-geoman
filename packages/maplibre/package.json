@@ -1,6 +1,6 @@
 {
   "name": "@geoman-io/maplibre-geoman-free",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "private": false,
   "description": "A MapLibre Plugin For Drawing and Editing Geometry Layers",
   "homepage": "https://geoman.io",

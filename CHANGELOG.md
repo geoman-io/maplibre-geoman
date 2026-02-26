@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-02-26
+
+### Added
+
+- Mapbox GL JS support as a first-class published variant via `@geoman-io/mapbox-geoman-free` ([#145](https://github.com/geoman-io/maplibre-geoman/pull/145))
+- Expanded automated test coverage across core unit tests:
+  - utility modules (`number`, `typing`, `collections`, `geojson`)
+  - guards/events/options helpers
+  - source update manager behavior
+- New end-to-end coverage for active/nonactive feature styling states:
+  - verifies `gm_main` vs `gm_temporary` style application during edit interactions
+  - verifies source transitions while a feature is actively edited
+
+### Changed
+
+- Reorganized into explicit workspace packages (`core`, `maplibre`, `mapbox`) with package-owned build scripts and adapter isolation
+- Release/build pipeline improvements:
+  - package-level packing/publishing flow
+  - release artifact verification and API-surface checks
+  - version bump automation script and workspace guardrails
+- Tooling migrated from eslint/prettier to `oxlint`/`oxfmt`
+- CI/dependency maintenance:
+  - bumped GitHub Actions versions (checkout/upload-artifact/download-artifact/cache/github-script)
+  - updated key dependencies (including `mapbox-gl`, `svelte`, `vitest`, `@types/node`)
+- Added Husky quality gates:
+  - `pre-commit`: formatting + workspace validation
+  - `pre-push`: lint + typecheck + unit tests + security audit
+
+### Fixed
+
+- Published package manifests now correctly include required runtime dependencies for consumers
+- Improved type safety in style-layer e2e tests for cross-variant (`maplibre`/`mapbox`) type compatibility
+
 ## [0.6.3] - 2026-02-14
 
 ### Added

@@ -7,7 +7,7 @@
     "packages/maplibre",
     "packages/mapbox"
   ],
-  "version": "0.6.3",
+  "version": "0.7.0",
   "packageManager": "npm@11.2.0",
   "type": "module",
   "description": "Workspace and tooling for Geoman MapLibre/Mapbox packages",

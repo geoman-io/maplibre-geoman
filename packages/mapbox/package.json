@@ -1,6 +1,6 @@
 {
   "name": "@geoman-io/mapbox-geoman-free",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "private": false,
   "description": "A Mapbox Plugin For Drawing and Editing Geometry Layers",
   "homepage": "https://geoman.io",
