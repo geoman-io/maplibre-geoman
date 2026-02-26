@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
 
   const baseMap = (env.VITE_BASE_MAP as 'maplibre' | 'mapbox') || 'maplibre';
   const gmVersion = (env.VITE_GEOMAN_VERSION as Options['GmVersion']) || null;
+  const libEntry = env.VITE_LIB_ENTRY || 'src/entry/maplibre.ts';
 
   return {
     define: {
@@ -39,7 +40,7 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: true,
       lib: {
-        entry: 'src/main.ts',
+        entry: libEntry,
         name: 'Geoman',
         fileName: (format) => `${baseMap}-geoman.${format}.js`,
       },

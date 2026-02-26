@@ -9,9 +9,13 @@ const __dirname = dirname(__filename);
 const args = process.argv.slice(2);
 const baseMapArg = args.find(arg => arg.includes('--base-map='));
 const baseMap = process.env.VITE_BASE_MAP || (baseMapArg ? baseMapArg.split('=')[1] : 'maplibre');
+const entryArg = args.find(arg => arg.includes('--types-entry='));
+const typesEntry =
+  process.env.VITE_TYPES_ENTRY ||
+  (entryArg ? entryArg.split('=')[1] : 'dist/types/src/entry/maplibre.d.ts');
 
 export default {
-  input: resolve(__dirname, 'dist/types/src/main.d.ts'),
+  input: resolve(__dirname, typesEntry),
   output: {
     file: resolve(__dirname, `dist/${baseMap}-geoman.d.ts`),
     format: 'es',

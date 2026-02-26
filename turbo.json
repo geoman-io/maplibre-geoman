@@ -1,0 +1,48 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "package-lock.json",
+    "turbo.json"
+  ],
+  "tasks": {
+    "build": {
+      "outputs": [
+        "dist/**",
+        "pub-maplibre/**",
+        "pub-mapbox/**"
+      ]
+    },
+    "build:mapbox": {
+      "outputs": [
+        "dist/**",
+        "pub-mapbox/**"
+      ]
+    },
+    "build:types": {
+      "outputs": [
+        "dist/*.d.ts"
+      ]
+    },
+    "build:types:mapbox": {
+      "outputs": [
+        "dist/*.d.ts"
+      ]
+    },
+    "ts": {
+      "outputs": []
+    },
+    "ts:mapbox": {
+      "outputs": []
+    },
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "cache": false,
+      "outputs": [
+        "playwright-report/**",
+        "test-results/**"
+      ]
+    }
+  }
+}

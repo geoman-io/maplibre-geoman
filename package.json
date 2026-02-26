@@ -1,6 +1,6 @@
 {
   "name": "@geoman-io/maplibre-geoman-free",
-  "private": false,
+  "private": true,
   "workspaces": [
     "packages/maplibre",
     "packages/mapbox"
@@ -26,13 +26,17 @@
   "main": "dist/maplibre-geoman.umd.js",
   "types": "dist/maplibre-geoman.d.ts",
   "scripts": {
+    "turbo": "npx turbo",
+    "build:all": "turbo run build build:mapbox",
+    "typecheck:all": "turbo run ts ts:mapbox",
+    "lint:all": "turbo run lint",
     "dev": "cross-env VITE_BASE_MAP=maplibre vite",
     "dev:mapbox": "cross-env VITE_BASE_MAP=mapbox vite",
-    "build": "vite build && npm run build:types",
-    "build:mapbox": "cross-env VITE_BASE_MAP=mapbox vite build && npm run build:types:mapbox",
-    "build:types": "tsc --emitDeclarationOnly && tsc-alias && rollup -c rollup.config.dts.js && rimraf dist/types",
-    "build:types:mapbox": "cross-env VITE_BASE_MAP=mapbox tsc -p tsconfig.mapbox.json --emitDeclarationOnly && tsc-alias -p tsconfig.mapbox.json && cross-env VITE_BASE_MAP=mapbox rollup -c rollup.config.dts.js && rimraf dist/types",
-    "ts": "tsc --noEmit",
+    "build": "cross-env VITE_BASE_MAP=maplibre VITE_LIB_ENTRY=src/entry/maplibre.ts vite build && npm run build:types",
+    "build:mapbox": "cross-env VITE_BASE_MAP=mapbox VITE_LIB_ENTRY=src/entry/mapbox.ts vite build && npm run build:types:mapbox",
+    "build:types": "tsc -p tsconfig.maplibre.json --emitDeclarationOnly && tsc-alias -p tsconfig.maplibre.json && cross-env VITE_BASE_MAP=maplibre VITE_TYPES_ENTRY=dist/types/src/entry/maplibre.d.ts rollup -c rollup.config.dts.js && node scripts/verify-variant-types.mjs maplibre dist/maplibre-geoman.d.ts && rimraf dist/types",
+    "build:types:mapbox": "cross-env VITE_BASE_MAP=mapbox tsc -p tsconfig.mapbox.json --emitDeclarationOnly && tsc-alias -p tsconfig.mapbox.json && cross-env VITE_BASE_MAP=mapbox VITE_TYPES_ENTRY=dist/types/src/entry/mapbox.d.ts rollup -c rollup.config.dts.js && node scripts/verify-variant-types.mjs mapbox dist/mapbox-geoman.d.ts && rimraf dist/types",
+    "ts": "tsc --noEmit -p tsconfig.maplibre.json",
     "ts:mapbox": "tsc --noEmit -p tsconfig.mapbox.json",
     "ts-watch": "tsc --noEmit --watch",
     "ts:autofix": "ts-autofix",
@@ -83,10 +87,6 @@
     "loglevel": "^1.9.2",
     "type-fest": "^5.4.4"
   },
-  "peerDependencies": {
-    "maplibre-gl": ">=5.19.0",
-    "mapbox-gl": ">=3.18.0"
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "1.58.2",
@@ -98,6 +98,8 @@
     "eslint-plugin-svelte": "^3.15.0",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
+    "mapbox-gl": "^3.18.1",
+    "maplibre-gl": "^5.19.0",
     "playwright": "1.58.2",
     "prettier": "^3.8.1",
     "rimraf": "^6.1.2",
