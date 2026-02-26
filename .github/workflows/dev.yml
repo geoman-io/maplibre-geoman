@@ -194,7 +194,7 @@ jobs:
 
     steps:
       - name: Create PR comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { owner, repo, number } = context.issue;
