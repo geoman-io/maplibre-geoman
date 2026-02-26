@@ -100,7 +100,7 @@
     "@types/node": "^25.3.1",
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
-    "mapbox-gl": "^3.18.1",
+    "mapbox-gl": "^3.19.0",
     "maplibre-gl": "^5.19.0",
     "oxfmt": "^0.35.0",
     "oxlint": "^1.50.0",
