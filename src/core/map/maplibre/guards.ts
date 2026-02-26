@@ -1,7 +1,1 @@
-import { type MaplibrePointerEventName, maplibrePointerEvents } from '@mapLib/types/events.ts';
-
-export const isMaplibreSupportedPointerEventName = (
-  name: string,
-): name is MaplibrePointerEventName => {
-  return maplibrePointerEvents.includes(name as MaplibrePointerEventName);
-};
+export * from '../../../../packages/maplibre/src/adapter/guards.ts';

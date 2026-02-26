@@ -1,7 +1,18 @@
 {
   "extends": "../../tsconfig.mapbox.json",
   "compilerOptions": {
-    "outDir": "./dist/types"
+    "outDir": "./dist/types",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ],
+      "@mapLib/*": [
+        "packages/mapbox/src/adapter/*"
+      ]
+    }
   },
   "include": [
     "../../src",

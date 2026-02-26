@@ -1,1 +1,1 @@
-export const CONTROL_GROUP_CLASS = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+export * from '../../../../packages/mapbox/src/adapter/constants.ts';

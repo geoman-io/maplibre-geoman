@@ -9,5 +9,6 @@ export default createVariantViteConfig({
   variant: 'maplibre',
   projectRoot: dirname(dirname(__dirname)),
   libEntry: 'src/entry/maplibre.ts',
+  mapLibRoot: 'packages/maplibre/src/adapter',
   outDir: 'dist',
 });

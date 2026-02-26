@@ -1,1 +1,1 @@
-export const CONTROL_GROUP_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group';
+export * from '../../../../packages/maplibre/src/adapter/constants.ts';

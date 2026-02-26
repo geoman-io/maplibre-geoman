@@ -1,5 +1,1 @@
-import { type MapboxPointerEventName, mapboxPointerEvents } from '@mapLib/types/events.ts';
-
-export const isMapboxSupportedPointerEventName = (name: string): name is MapboxPointerEventName => {
-  return mapboxPointerEvents.includes(name as MapboxPointerEventName);
-};
+export * from '../../../../packages/mapbox/src/adapter/guards.ts';

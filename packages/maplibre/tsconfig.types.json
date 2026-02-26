@@ -1,7 +1,18 @@
 {
   "extends": "../../tsconfig.maplibre.json",
   "compilerOptions": {
-    "outDir": "./dist/types"
+    "outDir": "./dist/types",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ],
+      "@mapLib/*": [
+        "packages/maplibre/src/adapter/*"
+      ]
+    }
   },
   "include": [
     "../../src",

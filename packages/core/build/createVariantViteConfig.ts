@@ -9,6 +9,7 @@ type CreateVariantViteConfigOptions = {
   variant: BaseMapVariant;
   projectRoot: string;
   libEntry: string;
+  mapLibRoot?: string;
   outDir?: string;
   gmVersion?: string | null;
   serverPort?: number;
@@ -18,6 +19,7 @@ export const createVariantViteConfig = ({
   variant,
   projectRoot,
   libEntry,
+  mapLibRoot,
   outDir = 'dist',
   gmVersion = null,
   serverPort,
@@ -31,7 +33,7 @@ export const createVariantViteConfig = ({
       alias: {
         '@': path.resolve(projectRoot, './src'),
         '@tests': path.resolve(projectRoot, './tests'),
-        '@mapLib': path.resolve(projectRoot, `./src/core/map/${variant}`),
+        '@mapLib': path.resolve(projectRoot, mapLibRoot || `./src/core/map/${variant}`),
       },
     },
     plugins: [
