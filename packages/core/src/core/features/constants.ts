@@ -1,4 +1,4 @@
-import { GM_PREFIX, IS_PRO } from '../constants.ts';
+import { GM_PREFIX, IS_PRO } from '@/core/constants.ts';
 
 export const FEATURE_PROPERTY_PREFIX = `__${GM_PREFIX}_` as const;
 export const FEATURE_ID_PROPERTY = `${FEATURE_PROPERTY_PREFIX}id` as const;

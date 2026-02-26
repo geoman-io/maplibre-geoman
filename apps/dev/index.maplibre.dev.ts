@@ -1,4 +1,4 @@
-import mapLibreStyle from '@/dev/maplibre-style.ts';
+import mapLibreStyle from './maplibre-style.ts';
 import {
   createGmOptions,
   initGeomanInstance,
@@ -6,7 +6,7 @@ import {
   toggleLeftPanel,
   toggleRightPanel,
   unmountPanels,
-} from '@/dev/common.ts';
+} from './common.ts';
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import ml from 'maplibre-gl';

@@ -4,10 +4,10 @@ import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
-import { MaplibreLayer } from '@/core/map/maplibre/layer.ts';
-import { MaplibreDomMarker } from '@/core/map/maplibre/marker.ts';
-import { MaplibrePopup } from '@/core/map/maplibre/popup.ts';
-import { MaplibreSource } from '@/core/map/maplibre/source.ts';
+import { MaplibreLayer } from './layer.ts';
+import { MaplibreDomMarker } from './marker.ts';
+import { MaplibrePopup } from './popup.ts';
+import { MaplibreSource } from './source.ts';
 import {
   type BaseDomMarkerOptions,
   type BaseEventListener,
@@ -30,7 +30,7 @@ import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';
 import ml from 'maplibre-gl';
-import { isMaplibreSupportedPointerEventName } from '@/core/map/maplibre/guards.ts';
+import { isMaplibreSupportedPointerEventName } from './guards.ts';
 
 export { MaplibreAdapter as MapAdapter };
 

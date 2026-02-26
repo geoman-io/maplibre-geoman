@@ -3,27 +3,12 @@
   "compilerOptions": {
     "outDir": "./dist/types",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@tests/*": [
-        "tests/*"
-      ],
-      "@mapLib/*": [
-        "packages/maplibre/src/adapter/*"
-      ]
+      "@/*": ["packages/core/src/*"],
+      "@dev/*": ["apps/dev/*"],
+      "@tests/*": ["tests/*"],
+      "@mapLib/*": ["packages/maplibre/src/adapter/*"]
     }
   },
-  "include": [
-    "../../src",
-    "../../*.d.ts",
-    "../../*.ts",
-    "../../*.svelte"
-  ],
-  "exclude": [
-    "../../node_modules",
-    "./dist",
-    "../../src/core/map/mapbox",
-    "../../tests"
-  ]
+  "include": ["../../packages/core/src", "../../vite-env.d.ts"],
+  "exclude": ["../../node_modules", "./dist", "../mapbox/src/adapter", "../../tests"]
 }

@@ -1,6 +1,6 @@
 import type { MapMouseEvent, MapTouchEvent } from 'mapbox-gl';
 
-// NOTE: Don't use mapbox types directly outside of "core/map/mapbox" directory
+// NOTE: Don't use mapbox types directly outside of "packages/mapbox/src/adapter" directory
 
 export const mapboxPointerEvents = [
   'click',

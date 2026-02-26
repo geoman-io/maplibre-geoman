@@ -162,6 +162,29 @@ map.on("gm:loaded", () => {
 
 We welcome contributions from the community! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started, report issues, and submit pull requests.
 
+## Local Development
+
+```shell
+# Install dependencies
+npm ci
+
+# Run dev app with MapLibre adapter
+npm run dev:maplibre
+
+# Run dev app with Mapbox adapter
+npm run dev:mapbox
+
+# Run checks
+npm run workspace:validate
+npm run lint:all
+npm run typecheck:all
+npm run build:all
+
+# Run smoke tests for each variant
+npm run test:maplibre -- --project=chromium --grep="@smoke"
+npm run test:mapbox -- --project=chromium --grep="@smoke"
+```
+
 ## Code of Conduct
 
 We are committed to fostering a welcoming and respectful community. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.

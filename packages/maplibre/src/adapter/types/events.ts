@@ -1,6 +1,6 @@
 import type { MapLayerEventType, MapLibreEvent, MapMouseEvent, MapTouchEvent } from 'maplibre-gl';
 
-// NOTE: Don't use maplibre types directly outside of "core/map/maplibre" directory
+// NOTE: Don't use maplibre types directly outside of "packages/maplibre/src/adapter" directory
 
 export const maplibrePointerEvents: ReadonlyArray<keyof MapLayerEventType> = [
   'click',

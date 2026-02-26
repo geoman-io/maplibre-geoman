@@ -4,6 +4,9 @@
   "version": "0.6.3",
   "type": "module",
   "description": "Shared core internals for Geoman MapLibre/Mapbox packages",
+  "scripts": {
+    "lint": "eslint src build"
+  },
   "exports": {
     ".": "./src/index.ts"
   },

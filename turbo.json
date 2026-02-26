@@ -6,46 +6,51 @@
   ],
   "tasks": {
     "build": {
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": [
         "dist/**",
-        "packages/maplibre/dist/**",
-        "packages/mapbox/dist/**",
-        "packages/maplibre/*.tgz",
-        "packages/mapbox/*.tgz"
-      ]
-    },
-    "build:mapbox": {
-      "outputs": [
-        "dist/**",
-        "packages/mapbox/dist/**",
-        "packages/mapbox/*.tgz"
+        "*.tgz"
       ]
     },
     "build:types": {
-      "outputs": [
-        "dist/*.d.ts"
-      ]
-    },
-    "build:types:mapbox": {
+      "dependsOn": [
+        "^build:types"
+      ],
       "outputs": [
         "dist/*.d.ts"
       ]
     },
     "ts": {
-      "outputs": []
-    },
-    "ts:mapbox": {
+      "dependsOn": [
+        "^ts"
+      ],
       "outputs": []
     },
     "lint": {
+      "dependsOn": [
+        "^lint"
+      ],
       "outputs": []
     },
     "test": {
       "cache": false,
+      "dependsOn": [
+        "build"
+      ],
       "outputs": [
         "playwright-report/**",
         "test-results/**"
       ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "testserver": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

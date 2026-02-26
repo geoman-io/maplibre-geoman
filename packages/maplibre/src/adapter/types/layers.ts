@@ -5,7 +5,7 @@ import ml, {
   type SymbolLayerSpecification,
 } from 'maplibre-gl';
 
-// NOTE: Don't use maplibre types directly outside of "core/map/maplibre" directory
+// NOTE: Don't use maplibre types directly outside of "packages/maplibre/src/adapter" directory
 
 export type MaplibreAnyLayer = NonNullable<ReturnType<ml.Map['getLayer']>>;
 

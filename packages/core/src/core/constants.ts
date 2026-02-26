@@ -1,10 +1,10 @@
-import type { Options } from '../../../../vite.config.ts';
+type GeomanVersion = 'pro' | 'free';
 
-let geomanVersion: Options['GmVersion'] | null;
+let geomanVersion: GeomanVersion | null;
 try {
   geomanVersion = __GEOMAN_VERSION__;
 } catch {
-  geomanVersion = (process.env.VITE_GEOMAN_VERSION as Options['GmVersion']) || null;
+  geomanVersion = (process.env.VITE_GEOMAN_VERSION as GeomanVersion) || null;
 }
 
 export const GM_PREFIX = 'gm' as const;

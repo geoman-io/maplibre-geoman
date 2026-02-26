@@ -1,6 +1,6 @@
 import { createDtsRollupConfig } from '../core/build/createDtsRollupConfig.mjs';
 
 export default createDtsRollupConfig({
-  input: './dist/types/src/entry/mapbox.d.ts',
+  input: './dist/types/packages/core/src/entry/mapbox.d.ts',
   output: './dist/mapbox-geoman.d.ts',
 });

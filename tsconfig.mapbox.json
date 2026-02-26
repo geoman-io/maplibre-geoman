@@ -3,13 +3,16 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "packages/core/src/*"
+      ],
+      "@dev/*": [
+        "apps/dev/*"
       ],
       "@tests/*": [
         "tests/*"
       ],
       "@mapLib/*": [
-        "src/core/map/mapbox/*"
+        "packages/mapbox/src/adapter/*"
       ]
     },
     "declaration": true,
@@ -50,7 +53,9 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "src",
+    "packages/core/src",
+    "packages/mapbox/src",
+    "apps",
     "tests",
     "*.d.ts",
     "*.ts",
@@ -59,6 +64,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/core/map/maplibre"
+    "packages/maplibre/src/adapter"
   ]
 }

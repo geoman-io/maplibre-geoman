@@ -1,10 +1,10 @@
-import { layerStyles } from '@/dev/styles/layer-styles.ts';
+import { layerStyles } from './styles/layer-styles.ts';
 import { Geoman, type GmOptionsData, type MapInstanceWithGeoman } from '@/main.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { mount, unmount } from 'svelte';
-import LeftPanel from '@/dev/components/LeftPanel.svelte';
-import RightPanel from '@/dev/components/RightPanel.svelte';
+import LeftPanel from './components/LeftPanel.svelte';
+import RightPanel from './components/RightPanel.svelte';
 import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';
 
 export function createGmOptions(): PartialDeep<GmOptionsData> {

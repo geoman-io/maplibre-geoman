@@ -1,9 +1,9 @@
 <script lang="ts">
   import type {GeoJsonImportFeature, Geoman} from '@/main.ts';
-  import type {DevMapInstance} from '@/dev/common.ts';
+  import type { DevMapInstance } from '../common.ts';
   import commonShapes from '@tests/fixtures/common-shapes.json';
   import oneOfEachShape from '@tests/fixtures/one-shape-of-each-type.json';
-  import {loadStressTestCircleMarkers, loadStressTestFeatureCollection,} from '@/dev/fixtures/shapes.ts';
+  import { loadStressTestCircleMarkers, loadStressTestFeatureCollection } from '../fixtures/shapes.ts';
 
   interface Props {
     geoman: Geoman | null;

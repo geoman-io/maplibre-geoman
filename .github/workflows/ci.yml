@@ -133,9 +133,12 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright tests
-        env:
-          VITE_BASE_MAP: ${{ matrix.variant }}
-        run: npx playwright test --project=${{ matrix.browser }}
+        run: |
+          if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
+            npm run test:mapbox -- --project=${{ matrix.browser }}
+          else
+            npm run test:maplibre -- --project=${{ matrix.browser }}
+          fi
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4

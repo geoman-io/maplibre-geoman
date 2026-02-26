@@ -30,6 +30,7 @@ for (const [name, version] of [
 }
 
 const hasPeer = (pkg, name) => Boolean(pkg.peerDependencies && pkg.peerDependencies[name]);
+const hasDependency = (pkg, name) => Boolean(pkg.dependencies && pkg.dependencies[name]);
 
 if (!hasPeer(maplibrePkg, 'maplibre-gl') || hasPeer(maplibrePkg, 'mapbox-gl')) {
   fail('MapLibre package peerDependencies must include maplibre-gl and exclude mapbox-gl');
@@ -37,6 +38,17 @@ if (!hasPeer(maplibrePkg, 'maplibre-gl') || hasPeer(maplibrePkg, 'mapbox-gl')) {
 
 if (!hasPeer(mapboxPkg, 'mapbox-gl') || hasPeer(mapboxPkg, 'maplibre-gl')) {
   fail('Mapbox package peerDependencies must include mapbox-gl and exclude maplibre-gl');
+}
+
+for (const [label, pkg] of [
+  ['maplibre', maplibrePkg],
+  ['mapbox', mapboxPkg],
+]) {
+  for (const dependency of ['lodash-es', 'type-fest', '@types/geojson']) {
+    if (!hasDependency(pkg, dependency)) {
+      fail(`${label} package is missing dependency "${dependency}"`);
+    }
+  }
 }
 
 const listFiles = (dir) => {
@@ -72,7 +84,7 @@ checkNoCrossImports({
   forbiddenPatterns: [
     /from\s+['"][^'"]*mapbox[^'"]*['"]/,
     /import\s+['"][^'"]*mapbox[^'"]*['"]/,
-    /core\/map\/mapbox/,
+    /packages\/mapbox\/src\/adapter/,
   ],
   label: 'maplibre',
 });
@@ -82,7 +94,7 @@ checkNoCrossImports({
   forbiddenPatterns: [
     /from\s+['"][^'"]*maplibre[^'"]*['"]/,
     /import\s+['"][^'"]*maplibre[^'"]*['"]/,
-    /core\/map\/maplibre/,
+    /packages\/maplibre\/src\/adapter/,
   ],
   label: 'mapbox',
 });

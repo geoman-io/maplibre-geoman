@@ -25,10 +25,12 @@
     "dist"
   ],
   "scripts": {
+    "dev": "vite ../.. --config vite.config.ts",
     "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types",
+    "testserver": "vite ../.. --config vite.config.ts --host 127.0.0.1 --port 4000 --mode test",
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly && tsc-alias -p tsconfig.types.json && rollup -c rollup.config.dts.js && node ../../scripts/verify-variant-types.mjs maplibre dist/maplibre-geoman.d.ts && rimraf dist/types",
     "ts": "tsc --noEmit -p ../../tsconfig.maplibre.json",
-    "lint": "npm --prefix ../.. run lint",
+    "lint": "eslint src",
     "pack": "npm run build && npm pack"
   },
   "dependencies": {

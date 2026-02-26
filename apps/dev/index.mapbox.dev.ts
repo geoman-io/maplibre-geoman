@@ -5,7 +5,7 @@ import {
   toggleLeftPanel,
   toggleRightPanel,
   unmountPanels,
-} from '@/dev/common.ts';
+} from './common.ts';
 import log from 'loglevel';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';

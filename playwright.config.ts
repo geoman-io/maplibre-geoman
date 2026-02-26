@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const playwrightVariant = process.env.PLAYWRIGHT_VARIANT === 'mapbox' ? 'mapbox' : 'maplibre';
+const testServerCommand =
+  playwrightVariant === 'mapbox' ? 'npm run testserver:mapbox' : 'npm run testserver:maplibre';
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -79,7 +83,7 @@ export default defineConfig({
 
   /* Run the local dev server before starting the tests */
   webServer: {
-    command: 'npm run testserver',
+    command: testServerCommand,
     url: 'http://127.0.0.1:4000/',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

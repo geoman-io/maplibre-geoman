@@ -1,10 +1,10 @@
 import log from 'loglevel';
-import '@/dev/styles/style.css';
+import './styles/style.css';
 import '@mapLib/style.css';
 
 log.setLevel(log.levels.TRACE);
 
-const baseMap = import.meta.env.VITE_BASE_MAP;
+const baseMap = __GEOMAN_BASE_MAP__;
 
 log.debug(`Map library: "${baseMap}"`);
 

@@ -8,7 +8,7 @@ const __dirname = dirname(__filename);
 export default createVariantViteConfig({
   variant: 'mapbox',
   projectRoot: dirname(dirname(__dirname)),
-  libEntry: 'src/entry/mapbox.ts',
+  libEntry: 'packages/core/src/entry/mapbox.ts',
   mapLibRoot: 'packages/mapbox/src/adapter',
   outDir: 'dist',
 });

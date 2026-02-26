@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import svgLoader from 'vite-svg-loader';
 
 export type BaseMapVariant = 'maplibre' | 'mapbox';
+export type GeomanVersion = 'pro' | 'free';
 
 type CreateVariantViteConfigOptions = {
   variant: BaseMapVariant;
@@ -11,7 +12,7 @@ type CreateVariantViteConfigOptions = {
   libEntry: string;
   mapLibRoot?: string;
   outDir?: string;
-  gmVersion?: string | null;
+  gmVersion?: GeomanVersion | null;
   serverPort?: number;
 };
 
@@ -25,15 +26,18 @@ export const createVariantViteConfig = ({
   serverPort,
 }: CreateVariantViteConfigOptions) =>
   defineConfig({
+    envDir: projectRoot,
     define: {
       __GEOMAN_VERSION__: JSON.stringify(gmVersion),
+      __GEOMAN_BASE_MAP__: JSON.stringify(variant),
     },
     server: serverPort ? { port: serverPort } : undefined,
     resolve: {
       alias: {
-        '@': path.resolve(projectRoot, './src'),
+        '@': path.resolve(projectRoot, './packages/core/src'),
+        '@dev': path.resolve(projectRoot, './apps/dev'),
         '@tests': path.resolve(projectRoot, './tests'),
-        '@mapLib': path.resolve(projectRoot, mapLibRoot || `./src/core/map/${variant}`),
+        '@mapLib': path.resolve(projectRoot, mapLibRoot || `./packages/${variant}/src/adapter`),
       },
     },
     plugins: [

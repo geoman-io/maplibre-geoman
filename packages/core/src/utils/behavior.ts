@@ -1,6 +1,6 @@
-import { IS_PRO } from '../core/constants.ts';
-import { LOAD_TIMEOUT } from '../core/features/constants.ts';
-import { typedKeys } from './typing.ts';
+import { IS_PRO } from '@/core/constants.ts';
+import { LOAD_TIMEOUT } from '@/core/features/constants.ts';
+import { typedKeys } from '@/utils/typing.ts';
 import { debounce, throttle } from 'lodash-es';
 import log from 'loglevel';
 

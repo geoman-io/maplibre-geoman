@@ -4,10 +4,10 @@ import { BaseMapAdapter } from '@/core/map/base/index.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
-import { MapboxLayer } from '@/core/map/mapbox/layer.ts';
-import { MapboxDomMarker } from '@/core/map/mapbox/marker.ts';
-import { MapboxPopup } from '@/core/map/mapbox/popup.ts';
-import { MapboxSource } from '@/core/map/mapbox/source.ts';
+import { MapboxLayer } from './layer.ts';
+import { MapboxDomMarker } from './marker.ts';
+import { MapboxPopup } from './popup.ts';
+import { MapboxSource } from './source.ts';
 import {
   type BaseDomMarkerOptions,
   type BaseEventListener,
@@ -30,7 +30,7 @@ import type { MapboxAnyLayer } from '@mapLib/types/layers.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';
 import mapboxgl from 'mapbox-gl';
-import { isMapboxSupportedPointerEventName } from '@/core/map/mapbox/guards.ts';
+import { isMapboxSupportedPointerEventName } from './guards.ts';
 
 type MapboxAddLayerObject = Parameters<mapboxgl.Map['addLayer']>[0];
 
