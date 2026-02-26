@@ -1,6 +1,6 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { createVariantViteConfig } from '../../scripts/build/createVariantViteConfig.ts';
+import { createVariantViteConfig } from '../core/build/createVariantViteConfig.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

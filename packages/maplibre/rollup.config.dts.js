@@ -1,4 +1,4 @@
-import { createDtsRollupConfig } from '../../scripts/build/createDtsRollupConfig.mjs';
+import { createDtsRollupConfig } from '../core/build/createDtsRollupConfig.mjs';
 
 export default createDtsRollupConfig({
   input: './dist/types/src/entry/maplibre.d.ts',

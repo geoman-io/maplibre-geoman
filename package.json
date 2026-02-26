@@ -2,6 +2,7 @@
   "name": "@geoman-io/maplibre-geoman-workspace",
   "private": true,
   "workspaces": [
+    "packages/core",
     "packages/maplibre",
     "packages/mapbox"
   ],
