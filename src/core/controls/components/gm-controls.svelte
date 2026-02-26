@@ -2,10 +2,9 @@
   import caretDown from '@/assets/images/controls2/caret-down.svg';
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
-  import {controlsStore} from '@/core/controls/components/controls-store.ts';
-  import type {ActionType, ControlOptions, GenericSystemControls, ModeName} from '@/main.ts';
+  import { controlsStore } from '@/core/controls/components/controls-store.ts';
+  import type { ControlOptions, GenericSystemControls, ModeName, ModeType } from '@/main.ts';
   import DOMPurify from 'dompurify';
-  import {slide} from 'svelte/transition';
 
   // const gm: Geoman = getContext('gm');
   let expanded = $state(true);
@@ -14,7 +13,7 @@
 
   const getControl = (groupKey: string, mode: string) => {
     const controlSection = (
-      $controlsStore.controls?.[groupKey as ActionType] as GenericSystemControls | undefined
+      $controlsStore.controls?.[groupKey as ModeType] as GenericSystemControls | undefined
     );
     return controlSection?.[mode as ModeName] || null;
   };
@@ -37,33 +36,35 @@
   // Sort controls by order property while preserving insertion order for undefined values
   const sortControlEntries = (groupControls: Record<string, ControlOptions>): Array<[string, ControlOptions]> => {
     return Object.entries(groupControls)
-            .map(([key, options], originalIndex) => ({ key, options, originalIndex }))
-            .sort((a, b) => {
-              const orderA = a.options.order ?? Infinity;
-              const orderB = b.options.order ?? Infinity;
+      .map(([key, options], originalIndex) => ({ key, options, originalIndex }))
+      .sort((a, b) => {
+        const orderA = a.options.order ?? Infinity;
+        const orderB = b.options.order ?? Infinity;
 
-              // Sort by order value, use original index as tiebreaker
-              if (orderA !== orderB) {
-                return orderA - orderB;
-              }
-              return a.originalIndex - b.originalIndex;
-            })
-            .map(({ key, options }) => [key, options] as [string, ControlOptions]);
+        // Sort by order value, use original index as tiebreaker
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        return a.originalIndex - b.originalIndex;
+      })
+      .map(({ key, options }) => [key, options] as [string, ControlOptions]);
   };
 </script>
 
 <div class="gm-reactive-controls">
   {#if controlsCollapsible}
-    <div class={`${controlsStyles.controlGroupClass} group-settings`}>
-      <button class="gm-control-button" onclick={toggleExpanded}>
-        <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized with DOMPurify -->
-        {@html getToggleExpandedIcon()}
-      </button>
+    <div><!-- this div container is required -->
+      <div class={`${controlsStyles.controlGroupClass} group-settings`}>
+        <button class="gm-control-button" onclick={toggleExpanded}>
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized with DOMPurify -->
+          {@html getToggleExpandedIcon()}
+        </button>
+      </div>
     </div>
   {/if}
 
   {#if expanded}
-    <div in:slide={{ duration: 180 }} out:slide={{ duration: 140 }}>
+    <div>
       {#each Object.entries($controlsStore.options) as [groupKey, groupControls] (groupKey)}
         {#if hasVisibleControls(groupKey, groupControls)}
           <div class={`${controlsStyles.controlGroupClass} group-${groupKey}`}>

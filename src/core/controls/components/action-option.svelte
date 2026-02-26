@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type {ActionInstance, ActionOption} from '@/main.ts';
+  import type { ActionInstance, ActionOption } from '@/main.ts';
   import log from 'loglevel';
-  import {onMount} from 'svelte';
+  import { onMount } from 'svelte';
 
   const { name, actionInstance, actionOption }: {
     name: string,
