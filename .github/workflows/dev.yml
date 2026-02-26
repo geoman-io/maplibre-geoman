@@ -98,7 +98,7 @@ jobs:
           fi
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-${{ matrix.variant }}-${{ github.sha }}
           path: packages/${{ matrix.variant }}/dist/
@@ -141,7 +141,7 @@ jobs:
           fi
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: smoke-test-results-${{ matrix.variant }}

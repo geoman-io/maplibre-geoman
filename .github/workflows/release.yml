@@ -160,7 +160,7 @@ jobs:
           test "$(node -p "require('./packages/mapbox/package.json').name")" = "@geoman-io/mapbox-geoman-free"
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-artifacts
           path: |

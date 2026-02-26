@@ -103,7 +103,7 @@ jobs:
         run: node scripts/check-api-surface.mjs --variant ${{ matrix.variant }}
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: build-artifacts-${{ matrix.variant }}
           path: packages/${{ matrix.variant }}/dist/
@@ -148,7 +148,7 @@ jobs:
           fi
 
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: playwright-report-${{ matrix.browser }}-${{ matrix.variant }}
