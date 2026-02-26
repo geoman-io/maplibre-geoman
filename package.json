@@ -1,5 +1,5 @@
 {
-  "name": "@geoman-io/maplibre-geoman-free",
+  "name": "@geoman-io/maplibre-geoman-workspace",
   "private": true,
   "workspaces": [
     "packages/maplibre",
@@ -7,7 +7,7 @@
   ],
   "version": "0.6.3",
   "type": "module",
-  "description": "A MapLibre Plugin For Drawing and Editing Geometry Layers",
+  "description": "Workspace and tooling for Geoman MapLibre/Mapbox packages",
   "homepage": "https://geoman.io",
   "repository": {
     "type": "git",
@@ -22,14 +22,11 @@
   "bugs": {
     "url": "https://github.com/geoman-io/maplibre-geoman/issues"
   },
-  "module": "dist/maplibre-geoman.es.js",
-  "main": "dist/maplibre-geoman.umd.js",
-  "types": "dist/maplibre-geoman.d.ts",
   "scripts": {
     "turbo": "npx turbo",
-    "build:all": "turbo run build build:mapbox",
-    "typecheck:all": "turbo run ts ts:mapbox",
-    "lint:all": "turbo run lint",
+    "build:all": "npm run build -w @geoman-io/maplibre-geoman-free && npm run build -w @geoman-io/mapbox-geoman-free",
+    "typecheck:all": "npm run ts -w @geoman-io/maplibre-geoman-free && npm run ts -w @geoman-io/mapbox-geoman-free",
+    "lint:all": "npm run lint -w @geoman-io/maplibre-geoman-free && npm run lint -w @geoman-io/mapbox-geoman-free",
     "dev": "cross-env VITE_BASE_MAP=maplibre vite",
     "dev:mapbox": "cross-env VITE_BASE_MAP=mapbox vite",
     "build": "cross-env VITE_BASE_MAP=maplibre VITE_LIB_ENTRY=src/entry/maplibre.ts vite build && npm run build:types",
@@ -120,9 +117,5 @@
     "@typescript-eslint/typescript-estree": {
       "minimatch": "^10.2.1"
     }
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
   }
 }

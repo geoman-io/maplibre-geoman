@@ -21,6 +21,13 @@
   "module": "dist/maplibre-geoman.es.js",
   "main": "dist/maplibre-geoman.umd.js",
   "types": "dist/maplibre-geoman.d.ts",
+  "scripts": {
+    "build": "npm --prefix ../.. run build && npm run sync:dist",
+    "sync:dist": "shx rm -rf dist && shx mkdir -p dist && shx cp ../../dist/maplibre-geoman.es.js dist && shx cp ../../dist/maplibre-geoman.es.js.map dist && shx cp ../../dist/maplibre-geoman.umd.js dist && shx cp ../../dist/maplibre-geoman.umd.js.map dist && shx cp ../../dist/maplibre-geoman.css dist && shx cp ../../dist/maplibre-geoman.d.ts dist",
+    "ts": "npm --prefix ../.. run ts",
+    "lint": "npm --prefix ../.. run lint",
+    "pack": "npm run build && npm pack"
+  },
   "dependencies": {
     "@types/geojson": "^7946.0.16",
     "lodash-es": "^4.17.23",

@@ -1,13 +1,13 @@
 pack-maplibre:
-  npm run build
+  npm run build -w @geoman-io/maplibre-geoman-free
   rm -rf pub-maplibre
   mkdir -p pub-maplibre/dist
-  cp dist/maplibre-geoman.es.js pub-maplibre/dist
-  cp dist/maplibre-geoman.es.js.map pub-maplibre/dist
-  cp dist/maplibre-geoman.umd.js pub-maplibre/dist
-  cp dist/maplibre-geoman.umd.js.map pub-maplibre/dist
-  cp dist/maplibre-geoman.css pub-maplibre/dist
-  cp dist/maplibre-geoman.d.ts pub-maplibre/dist
+  cp packages/maplibre/dist/maplibre-geoman.es.js pub-maplibre/dist
+  cp packages/maplibre/dist/maplibre-geoman.es.js.map pub-maplibre/dist
+  cp packages/maplibre/dist/maplibre-geoman.umd.js pub-maplibre/dist
+  cp packages/maplibre/dist/maplibre-geoman.umd.js.map pub-maplibre/dist
+  cp packages/maplibre/dist/maplibre-geoman.css pub-maplibre/dist
+  cp packages/maplibre/dist/maplibre-geoman.d.ts pub-maplibre/dist
   cp packages/maplibre/package.json pub-maplibre
   cp README.md pub-maplibre
   cp LICENSE pub-maplibre
@@ -17,15 +17,15 @@ pack-maplibre:
   cd pub-maplibre && npm pack
 
 pack-mapbox:
-  npm run build:mapbox
+  npm run build -w @geoman-io/mapbox-geoman-free
   rm -rf pub-mapbox
   mkdir -p pub-mapbox/dist
-  cp dist/mapbox-geoman.es.js pub-mapbox/dist
-  cp dist/mapbox-geoman.es.js.map pub-mapbox/dist
-  cp dist/mapbox-geoman.umd.js pub-mapbox/dist
-  cp dist/mapbox-geoman.umd.js.map pub-mapbox/dist
-  cp dist/mapbox-geoman.css pub-mapbox/dist
-  cp dist/mapbox-geoman.d.ts pub-mapbox/dist
+  cp packages/mapbox/dist/mapbox-geoman.es.js pub-mapbox/dist
+  cp packages/mapbox/dist/mapbox-geoman.es.js.map pub-mapbox/dist
+  cp packages/mapbox/dist/mapbox-geoman.umd.js pub-mapbox/dist
+  cp packages/mapbox/dist/mapbox-geoman.umd.js.map pub-mapbox/dist
+  cp packages/mapbox/dist/mapbox-geoman.css pub-mapbox/dist
+  cp packages/mapbox/dist/mapbox-geoman.d.ts pub-mapbox/dist
   cp packages/mapbox/package.json pub-mapbox
   cp README.md pub-mapbox
   cp LICENSE pub-mapbox
