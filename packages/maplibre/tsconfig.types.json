@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.maplibre.json",
+  "compilerOptions": {
+    "outDir": "./dist/types"
+  },
+  "include": [
+    "../../src",
+    "../../*.d.ts",
+    "../../*.ts",
+    "../../*.svelte"
+  ],
+  "exclude": [
+    "../../node_modules",
+    "./dist",
+    "../../src/core/map/mapbox",
+    "../../tests"
+  ]
+}
