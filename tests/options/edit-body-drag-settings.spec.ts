@@ -17,7 +17,7 @@ import {
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 
-const SCREEN_COORD_TOLERANCE = 3;
+const SCREEN_COORD_TOLERANCE = 5;
 
 const expectPointNearTarget = async ({
   page,

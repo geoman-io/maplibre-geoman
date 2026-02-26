@@ -5,10 +5,7 @@
   "type": "module",
   "description": "Shared core internals for Geoman MapLibre/Mapbox packages",
   "scripts": {
-    "lint": "eslint src build"
-  },
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "types": "./src/index.ts"
+    "lint": "eslint src build",
+    "test:unit": "vitest run --config vitest.config.ts"
+  }
 }

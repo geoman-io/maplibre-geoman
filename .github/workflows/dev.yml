@@ -61,6 +61,9 @@ jobs:
       - name: Workspace validation
         run: npm run workspace:validate
 
+      - name: Core unit tests
+        run: npm run test:unit
+
   # Build both variants for feature testing
   build:
     name: Build Development

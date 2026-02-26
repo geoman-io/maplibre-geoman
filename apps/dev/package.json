@@ -1,0 +1,10 @@
+{
+  "name": "@geoman-io/geoman-dev-app",
+  "private": true,
+  "version": "0.6.3",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint ../../apps/dev",
+    "ts": "tsc --noEmit -p ../../tsconfig.maplibre.json"
+  }
+}

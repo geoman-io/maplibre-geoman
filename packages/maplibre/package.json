@@ -21,12 +21,20 @@
   "module": "dist/maplibre-geoman.es.js",
   "main": "dist/maplibre-geoman.umd.js",
   "types": "dist/maplibre-geoman.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/maplibre-geoman.d.ts",
+      "import": "./dist/maplibre-geoman.es.js",
+      "require": "./dist/maplibre-geoman.umd.js"
+    },
+    "./dist/maplibre-geoman.css": "./dist/maplibre-geoman.css"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "vite ../.. --config vite.config.ts",
-    "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types",
+    "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types && node ../../scripts/verify-variant-bundle.mjs maplibre dist",
     "testserver": "vite ../.. --config vite.config.ts --host 127.0.0.1 --port 4000 --mode test",
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly && tsc-alias -p tsconfig.types.json && rollup -c rollup.config.dts.js && node ../../scripts/verify-variant-types.mjs maplibre dist/maplibre-geoman.d.ts && rimraf dist/types",
     "ts": "tsc --noEmit -p ../../tsconfig.maplibre.json",

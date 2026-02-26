@@ -27,6 +27,7 @@
 ## Documentation
 
 Visit [geoman.io/docs/maplibre](https://www.geoman.io/docs/maplibre) to get started.
+For contributor-focused internals, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Issues
 
@@ -106,7 +107,7 @@ Don't have a license key yet? [Purchase one here](https://geoman.io/pricing).
 
 ```typescript
 import ml from "maplibre-gl";
-import { type GmOptionsPartial } from "@geoman-io/maplibre-geoman-free";
+import { Geoman, type GmOptionsPartial } from "@geoman-io/maplibre-geoman-free";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css";
@@ -135,7 +136,7 @@ const mapStyle: ml.StyleSpecification = {
 
 const map = new ml.Map({
   container: "dev-map",
-  style: mapLibreStyle,
+  style: mapStyle,
   center: [0, 51],
   zoom: 5,
 });
@@ -156,6 +157,54 @@ map.on("gm:loaded", () => {
   };
   map.gm.features.addGeoJsonFeature({ shapeGeoJson });
 });
+```
+
+### Mapbox and Geoman initialization
+
+```typescript
+import mapboxgl from "mapbox-gl";
+import { Geoman, type GmOptionsPartial } from "@geoman-io/mapbox-geoman-free";
+
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@geoman-io/mapbox-geoman-free/dist/mapbox-geoman.css";
+
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN ?? "";
+
+const mapStyle: mapboxgl.StyleSpecification = {
+  version: 8,
+  glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  sources: {
+    "osm-tiles": {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution: "© OpenStreetMap contributors",
+    },
+  },
+  layers: [
+    {
+      id: "osm-tiles-layer",
+      type: "raster",
+      source: "osm-tiles",
+      minzoom: 0,
+      maxzoom: 19,
+    },
+  ],
+};
+
+const map = new mapboxgl.Map({
+  container: "dev-map",
+  style: mapStyle,
+  center: [0, 51],
+  zoom: 5,
+});
+
+const gmOptions: GmOptionsPartial = {
+  // geoman options here
+};
+
+const geoman = new Geoman(map, gmOptions);
+await geoman.waitForGeomanLoaded();
 ```
 
 ## Contributing
@@ -183,6 +232,9 @@ npm run build:all
 # Run smoke tests for each variant
 npm run test:maplibre -- --project=chromium --grep="@smoke"
 npm run test:mapbox -- --project=chromium --grep="@smoke"
+
+# Run full test suite for both variants
+npm run test:all
 ```
 
 ## Code of Conduct

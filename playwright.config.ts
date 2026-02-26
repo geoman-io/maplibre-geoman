@@ -1,8 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const playwrightVariant = process.env.PLAYWRIGHT_VARIANT === 'mapbox' ? 'mapbox' : 'maplibre';
+const playwrightVariantRaw = process.env.PLAYWRIGHT_VARIANT;
+if (!playwrightVariantRaw || !['maplibre', 'mapbox'].includes(playwrightVariantRaw)) {
+  throw new Error(
+    'PLAYWRIGHT_VARIANT must be explicitly set to "maplibre" or "mapbox" (use npm run test:maplibre or npm run test:mapbox).',
+  );
+}
+
+const playwrightVariant = playwrightVariantRaw as 'maplibre' | 'mapbox';
 const testServerCommand =
   playwrightVariant === 'mapbox' ? 'npm run testserver:mapbox' : 'npm run testserver:maplibre';
+const testServerPort = playwrightVariant === 'mapbox' ? 4001 : 4000;
 
 /**
  * Read environment variables from file.
@@ -34,7 +42,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://127.0.0.1:4000/',
+    baseURL: `http://127.0.0.1:${testServerPort}/`,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     /* Navigation timeout - increased for CI */
@@ -84,7 +92,7 @@ export default defineConfig({
   /* Run the local dev server before starting the tests */
   webServer: {
     command: testServerCommand,
-    url: 'http://127.0.0.1:4000/',
+    url: `http://127.0.0.1:${testServerPort}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

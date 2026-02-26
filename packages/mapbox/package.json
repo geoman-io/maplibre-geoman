@@ -21,13 +21,21 @@
   "module": "dist/mapbox-geoman.es.js",
   "main": "dist/mapbox-geoman.umd.js",
   "types": "dist/mapbox-geoman.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/mapbox-geoman.d.ts",
+      "import": "./dist/mapbox-geoman.es.js",
+      "require": "./dist/mapbox-geoman.umd.js"
+    },
+    "./dist/mapbox-geoman.css": "./dist/mapbox-geoman.css"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "vite ../.. --config vite.config.ts",
-    "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types",
-    "testserver": "vite ../.. --config vite.config.ts --host 127.0.0.1 --port 4000 --mode test",
+    "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types && node ../../scripts/verify-variant-bundle.mjs mapbox dist",
+    "testserver": "vite ../.. --config vite.config.ts --host 127.0.0.1 --port 4001 --mode test",
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly && tsc-alias -p tsconfig.types.json && rollup -c rollup.config.dts.js && node ../../scripts/verify-variant-types.mjs mapbox dist/mapbox-geoman.d.ts && rimraf dist/types",
     "ts": "tsc --noEmit -p ../../tsconfig.mapbox.json",
     "lint": "eslint src",

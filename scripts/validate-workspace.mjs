@@ -40,6 +40,12 @@ if (!hasPeer(mapboxPkg, 'mapbox-gl') || hasPeer(mapboxPkg, 'maplibre-gl')) {
   fail('Mapbox package peerDependencies must include mapbox-gl and exclude maplibre-gl');
 }
 
+for (const workspaceName of ['apps/dev', 'packages/core', 'packages/maplibre', 'packages/mapbox']) {
+  if (!rootPkg.workspaces.includes(workspaceName)) {
+    fail(`Root package workspaces must include "${workspaceName}"`);
+  }
+}
+
 for (const [label, pkg] of [
   ['maplibre', maplibrePkg],
   ['mapbox', mapboxPkg],
@@ -48,6 +54,19 @@ for (const [label, pkg] of [
     if (!hasDependency(pkg, dependency)) {
       fail(`${label} package is missing dependency "${dependency}"`);
     }
+  }
+}
+
+for (const [label, pkg, variant] of [
+  ['maplibre', maplibrePkg, 'maplibre'],
+  ['mapbox', mapboxPkg, 'mapbox'],
+]) {
+  if (!pkg.exports || !pkg.exports['.']) {
+    fail(`${label} package must define a root "." export`);
+  }
+  const buildScript = pkg.scripts?.build ?? '';
+  if (!buildScript.includes(`verify-variant-bundle.mjs ${variant}`)) {
+    fail(`${label} package build script must run verify-variant-bundle.mjs`);
   }
 }
 

@@ -44,6 +44,9 @@ jobs:
       - name: Workspace validation
         run: npm run workspace:validate
 
+      - name: Core unit tests
+        run: npm run test:unit
+
       - name: Check package.json and lock file sync
         run: |
           npm ci --dry-run
