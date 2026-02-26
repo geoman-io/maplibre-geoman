@@ -124,46 +124,47 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run ts
-          npm run ts:mapbox
-          npm run lint
+          npm run typecheck:all
+          npm run lint:all
           # Add test run here when uncommented in CI
 
-      - name: Install just command runner
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
       - name: Build and package (MapLibre)
-        run: just pack-maplibre
+        run: npm run pack -w @geoman-io/maplibre-geoman-free
 
       - name: Build and package (Mapbox)
-        run: just pack-mapbox
+        run: npm run pack -w @geoman-io/mapbox-geoman-free
 
       - name: Verify packaged artifacts (isolated variants)
         run: |
-          test -f pub-maplibre/dist/maplibre-geoman.es.js
-          test -f pub-maplibre/dist/maplibre-geoman.umd.js
-          test -f pub-maplibre/dist/maplibre-geoman.d.ts
-          test ! -f pub-maplibre/dist/mapbox-geoman.es.js
-          test ! -f pub-maplibre/dist/mapbox-geoman.umd.js
-          test ! -f pub-maplibre/dist/mapbox-geoman.d.ts
-          test -f pub-mapbox/dist/mapbox-geoman.es.js
-          test -f pub-mapbox/dist/mapbox-geoman.umd.js
-          test -f pub-mapbox/dist/mapbox-geoman.d.ts
-          test ! -f pub-mapbox/dist/maplibre-geoman.es.js
-          test ! -f pub-mapbox/dist/maplibre-geoman.umd.js
-          test ! -f pub-mapbox/dist/maplibre-geoman.d.ts
-          test "$(node -p "require('./pub-maplibre/package.json').name")" = "@geoman-io/maplibre-geoman-free"
-          test "$(node -p "require('./pub-mapbox/package.json').name")" = "@geoman-io/mapbox-geoman-free"
+          test -f packages/maplibre/dist/maplibre-geoman.es.js
+          test -f packages/maplibre/dist/maplibre-geoman.umd.js
+          test -f packages/maplibre/dist/maplibre-geoman.d.ts
+          test ! -f packages/maplibre/dist/mapbox-geoman.es.js
+          test ! -f packages/maplibre/dist/mapbox-geoman.umd.js
+          test ! -f packages/maplibre/dist/mapbox-geoman.d.ts
+          test -f packages/mapbox/dist/mapbox-geoman.es.js
+          test -f packages/mapbox/dist/mapbox-geoman.umd.js
+          test -f packages/mapbox/dist/mapbox-geoman.d.ts
+          test ! -f packages/mapbox/dist/maplibre-geoman.es.js
+          test ! -f packages/mapbox/dist/maplibre-geoman.umd.js
+          test ! -f packages/mapbox/dist/maplibre-geoman.d.ts
+          test -f packages/maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+          test -f packages/mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+          test "$(node -p "require('./packages/maplibre/package.json').name")" = "@geoman-io/maplibre-geoman-free"
+          test "$(node -p "require('./packages/mapbox/package.json').name")" = "@geoman-io/mapbox-geoman-free"
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v5
         with:
           name: release-artifacts
           path: |
-            pub-maplibre/
-            pub-mapbox/
+            packages/maplibre/dist/
+            packages/mapbox/dist/
+            packages/maplibre/package.json
+            packages/mapbox/package.json
+            packages/maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+            packages/mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+            LICENSE
           retention-days: 7
 
   # Create GitHub release
@@ -196,17 +197,17 @@ jobs:
           prerelease: ${{ needs.validate.outputs.is-prerelease == 'true' }}
           body: ${{ steps.release-notes.outputs.release_notes }}
           files: |
-            pub-maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
-            pub-mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
-            pub-maplibre/LICENSE
-            pub-mapbox/dist/mapbox-geoman.es.js
-            pub-mapbox/dist/mapbox-geoman.umd.js
-            pub-mapbox/dist/mapbox-geoman.css
-            pub-mapbox/dist/mapbox-geoman.d.ts
-            pub-maplibre/dist/maplibre-geoman.es.js
-            pub-maplibre/dist/maplibre-geoman.umd.js
-            pub-maplibre/dist/maplibre-geoman.css
-            pub-maplibre/dist/maplibre-geoman.d.ts
+            packages/maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+            packages/mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+            LICENSE
+            packages/mapbox/dist/mapbox-geoman.es.js
+            packages/mapbox/dist/mapbox-geoman.umd.js
+            packages/mapbox/dist/mapbox-geoman.css
+            packages/mapbox/dist/mapbox-geoman.d.ts
+            packages/maplibre/dist/maplibre-geoman.es.js
+            packages/maplibre/dist/maplibre-geoman.umd.js
+            packages/maplibre/dist/maplibre-geoman.css
+            packages/maplibre/dist/maplibre-geoman.d.ts
 
   # Publish MapLibre package to NPM
   npm-publish-maplibre:
@@ -234,14 +235,14 @@ jobs:
           path: ./
 
       - name: Remove npm package tarball
-        run: rm -f pub-maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+        run: rm -f packages/maplibre/${{ env.MAPLIBRE_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
 
       - name: Publish MapLibre to NPM
         run: |
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
-            cd pub-maplibre && npm publish --tag beta --provenance --access public --ignore-scripts
+            cd packages/maplibre && npm publish --tag beta --provenance --access public --ignore-scripts
           else
-            cd pub-maplibre && npm publish --provenance --access public --ignore-scripts
+            cd packages/maplibre && npm publish --provenance --access public --ignore-scripts
           fi
 
   # Publish Mapbox package to NPM
@@ -270,12 +271,12 @@ jobs:
           path: ./
 
       - name: Remove npm package tarball
-        run: rm -f pub-mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
+        run: rm -f packages/mapbox/${{ env.MAPBOX_FILE_NAME_PREFIX }}-${{ needs.validate.outputs.version }}.tgz
 
       - name: Publish Mapbox to NPM
         run: |
           if [[ "${{ needs.validate.outputs.is-prerelease }}" == "true" ]]; then
-            cd pub-mapbox && npm publish --tag beta --provenance --access public --ignore-scripts
+            cd packages/mapbox && npm publish --tag beta --provenance --access public --ignore-scripts
           else
-            cd pub-mapbox && npm publish --provenance --access public --ignore-scripts
+            cd packages/mapbox && npm publish --provenance --access public --ignore-scripts
           fi

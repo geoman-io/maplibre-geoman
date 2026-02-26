@@ -52,14 +52,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: TypeScript check
-        run: npm run ts
+      - name: TypeScript checks
+        run: npm run typecheck:all
 
-      - name: TypeScript check (Mapbox variant)
-        run: npm run ts:mapbox
-
-      - name: ESLint check
-        run: npm run lint
+      - name: ESLint checks
+        run: npm run lint:all
 
   # Build both variants for feature testing
   build:
@@ -89,16 +86,16 @@ jobs:
       - name: Build ${{ matrix.variant }}
         run: |
           if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
-            npm run build:mapbox
+            npm run build -w @geoman-io/mapbox-geoman-free
           else
-            npm run build
+            npm run build -w @geoman-io/maplibre-geoman-free
           fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.variant }}-${{ github.sha }}
-          path: dist/
+          path: packages/${{ matrix.variant }}/dist/
           retention-days: 3
 
   # Basic smoke tests for development
@@ -167,14 +164,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-maplibre-${{ github.sha }}
-          path: dist/
+          path: packages/maplibre/dist/
 
       - name: Bundle size check
         run: |
           echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
           echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
           echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          for file in dist/*.js; do
+          for file in packages/maplibre/dist/*.js; do
             size=$(du -h "$file" | cut -f1)
             echo "| $(basename "$file") | $size |" >> $GITHUB_STEP_SUMMARY
           done

@@ -35,14 +35,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: TypeScript check
-        run: npm run ts
+      - name: TypeScript checks
+        run: npm run typecheck:all
 
-      - name: TypeScript check (Mapbox variant)
-        run: npm run ts:mapbox
-
-      - name: ESLint check
-        run: npm run lint
+      - name: ESLint checks
+        run: npm run lint:all
 
       - name: Check package.json and lock file sync
         run: |
@@ -71,33 +68,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache dist folder
+      - name: Cache variant dist folder
         id: cache-dist
         uses: actions/cache@v4
         with:
-          path: dist
+          path: packages/${{ matrix.variant }}/dist
           key: dist-${{ runner.os }}-${{ matrix.variant }}-${{ github.sha }}
 
       - name: Build project (${{ matrix.variant }})
         if: steps.cache-dist.outputs.cache-hit != 'true'
         run: |
           if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
-            npm run build:mapbox
+            npm run build -w @geoman-io/mapbox-geoman-free
           else
-            npm run build
+            npm run build -w @geoman-io/maplibre-geoman-free
           fi
 
       - name: Verify build artifacts (${{ matrix.variant }})
         run: |
-          test -f dist/${{ matrix.variant }}-geoman.es.js
-          test -f dist/${{ matrix.variant }}-geoman.umd.js
-          test -f dist/${{ matrix.variant }}-geoman.d.ts
+          test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.es.js
+          test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.umd.js
+          test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.d.ts
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts-${{ matrix.variant }}
-          path: dist/
+          path: packages/${{ matrix.variant }}/dist/
           retention-days: 7
 
   # Test job with Playwright

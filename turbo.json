@@ -8,14 +8,17 @@
     "build": {
       "outputs": [
         "dist/**",
-        "pub-maplibre/**",
-        "pub-mapbox/**"
+        "packages/maplibre/dist/**",
+        "packages/mapbox/dist/**",
+        "packages/maplibre/*.tgz",
+        "packages/mapbox/*.tgz"
       ]
     },
     "build:mapbox": {
       "outputs": [
         "dist/**",
-        "pub-mapbox/**"
+        "packages/mapbox/dist/**",
+        "packages/mapbox/*.tgz"
       ]
     },
     "build:types": {

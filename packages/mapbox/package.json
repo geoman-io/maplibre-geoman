@@ -21,6 +21,9 @@
   "module": "dist/mapbox-geoman.es.js",
   "main": "dist/mapbox-geoman.umd.js",
   "types": "dist/mapbox-geoman.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types",
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly && tsc-alias -p tsconfig.types.json && rollup -c rollup.config.dts.js && node ../../scripts/verify-variant-types.mjs mapbox dist/mapbox-geoman.d.ts && rimraf dist/types",
