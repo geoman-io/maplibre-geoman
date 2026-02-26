@@ -58,6 +58,9 @@ jobs:
       - name: ESLint checks
         run: npm run lint:all
 
+      - name: Workspace validation
+        run: npm run workspace:validate
+
   # Build both variants for feature testing
   build:
     name: Build Development

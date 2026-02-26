@@ -41,6 +41,9 @@ jobs:
       - name: ESLint checks
         run: npm run lint:all
 
+      - name: Workspace validation
+        run: npm run workspace:validate
+
       - name: Check package.json and lock file sync
         run: |
           npm ci --dry-run
@@ -89,6 +92,9 @@ jobs:
           test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.es.js
           test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.umd.js
           test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.d.ts
+
+      - name: API surface check (${{ matrix.variant }})
+        run: node scripts/check-api-surface.mjs --variant ${{ matrix.variant }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

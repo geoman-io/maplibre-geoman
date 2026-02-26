@@ -86,6 +86,9 @@ jobs:
             exit 1
           fi
 
+      - name: Workspace validation
+        run: npm run workspace:validate
+
       - name: Check for pre-release
         id: check-prerelease
         run: |
@@ -133,6 +136,9 @@ jobs:
 
       - name: Build and package (Mapbox)
         run: npm run pack -w @geoman-io/mapbox-geoman-free
+
+      - name: API surface checks
+        run: npm run api:check
 
       - name: Verify packaged artifacts (isolated variants)
         run: |
