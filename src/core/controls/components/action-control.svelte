@@ -1,10 +1,10 @@
 <script lang="ts">
   import ControlMenu from '@/core/controls/components/control-menu.svelte';
-  import type {ControlOptions, GenericSystemControl, Geoman} from '@/main.ts';
+  import type { ControlOptions, GenericSystemControl, Geoman } from '@/main.ts';
   import DOMPurify from 'dompurify';
   import log from 'loglevel';
-  import {getContext} from 'svelte';
-  import {controlsStore} from '@/core/controls/components/controls-store.ts';
+  import { getContext } from 'svelte';
+  import { controlsStore } from '@/core/controls/components/controls-store.ts';
 
   const { control, controlOptions }: {
     control: GenericSystemControl,
