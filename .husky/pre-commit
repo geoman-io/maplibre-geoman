@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+set -e
+
+npm run formatter
+npm run workspace:validate

@@ -1,5 +1,10 @@
 import test, { expect, type Page } from '@playwright/test';
-import { configurePageTimeouts, enableMode, waitForGeoman, waitForMapIdle } from '@tests/utils/basic.ts';
+import {
+  configurePageTimeouts,
+  enableMode,
+  waitForGeoman,
+  waitForMapIdle,
+} from '@tests/utils/basic.ts';
 import {
   getFeatureMarkersData,
   getRenderedFeatureData,
@@ -91,13 +96,23 @@ const getSourceLayerColor = async ({
       const paintProperty = shapeName === 'line' ? 'line-color' : 'fill-color';
 
       const layer = style.layers.find((styleLayer) => {
+        if (!('source' in styleLayer) || typeof styleLayer.source !== 'string') {
+          return false;
+        }
+
         return (
           styleLayer.source === sourceName &&
           styleLayer.id.includes(`-${shapeName}__${layerType}-layer-`)
         );
       });
 
-      return layer?.paint?.[paintProperty] ?? null;
+      if (!layer || !('paint' in layer) || !layer.paint) {
+        return null;
+      }
+
+      const paint = layer.paint as Record<string, unknown>;
+      const value = paint[paintProperty];
+      return typeof value === 'string' ? value : null;
     },
     { sourceName, shapeName },
   );
@@ -187,7 +202,11 @@ test.describe('Edit Mode - Active Feature Styling', () => {
     expect(mainColor).toBe(SOURCE_STYLES.line.gm_main);
     expect(temporaryColor).toBe(SOURCE_STYLES.line.gm_temporary);
 
-    const features = await getRenderedFeaturesData({ page, temporary: false, allowedTypes: ['line'] });
+    const features = await getRenderedFeaturesData({
+      page,
+      temporary: false,
+      allowedTypes: ['line'],
+    });
     expect(features.length).toBeGreaterThan(0);
     const featureId = features[0].id;
 

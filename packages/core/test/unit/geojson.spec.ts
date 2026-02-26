@@ -62,11 +62,7 @@ describe('utils/geojson', () => {
     eachCoordinateWithPath(polygon, ({ coordinate }) => all.push(coordinate));
 
     const skipped: Array<unknown> = [];
-    eachCoordinateWithPath(
-      polygon,
-      ({ coordinate }) => skipped.push(coordinate),
-      true,
-    );
+    eachCoordinateWithPath(polygon, ({ coordinate }) => skipped.push(coordinate), true);
 
     expect(all).toHaveLength(4);
     expect(skipped).toHaveLength(3);
@@ -112,8 +108,14 @@ describe('utils/geojson', () => {
     eachSegmentWithPath(line, (segment) => segments.push(segment));
 
     expect(segments).toHaveLength(2);
-    expect(segments[0].start).toMatchObject({ coordinate: [0, 0], path: ['geometry', 'coordinates', 0] });
-    expect(segments[0].end).toMatchObject({ coordinate: [1, 0], path: ['geometry', 'coordinates', 1] });
+    expect(segments[0].start).toMatchObject({
+      coordinate: [0, 0],
+      path: ['geometry', 'coordinates', 0],
+    });
+    expect(segments[0].end).toMatchObject({
+      coordinate: [1, 0],
+      path: ['geometry', 'coordinates', 1],
+    });
   });
 
   it('removes target vertices from line, polygon and multipolygon shapes', () => {

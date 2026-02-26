@@ -75,15 +75,18 @@ const createGm = () => ({
 describe('core/options/GmOptions', () => {
   it('merges input options with defaults and composes layer styles by type', () => {
     const gm = createGm();
-    const options = new GmOptions(gm as never, {
-      settings: { controlsUiEnabledByDefault: false },
-      layerStyles: {
-        line: [
-          { type: 'line', paint: { 'line-color': '#f00' } },
-          { type: 'circle', paint: { 'circle-radius': 4 } },
-        ],
-      },
-    } as never);
+    const options = new GmOptions(
+      gm as never,
+      {
+        settings: { controlsUiEnabledByDefault: false },
+        layerStyles: {
+          line: [
+            { type: 'line', paint: { 'line-color': '#f00' } },
+            { type: 'circle', paint: { 'circle-radius': 4 } },
+          ],
+        },
+      } as never,
+    );
 
     expect(getDefaultOptionsMock).toHaveBeenCalledOnce();
     expect(trackDefaultUiEnabledStateMock).toHaveBeenCalledOnce();
