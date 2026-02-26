@@ -19,6 +19,7 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
       useDefaultLayers: true,
       controlsUiEnabledByDefault: true,
       controlsCollapsible: true,
+      useControlsUi: true,
       controlsStyles: {
         controlGroupClass: CONTROL_GROUP_CLASS,
         controlContainerClass: 'gm-control-container',
