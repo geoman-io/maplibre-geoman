@@ -48,19 +48,24 @@ for (const workspaceName of ['apps/dev', 'packages/core', 'packages/maplibre', '
 
 const maplibreDependencies = maplibrePkg.dependencies ?? {};
 const mapboxDependencies = mapboxPkg.dependencies ?? {};
-const dependencyNames = new Set([...Object.keys(maplibreDependencies), ...Object.keys(mapboxDependencies)]);
+const dependencyNames = new Set([
+  ...Object.keys(maplibreDependencies),
+  ...Object.keys(mapboxDependencies),
+]);
 
 for (const dependencyName of dependencyNames) {
   const maplibreVersion = maplibreDependencies[dependencyName];
   const mapboxVersion = mapboxDependencies[dependencyName];
 
   if (!maplibreVersion || !mapboxVersion) {
-    fail(`Dependency "${dependencyName}" must be present in both maplibre and mapbox package.json files`);
+    fail(
+      `Dependency "${dependencyName}" must be present in both maplibre and mapbox package.json files`,
+    );
   }
 
   if (maplibreVersion !== mapboxVersion) {
     fail(
-      `Dependency "${dependencyName}" version mismatch (maplibre=${maplibreVersion}, mapbox=${mapboxVersion})`
+      `Dependency "${dependencyName}" version mismatch (maplibre=${maplibreVersion}, mapbox=${mapboxVersion})`,
     );
   }
 }

@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "eslint",
+    "typescript"
+  ],
+  "env": {
+    "browser": true
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/*.js",
+    "**/*.mjs"
+  ],
+  "rules": {
+    "class-methods-use-this": "off",
+    "prefer-destructuring": "off",
+    "max-classes-per-file": "off",
+    "no-return-assign": "off",
+    "arrow-body-style": "off",
+    "no-else-return": "off",
+    "no-console": "off",
+    "object-curly-newline": "off",
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 2
+      }
+    ],
+    "no-useless-assignment": "warn",
+    "typescript/no-unused-vars": "warn"
+  }
+}

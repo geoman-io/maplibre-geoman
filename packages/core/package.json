@@ -1,11 +1,11 @@
 {
   "name": "@geoman-io/geoman-core",
-  "private": true,
   "version": "0.6.3",
-  "type": "module",
+  "private": true,
   "description": "Shared core internals for Geoman MapLibre/Mapbox packages",
+  "type": "module",
   "scripts": {
-    "lint": "eslint src build",
+    "lint": "oxlint src build",
     "test:unit": "vitest run --config vitest.config.ts"
   }
 }

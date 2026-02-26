@@ -55,7 +55,7 @@ jobs:
       - name: TypeScript checks
         run: npm run typecheck:all
 
-      - name: ESLint checks
+      - name: Oxlint checks
         run: npm run lint:all
 
       - name: Workspace validation

@@ -26,8 +26,8 @@ updates:
       dev-dependencies:
         patterns:
           - "@types/*"
-          - "@typescript-eslint/*"
-          - "eslint*"
+          - "oxlint"
+          - "oxfmt"
           - "vite*"
           - "typescript"
           - "playwright"

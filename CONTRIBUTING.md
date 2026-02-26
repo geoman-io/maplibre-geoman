@@ -11,7 +11,7 @@ Thank you for your interest in contributing! We welcome all kinds of contributio
   3. Ensure your code follows our style guidelines and passes all tests.
   4. Include tests for new features or bug fixes.
   5. Open a pull request and describe your changes.
-- **Code Style:** Follow the existing code style. We use ESLint and Prettier for formatting.
+- **Code Style:** Follow the existing code style. We use Oxlint and Oxfmt for linting and formatting.
 - **Documentation:** Improvements to documentation are highly appreciated.
 
 ## Contributor License Agreement (CLA)

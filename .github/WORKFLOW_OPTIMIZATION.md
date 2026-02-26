@@ -22,7 +22,7 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 
 - ~40% faster feedback through parallel job execution
 - Reduced redundant npm installs through better caching
-- Quick feedback on common issues (TypeScript, ESLint) before expensive operations
+- Quick feedback on common issues (TypeScript, Oxlint) before expensive operations
 
 ### 2. Enhanced Release Workflow (`release.yml`)
 

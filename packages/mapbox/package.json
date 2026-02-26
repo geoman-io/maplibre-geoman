@@ -1,25 +1,28 @@
 {
   "name": "@geoman-io/mapbox-geoman-free",
-  "private": false,
   "version": "0.0.1-alpha.2",
-  "type": "module",
+  "private": false,
   "description": "A Mapbox Plugin For Drawing and Editing Geometry Layers",
   "homepage": "https://geoman.io",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/geoman-io/maplibre-geoman.git"
+  "bugs": {
+    "url": "https://github.com/geoman-io/maplibre-geoman/issues"
   },
+  "license": "MIT",
   "author": {
     "name": "Geoman.io",
     "email": "sales@geoman.io",
     "url": "https://geoman.io"
   },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/geoman-io/maplibre-geoman/issues"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/geoman-io/maplibre-geoman.git"
   },
-  "module": "dist/mapbox-geoman.es.js",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
   "main": "dist/mapbox-geoman.umd.js",
+  "module": "dist/mapbox-geoman.es.js",
   "types": "dist/mapbox-geoman.d.ts",
   "exports": {
     ".": {
@@ -29,16 +32,17 @@
     },
     "./dist/mapbox-geoman.css": "./dist/mapbox-geoman.css"
   },
-  "files": [
-    "dist"
-  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "scripts": {
     "dev": "vite ../.. --config vite.config.ts",
     "build": "rimraf dist && vite build --config vite.config.ts && npm run build:types && node ../../scripts/verify-variant-bundle.mjs mapbox dist",
     "testserver": "vite ../.. --config vite.config.ts --host 127.0.0.1 --port 4001 --mode test",
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly && tsc-alias -p tsconfig.types.json && rollup -c rollup.config.dts.js && node ../../scripts/verify-variant-types.mjs mapbox dist/mapbox-geoman.d.ts && rimraf dist/types",
     "ts": "tsc --noEmit -p ../../tsconfig.mapbox.json",
-    "lint": "eslint src",
+    "lint": "oxlint src",
     "pack": "npm run build && npm pack"
   },
   "dependencies": {
@@ -79,9 +83,5 @@
   },
   "peerDependencies": {
     "mapbox-gl": ">=3.18.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
   }
 }
