@@ -201,7 +201,7 @@ jobs:
 
       - name: Extract release notes from CHANGELOG.md
         id: release-notes
-        uses: ffurrer2/extract-release-notes@v2
+        uses: ffurrer2/extract-release-notes@v3
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
