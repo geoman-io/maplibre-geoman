@@ -46,6 +46,12 @@ export type LngLatDiff = {
   lat: number;
 };
 
+export type SimplePoint = {
+  x: number;
+  y: number;
+  dist(p: { x: number; y: number }): number;
+};
+
 export interface PositionData {
   coordinate: LngLatTuple;
   path: Array<string | number>;

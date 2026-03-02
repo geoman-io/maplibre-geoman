@@ -55,6 +55,7 @@ export class DrawRectangle extends BaseDraw {
       return { next: false };
     }
 
+    this.gm.features.clearSelection();
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.startLngLat) {

@@ -23,6 +23,7 @@ export class DrawCircleMarker extends BaseCircle {
   }
 
   async onMouseClick(event: BaseMapPointerEvent) {
+    this.gm.features.clearSelection();
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
     await this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 

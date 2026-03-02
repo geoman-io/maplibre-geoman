@@ -1,4 +1,4 @@
-import { type EditModeName, type GmSystemEvent, SOURCES } from '@/main.ts';
+import { type EditModeName, getLngLatDiff, type GmSystemEvent, SOURCES } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
@@ -21,20 +21,35 @@ export class EditDrag extends BaseDrag {
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
-      if (!this.previousLngLat) {
-        this.previousLngLat = event.lngLatStart;
+      const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
+
+      for (const fd of event.linkedFeatures ?? []) {
+        await this.moveFeature(fd, lngLatDiff);
       }
-      await this.moveFeature(event.featureData, event.lngLatEnd);
+
+      const isUpdated = await this.moveFeature(event.featureData, lngLatDiff);
+
+      if (isUpdated) {
+        this.previousLngLat = event.lngLatEnd;
+      }
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      await event.featureData.changeSource({ sourceName: SOURCES.temporary });
+      this.gm.features.updateManager.beginTransaction('transactional-update');
+      for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
+        await fd.changeSource({ sourceName: SOURCES.temporary });
+        await this.fireFeatureEditStartEvent({ feature: fd });
+      }
+      this.gm.features.updateManager.commitTransaction();
       this.flags.actionInProgress = true;
-      await this.fireFeatureEditStartEvent({ feature: event.featureData });
       this.setCursorToPointer();
     } else if (event.action === 'marker_released') {
       this.previousLngLat = null;
-      await event.featureData.changeSource({ sourceName: SOURCES.main });
-      await this.fireFeatureEditEndEvent({ feature: event.featureData });
+      this.gm.features.updateManager.beginTransaction('transactional-update');
+      for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
+        await fd.changeSource({ sourceName: SOURCES.main });
+        await this.fireFeatureEditEndEvent({ feature: fd });
+      }
+      this.gm.features.updateManager.commitTransaction();
       this.flags.actionInProgress = false;
     }
     return { next: true };

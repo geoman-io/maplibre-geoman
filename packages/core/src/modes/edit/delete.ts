@@ -27,10 +27,24 @@ export class EditDelete extends BaseEdit {
       return { next: false };
     }
 
-    const feature = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
-    if (feature && this.allowedShapes.includes(feature.shape)) {
-      await this.gm.features.delete(feature);
-      await this.fireFeatureRemovedEvent(feature);
+    const principalFeature = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
+    if (principalFeature && this.allowedShapes.includes(principalFeature.shape)) {
+      if (!this.gm.features.selection.has(principalFeature.id)) {
+        this.gm.features.setSelection([principalFeature.id]);
+      }
+
+      const linkedFeatures = this.gm.features.getLinkedFeatures(principalFeature);
+
+      if (linkedFeatures.some((f) => f.getShapeProperty('disableEdit') === true)) {
+        return { next: false };
+      }
+
+      this.gm.features.setSelection([], true);
+
+      for (const fd of [principalFeature, ...linkedFeatures]) {
+        await this.gm.features.delete(fd);
+        await this.fireFeatureRemovedEvent(fd);
+      }
     }
     return { next: false };
   }

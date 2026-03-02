@@ -1,5 +1,6 @@
 import {
   type EditModeName,
+  FeatureData,
   type FeatureShape,
   type GeoJsonShapeFeature,
   type GmEditEvent,
@@ -10,24 +11,37 @@ import {
   SOURCES,
 } from '@/main.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
-import { geoJsonPointToLngLat, getGeoJsonEllipse } from '@/utils/geojson.ts';
+import {
+  geoJsonPointToLngLat,
+  getGeoJsonCircle,
+  getGeoJsonEllipse,
+  getGeoJsonFirstPoint,
+  getLngLatDiff,
+  isEqualPosition,
+} from '@/utils/geojson.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import bearing from '@turf/bearing';
 import centroid from '@turf/centroid';
+import { featureCollection, point } from '@turf/helpers';
 import transformRotate from '@turf/transform-rotate';
+import type { Feature, Polygon } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
 
-type RotateShapeHandler = (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
+type RotateShapeHandler = (
+  featureData: FeatureData,
+  shapeCentroid: LngLatTuple,
+  event: GmEditMarkerMoveEvent,
+) => GeoJsonShapeFeature | null;
 
 export class EditRotate extends BaseDrag {
   mode: EditModeName = 'rotate';
-  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon', 'ellipse'];
+  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon', 'ellipse', 'circle'];
   convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
 
   shapeRotateHandlers: { [key in FeatureShape]?: RotateShapeHandler } = {
     marker: this.rotateFeature.bind(this),
-    circle: this.rotateFeature.bind(this),
+    circle: this.rotateCircle.bind(this),
     circle_marker: this.rotateFeature.bind(this),
     text_marker: this.rotateFeature.bind(this),
     line: this.rotateFeature.bind(this),
@@ -58,18 +72,27 @@ export class EditRotate extends BaseDrag {
       if (event.markerData?.type === 'vertex') {
         await this.moveVertex(event);
       } else {
-        this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
+        const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
+        this.moveSource(event.featureData, lngLatDiff);
       }
       return { next: false };
     } else if (event.action === 'marker_captured') {
-      await event.featureData.changeSource({ sourceName: SOURCES.temporary });
+      this.gm.features.updateManager.beginTransaction('transactional-update');
+      for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
+        await fd.changeSource({ sourceName: SOURCES.temporary });
+        await this.fireFeatureEditStartEvent({ feature: fd });
+      }
+      this.gm.features.updateManager.commitTransaction();
       this.setCursorToPointer();
       this.flags.actionInProgress = true;
-      await this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {
-      await event.featureData.changeSource({ sourceName: SOURCES.main });
-      await this.fireFeatureEditEndEvent({ feature: event.featureData });
       this.flags.actionInProgress = false;
+      this.gm.features.updateManager.beginTransaction('transactional-update');
+      for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
+        await fd.changeSource({ sourceName: SOURCES.main });
+        await this.fireFeatureEditEndEvent({ feature: fd });
+      }
+      this.gm.features.updateManager.commitTransaction();
     }
     return { next: true };
   }
@@ -81,31 +104,81 @@ export class EditRotate extends BaseDrag {
   }
 
   async moveVertex(event: GmEditMarkerMoveEvent) {
-    const featureData = event.featureData;
-    const updatedGeoJson = this.shapeRotateHandlers[featureData.shape]?.(event) || null;
+    const shapeCentroid = geoJsonPointToLngLat(
+      centroid(
+        featureCollection([
+          event.featureData.getGeoJson(),
+          ...(event.linkedFeatures ?? []).map((fd) => fd.getGeoJson()),
+        ]),
+      ),
+    );
 
-    if (updatedGeoJson) {
-      await this.fireBeforeFeatureUpdate({
-        features: [featureData],
-        geoJsonFeatures: [updatedGeoJson],
-      });
+    for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
+      const updatedGeoJson = this.shapeRotateHandlers[fd.shape]?.(fd, shapeCentroid, event) || null;
 
-      const isUpdated = await this.updateFeatureGeoJson({
-        featureData,
-        featureGeoJson: updatedGeoJson,
-      });
+      if (updatedGeoJson) {
+        await this.fireBeforeFeatureUpdate({
+          features: [fd],
+          geoJsonFeatures: [updatedGeoJson],
+        });
 
-      if (isUpdated && this.convertFeaturesTypes.includes(featureData.shape)) {
-        await featureData.convertToPolygon(); // if possible
+        const isUpdated = await this.updateFeatureGeoJson({
+          featureData: fd,
+          featureGeoJson: updatedGeoJson,
+        });
+
+        if (isUpdated && this.convertFeaturesTypes.includes(fd.shape)) {
+          await fd.convertToPolygon(); // if possible
+        }
+      } else {
+        log.error('EditRotate.moveVertex: invalid geojson', updatedGeoJson, event);
       }
-    } else {
-      log.error('EditRotate.moveVertex: invalid geojson', updatedGeoJson, event);
     }
   }
 
-  rotateEllipse(event: GmEditMarkerMoveEvent) {
-    const { featureData } = event;
+  rotateCircle(featureData: FeatureData, shapeCentroid: LngLatTuple, event: GmEditMarkerMoveEvent) {
+    if (featureData.shape !== 'circle') {
+      log.error('EditRotate.rotateCircle: invalid shape type', featureData);
+      return null;
+    }
 
+    const center = featureData.getShapeProperty('center');
+
+    if (!Array.isArray(center)) {
+      log.error('rotateCircle: missing center in the featureData', featureData);
+      return null;
+    }
+
+    if (isEqualPosition(shapeCentroid, center)) {
+      return featureData.getGeoJson();
+    }
+
+    const deltaAngle = this.calculateRotationAngle(
+      shapeCentroid,
+      event.lngLatStart,
+      event.lngLatEnd,
+      false,
+    );
+
+    const geoJson = featureData.getGeoJson() as Feature<Polygon>;
+    const circleRimLngLat = getGeoJsonFirstPoint(geoJson);
+    if (!circleRimLngLat) {
+      log.error('rotateCircle: missing center circleRimLngLat');
+      return null;
+    }
+
+    const rotatedCenter = transformRotate(point(center), deltaAngle, { pivot: shapeCentroid })
+      .geometry.coordinates as LngLatTuple;
+    const radius = this.gm.mapAdapter.getDistance(center, circleRimLngLat);
+
+    return getGeoJsonCircle({ center: rotatedCenter, radius }) as GeoJsonShapeFeature;
+  }
+
+  rotateEllipse(
+    featureData: FeatureData,
+    shapeCentroid: LngLatTuple,
+    event: GmEditMarkerMoveEvent,
+  ) {
     if (featureData.shape !== 'ellipse') {
       log.error('EditRotate.rotateEllipse: invalid shape type', featureData);
       return null;
@@ -130,25 +203,29 @@ export class EditRotate extends BaseDrag {
     }
 
     const deltaAngle = this.calculateRotationAngle(
-      center,
+      shapeCentroid,
       event.lngLatStart,
       event.lngLatEnd,
       false,
     );
 
+    const rotatedCenter = transformRotate(point(center), deltaAngle, { pivot: shapeCentroid })
+      .geometry.coordinates as LngLatTuple;
+
     return getGeoJsonEllipse({
-      center,
+      center: rotatedCenter,
       xSemiAxis,
       ySemiAxis,
       angle: angle + deltaAngle,
     });
   }
 
-  rotateFeature(event: GmEditMarkerMoveEvent) {
-    const featureData = event.featureData;
-
+  rotateFeature(
+    featureData: FeatureData,
+    shapeCentroid: LngLatTuple,
+    event: GmEditMarkerMoveEvent,
+  ) {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
-    const shapeCentroid = geoJsonPointToLngLat(centroid(geoJson));
 
     const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
 
