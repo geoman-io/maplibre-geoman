@@ -733,6 +733,7 @@ export class Features {
   getFeatureShapeByGeoJson(shapeGeoJson: Feature): ShapeName | null {
     const SHAPE_MAP: { [key in Geometry['type']]?: ShapeName } = {
       Point: 'marker',
+      MultiPoint: 'marker',
       LineString: 'line',
       MultiLineString: 'line',
       Polygon: 'polygon',
