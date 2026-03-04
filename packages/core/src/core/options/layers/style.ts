@@ -7,7 +7,9 @@ import { getSecondaryControlMarkerStyles } from '@/core/options/layers/shapes/se
 import { getSnapGuideStyles } from '@/core/options/layers/shapes/snap-guides.ts';
 import { getTextMarkerStyles } from '@/core/options/layers/shapes/text-marker.ts';
 import { sourceStyles } from '@/core/options/layers/variables.ts';
-import { type FeatureShape, type LayerStyle, SOURCES } from '@/main.ts';
+import { type LayerStyle } from '@/types/map/layers.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import { type FeatureShape } from '@/types/features.ts';
 
 import { IS_PRO } from '@/core/constants.ts';
 
