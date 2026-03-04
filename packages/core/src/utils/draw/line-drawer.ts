@@ -161,6 +161,7 @@ export class LineDrawer extends BaseDraw {
     if (!isMapPointerEvent(event, { warning: true })) {
       return { next: true };
     }
+    this.gm.features.clearSelection();
     // we use a marker lngLat since it's auto adjusted when snapping is enabled
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 

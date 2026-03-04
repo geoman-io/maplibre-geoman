@@ -4,6 +4,10 @@ export const isNonEmptyArray = <T>(arr: T[] | readonly T[]): arr is NonEmptyArra
   return arr.length > 0;
 };
 
+export const isDefined = <T>(value: T | null | undefined): value is T => {
+  return value !== null && value !== undefined;
+};
+
 // exports
 export { isGmEvent } from '@/utils/guards/events/index.ts';
 export { isModeName } from '@/utils/guards/modes.ts';

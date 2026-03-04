@@ -57,6 +57,7 @@
   "reexport:includesWithType",
   "reexport:isActionType",
   "reexport:isBaseMapEventName",
+  "reexport:isDefined",
   "reexport:isDrawModeName",
   "reexport:isEditModeName",
   "reexport:isEqualPosition",

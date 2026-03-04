@@ -21,6 +21,7 @@ export class DrawCircle extends BaseCircle {
     if (!isMapPointerEvent(event)) {
       return { next: true };
     }
+    this.gm.features.clearSelection();
     const lngLat: LngLatTuple = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.circleCenterPoint && this.circleCenterLngLat) {

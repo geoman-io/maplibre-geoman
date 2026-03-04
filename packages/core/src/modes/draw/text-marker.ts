@@ -47,6 +47,8 @@ export class DrawTextMarker extends BaseDraw {
       return { next: true };
     }
 
+    this.gm.features.clearSelection();
+
     if (this.textarea) {
       await this.endShape();
       this.gm.markerPointer.enable({ invisibleMarker: true, lngLat: event.lngLat.toArray() });

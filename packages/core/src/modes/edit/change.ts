@@ -17,6 +17,7 @@ import {
   getGeoJsonCircle,
   getGeoJsonCoordinatesCount,
   getGeoJsonEllipse,
+  getLngLatDiff,
   isLineStringFeature,
   isMultiPolygonFeature,
   isPolygonFeature,
@@ -90,7 +91,8 @@ export class EditChange extends BaseDrag {
         await this.moveVertex(event);
         return { next: false };
       } else if (event.lngLatEnd) {
-        this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
+        const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
+        this.moveSource(event.featureData, lngLatDiff);
         return { next: false };
       }
     }
