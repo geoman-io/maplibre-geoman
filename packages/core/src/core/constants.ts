@@ -4,7 +4,8 @@ let geomanVersion: GeomanVersion | null;
 try {
   geomanVersion = __GEOMAN_VERSION__;
 } catch {
-  geomanVersion = (process.env.VITE_GEOMAN_VERSION as GeomanVersion) || null;
+  geomanVersion =
+    (typeof process !== 'undefined' && (process.env.VITE_GEOMAN_VERSION as GeomanVersion)) || null;
 }
 
 export const GM_PREFIX = 'gm' as const;
