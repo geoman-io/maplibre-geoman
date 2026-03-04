@@ -3,25 +3,21 @@ import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { propertyValidators } from '@/core/features/validators.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import {
-  type BasicGeometry,
-  type EditModeName,
-  type FeatureDataParameters,
-  type FeatureId,
-  type FeatureShape,
-  type FeatureShapeProperties,
-  type FeatureSourceName,
-  type GeoJSONFeatureDiff,
-  type GeoJsonShapeFeature,
-  type Geoman,
-  type GmEditFeatureUpdatedEvent,
-  includesWithType,
-  type MarkerData,
-  type MarkerId,
-  type PrefixedFeatureShapeProperties,
-  type ShapeGeoJsonProperties,
-  typedKeys,
-} from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { GmEditFeatureUpdatedEvent } from '@/types/events/edit.ts';
+import type {
+  FeatureDataParameters,
+  FeatureId,
+  FeatureShape,
+  FeatureShapeProperties,
+  FeatureSourceName,
+  PrefixedFeatureShapeProperties,
+  ShapeGeoJsonProperties,
+} from '@/types/features.ts';
+import type { BasicGeometry, GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { GeoJSONFeatureDiff } from '@/types/map/index.ts';
+import type { EditModeName, MarkerData, MarkerId } from '@/types/modes/index.ts';
+import { includesWithType, typedKeys } from '@/utils/typing.ts';
 import { ALL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { geoJsonPointToLngLat } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';

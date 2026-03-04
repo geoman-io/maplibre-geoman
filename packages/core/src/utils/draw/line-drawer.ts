@@ -1,22 +1,15 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import {
-  type DrawModeName,
-  type GeoJsonLineFeature,
-  type GeoJsonShapeFeature,
-  type Geoman,
-  type GmDrawLineDrawerEventWithData,
-  type GmSystemEvent,
-  type LineEventHandlerArguments,
-  type LngLatTuple,
-  type MapHandlerReturnData,
-  type MarkerData,
-  type MarkerId,
-  type ScreenPoint,
-  type ShapeName,
-  SOURCES,
-} from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { MapHandlerReturnData } from '@/types/events/bus.ts';
+import type { GmDrawLineDrawerEventWithData } from '@/types/events/draw.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { GeoJsonLineFeature, GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { DrawModeName, MarkerData, MarkerId, ShapeName } from '@/types/modes/index.ts';
+import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';

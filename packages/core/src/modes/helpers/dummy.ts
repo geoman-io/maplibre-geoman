@@ -1,4 +1,4 @@
-import type { HelperModeName } from '@/main.ts';
+import type { HelperModeName } from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 
 export class DummyHelper extends BaseHelper {

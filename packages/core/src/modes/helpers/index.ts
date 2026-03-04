@@ -1,4 +1,5 @@
-import type { Geoman, HelperModeName } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { HelperModeName } from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { ShapeMarkersHelper } from '@/modes/helpers/shape-markers.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';

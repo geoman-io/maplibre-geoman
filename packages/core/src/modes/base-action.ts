@@ -1,14 +1,10 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
-import type {
-  ActionOptions,
-  ActionSettings,
-  ActionType,
-  EventHandlers,
-  Geoman,
-  GmGeofencingViolationEvent,
-  ModeName,
-  SubActions,
-} from '@/main.ts';
+import type { EventHandlers } from '@/types/events/bus.ts';
+import type { GmGeofencingViolationEvent } from '@/types/events/helper.ts';
+import type { Geoman } from '@/main.ts';
+import type { ModeName } from '@/types/controls.ts';
+import type { ActionOptions, ActionSettings, SubActions } from '@/types/modes/index.ts';
+import type { ActionType } from '@/types/options.ts';
 import type { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { isGmGeofencingViolationEvent } from '@/utils/guards/events/helper.ts';
 import log from 'loglevel';

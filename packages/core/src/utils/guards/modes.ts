@@ -1,14 +1,13 @@
+import type { DrawModeName, EditModeName, HelperModeName } from '@/types/modes/index.ts';
+import type { ModeName } from '@/types/controls.ts';
+import type { ActionType, ModeType } from '@/types/options.ts';
 import {
-  type ActionType,
+  ACTION_TYPES,
   DRAW_MODES,
-  type DrawModeName,
-  type EditModeName,
-  type HelperModeName,
-  type ModeName,
-  type ModeType,
-} from '@/main.ts';
-
-import { ACTION_TYPES, EDIT_MODES, HELPER_MODES, MODE_TYPES } from '@/modes/constants.ts';
+  EDIT_MODES,
+  HELPER_MODES,
+  MODE_TYPES,
+} from '@/modes/constants.ts';
 
 export const isModeType = (name: string): name is ModeType => {
   return MODE_TYPES.includes(name as ModeType);

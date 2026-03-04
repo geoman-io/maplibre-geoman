@@ -1,4 +1,5 @@
-import type { DrawModeName, Geoman } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { DrawModeName } from '@/types/modes/index.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { DrawCircleMarker } from '@/modes/draw/circle-marker.ts';
 import { DrawCircle } from '@/modes/draw/circle.ts';

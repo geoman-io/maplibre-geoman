@@ -1,5 +1,7 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { EventHandlers, Geoman, LngLatTuple, MapEventHadler, ScreenPoint } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { EventHandlers, MapEventHadler } from '@/types/events/bus.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
 import { SnappingHelper } from '@/modes/helpers/snapping.ts';
 import { convertToThrottled, isTouchScreen } from '@/utils/behavior.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';

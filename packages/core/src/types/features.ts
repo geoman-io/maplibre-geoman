@@ -1,11 +1,15 @@
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import { FEATURE_ID_PROPERTY, type Geoman, SOURCES } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import {
+  FEATURE_ID_PROPERTY,
+  FEATURE_PROPERTY_PREFIX,
+  SOURCES,
+} from '@/core/features/constants.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLatTuple } from '@/types/map/index.ts';
 import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
 import type { WithPrefixedKeys } from '@/types/utils.ts';
-import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export type FeatureId = number | string;
 

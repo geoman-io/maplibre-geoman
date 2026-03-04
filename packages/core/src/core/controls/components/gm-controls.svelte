@@ -3,7 +3,8 @@
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
   import { controlsStore } from '@/core/controls/components/controls-store.ts';
-  import type { ControlOptions, GenericSystemControls, ModeName, ModeType } from '@/main.ts';
+  import type { ControlOptions, ModeType } from '@/types/options.ts';
+  import type { GenericSystemControls, ModeName } from '@/types/controls.ts';
   import DOMPurify from 'dompurify';
 
   // const gm: Geoman = getContext('gm');

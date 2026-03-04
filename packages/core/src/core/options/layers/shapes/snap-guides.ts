@@ -1,4 +1,4 @@
-import type { PartialLayerStyle } from '@/main.ts';
+import type { PartialLayerStyle } from '@/types/map/layers.ts';
 
 export const getSnapGuideStyles = (): Array<PartialLayerStyle> => {
   return [

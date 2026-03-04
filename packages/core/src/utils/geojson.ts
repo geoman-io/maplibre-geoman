@@ -5,12 +5,11 @@ import type {
   GeoJsonShapeFeatureCollection,
   LineBasedGeometry,
   LngLatDiff,
-  LngLatTuple,
   PositionData,
-  ScreenPoint,
   SegmentPosition,
-  ShapeName,
-} from '@/main.ts';
+} from '@/types/geojson.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { ShapeName } from '@/types/modes/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
 import turfCircle from '@turf/circle';

@@ -1,10 +1,7 @@
 import { layerStyles } from './styles/layer-styles.ts';
-import {
-  type AnyMapInstance,
-  Geoman,
-  type GmOptionsData,
-  type MapInstanceWithGeoman,
-} from '@/main.ts';
+import { Geoman } from '@/main.ts';
+import type { AnyMapInstance, MapInstanceWithGeoman } from '@/types/map/index.ts';
+import type { GmOptionsData } from '@/types/options.ts';
 import log from 'loglevel';
 import type { PartialDeep } from 'type-fest';
 import { mount, unmount } from 'svelte';

@@ -1,13 +1,11 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type {
-  ActionInstanceKey,
-  EventHandlers,
-  Geoman,
-  GmEditEvent,
-  GmSystemEvent,
-} from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { EventHandlers } from '@/types/events/bus.ts';
+import type { GmEditEvent } from '@/types/events/edit.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { ActionInstanceKey } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { createEditInstance } from '@/modes/edit/index.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';

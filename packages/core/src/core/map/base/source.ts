@@ -1,4 +1,5 @@
-import type { GeoJsonShapeFeatureCollection, GeoJSONSourceDiffHashed } from '@/main.ts';
+import type { GeoJsonShapeFeatureCollection } from '@/types/geojson.ts';
+import type { GeoJSONSourceDiffHashed } from '@/types/map/index.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
 

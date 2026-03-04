@@ -1,39 +1,44 @@
 import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import type { Geoman } from '@/main.ts';
+import type { ModeName } from '@/types/controls.ts';
+import type { GmControlLoadEvent } from '@/types/events/control.ts';
+import type { GmDrawFeatureCreatedEvent, GmDrawModeEvent } from '@/types/events/draw.ts';
 import type {
-  AnyEventName,
-  EditModeName,
-  FeatureCreatedFwdEvent,
-  FeatureEditEndFwdEvent,
-  FeatureEditStartFwdEvent,
-  FeatureRemovedFwdEvent,
-  FeatureSourceName,
-  FeatureUpdatedFwdEvent,
-  FwdEditModeName,
-  Geoman,
-  GlobalDrawEnabledDisabledFwdEvent,
-  GlobalDrawToggledFwdEvent,
-  GlobalEditToggledFwdEvent,
-  GlobalEventsListener,
-  GlobalHelperToggledFwdEvent,
-  GmControlLoadEvent,
-  GmDrawFeatureCreatedEvent,
-  GmDrawModeEvent,
   GmEditFeatureEditEndEvent,
   GmEditFeatureEditStartEvent,
   GmEditFeatureRemovedEvent,
   GmEditFeatureUpdatedEvent,
   GmEditModeEvent,
   GmEditSelectionChangeEvent,
-  GmEvent,
-  GmEventName,
-  GmEventNameWithoutPrefix,
-  GmFwdEventName,
-  GmHelperModeEvent,
-  GmSystemEvent,
-  ModeName,
+} from '@/types/events/edit.ts';
+import type {
+  FeatureEditEndFwdEvent,
+  FeatureEditStartFwdEvent,
+  FwdEditModeName,
   SelectionChangedFwdEvent,
-  SystemFwdEvent,
-} from '@/main.ts';
+} from '@/types/events/forwarder/edit.ts';
+import type {
+  FeatureCreatedFwdEvent,
+  FeatureRemovedFwdEvent,
+  FeatureUpdatedFwdEvent,
+} from '@/types/events/forwarder/features.ts';
+import type {
+  GmEvent,
+  GmFwdEventName,
+  GlobalEventsListener,
+} from '@/types/events/forwarder/index.ts';
+import type {
+  GlobalDrawEnabledDisabledFwdEvent,
+  GlobalDrawToggledFwdEvent,
+  GlobalEditToggledFwdEvent,
+  GlobalHelperToggledFwdEvent,
+} from '@/types/events/forwarder/mode.ts';
+import type { SystemFwdEvent } from '@/types/events/forwarder/system.ts';
+import type { GmHelperModeEvent } from '@/types/events/helper.ts';
+import type { GmEventName, GmEventNameWithoutPrefix, GmSystemEvent } from '@/types/events/index.ts';
+import type { FeatureSourceName } from '@/types/features.ts';
+import type { AnyEventName } from '@/types/map/index.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
 
 export class EventForwarder {
   gm: Geoman;

@@ -1,15 +1,10 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type {
-  DrawModeName,
-  GeoJsonShapeFeature,
-  GmDrawShapeEvent,
-  GmDrawShapeEventWithData,
-  LngLatTuple,
-  MarkerData,
-  ShapeName,
-} from '@/main.ts';
+import type { GmDrawShapeEvent, GmDrawShapeEventWithData } from '@/types/events/draw.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
+import type { DrawModeName, MarkerData, ShapeName } from '@/types/modes/index.ts';
 
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';

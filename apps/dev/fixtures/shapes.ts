@@ -1,10 +1,7 @@
-import {
-  FEATURE_ID_PROPERTY,
-  type GeoJsonImportFeature,
-  type GeoJsonImportFeatureCollection,
-  type Geoman,
-  type LngLatTuple,
-} from '@/main.ts';
+import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
+import type { Geoman } from '@/main.ts';
+import type { GeoJsonImportFeature, GeoJsonImportFeatureCollection } from '@/types/geojson.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import log from 'loglevel';
 
 export const loadStressTestFeatureCollection = async (

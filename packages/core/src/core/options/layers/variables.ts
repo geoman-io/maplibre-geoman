@@ -1,4 +1,4 @@
-import type { SourceStyles } from '@/main.ts';
+import type { SourceStyles } from '@/types/map/layers.ts';
 import { IS_PRO } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 

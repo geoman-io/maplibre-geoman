@@ -1,4 +1,5 @@
-import type { EditModeName, Geoman } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { EditChange } from '@/modes/edit/change.ts';
 import { EditCut } from '@/modes/edit/cut.ts';

@@ -1,4 +1,5 @@
-import type { ActionType, HelperModeName } from '@/main.ts';
+import type { HelperModeName } from '@/types/modes/index.ts';
+import type { ActionType } from '@/types/options.ts';
 import { BaseAction } from '@/modes/base-action.ts';
 
 export abstract class BaseHelper extends BaseAction {

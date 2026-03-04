@@ -1,5 +1,5 @@
-import { LOAD_TIMEOUT, SOURCES } from '@/core/features/constants.ts';
-import { FEATURE_ID_PROPERTY, type Geoman } from '@/main.ts';
+import { FEATURE_ID_PROPERTY, LOAD_TIMEOUT, SOURCES } from '@/core/features/constants.ts';
+import type { Geoman } from '@/main.ts';
 import type { FeatureSourceName, GeoJSONFeatureDiff, GeoJSONSourceDiffHashed } from '@/types';
 import { typedValues } from '@/utils/typing.ts';
 import type { Feature } from 'geojson';
