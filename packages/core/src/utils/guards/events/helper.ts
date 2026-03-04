@@ -1,4 +1,4 @@
-import type { GmGeofencingViolationEvent, GmHelperModeEvent } from '@/main.ts';
+import type { GmGeofencingViolationEvent, GmHelperModeEvent } from '@/types/events/helper.ts';
 import { isGmEvent } from '@/utils/guards/events/index.ts';
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 

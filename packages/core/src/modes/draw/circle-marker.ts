@@ -1,4 +1,5 @@
-import type { DrawModeName, LngLatTuple, ShapeName } from '@/main.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
+import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 

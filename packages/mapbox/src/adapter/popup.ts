@@ -1,5 +1,5 @@
 import { BasePopup } from '@/core/map/base/popup.ts';
-import type { BasePopupOptions, LngLatTuple } from '@/main.ts';
+import type { BasePopupOptions, LngLatTuple } from '@/types/map/index.ts';
 import mapboxgl from 'mapbox-gl';
 
 export class MapboxPopup extends BasePopup<mapboxgl.Popup> {

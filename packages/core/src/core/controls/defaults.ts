@@ -1,4 +1,4 @@
-import type { SystemControls } from '@/main.ts';
+import type { SystemControls } from '@/types/controls.ts';
 
 export const systemControls: SystemControls = {
   draw: {

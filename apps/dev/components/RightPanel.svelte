@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type {GeoJsonImportFeature, Geoman} from '@/main.ts';
+  import type {Geoman} from '@/main.ts';
+  import type {GeoJsonImportFeature} from '@/types/geojson.ts';
   import type { DevMapInstance } from '../common.ts';
   import commonShapes from '@tests/fixtures/common-shapes.json';
   import oneOfEachShape from '@tests/fixtures/one-shape-of-each-type.json';

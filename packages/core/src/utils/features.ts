@@ -1,13 +1,8 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import {
-  type AnyMapInstance,
-  BaseMapAdapter,
-  type FeatureId,
-  type GeoJsonImportFeature,
-  type GeoJsonShapeFeature,
-  type LngLatDiff,
-  type LngLatTuple,
-} from '@/main.ts';
+import { BaseMapAdapter } from '@/core/map/base/index.ts';
+import type { FeatureId } from '@/types/features.ts';
+import type { GeoJsonImportFeature, GeoJsonShapeFeature, LngLatDiff } from '@/types/geojson.ts';
+import type { AnyMapInstance, LngLatTuple } from '@/types/map/index.ts';
 import {
   eachCoordinateWithPath,
   getAllGeoJsonCoordinates,

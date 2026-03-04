@@ -1,4 +1,4 @@
-import type { LngLatTuple } from '@/main.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import log from 'loglevel';
 
 export abstract class BaseDomMarker<TMarkerInstance = unknown> {

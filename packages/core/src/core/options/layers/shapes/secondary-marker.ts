@@ -1,4 +1,4 @@
-import type { PartialLayerStyle, StyleVariables } from '@/main.ts';
+import type { PartialLayerStyle, StyleVariables } from '@/types/map/layers.ts';
 
 export const getSecondaryControlMarkerStyles = (
   styleVariables: StyleVariables,

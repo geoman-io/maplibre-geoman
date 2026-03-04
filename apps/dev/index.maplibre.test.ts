@@ -1,5 +1,5 @@
-import type { GmOptionsData } from '@/main.ts';
 import { Geoman } from '@/main.ts';
+import type { GmOptionsData } from '@/types/options.ts';
 import * as geojsonUtils from '@/utils/geojson.ts';
 import log from 'loglevel';
 import ml from 'maplibre-gl';

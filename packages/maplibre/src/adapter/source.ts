@@ -1,13 +1,10 @@
 import { BaseSource } from '@/core/map/base/source.ts';
-import {
-  FEATURE_ID_PROPERTY,
-  type GeoJsonShapeFeatureCollection,
-  type GeoJSONSourceDiffHashed,
-  type Geoman,
-  SHAPE_NAMES,
-  type ShapeName,
-} from '@/main.ts';
-import type { MapInstanceWithGeoman } from '@/types/map/index.ts';
+import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
+import type { Geoman } from '@/main.ts';
+import { SHAPE_NAMES } from '@/modes/constants.ts';
+import type { GeoJsonShapeFeatureCollection } from '@/types/geojson.ts';
+import type { GeoJSONSourceDiffHashed, MapInstanceWithGeoman } from '@/types/map/index.ts';
+import type { ShapeName } from '@/types/modes/index.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
 import ml, { type GeoJSONSourceDiff } from 'maplibre-gl';

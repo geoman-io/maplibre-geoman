@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type {ActionInstance, ActionOption} from '@/main.ts';
+  import type {ActionInstance, ActionOption} from '@/types/modes/index.ts';
   import log from 'loglevel';
   import {onMount} from 'svelte';
 

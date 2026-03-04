@@ -30,7 +30,7 @@ import split from '@/assets/images/controls2/split.svg';
 import union from '@/assets/images/controls2/union.svg';
 import zoomToFeatures from '@/assets/images/controls2/zoom-to-features.svg';
 
-import type { DrawModeName, EditModeName, HelperModeName } from '@/main.ts';
+import type { DrawModeName, EditModeName, HelperModeName } from '@/types/modes/index.ts';
 
 type ModeOptionName = DrawModeName | EditModeName | HelperModeName;
 type ControlIcons = Record<ModeOptionName, string | null>;

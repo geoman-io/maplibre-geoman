@@ -1,7 +1,8 @@
 import type { DrawModeName, LngLatTuple, ScreenPoint, ShapeName } from '@/types';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import { BaseCircle } from './base-circle.ts';
-import { convertToThrottled, isMapPointerEvent } from '@/main.ts';
+import { convertToThrottled } from '@/utils/behavior.ts';
+import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { allCoordinatesEqual, getEllipseParameters, getGeoJsonEllipse } from '@/utils/geojson.ts';
 
 export class DrawEllipse extends BaseCircle {

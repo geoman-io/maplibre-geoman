@@ -1,11 +1,8 @@
-import {
-  type DrawModeName,
-  type FeatureSourceName,
-  type GeoJsonShapeFeature,
-  type LngLatTuple,
-  type ShapeName,
-  SOURCES,
-} from '@/main.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { FeatureSourceName } from '@/types/features.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
+import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';

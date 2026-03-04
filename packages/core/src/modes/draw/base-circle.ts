@@ -1,14 +1,9 @@
 import circleMarker from '@/assets/images/controls/circle-marker.svg';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type {
-  DrawModeName,
-  GeoJsonShapeFeature,
-  LngLatTuple,
-  MapHandlerReturnData,
-  MarkerData,
-  ScreenPoint,
-  ShapeName,
-} from '@/main.ts';
+import type { MapHandlerReturnData } from '@/types/events/bus.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { DrawModeName, MarkerData, ShapeName } from '@/types/modes/index.ts';
 
 import { BaseDraw } from '@/modes/draw/base.ts';
 

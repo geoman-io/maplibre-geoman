@@ -1,19 +1,12 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type {
-  ActionType,
-  DrawModeName,
-  EditModeName,
-  GeoJsonShapeFeature,
-  GmDrawShapeEvent,
-  GmDrawShapeEventWithData,
-  GmFeatureBeforeCreateEvent,
-  GmSystemEvent,
-  MarkerData,
-  NonEmptyArray,
-  ShapeName,
-} from '@/main.ts';
+import type { GmDrawShapeEvent, GmDrawShapeEventWithData } from '@/types/events/draw.ts';
+import type { GmFeatureBeforeCreateEvent } from '@/types/events/feature.ts';
+import type { GmSystemEvent, NonEmptyArray } from '@/types/events/index.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { DrawModeName, EditModeName, MarkerData, ShapeName } from '@/types/modes/index.ts';
+import type { ActionType } from '@/types/options.ts';
 import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import log from 'loglevel';

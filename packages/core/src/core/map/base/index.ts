@@ -5,6 +5,8 @@ import type { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
 import { Geoman } from '@/main.ts';
+import type { FeatureSourceName } from '@/types/features.ts';
+import type { LineBasedGeometry } from '@/types/geojson.ts';
 import type {
   AnyEventName,
   AnyMapInstance,
@@ -14,14 +16,12 @@ import type {
   BaseMapName,
   BasePopupOptions,
   CursorType,
-  FeatureSourceName,
   GeoJsonFeatureData,
-  LineBasedGeometry,
   LngLatTuple,
   MapEventName,
   MapInteraction,
   ScreenPoint,
-} from '@/main.ts';
+} from '@/types/map/index.ts';
 import {
   eachSegmentWithPath,
   getEuclideanDistance,

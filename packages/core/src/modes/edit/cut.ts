@@ -1,12 +1,9 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import {
-  type EditModeName,
-  type FeatureId,
-  type FeatureShape,
-  type LineEventHandlerArguments,
-  SOURCES,
-} from '@/main.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import type { FeatureId, FeatureShape } from '@/types/features.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
+import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';

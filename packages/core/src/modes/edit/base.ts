@@ -1,24 +1,20 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import {
-  type ActionType,
-  type DrawModeName,
-  type EditModeName,
-  type FeatureSourceName,
-  type GeoJsonShapeFeature,
-  type GmDrawShapeEvent,
-  type GmDrawShapeEventWithData,
-  type GmEditFeatureEditEndEvent,
-  type GmEditFeatureEditStartEvent,
-  type GmEditFeatureRemovedEvent,
-  type GmEditFeatureUpdatedEvent,
-  type GmFeatureBeforeUpdateEvent,
-  type GmSystemEvent,
-  type MarkerData,
-  type NonEmptyArray,
-  type PointerEventName,
-  SHAPE_NAMES,
-} from '@/main.ts';
+import { SHAPE_NAMES } from '@/modes/constants.ts';
+import type { GmDrawShapeEvent, GmDrawShapeEventWithData } from '@/types/events/draw.ts';
+import type {
+  GmEditFeatureEditEndEvent,
+  GmEditFeatureEditStartEvent,
+  GmEditFeatureRemovedEvent,
+  GmEditFeatureUpdatedEvent,
+} from '@/types/events/edit.ts';
+import type { GmFeatureBeforeUpdateEvent } from '@/types/events/feature.ts';
+import type { GmSystemEvent, NonEmptyArray } from '@/types/events/index.ts';
+import type { FeatureSourceName } from '@/types/features.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { PointerEventName } from '@/types/map/index.ts';
+import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index.ts';
+import type { ActionType } from '@/types/options.ts';
 import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';

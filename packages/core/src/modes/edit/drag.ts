@@ -1,4 +1,7 @@
-import { type EditModeName, getLngLatDiff, type GmSystemEvent, SOURCES } from '@/main.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
+import { getLngLatDiff } from '@/utils/geojson.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';

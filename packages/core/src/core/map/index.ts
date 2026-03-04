@@ -1,4 +1,5 @@
-import type { AnyMapInstance, Geoman } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { AnyMapInstance } from '@/types/map/index.ts';
 import { MapAdapter } from '@mapLib/index.ts';
 
 export const getMapAdapter = (gm: Geoman, map: AnyMapInstance) => {

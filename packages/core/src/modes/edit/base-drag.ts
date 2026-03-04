@@ -1,16 +1,12 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type {
-  EditModeName,
-  FeatureShape,
-  GeoJsonShapeFeature,
-  GmSystemEvent,
-  LngLatDiff,
-  LngLatTuple,
-  MapHandlerReturnData,
-  SimplePoint,
-} from '@/main.ts';
+import type { MapHandlerReturnData } from '@/types/events/bus.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { FeatureShape } from '@/types/features.ts';
+import type { GeoJsonShapeFeature, LngLatDiff, SimplePoint } from '@/types/geojson.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { getFeatureFirstPoint, getMovedGeoJson } from '@/utils/features.ts';

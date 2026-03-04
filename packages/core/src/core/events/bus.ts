@@ -1,19 +1,17 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventForwarder } from '@/core/events/forwarder.ts';
+import type { Geoman } from '@/main.ts';
 import type {
-  AnyEventName,
   EventControls,
   EventHandlers,
-  Geoman,
-  GmEvent,
   GmEventHadler,
   GmEventHandlersWithControl,
-  GmEventName,
-  GmSystemEvent,
   MapEventHadler,
   MapEventHandlersWithControl,
-  MapEventName,
-} from '@/main.ts';
+} from '@/types/events/bus.ts';
+import type { GmEventName, GmSystemEvent } from '@/types/events/index.ts';
+import type { GmEvent } from '@/types/events/forwarder/index.ts';
+import type { AnyEventName, MapEventName } from '@/types/map/index.ts';
 import { isBaseMapEvent, isGmEvent } from '@/utils/guards/events/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';

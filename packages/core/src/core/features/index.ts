@@ -1,34 +1,36 @@
 import { GM_SYSTEM_PREFIX, IS_PRO } from '@/core/constants.ts';
-import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
+import {
+  FEATURE_ID_PROPERTY,
+  FEATURE_PROPERTY_PREFIX,
+  SOURCES,
+} from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { SourceUpdateManager } from '@/core/features/source-update-manager.ts';
 import type { BaseLayer } from '@/core/map/base/layer.ts';
 import { BaseSource } from '@/core/map/base/source.ts';
-import {
-  FEATURE_ID_PROPERTY,
-  type FeatureId,
-  type FeatureShape,
-  type FeatureSourceName,
-  type FeatureStore,
-  type ForEachFeatureDataCallbackFn,
-  type GeoJsonImportFeature,
-  type GeoJsonImportFeatureCollection,
-  type GeoJsonShapeFeature,
-  type GeoJsonShapeFeatureCollection,
-  type Geoman,
-  type GmDrawFeatureCreatedEvent,
-  type GmEditSelectionChangeEvent,
-  type ImportGeoJsonOptions,
-  isDefined,
-  type LngLatTuple,
-  type MarkerData,
-  type PartialLayerStyle,
-  type ScreenPoint,
-  SHAPE_NAMES,
-  type ShapeName,
-  type SourcesStorage,
-} from '@/main.ts';
-import { SPECIAL_SHAPE_NAMES } from '@/modes/constants.ts';
+import type { Geoman } from '@/main.ts';
+import type { GmDrawFeatureCreatedEvent } from '@/types/events/draw.ts';
+import type { GmEditSelectionChangeEvent } from '@/types/events/edit.ts';
+import type {
+  FeatureId,
+  FeatureShape,
+  FeatureSourceName,
+  FeatureStore,
+  ForEachFeatureDataCallbackFn,
+  ImportGeoJsonOptions,
+  SourcesStorage,
+} from '@/types/features.ts';
+import type {
+  GeoJsonImportFeature,
+  GeoJsonImportFeatureCollection,
+  GeoJsonShapeFeature,
+  GeoJsonShapeFeatureCollection,
+} from '@/types/geojson.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { PartialLayerStyle } from '@/types/map/layers.ts';
+import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
+import { SHAPE_NAMES, SPECIAL_SHAPE_NAMES } from '@/modes/constants.ts';
+import { isDefined } from '@/utils/guards/index.ts';
 import { dedupeById } from '@/utils/collections.ts';
 import { fixGeoJsonFeature, getCustomFeatureId } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';

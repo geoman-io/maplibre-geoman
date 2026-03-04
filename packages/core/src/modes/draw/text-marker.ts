@@ -1,15 +1,9 @@
-import {
-  type DrawModeName,
-  FEATURE_PROPERTY_PREFIX,
-  type GeoJsonShapeFeature,
-  type LngLatTuple,
-  type ScreenPoint,
-  type ShapeName,
-} from '@/main.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
-
-import { SOURCES } from '@/core/features/constants.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export class DrawTextMarker extends BaseDraw {
