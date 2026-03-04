@@ -9,8 +9,8 @@ import {
   type LngLatTuple,
   type ShapeName,
   SOURCES,
-} from "@/main.ts";
-import { BaseDrag } from "@/modes/edit/base-drag.ts";
+} from '@/main.ts';
+import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import {
   geoJsonPointToLngLat,
   getGeoJsonCircle,
@@ -18,15 +18,15 @@ import {
   getGeoJsonFirstPoint,
   getLngLatDiff,
   isEqualPosition,
-} from "@/utils/geojson.ts";
-import { isGmEditEvent } from "@/utils/guards/modes.ts";
-import bearing from "@turf/bearing";
-import centroid from "@turf/centroid";
-import { featureCollection, point } from "@turf/helpers";
-import transformRotate from "@turf/transform-rotate";
-import type { Feature, Polygon } from "geojson";
-import { cloneDeep } from "lodash-es";
-import log from "loglevel";
+} from '@/utils/geojson.ts';
+import { isGmEditEvent } from '@/utils/guards/modes.ts';
+import bearing from '@turf/bearing';
+import centroid from '@turf/centroid';
+import { featureCollection, point } from '@turf/helpers';
+import transformRotate from '@turf/transform-rotate';
+import type { Feature, Polygon } from 'geojson';
+import { cloneDeep } from 'lodash-es';
+import log from 'loglevel';
 
 type RotateShapeHandler = (
   featureData: FeatureData,
@@ -35,15 +35,9 @@ type RotateShapeHandler = (
 ) => GeoJsonShapeFeature | null;
 
 export class EditRotate extends BaseDrag {
-  mode: EditModeName = "rotate";
-  allowedShapes: Array<ShapeName> = [
-    "line",
-    "rectangle",
-    "polygon",
-    "ellipse",
-    "circle",
-  ];
-  convertFeaturesTypes: Array<FeatureShape> = ["rectangle"];
+  mode: EditModeName = 'rotate';
+  allowedShapes: Array<ShapeName> = ['line', 'rectangle', 'polygon', 'ellipse', 'circle'];
+  convertFeaturesTypes: Array<FeatureShape> = ['rectangle'];
 
   shapeRotateHandlers: { [key in FeatureShape]?: RotateShapeHandler } = {
     marker: this.rotateFeature.bind(this),
@@ -57,7 +51,7 @@ export class EditRotate extends BaseDrag {
   };
 
   onStartAction(): void {
-    this.bodyDragEnabled = this.getSettingValue("bodyDragEnabled") === true;
+    this.bodyDragEnabled = this.getSettingValue('bodyDragEnabled') === true;
   }
 
   onEndAction(): void {
@@ -66,7 +60,7 @@ export class EditRotate extends BaseDrag {
 
   async handleGmEdit(event: GmSystemEvent) {
     if (!isGmEditEvent(event)) {
-      log.error("EditChange.handleGmEdit: not an edit event", event);
+      log.error('EditChange.handleGmEdit: not an edit event', event);
       return { next: false };
     }
 
@@ -74,20 +68,16 @@ export class EditRotate extends BaseDrag {
       return { next: true };
     }
 
-    if (
-      event.action === "marker_move" &&
-      event.lngLatStart &&
-      event.lngLatEnd
-    ) {
-      if (event.markerData?.type === "vertex") {
+    if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
+      if (event.markerData?.type === 'vertex') {
         await this.moveVertex(event);
       } else {
         const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
         this.moveSource(event.featureData, lngLatDiff);
       }
       return { next: false };
-    } else if (event.action === "marker_captured") {
-      this.gm.features.updateManager.beginTransaction("transactional-update");
+    } else if (event.action === 'marker_captured') {
+      this.gm.features.updateManager.beginTransaction('transactional-update');
       for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
         await fd.changeSource({ sourceName: SOURCES.temporary });
         await this.fireFeatureEditStartEvent({ feature: fd });
@@ -95,9 +85,9 @@ export class EditRotate extends BaseDrag {
       this.gm.features.updateManager.commitTransaction();
       this.setCursorToPointer();
       this.flags.actionInProgress = true;
-    } else if (event.action === "marker_released") {
+    } else if (event.action === 'marker_released') {
       this.flags.actionInProgress = false;
-      this.gm.features.updateManager.beginTransaction("transactional-update");
+      this.gm.features.updateManager.beginTransaction('transactional-update');
       for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
         await fd.changeSource({ sourceName: SOURCES.main });
         await this.fireFeatureEditEndEvent({ feature: fd });
@@ -109,8 +99,7 @@ export class EditRotate extends BaseDrag {
 
   isFeatureAllowed(event: GmEditEvent): boolean {
     return (
-      "featureData" in event &&
-      !this.allowedShapes.includes(event.featureData.shape as ShapeName)
+      'featureData' in event && !this.allowedShapes.includes(event.featureData.shape as ShapeName)
     );
   }
 
@@ -125,8 +114,7 @@ export class EditRotate extends BaseDrag {
     );
 
     for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
-      const customRotateHandlerFunc =
-        this.gm.options.settings.customRotateHandler;
+      const customRotateHandlerFunc = this.gm.options.settings.customRotateHandler;
 
       let updatedGeoJson: GeoJsonShapeFeature | null = null;
 
@@ -135,9 +123,7 @@ export class EditRotate extends BaseDrag {
       }
 
       if (!updatedGeoJson) {
-        updatedGeoJson =
-          this.shapeRotateHandlers[fd.shape]?.(fd, shapeCentroid, event) ||
-          null;
+        updatedGeoJson = this.shapeRotateHandlers[fd.shape]?.(fd, shapeCentroid, event) || null;
       }
 
       if (updatedGeoJson) {
@@ -155,29 +141,21 @@ export class EditRotate extends BaseDrag {
           await fd.convertToPolygon(); // if possible
         }
       } else {
-        log.error(
-          "EditRotate.moveVertex: invalid geojson",
-          updatedGeoJson,
-          event,
-        );
+        log.error('EditRotate.moveVertex: invalid geojson', updatedGeoJson, event);
       }
     }
   }
 
-  rotateCircle(
-    featureData: FeatureData,
-    shapeCentroid: LngLatTuple,
-    event: GmEditMarkerMoveEvent,
-  ) {
-    if (featureData.shape !== "circle") {
-      log.error("EditRotate.rotateCircle: invalid shape type", featureData);
+  rotateCircle(featureData: FeatureData, shapeCentroid: LngLatTuple, event: GmEditMarkerMoveEvent) {
+    if (featureData.shape !== 'circle') {
+      log.error('EditRotate.rotateCircle: invalid shape type', featureData);
       return null;
     }
 
-    const center = featureData.getShapeProperty("center");
+    const center = featureData.getShapeProperty('center');
 
     if (!Array.isArray(center)) {
-      log.error("rotateCircle: missing center in the featureData", featureData);
+      log.error('rotateCircle: missing center in the featureData', featureData);
       return null;
     }
 
@@ -195,7 +173,7 @@ export class EditRotate extends BaseDrag {
     const geoJson = featureData.getGeoJson() as Feature<Polygon>;
     const circleRimLngLat = getGeoJsonFirstPoint(geoJson);
     if (!circleRimLngLat) {
-      log.error("rotateCircle: missing center circleRimLngLat");
+      log.error('rotateCircle: missing center circleRimLngLat');
       return null;
     }
 
@@ -215,24 +193,24 @@ export class EditRotate extends BaseDrag {
     shapeCentroid: LngLatTuple,
     event: GmEditMarkerMoveEvent,
   ) {
-    if (featureData.shape !== "ellipse") {
-      log.error("EditRotate.rotateEllipse: invalid shape type", featureData);
+    if (featureData.shape !== 'ellipse') {
+      log.error('EditRotate.rotateEllipse: invalid shape type', featureData);
       return null;
     }
 
-    const center = featureData.getShapeProperty("center");
-    const xSemiAxis = featureData.getShapeProperty("xSemiAxis");
-    const ySemiAxis = featureData.getShapeProperty("ySemiAxis");
-    const angle = featureData.getShapeProperty("angle");
+    const center = featureData.getShapeProperty('center');
+    const xSemiAxis = featureData.getShapeProperty('xSemiAxis');
+    const ySemiAxis = featureData.getShapeProperty('ySemiAxis');
+    const angle = featureData.getShapeProperty('angle');
 
     if (
       !Array.isArray(center) ||
-      typeof xSemiAxis !== "number" ||
-      typeof ySemiAxis !== "number" ||
-      typeof angle !== "number"
+      typeof xSemiAxis !== 'number' ||
+      typeof ySemiAxis !== 'number' ||
+      typeof angle !== 'number'
     ) {
       log.error(
-        "rotateEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData",
+        'rotateEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
         featureData,
       );
       return null;
@@ -264,11 +242,7 @@ export class EditRotate extends BaseDrag {
   ) {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
 
-    const angle = this.calculateRotationAngle(
-      shapeCentroid,
-      event.lngLatStart,
-      event.lngLatEnd,
-    );
+    const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
 
     geoJson.geometry = transformRotate(geoJson, angle, {
       pivot: shapeCentroid,
