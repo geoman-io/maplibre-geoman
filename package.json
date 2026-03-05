@@ -88,7 +88,7 @@
     "@turf/transform-scale": "^7.3.4",
     "@turf/union": "^7.3.4",
     "@turf/unkink-polygon": "^7.3.4",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.3.2",
     "lodash-es": "^4.17.23",
     "loglevel": "^1.9.2",
     "type-fest": "^5.4.4"
