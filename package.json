@@ -113,7 +113,7 @@
     "svelte-preprocess": "^6.0.3",
     "ts-autofix": "^1.0.0",
     "tsc-alias": "^1.8.16",
-    "turbo": "^2.5.8",
+    "turbo": "^2.8.12",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-svg-loader": "^5.1.0",
