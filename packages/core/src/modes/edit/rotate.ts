@@ -110,7 +110,17 @@ export class EditRotate extends BaseDrag {
     );
 
     for (const fd of [event.featureData, ...(event.linkedFeatures ?? [])]) {
-      const updatedGeoJson = this.shapeRotateHandlers[fd.shape]?.(fd, shapeCentroid, event) || null;
+      const customRotateHandlerFunc = this.gm.options.settings.customRotateHandler;
+
+      let updatedGeoJson: GeoJsonShapeFeature | null = null;
+
+      if (customRotateHandlerFunc) {
+        updatedGeoJson = customRotateHandlerFunc(event, shapeCentroid);
+      }
+
+      if (!updatedGeoJson) {
+        updatedGeoJson = this.shapeRotateHandlers[fd.shape]?.(fd, shapeCentroid, event) || null;
+      }
 
       if (updatedGeoJson) {
         await this.fireBeforeFeatureUpdate({
@@ -163,11 +173,15 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
-    const rotatedCenter = transformRotate(point(center), deltaAngle, { pivot: shapeCentroid })
-      .geometry.coordinates as LngLatTuple;
+    const rotatedCenter = transformRotate(point(center), deltaAngle, {
+      pivot: shapeCentroid,
+    }).geometry.coordinates as LngLatTuple;
     const radius = this.gm.mapAdapter.getDistance(center, circleRimLngLat);
 
-    return getGeoJsonCircle({ center: rotatedCenter, radius }) as GeoJsonShapeFeature;
+    return getGeoJsonCircle({
+      center: rotatedCenter,
+      radius,
+    }) as GeoJsonShapeFeature;
   }
 
   rotateEllipse(
@@ -205,8 +219,9 @@ export class EditRotate extends BaseDrag {
       false,
     );
 
-    const rotatedCenter = transformRotate(point(center), deltaAngle, { pivot: shapeCentroid })
-      .geometry.coordinates as LngLatTuple;
+    const rotatedCenter = transformRotate(point(center), deltaAngle, {
+      pivot: shapeCentroid,
+    }).geometry.coordinates as LngLatTuple;
 
     return getGeoJsonEllipse({
       center: rotatedCenter,
@@ -225,7 +240,9 @@ export class EditRotate extends BaseDrag {
 
     const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
 
-    geoJson.geometry = transformRotate(geoJson, angle, { pivot: shapeCentroid }).geometry;
+    geoJson.geometry = transformRotate(geoJson, angle, {
+      pivot: shapeCentroid,
+    }).geometry;
 
     return geoJson;
   }

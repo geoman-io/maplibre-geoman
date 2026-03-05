@@ -8,6 +8,7 @@ import { mount, unmount } from 'svelte';
 import LeftPanel from './components/LeftPanel.svelte';
 import RightPanel from './components/RightPanel.svelte';
 import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';
+import { starCustomHandlers } from './fixtures/customShape.ts';
 
 export function createGmOptions(): PartialDeep<GmOptionsData> {
   return {
@@ -21,6 +22,50 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
         controlGroupClass: CONTROL_GROUP_CLASS,
         controlContainerClass: 'gm-control-container',
         controlButtonClass: 'gm-control-button',
+      },
+      customGetAllShapeSegments(featureData) {
+        const featureGeoJson = featureData.getGeoJson();
+
+        switch (featureGeoJson.properties.customShape) {
+          case 'star': {
+            return starCustomHandlers.getAllShapeSegments(featureData);
+          }
+        }
+
+        return null;
+      },
+      customRotateHandler(event, shapeCentroid) {
+        const featureGeoJson = event.featureData.getGeoJson();
+
+        switch (featureGeoJson.properties.customShape) {
+          case 'star': {
+            return starCustomHandlers.rotate(event, shapeCentroid);
+          }
+        }
+
+        return null;
+      },
+      customVertexUpdateHandler(event) {
+        const featureGeoJson = event.featureData.getGeoJson();
+
+        switch (featureGeoJson.properties.customShape) {
+          case 'star': {
+            return starCustomHandlers.vertexUpdate(event);
+          }
+        }
+
+        return null;
+      },
+      customDragHandler(featureData, lngLatDiff) {
+        const featureGeoJson = featureData.getGeoJson();
+
+        switch (featureGeoJson.properties.customShape) {
+          case 'star': {
+            return starCustomHandlers.drag(featureData, lngLatDiff);
+          }
+        }
+
+        return null;
       },
     },
     layerStyles: layerStyles,

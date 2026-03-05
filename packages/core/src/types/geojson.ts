@@ -68,3 +68,9 @@ export type CoordinateIndices = {
   multiFeatureIndex: number;
   geometryIndex: number;
 };
+
+export type SegmentData = {
+  segment: SegmentPosition;
+  middle: PositionData;
+  edgeMarkerKey: string;
+};
