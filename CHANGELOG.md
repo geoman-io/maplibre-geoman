@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-03-05
+
+### Added
+
+- Group-aware edit operations for `drag`, `rotate`, and `delete`, enabling linked feature interactions by shared `group` shape property ([#104](https://github.com/geoman-io/maplibre-geoman/pull/104))
+- Implicit `MultiPoint` support during GeoJSON import (treated as marker features) ([#165](https://github.com/geoman-io/maplibre-geoman/pull/165))
+
+### Fixed
+
+- Runtime issues when consuming Geoman from source builds by guarding `process` usage and decoupling style imports from `main.ts` ([#167](https://github.com/geoman-io/maplibre-geoman/pull/167))
+
+### Changed
+
+- Hardened CI and release validation coverage with formatter checks, unit tests, and Playwright E2E runs
+- Expanded workspace quality commands (`test`, `test:unit`, `check`, `lint:all`) for stronger default verification
+- Cleaned up imports across core, adapters, and dev app modules for more consistent source consumption (`4ce5d74`)
+- Updated dependencies and GitHub Actions versions across CI/dev/release workflows ([#169](https://github.com/geoman-io/maplibre-geoman/pull/169))
+- Bumped `dompurify` from `^3.3.1` to `^3.3.2` ([#170](https://github.com/geoman-io/maplibre-geoman/pull/170))
+
 ## [0.7.0] - 2026-02-26
 
 ### Added
