@@ -8,7 +8,6 @@ import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
 import type { EditModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import {
-  calculateEuclideanRotationAngle,
   eachCoordinateWithPath,
   geoJsonPointToLngLat,
   getGeoJsonCircle,
@@ -24,6 +23,7 @@ import transformRotate from '@turf/transform-rotate';
 import type { Feature, Polygon } from 'geojson';
 import { cloneDeep, isEqual } from 'lodash-es';
 import log from 'loglevel';
+import { calculateEuclideanRotationAngle } from '@/utils/planar.ts';
 
 type RotateShapeHandler = (
   featureData: FeatureData,

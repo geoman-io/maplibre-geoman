@@ -1,5 +1,5 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
-import { SOURCES } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type { GmDrawShapeEvent, GmDrawShapeEventWithData } from '@/types/events/draw.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
@@ -12,6 +12,7 @@ import { allCoordinatesEqual } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import distance from '@turf/distance';
+import type { ShapeGeoJsonProperties } from '@/types';
 
 export class DrawRectangle extends BaseDraw {
   mode: DrawModeName = 'rectangle';
@@ -100,7 +101,8 @@ export class DrawRectangle extends BaseDraw {
 
   async finishShape(lngLat: LngLatTuple) {
     if (this.startLngLat) {
-      await this.throttledMethods.updateFeaturePosition(this.startLngLat, lngLat);
+      await this.updateFeaturePosition(this.startLngLat, lngLat);
+      this.updateFeatureProperties(this.startLngLat, lngLat);
     }
 
     if (this.featureData) {
@@ -142,9 +144,11 @@ export class DrawRectangle extends BaseDraw {
     return {
       type: 'Feature',
       properties: {
-        shape: 'rectangle',
-        angle: 0,
-        center: this.gm.mapAdapter.unproject([(minX + maxX) / 2, (minY + maxY) / 2]),
+        [`${FEATURE_PROPERTY_PREFIX}shape`]: 'rectangle',
+        [`${FEATURE_PROPERTY_PREFIX}center`]: [0, 0],
+        [`${FEATURE_PROPERTY_PREFIX}angle`]: 0,
+        [`${FEATURE_PROPERTY_PREFIX}width`]: 0,
+        [`${FEATURE_PROPERTY_PREFIX}height`]: 0,
       },
       geometry: {
         type: 'Polygon',
@@ -161,15 +165,38 @@ export class DrawRectangle extends BaseDraw {
     };
   }
 
-  getRectDimensions(corner1: LngLatTuple, corner2: LngLatTuple) {
-    const [lng1, lat1] = corner1;
-    const [lng2, lat2] = corner2;
+  getFeatureProperties(startPoint: ScreenPoint, endPoint: ScreenPoint): ShapeGeoJsonProperties {
+    const minX = Math.min(startPoint[0], endPoint[0]);
+    const minY = Math.min(startPoint[1], endPoint[1]);
+    const maxX = Math.max(startPoint[0], endPoint[0]);
+    const maxY = Math.max(startPoint[1], endPoint[1]);
+    const center: ScreenPoint = [(minX + maxX) / 2, (minY + maxY) / 2];
+    const dimensions = this.getRectangleDimensions(startPoint, endPoint, center);
 
-    const horizontalCorner = [lng2, lat1];
-    const verticalCorner = [lng1, lat2];
+    return {
+      [`${FEATURE_PROPERTY_PREFIX}shape`]: 'rectangle',
+      [`${FEATURE_PROPERTY_PREFIX}center`]: this.gm.mapAdapter.unproject(center),
+      [`${FEATURE_PROPERTY_PREFIX}angle`]: 0,
+      [`${FEATURE_PROPERTY_PREFIX}width`]: dimensions.width,
+      [`${FEATURE_PROPERTY_PREFIX}height`]: dimensions.height,
+    };
+  }
 
-    const width = distance(corner1, horizontalCorner, { units: 'meters' });
-    const height = distance(corner1, verticalCorner, { units: 'meters' });
+  getRectangleDimensions(startPoint: ScreenPoint, endPoint: ScreenPoint, center: ScreenPoint) {
+    const centerLngLat = this.gm.mapAdapter.unproject(center);
+
+    const horizontalCenter = this.gm.mapAdapter.unproject([
+      (startPoint[0] + endPoint[0]) / 2,
+      startPoint[1],
+    ]);
+
+    const verticalCenter = this.gm.mapAdapter.unproject([
+      startPoint[0],
+      (startPoint[1] + endPoint[1]) / 2,
+    ]);
+
+    const width = 2 * distance(centerLngLat, verticalCenter, { units: 'meters' });
+    const height = 2 * distance(centerLngLat, horizontalCenter, { units: 'meters' });
 
     return { width, height };
   }
@@ -179,11 +206,19 @@ export class DrawRectangle extends BaseDraw {
       return;
     }
 
-    const rectangleData: GeoJsonShapeFeature = this.getFeatureGeoJson(startLngLat, endLngLat);
+    const geoJson: GeoJsonShapeFeature = this.getFeatureGeoJson(startLngLat, endLngLat);
 
-    await this.featureData.updateGeometry(rectangleData.geometry);
+    await this.featureData.updateGeometry(geoJson.geometry);
     const markerData = this.getControlMarkerData(['geometry', 'coordinates', 4]);
     await this.fireUpdateEvent(this.featureData, markerData);
+  }
+
+  updateFeatureProperties(startLngLat: LngLatTuple, endLngLat: LngLatTuple) {
+    const startPoint = this.gm.mapAdapter.project(startLngLat);
+    const endPoint = this.gm.mapAdapter.project(endLngLat);
+
+    const properties = this.getFeatureProperties(startPoint, endPoint);
+    this.featureData?._updateAllProperties(properties);
   }
 
   getControlMarkerData(path: Array<string | number>): MarkerData | null {

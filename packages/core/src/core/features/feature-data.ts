@@ -409,6 +409,8 @@ export class FeatureData {
       this.shape = 'polygon';
       await this.deleteShapeProperty('center');
       await this.deleteShapeProperty('angle');
+      await this.deleteShapeProperty('width');
+      await this.deleteShapeProperty('height');
       await this.deleteShapeProperty('xSemiAxis');
       await this.deleteShapeProperty('ySemiAxis');
       return true;

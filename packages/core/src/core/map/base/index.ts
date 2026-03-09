@@ -4,7 +4,7 @@ import type { BaseLayer } from '@/core/map/base/layer.ts';
 import type { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BasePopup } from '@/core/map/base/popup.ts';
 import type { BaseSource } from '@/core/map/base/source.ts';
-import { Geoman } from '@/main.ts';
+import { Geoman, getEuclideanDistance } from '@/main.ts';
 import type { FeatureSourceName } from '@/types/features.ts';
 import type { LineBasedGeometry } from '@/types/geojson.ts';
 import type {
@@ -22,13 +22,10 @@ import type {
   MapInteraction,
   ScreenPoint,
 } from '@/types/map/index.ts';
-import {
-  eachSegmentWithPath,
-  getEuclideanDistance,
-  getEuclideanSegmentNearestPoint,
-} from '@/utils/geojson.ts';
+import { eachSegmentWithPath } from '@/utils/geojson.ts';
 import turfDistance from '@turf/distance';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
+import { getEuclideanSegmentNearestPoint } from '@/utils/planar.ts';
 
 export abstract class BaseMapAdapter<
   TMapInstance extends object = AnyMapInstance,

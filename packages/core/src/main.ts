@@ -657,8 +657,6 @@ export {
   eachSegmentWithPath,
   findCoordinateWithPath,
   geoJsonPointToLngLat,
-  getEuclideanDistance,
-  getEuclideanSegmentNearestPoint,
   getGeoJsonCoordinatesCount,
   getGeoJsonFirstPoint,
   getLngLatDiff,
@@ -722,3 +720,5 @@ export {
 export { HELPER_MODES } from '@/modes/constants.ts';
 export { EDIT_MODES } from '@/modes/constants.ts';
 export { isGmModeEvent } from '@/utils/guards/events/mode.ts';
+export { getEuclideanSegmentNearestPoint } from '@/utils/planar.ts';
+export { getEuclideanDistance } from '@/utils/planar.ts';
