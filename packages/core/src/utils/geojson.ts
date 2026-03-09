@@ -395,6 +395,29 @@ export const getEuclideanSegmentNearestPoint = (
   return [x1 + b * vx, y1 + b * vy];
 };
 
+export const calculateEuclideanRotationAngle = (
+  pivotPoint: ScreenPoint,
+  startPoint: ScreenPoint,
+  endPoint: ScreenPoint,
+) => {
+  // 1. Calculate the angle of each vector relative to the x-axis
+  const angle1 = Math.atan2(startPoint[1] - pivotPoint[1], startPoint[0] - pivotPoint[0]);
+  const angle2 = Math.atan2(endPoint[1] - pivotPoint[1], endPoint[0] - pivotPoint[0]);
+
+  // 2. Calculate the difference
+  let angleDiff = angle2 - angle1;
+
+  // 3. Normalize the angle to the [-PI, PI] range
+  while (angleDiff <= -Math.PI) {
+    angleDiff += 2 * Math.PI;
+  }
+  while (angleDiff > Math.PI) {
+    angleDiff -= 2 * Math.PI;
+  }
+
+  return -angleDiff * (180 / Math.PI); // Convert to degrees
+};
+
 export const removeVertexFromLine = (
   lineGeoJson: Feature<LineString>,
   vertexLngLat: LngLatTuple,

@@ -13,7 +13,6 @@ import {
   getGeoJsonCircle,
   getGeoJsonCoordinatesCount,
   getGeoJsonEllipse,
-  getLngLatDiff,
   isLineStringFeature,
   isMultiPolygonFeature,
   isPolygonFeature,
@@ -87,8 +86,7 @@ export class EditChange extends BaseDrag {
         await this.moveVertex(event);
         return { next: false };
       } else if (event.lngLatEnd) {
-        const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
-        this.moveSource(event.featureData, lngLatDiff);
+        this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
         return { next: false };
       }
     }
@@ -287,14 +285,12 @@ export class EditChange extends BaseDrag {
       ySemiAxis = distance;
     }
 
-    const ellipsePolygon = getGeoJsonEllipse({
+    return getGeoJsonEllipse({
       center,
       xSemiAxis,
       ySemiAxis,
       angle,
     });
-
-    return ellipsePolygon;
   }
 
   updateRectangle({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {

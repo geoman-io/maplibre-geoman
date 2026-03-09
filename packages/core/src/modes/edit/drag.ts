@@ -1,7 +1,6 @@
 import { SOURCES } from '@/core/features/constants.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
 import type { EditModeName } from '@/types/modes/index.ts';
-import { getLngLatDiff } from '@/utils/geojson.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
 import log from 'loglevel';
@@ -24,13 +23,15 @@ export class EditDrag extends BaseDrag {
     }
 
     if (event.action === 'marker_move' && event.lngLatStart && event.lngLatEnd) {
-      const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
-
       for (const fd of event.linkedFeatures ?? []) {
-        await this.moveFeature(fd, lngLatDiff);
+        await this.moveFeature(fd, event.lngLatStart, event.lngLatEnd);
       }
 
-      const isUpdated = await this.moveFeature(event.featureData, lngLatDiff);
+      const isUpdated = await this.moveFeature(
+        event.featureData,
+        event.lngLatStart,
+        event.lngLatEnd,
+      );
 
       if (isUpdated) {
         this.previousLngLat = event.lngLatEnd;
