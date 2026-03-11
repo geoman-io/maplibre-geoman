@@ -22,7 +22,7 @@ import { BaseHelper } from '@/modes/helpers/base.ts';
 import type { SharedMarker } from '@/types/interfaces.ts';
 import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';
 import { findInCollection } from '@/utils/collections.ts';
-import { getFeatureFirstPoint } from '@/utils/features.ts';
+import { getFeatureFirstPoint, propertiesValid } from '@/utils/features.ts';
 import { eachSegmentWithPath, findCoordinateWithPath, isEqualPosition } from '@/utils/geojson.ts';
 import { isPinHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent, isPointerEventWithModifiers } from '@/utils/guards/map.ts';
@@ -358,6 +358,10 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   async addCenterMarker(featureData: FeatureData) {
+    if (!propertiesValid(featureData.getGeoJson(), featureData.shape)) {
+      return;
+    }
+
     const shapeCenter = featureData.getShapeProperty('center');
     if (shapeCenter) {
       const markerData = await this.createMarker({
@@ -640,6 +644,10 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   async updateCenterMarkerPosition(featureData: FeatureData) {
+    if (!propertiesValid(featureData.getGeoJson(), featureData.shape)) {
+      return;
+    }
+
     const markerData = featureData.markers.get('center') || null;
     const shapeCenter = featureData.getShapeProperty('center');
 

@@ -342,10 +342,12 @@ export const getAllGeoJsonCoordinates = (geoJson: GeoJSON): Array<LngLatTuple> =
   return coordinates;
 };
 
-export const allCoordinatesEqual = (geoJson: GeoJSON): boolean => {
+export const allCoordinatesNotEqual = (geoJson: GeoJSON): boolean => {
   const featureLngLats: Array<LngLatTuple> = getAllGeoJsonCoordinates(geoJson);
+  if (!featureLngLats.length) {
+    log.warn('allCoordinatesNotEqual: empty featureLngLats array');
+  }
 
-  // for now only checks if all points aren't the same
   return featureLngLats.some((lngLat) => !isEqual(featureLngLats[0], lngLat));
 };
 

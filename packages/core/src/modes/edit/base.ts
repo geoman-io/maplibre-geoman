@@ -20,6 +20,8 @@ import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { isEqual } from 'lodash-es';
+import { propertiesValid } from '@/utils/features.ts';
+import log from 'loglevel';
 
 export abstract class BaseEdit extends BaseAction {
   actionType: ActionType = 'edit';
@@ -107,6 +109,11 @@ export abstract class BaseEdit extends BaseAction {
     if (!this.flags.featureUpdateAllowed) {
       // used for geofencing violations, other modes could be added in the future
       return false;
+    }
+
+    if (!propertiesValid(featureGeoJson, featureData.shape)) {
+      log.warn('BaseEdit.updateFeatureGeoJson: invalid shape properties', featureGeoJson);
+      // return false;
     }
 
     await featureData.updateGeometry(featureGeoJson.geometry);

@@ -58,7 +58,8 @@
   {
     "type": "Feature",
     "properties": {
-      "shape": "circle"
+      "shape": "circle",
+      "center": [5.7678222656261955, 53.436168747356156]
     },
     "geometry": {
       "type": "Polygon",

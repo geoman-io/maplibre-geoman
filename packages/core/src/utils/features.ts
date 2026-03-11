@@ -1,6 +1,8 @@
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
+import { propertyValidators } from '@/core/features/validators.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseMapAdapter } from '@/core/map/base/index.ts';
-import type { FeatureId } from '@/types/features.ts';
+import type { FeatureId, FeatureShape, FeatureShapeProperties } from '@/types/features.ts';
 import type { GeoJsonImportFeature, GeoJsonShapeFeature, LngLatDiff } from '@/types/geojson.ts';
 import type { AnyMapInstance, LngLatTuple } from '@/types/map/index.ts';
 import {
@@ -16,6 +18,70 @@ import rewind from '@turf/rewind';
 import type { Feature, GeoJSON, MultiPolygon, Polygon, Position } from 'geojson';
 import { cloneDeep } from 'lodash-es';
 import { isLineBasedGeoJsonFeature, isPointBasedGeoJsonFeature } from '@tests/types.ts';
+
+const SHAPE_REQUIRED_PROPERTIES = {
+  circle: ['center'],
+  ellipse: ['center', 'xSemiAxis', 'ySemiAxis', 'angle'],
+  rectangle: ['center', 'width', 'height', 'angle'],
+} as const satisfies Partial<Record<FeatureShape, ReadonlyArray<keyof FeatureShapeProperties>>>;
+
+export type ShapeWithRequiredProperties = keyof typeof SHAPE_REQUIRED_PROPERTIES;
+export type ShapePropertiesByShape<S extends ShapeWithRequiredProperties> = {
+  [K in (typeof SHAPE_REQUIRED_PROPERTIES)[S][number]]: NonNullable<FeatureShapeProperties[K]>;
+};
+
+const hasRequiredShapeProperties = (
+  shape: FeatureShape,
+): shape is keyof typeof SHAPE_REQUIRED_PROPERTIES => {
+  return shape in SHAPE_REQUIRED_PROPERTIES;
+};
+
+const getGeoJsonPropertyValue = <T extends keyof typeof propertyValidators>(
+  geoJson: Pick<Feature, 'properties'>,
+  propertyName: T,
+) => {
+  const properties = geoJson.properties || {};
+  return properties[`${FEATURE_PROPERTY_PREFIX}${propertyName}`] ?? properties[propertyName];
+};
+
+export const getShapeProperties = <S extends ShapeWithRequiredProperties>(
+  geoJson: Pick<Feature, 'properties'>,
+  expectedShape: S,
+): ShapePropertiesByShape<S> | null => {
+  const shape = expectedShape;
+  if (!propertyValidators.shape(shape) || !hasRequiredShapeProperties(shape)) {
+    return null;
+  }
+
+  const shapeProperties: Partial<Record<keyof FeatureShapeProperties, unknown>> = {};
+
+  for (const propertyName of SHAPE_REQUIRED_PROPERTIES[shape]) {
+    const value = getGeoJsonPropertyValue(geoJson, propertyName);
+    if (!propertyValidators[propertyName](value)) {
+      return null;
+    }
+    shapeProperties[propertyName] = value;
+  }
+
+  return shapeProperties as ShapePropertiesByShape<S>;
+};
+
+export const propertiesValid = (
+  geoJson: Pick<Feature, 'properties'>,
+  expectedShape?: FeatureShape,
+): boolean => {
+  const shape = expectedShape ?? getGeoJsonPropertyValue(geoJson, 'shape');
+  if (!propertyValidators.shape(shape)) {
+    // no shape metadata available; only validate shape-specific metadata when shape is known
+    return !expectedShape;
+  }
+
+  if (!hasRequiredShapeProperties(shape)) {
+    return true;
+  }
+
+  return !!getShapeProperties(geoJson, shape);
+};
 
 export const moveGeoJson = (geoJson: GeoJsonShapeFeature, lngLatDiff: LngLatDiff) => {
   eachCoordinateWithPath(geoJson, (position) => {
@@ -106,15 +172,16 @@ export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportF
   if (isLineBasedGeoJsonFeature(feature)) {
     const resultFeature = rewind(feature, { mutate: false });
     if (resultFeature.type === 'Feature' && isLineBasedGeoJsonFeature(resultFeature)) {
-      return {
+      const fixedFeature: GeoJsonImportFeature = {
         ...resultFeature,
         properties: feature.properties || {},
       };
+      return propertiesValid(fixedFeature) ? fixedFeature : null;
     }
   }
 
   if (isPointBasedGeoJsonFeature(feature)) {
-    return feature;
+    return propertiesValid(feature) ? feature : null;
   }
 
   return null;

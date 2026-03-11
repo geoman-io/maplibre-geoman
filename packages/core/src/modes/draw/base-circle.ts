@@ -4,10 +4,8 @@ import type { MapHandlerReturnData } from '@/types/events/bus.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
 import type { DrawModeName, MarkerData, ShapeName } from '@/types/modes/index.ts';
-
 import { BaseDraw } from '@/modes/draw/base.ts';
-
-import { SOURCES } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export abstract class BaseCircle extends BaseDraw {
@@ -38,7 +36,8 @@ export abstract class BaseCircle extends BaseDraw {
     return {
       type: 'Feature',
       properties: {
-        __gm_shape: this.shape,
+        [`${FEATURE_PROPERTY_PREFIX}shape`]: this.shape,
+        [`${FEATURE_PROPERTY_PREFIX}center`]: position,
       },
       geometry: {
         type: 'Point',

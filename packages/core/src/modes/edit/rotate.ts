@@ -7,6 +7,7 @@ import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
 import type { EditModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
+import { getShapeProperties } from '@/utils/features.ts';
 import {
   eachCoordinateWithPath,
   geoJsonPointToLngLat,
@@ -178,14 +179,13 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
-    const center = featureData.getShapeProperty('center');
-
-    if (!Array.isArray(center)) {
-      log.error('rotateCircle: missing center in the featureData', featureData);
+    const circleProperties = getShapeProperties(featureData.getGeoJson(), 'circle');
+    if (!circleProperties) {
+      log.error('rotateCircle: wrong properties', featureData.getGeoJson());
       return null;
     }
 
-    if (isEqualPosition(shapeCentroid, center)) {
+    if (isEqualPosition(shapeCentroid, circleProperties.center)) {
       return featureData.getGeoJson();
     }
 
@@ -203,9 +203,10 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
-    const rotatedCenter = transformRotate(point(center), deltaAngle, { pivot: shapeCentroid })
-      .geometry.coordinates as LngLatTuple;
-    const radius = this.gm.mapAdapter.getDistance(center, circleRimLngLat);
+    const rotatedCenter = transformRotate(point(circleProperties.center), deltaAngle, {
+      pivot: shapeCentroid,
+    }).geometry.coordinates as LngLatTuple;
+    const radius = this.gm.mapAdapter.getDistance(circleProperties.center, circleRimLngLat);
 
     return getGeoJsonCircle({ center: rotatedCenter, radius }) as GeoJsonShapeFeature;
   }
@@ -220,21 +221,9 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
-    const center = featureData.getShapeProperty('center');
-    const xSemiAxis = featureData.getShapeProperty('xSemiAxis');
-    const ySemiAxis = featureData.getShapeProperty('ySemiAxis');
-    const angle = featureData.getShapeProperty('angle');
-
-    if (
-      !Array.isArray(center) ||
-      typeof xSemiAxis !== 'number' ||
-      typeof ySemiAxis !== 'number' ||
-      typeof angle !== 'number'
-    ) {
-      log.error(
-        'rotateEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
-        featureData,
-      );
+    const ellipseProperties = getShapeProperties(featureData.getGeoJson(), 'ellipse');
+    if (!ellipseProperties) {
+      log.error('rotateEllipse: wrong properties', featureData.getGeoJson());
       return null;
     }
 
@@ -245,14 +234,15 @@ export class EditRotate extends BaseDrag {
       false,
     );
 
-    const rotatedCenter = transformRotate(point(center), deltaAngle, { pivot: shapeCentroid })
-      .geometry.coordinates as LngLatTuple;
+    const rotatedCenter = transformRotate(point(ellipseProperties.center), deltaAngle, {
+      pivot: shapeCentroid,
+    }).geometry.coordinates as LngLatTuple;
 
     return getGeoJsonEllipse({
       center: rotatedCenter,
-      xSemiAxis,
-      ySemiAxis,
-      angle: angle + deltaAngle,
+      xSemiAxis: ellipseProperties.xSemiAxis,
+      ySemiAxis: ellipseProperties.ySemiAxis,
+      angle: ellipseProperties.angle + deltaAngle,
     });
   }
 

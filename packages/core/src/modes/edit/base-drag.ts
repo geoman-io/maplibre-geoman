@@ -9,7 +9,12 @@ import type { LngLatTuple } from '@/types/map/index.ts';
 import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { getFeatureFirstPoint, getMovedGeoJson } from '@/utils/features.ts';
+import {
+  getFeatureFirstPoint,
+  getMovedGeoJson,
+  getShapeProperties,
+  propertiesValid,
+} from '@/utils/features.ts';
 import {
   eachCoordinateWithPath,
   getGeoJsonCircle,
@@ -22,7 +27,6 @@ import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { Feature, Polygon } from 'geojson';
 import { isEqual } from 'lodash-es';
 import log from 'loglevel';
-import { propertyValidators } from '@/core/features/validators.ts';
 
 type UpdateShapeHandler = (
   featureData: FeatureData,
@@ -250,10 +254,7 @@ export abstract class BaseDrag extends BaseEdit {
       return null;
     }
 
-    const oldCenter = featureData.getShapeProperty('center');
-    const angle = featureData.getShapeProperty('angle');
-
-    if (!propertyValidators['center'](oldCenter) || !propertyValidators['angle'](angle)) {
+    if (!propertiesValid(featureData.getGeoJson(), 'rectangle')) {
       // Fallback for legacy rectangles without intrinsic properties
       log.warn("BaseDrag.moveRectangle: properties aren't valid", featureData);
       const lngLatDiff = getLngLatDiff(startLngLat, endLngLat);
@@ -295,35 +296,24 @@ export abstract class BaseDrag extends BaseEdit {
       return null;
     }
 
-    const lngLatDiff = getLngLatDiff(startLngLat, endLngLat);
-    const oldCenter = featureData.getShapeProperty('center');
-    const xSemiAxis = featureData.getShapeProperty('xSemiAxis');
-    const ySemiAxis = featureData.getShapeProperty('ySemiAxis');
-    const angle = featureData.getShapeProperty('angle');
-
-    if (
-      !Array.isArray(oldCenter) ||
-      typeof xSemiAxis !== 'number' ||
-      typeof ySemiAxis !== 'number' ||
-      typeof angle !== 'number'
-    ) {
-      log.error(
-        'BaseDrag.moveEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
-        featureData,
-      );
+    const ellipseProperties = getShapeProperties(featureData.getGeoJson(), 'ellipse');
+    if (!ellipseProperties) {
+      log.error('BaseDrag.moveEllipse: wrong properties', featureData.getGeoJson());
       return null;
     }
 
+    const lngLatDiff = getLngLatDiff(startLngLat, endLngLat);
+
     const newCenterCoords: LngLatTuple = [
-      oldCenter[0] + lngLatDiff.lng,
-      oldCenter[1] + lngLatDiff.lat,
+      ellipseProperties.center[0] + lngLatDiff.lng,
+      ellipseProperties.center[1] + lngLatDiff.lat,
     ];
 
     return getGeoJsonEllipse({
       center: newCenterCoords,
-      xSemiAxis,
-      ySemiAxis,
-      angle,
+      xSemiAxis: ellipseProperties.xSemiAxis,
+      ySemiAxis: ellipseProperties.ySemiAxis,
+      angle: ellipseProperties.angle,
     });
   }
 
@@ -337,9 +327,9 @@ export abstract class BaseDrag extends BaseEdit {
       return null;
     }
 
-    const shapeCenter = featureData.getShapeProperty('center');
-    if (!Array.isArray(shapeCenter)) {
-      log.error('BaseDrag.moveCircle: missing center in the featureData', featureData);
+    const circleProperties = getShapeProperties(featureData.getGeoJson(), 'circle');
+    if (!circleProperties) {
+      log.error('BaseDrag.moveCircle: wrong properties', featureData.getGeoJson());
       return null;
     }
 
@@ -352,14 +342,14 @@ export abstract class BaseDrag extends BaseEdit {
 
     const lngLatDiff = getLngLatDiff(startLngLat, endLngLat);
     const newCenterCoords: LngLatTuple = [
-      shapeCenter[0] + lngLatDiff.lng,
-      shapeCenter[1] + lngLatDiff.lat,
+      circleProperties.center[0] + lngLatDiff.lng,
+      circleProperties.center[1] + lngLatDiff.lat,
     ];
     await featureData.setShapeProperty('center', newCenterCoords);
 
     const circlePolygon = getGeoJsonCircle({
       center: newCenterCoords,
-      radius: this.gm.mapAdapter.getDistance(shapeCenter, circleRimLngLat),
+      radius: this.gm.mapAdapter.getDistance(circleProperties.center, circleRimLngLat),
     });
 
     return {

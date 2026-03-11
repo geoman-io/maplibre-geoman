@@ -8,7 +8,8 @@ import type { DrawModeName, MarkerData, ShapeName } from '@/types/modes/index.ts
 
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { allCoordinatesEqual } from '@/utils/geojson.ts';
+import { propertiesValid } from '@/utils/features.ts';
+import { allCoordinatesNotEqual } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import { getRectangleGeoJson } from '@/utils/shapes.ts';
@@ -148,7 +149,10 @@ export class DrawRectangle extends BaseDraw {
     }
 
     // for now only checks if all points aren't the same
-    return allCoordinatesEqual(this.featureData.getGeoJson());
+    return (
+      allCoordinatesNotEqual(this.featureData.getGeoJson()) &&
+      propertiesValid(this.featureData.getGeoJson(), this.shape)
+    );
   }
 
   async updateFeaturePosition(startLngLat: LngLatTuple, endLngLat: LngLatTuple) {
