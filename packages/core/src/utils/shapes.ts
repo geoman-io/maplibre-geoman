@@ -1,7 +1,25 @@
 import type { GeoJsonShapeFeature, LngLatTuple, ScreenPoint } from '@/types';
 import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 import type { BaseMapAdapter } from '@/core/map/base';
+import { getShapeProperties } from '@/utils/features.ts';
 import distance from '@turf/distance';
+import { earthRadius } from '@turf/helpers';
+import { toMercator, toWgs84 } from '@turf/projection';
+
+const WEB_MERCATOR_RADIUS = 6378137;
+
+const metersToMercatorDelta = (meters: number, latitude: number): number => {
+  const latitudeRad = (latitude * Math.PI) / 180;
+  const cosLatitude = Math.cos(latitudeRad);
+
+  if (Math.abs(cosLatitude) < Number.EPSILON) {
+    return 0;
+  }
+
+  // Rectangle metadata stores dimensions in ground meters, but the geometry itself
+  // must stay axis-aligned in Web Mercator around the rectangle center.
+  return (meters * WEB_MERCATOR_RADIUS) / (earthRadius * cosLatitude);
+};
 
 export const getRectangleDimensions = ({
   startPoint,
@@ -15,9 +33,7 @@ export const getRectangleDimensions = ({
   mapAdapter: BaseMapAdapter;
 }) => {
   const centerLngLat = mapAdapter.unproject(center);
-
   const horizontalCenter = mapAdapter.unproject([(startPoint[0] + endPoint[0]) / 2, startPoint[1]]);
-
   const verticalCenter = mapAdapter.unproject([startPoint[0], (startPoint[1] + endPoint[1]) / 2]);
 
   const width = 2 * distance(centerLngLat, verticalCenter, { units: 'meters' });
@@ -73,6 +89,42 @@ export const getRectangleGeoJson = ({
           [minX, minY],
         ].map((point) => mapAdapter.unproject(point as ScreenPoint)),
       ],
+    },
+  };
+};
+
+export const moveRectangle = (
+  geoJson: GeoJsonShapeFeature,
+  newCenter: LngLatTuple,
+): GeoJsonShapeFeature => {
+  const rectangleProperties = getShapeProperties(geoJson, 'rectangle');
+  if (!rectangleProperties) {
+    return geoJson;
+  }
+
+  const [centerX, centerY] = toMercator(newCenter);
+  const halfWidth = metersToMercatorDelta(rectangleProperties.width / 2, newCenter[1]);
+  const halfHeight = metersToMercatorDelta(rectangleProperties.height / 2, newCenter[1]);
+
+  const corners: Array<LngLatTuple> = [
+    toWgs84([centerX - halfWidth, centerY + halfHeight]),
+    toWgs84([centerX + halfWidth, centerY + halfHeight]),
+    toWgs84([centerX + halfWidth, centerY - halfHeight]),
+    toWgs84([centerX - halfWidth, centerY - halfHeight]),
+  ];
+
+  const properties = {
+    ...geoJson.properties,
+    [`${FEATURE_PROPERTY_PREFIX}center`]: newCenter,
+    [`${FEATURE_PROPERTY_PREFIX}angle`]: 0,
+  };
+
+  return {
+    ...geoJson,
+    properties,
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[...corners, corners[0]]],
     },
   };
 };

@@ -9,14 +9,8 @@ import type { LngLatTuple } from '@/types/map/index.ts';
 import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
+import { getFeatureFirstPoint, getMovedGeoJson, getShapeProperties } from '@/utils/features.ts';
 import {
-  getFeatureFirstPoint,
-  getMovedGeoJson,
-  getShapeProperties,
-  propertiesValid,
-} from '@/utils/features.ts';
-import {
-  eachCoordinateWithPath,
   getGeoJsonCircle,
   getGeoJsonEllipse,
   getGeoJsonFirstPoint,
@@ -27,6 +21,7 @@ import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { Feature, Polygon } from 'geojson';
 import { isEqual } from 'lodash-es';
 import log from 'loglevel';
+import { moveRectangle } from '@/utils/shapes.ts';
 
 type UpdateShapeHandler = (
   featureData: FeatureData,
@@ -254,36 +249,19 @@ export abstract class BaseDrag extends BaseEdit {
       return null;
     }
 
-    if (!propertiesValid(featureData.getGeoJson(), 'rectangle')) {
+    const lngLatDiff = getLngLatDiff(startLngLat, endLngLat);
+    const shapeProperties = getShapeProperties(featureData.getGeoJson(), 'rectangle');
+
+    if (!shapeProperties) {
       // Fallback for legacy rectangles without intrinsic properties
       log.warn("BaseDrag.moveRectangle: properties aren't valid", featureData);
-      const lngLatDiff = getLngLatDiff(startLngLat, endLngLat);
       return getMovedGeoJson(featureData, lngLatDiff);
     }
 
-    const startScreenPoint = this.gm.mapAdapter.project(startLngLat);
-    const endScreenPoint = this.gm.mapAdapter.project(endLngLat);
-
-    const screenPointDiff = [
-      endScreenPoint[0] - startScreenPoint[0],
-      endScreenPoint[1] - startScreenPoint[1],
-    ];
-
-    const featureGeoJson = featureData.getGeoJson();
-
-    eachCoordinateWithPath(featureGeoJson, (position) => {
-      const point = this.gm.mapAdapter.project(position.coordinate);
-      point[0] += screenPointDiff[0];
-      point[1] += screenPointDiff[1];
-
-      // First and last coordinates are the same for rectangles,
-      // so it's safe to assign it again if the last is a reference to the first
-      const lngLat = this.gm.mapAdapter.unproject(point);
-      position.coordinate[0] = lngLat[0];
-      position.coordinate[1] = lngLat[1];
-    });
-
-    return featureGeoJson;
+    return moveRectangle(featureData.getGeoJson(), [
+      shapeProperties.center[0] + lngLatDiff.lng,
+      shapeProperties.center[1] + lngLatDiff.lat,
+    ]);
   }
 
   moveEllipse(
