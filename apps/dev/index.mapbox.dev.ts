@@ -9,6 +9,7 @@ import {
 import log from 'loglevel';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
+import { MapboxGlobeControl } from '@dev/controls/mapbox/globe.ts';
 
 // Mapbox access token. Use OSM raster tiles (no token needed) or set VITE_MAPBOX_TOKEN for vector styles.
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
@@ -49,6 +50,10 @@ const initGeoman = async () => {
       fadeDuration: 50,
     });
   console.log(`Mapbox GL JS version: "${mapboxgl.version}"`);
+
+  if (!map.getContainer().querySelector(`.${MapboxGlobeControl.controlClass}`)) {
+    map.addControl(new MapboxGlobeControl());
+  }
 
   const geoman = await initGeomanInstance(map, gmOptions);
   return { geoman, map };

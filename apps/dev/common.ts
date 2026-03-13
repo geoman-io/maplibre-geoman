@@ -1,5 +1,5 @@
 import { layerStyles } from './styles/layer-styles.ts';
-import { Geoman } from '@/main.ts';
+import { Geoman, IS_PRO } from '@/main.ts';
 import type { AnyMapInstance, MapInstanceWithGeoman } from '@/types/map/index.ts';
 import type { GmOptionsData } from '@/types/options.ts';
 import log from 'loglevel';
@@ -198,6 +198,6 @@ export function setupDevEnvironment(geoman: Geoman, map: DevMapInstance): void {
 
   mountPanels(geoman, map);
 
-  log.debug('geoman version:', __GEOMAN_VERSION__);
+  log.debug(`Geoman version: "${IS_PRO ? 'pro' : 'free'}"`);
   log.debug('Dev panels mounted');
 }
