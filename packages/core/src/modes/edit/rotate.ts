@@ -4,12 +4,11 @@ import type { GmEditEvent, GmEditMarkerMoveEvent } from '@/types/events/edit.ts'
 import type { GmSystemEvent } from '@/types/events/index.ts';
 import type { FeatureShape } from '@/types/features.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
-import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import type { EditModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { getShapeProperties } from '@/utils/features.ts';
 import {
-  eachCoordinateWithPath,
   geoJsonPointToLngLat,
   getGeoJsonCircle,
   getGeoJsonEllipse,
@@ -17,18 +16,22 @@ import {
   isEqualPosition,
 } from '@/utils/geojson.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
+import {
+  moveRectangle as moveRectangleGeoJson,
+  rotateRectangle as rotateRectangleGeoJson,
+} from '@/utils/shapes.ts';
 import bearing from '@turf/bearing';
 import centroid from '@turf/centroid';
 import { featureCollection, point } from '@turf/helpers';
+import { toMercator, toWgs84 } from '@turf/projection';
 import transformRotate from '@turf/transform-rotate';
 import type { Feature, Polygon } from 'geojson';
-import { cloneDeep, isEqual } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';
-import { calculateEuclideanRotationAngle } from '@/utils/planar.ts';
 
 type RotateShapeHandler = (
   featureData: FeatureData,
-  shapeCentroid: LngLatTuple,
+  shapeCentroid: LngLatTuple | undefined,
   event: GmEditMarkerMoveEvent,
 ) => GeoJsonShapeFeature | null;
 
@@ -43,7 +46,7 @@ export class EditRotate extends BaseDrag {
     circle_marker: this.rotateFeature.bind(this),
     text_marker: this.rotateFeature.bind(this),
     line: this.rotateFeature.bind(this),
-    rectangle: this.rotateFeature.bind(this),
+    rectangle: this.rotateRectangle.bind(this),
     polygon: this.rotateFeature.bind(this),
     ellipse: this.rotateEllipse.bind(this),
   };
@@ -101,16 +104,17 @@ export class EditRotate extends BaseDrag {
   }
 
   async moveVertex(event: GmEditMarkerMoveEvent) {
-    const shapeCentroid = geoJsonPointToLngLat(
-      centroid(
-        featureCollection([
-          event.featureData.getGeoJson(),
-          ...(event.linkedFeatures ?? []).map((fd) => fd.getGeoJson()),
-        ]),
-      ),
-    );
+    const groupFeatures = [event.featureData, ...(event.linkedFeatures ?? [])];
+    const shapeCentroid =
+      groupFeatures.length > 1
+        ? geoJsonPointToLngLat(
+            centroid(
+              featureCollection(groupFeatures.map((featureData) => featureData.getGeoJson())),
+            ),
+          )
+        : undefined;
 
-    for (const featureData of [event.featureData, ...(event.linkedFeatures ?? [])]) {
+    for (const featureData of groupFeatures) {
       const updatedGeoJson =
         this.shapeRotateHandlers[featureData.shape]?.(featureData, shapeCentroid, event) || null;
 
@@ -136,7 +140,7 @@ export class EditRotate extends BaseDrag {
 
   rotateRectangle(
     featureData: FeatureData,
-    shapeCentroid: LngLatTuple,
+    shapeCentroid: LngLatTuple | undefined,
     event: GmEditMarkerMoveEvent,
   ) {
     if (featureData.shape !== 'rectangle') {
@@ -144,36 +148,35 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
-    const geoJson = cloneDeep(featureData.getGeoJson());
-    const rectanglePoints: Array<ScreenPoint> = [];
-    const startPoint = this.gm.mapAdapter.project(event.lngLatStart);
-    const endPoint = this.gm.mapAdapter.project(event.lngLatEnd);
-
-    eachCoordinateWithPath(geoJson, (position) => {
-      rectanglePoints.push(this.gm.mapAdapter.project(position.coordinate));
-    });
-
-    if (rectanglePoints.length !== 5) {
-      log.error('EditRotate.rotateRectangle: invalid geojson', featureData);
-      return null;
+    const rectangleProperties = getShapeProperties(featureData.getGeoJson(), 'rectangle');
+    if (!rectangleProperties) {
+      log.warn("EditRotate.rotateRectangle: properties aren't valid", featureData);
+      return this.rotateFeature(featureData, shapeCentroid, event);
     }
 
-    const externalCenterPoint = this.gm.mapAdapter.project(shapeCentroid);
-    let centerPoint: ScreenPoint = [
-      (rectanglePoints[0][0] + rectanglePoints[2][0]) / 2,
-      (rectanglePoints[0][1] + rectanglePoints[2][1]) / 2,
-    ];
+    const rotationPivot = shapeCentroid ?? rectangleProperties.center;
 
-    if (!isEqual(centerPoint, externalCenterPoint)) {
-      centerPoint = externalCenterPoint;
-    }
+    const deltaAngle = this.calculateMercatorRotationAngle(
+      rotationPivot,
+      event.lngLatStart,
+      event.lngLatEnd,
+    );
 
-    const deltaAngle = calculateEuclideanRotationAngle(startPoint, endPoint, centerPoint);
+    const rotatedCenter = isEqualPosition(rotationPivot, rectangleProperties.center)
+      ? rectangleProperties.center
+      : this.rotateMercatorLngLat(rectangleProperties.center, rotationPivot, deltaAngle);
 
-    return this.euclideanRotateByAngle(geoJson, centerPoint, deltaAngle);
+    return moveRectangleGeoJson(
+      rotateRectangleGeoJson(featureData.getGeoJson(), rectangleProperties.angle + deltaAngle),
+      rotatedCenter,
+    );
   }
 
-  rotateCircle(featureData: FeatureData, shapeCentroid: LngLatTuple, event: GmEditMarkerMoveEvent) {
+  rotateCircle(
+    featureData: FeatureData,
+    shapeCentroid: LngLatTuple | undefined,
+    event: GmEditMarkerMoveEvent,
+  ) {
     if (featureData.shape !== 'circle') {
       log.error('EditRotate.rotateCircle: invalid shape type', featureData);
       return null;
@@ -185,12 +188,14 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
-    if (isEqualPosition(shapeCentroid, circleProperties.center)) {
+    const rotationPivot = shapeCentroid ?? circleProperties.center;
+
+    if (isEqualPosition(rotationPivot, circleProperties.center)) {
       return featureData.getGeoJson();
     }
 
     const deltaAngle = this.calculateRotationAngle(
-      shapeCentroid,
+      rotationPivot,
       event.lngLatStart,
       event.lngLatEnd,
       false,
@@ -204,7 +209,7 @@ export class EditRotate extends BaseDrag {
     }
 
     const rotatedCenter = transformRotate(point(circleProperties.center), deltaAngle, {
-      pivot: shapeCentroid,
+      pivot: rotationPivot,
     }).geometry.coordinates as LngLatTuple;
     const radius = this.gm.mapAdapter.getDistance(circleProperties.center, circleRimLngLat);
 
@@ -213,7 +218,7 @@ export class EditRotate extends BaseDrag {
 
   rotateEllipse(
     featureData: FeatureData,
-    shapeCentroid: LngLatTuple,
+    shapeCentroid: LngLatTuple | undefined,
     event: GmEditMarkerMoveEvent,
   ) {
     if (featureData.shape !== 'ellipse') {
@@ -227,15 +232,17 @@ export class EditRotate extends BaseDrag {
       return null;
     }
 
+    const rotationPivot = shapeCentroid ?? ellipseProperties.center;
+
     const deltaAngle = this.calculateRotationAngle(
-      shapeCentroid,
+      rotationPivot,
       event.lngLatStart,
       event.lngLatEnd,
       false,
     );
 
     const rotatedCenter = transformRotate(point(ellipseProperties.center), deltaAngle, {
-      pivot: shapeCentroid,
+      pivot: rotationPivot,
     }).geometry.coordinates as LngLatTuple;
 
     return getGeoJsonEllipse({
@@ -248,14 +255,15 @@ export class EditRotate extends BaseDrag {
 
   rotateFeature(
     featureData: FeatureData,
-    shapeCentroid: LngLatTuple,
+    shapeCentroid: LngLatTuple | undefined,
     event: GmEditMarkerMoveEvent,
   ) {
     const geoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
+    const rotationPivot = shapeCentroid ?? geoJsonPointToLngLat(centroid(geoJson));
 
-    const angle = this.calculateRotationAngle(shapeCentroid, event.lngLatStart, event.lngLatEnd);
+    const angle = this.calculateRotationAngle(rotationPivot, event.lngLatStart, event.lngLatEnd);
 
-    geoJson.geometry = transformRotate(geoJson, angle, { pivot: shapeCentroid }).geometry;
+    geoJson.geometry = transformRotate(geoJson, angle, { pivot: rotationPivot }).geometry;
 
     return geoJson;
   }
@@ -273,45 +281,37 @@ export class EditRotate extends BaseDrag {
     return normalize ? (rotationAngle + 360) % 360 : rotationAngle;
   }
 
-  euclideanRotateByAngle(
-    geoJson: GeoJsonShapeFeature,
-    pivotPoint: ScreenPoint,
-    angleDegrees: number,
-  ): GeoJsonShapeFeature {
-    const resultGeoJson: GeoJsonShapeFeature = cloneDeep(geoJson);
+  calculateMercatorRotationAngle(pivot: LngLatTuple, start: LngLatTuple, end: LngLatTuple) {
+    const [pivotX, pivotY] = toMercator(pivot);
+    const [startX, startY] = toMercator(start);
+    const [endX, endY] = toMercator(end);
 
-    // 1. Convert degrees to radians
-    const angleRadians = angleDegrees * (Math.PI / 180);
+    const angleStart = Math.atan2(startY - pivotY, startX - pivotX);
+    const angleEnd = Math.atan2(endY - pivotY, endX - pivotX);
+    let angleDiff = angleEnd - angleStart;
+
+    while (angleDiff <= -Math.PI) {
+      angleDiff += 2 * Math.PI;
+    }
+    while (angleDiff > Math.PI) {
+      angleDiff -= 2 * Math.PI;
+    }
+
+    return angleDiff * (180 / Math.PI);
+  }
+
+  rotateMercatorLngLat(point: LngLatTuple, pivot: LngLatTuple, angleDegrees: number): LngLatTuple {
+    const [pointX, pointY] = toMercator(point);
+    const [pivotX, pivotY] = toMercator(pivot);
+    const angleRadians = (angleDegrees * Math.PI) / 180;
     const cosTheta = Math.cos(angleRadians);
     const sinTheta = Math.sin(angleRadians);
+    const dx = pointX - pivotX;
+    const dy = pointY - pivotY;
 
-    // 2. Iterate through each coordinate
-    eachCoordinateWithPath(
-      resultGeoJson,
-      (position) => {
-        // Project geographical coordinate to screen space
-        const point = this.gm.mapAdapter.project(position.coordinate);
-
-        // Calculate distance from pivot point
-        const dx = point[0] - pivotPoint[0];
-        const dy = point[1] - pivotPoint[1];
-
-        // Apply rotation matrix
-        const rotatedX = dx * cosTheta - dy * sinTheta;
-        const rotatedY = dx * sinTheta + dy * cosTheta;
-
-        // Translate back relative to the pivot point
-        point[0] = pivotPoint[0] + rotatedX;
-        point[1] = pivotPoint[1] + rotatedY;
-
-        // Unproject back to geographical coordinate
-        const lngLat = this.gm.mapAdapter.unproject(point);
-        position.coordinate[0] = lngLat[0];
-        position.coordinate[1] = lngLat[1];
-      },
-      true,
-    );
-
-    return resultGeoJson;
+    return toWgs84([
+      pivotX + dx * cosTheta - dy * sinTheta,
+      pivotY + dx * sinTheta + dy * cosTheta,
+    ]) as LngLatTuple;
   }
 }

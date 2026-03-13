@@ -7,6 +7,7 @@ import { earthRadius } from '@turf/helpers';
 import { toMercator, toWgs84 } from '@turf/projection';
 
 const WEB_MERCATOR_RADIUS = 6378137;
+const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
 
 const metersToMercatorDelta = (meters: number, latitude: number): number => {
   const latitudeRad = (latitude * Math.PI) / 180;
@@ -19,6 +20,92 @@ const metersToMercatorDelta = (meters: number, latitude: number): number => {
   // Rectangle metadata stores dimensions in ground meters, but the geometry itself
   // must stay axis-aligned in Web Mercator around the rectangle center.
   return (meters * WEB_MERCATOR_RADIUS) / (earthRadius * cosLatitude);
+};
+
+const rotateMercatorOffset = ([x, y]: ScreenPoint, angle: number): ScreenPoint => {
+  const angleRadians = (angle * Math.PI) / 180;
+  const cosTheta = Math.cos(angleRadians);
+  const sinTheta = Math.sin(angleRadians);
+
+  return [x * cosTheta - y * sinTheta, x * sinTheta + y * cosTheta];
+};
+
+const getRectangleCornerCoordinates = ({
+  center,
+  width,
+  height,
+  angle,
+}: {
+  center: LngLatTuple;
+  width: number;
+  height: number;
+  angle: number;
+}): Array<LngLatTuple> => {
+  const [centerX, centerY] = toMercator(center) as ScreenPoint;
+  const halfWidth = metersToMercatorDelta(width / 2, center[1]);
+  const halfHeight = metersToMercatorDelta(height / 2, center[1]);
+
+  return [
+    [-halfWidth, halfHeight],
+    [halfWidth, halfHeight],
+    [halfWidth, -halfHeight],
+    [-halfWidth, -halfHeight],
+  ].map((offset) => {
+    const [rotatedX, rotatedY] = rotateMercatorOffset(offset as ScreenPoint, angle);
+    return toWgs84([centerX + rotatedX, centerY + rotatedY]) as LngLatTuple;
+  });
+};
+
+const updateRectangleProperties = ({
+  geoJson,
+  center,
+  angle,
+}: {
+  geoJson: GeoJsonShapeFeature;
+  center: LngLatTuple;
+  angle: number;
+}) => {
+  return {
+    ...geoJson.properties,
+    [`${FEATURE_PROPERTY_PREFIX}center`]: center,
+    [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
+  };
+};
+
+const rebuildRectangle = ({
+  geoJson,
+  center,
+  angle,
+}: {
+  geoJson: GeoJsonShapeFeature;
+  center: LngLatTuple;
+  angle: number;
+}): GeoJsonShapeFeature => {
+  const rectangleProperties = getShapeProperties(geoJson, 'rectangle');
+  if (!rectangleProperties) {
+    return geoJson;
+  }
+
+  const nextAngle = normalizeAngle(angle);
+  const corners = getRectangleCornerCoordinates({
+    center,
+    width: rectangleProperties.width,
+    height: rectangleProperties.height,
+    angle: nextAngle,
+  });
+
+  return {
+    ...geoJson,
+    properties: updateRectangleProperties({
+      geoJson,
+      center,
+      angle: nextAngle,
+    }),
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[...corners, corners[0]]],
+    },
+  };
 };
 
 export const getRectangleDimensions = ({
@@ -93,6 +180,22 @@ export const getRectangleGeoJson = ({
   };
 };
 
+export const rotateRectangle = (
+  geoJson: GeoJsonShapeFeature,
+  angle: number,
+): GeoJsonShapeFeature => {
+  const rectangleProperties = getShapeProperties(geoJson, 'rectangle');
+  if (!rectangleProperties) {
+    return geoJson;
+  }
+
+  return rebuildRectangle({
+    geoJson,
+    center: rectangleProperties.center,
+    angle,
+  });
+};
+
 export const moveRectangle = (
   geoJson: GeoJsonShapeFeature,
   newCenter: LngLatTuple,
@@ -102,29 +205,9 @@ export const moveRectangle = (
     return geoJson;
   }
 
-  const [centerX, centerY] = toMercator(newCenter);
-  const halfWidth = metersToMercatorDelta(rectangleProperties.width / 2, newCenter[1]);
-  const halfHeight = metersToMercatorDelta(rectangleProperties.height / 2, newCenter[1]);
-
-  const corners: Array<LngLatTuple> = [
-    toWgs84([centerX - halfWidth, centerY + halfHeight]),
-    toWgs84([centerX + halfWidth, centerY + halfHeight]),
-    toWgs84([centerX + halfWidth, centerY - halfHeight]),
-    toWgs84([centerX - halfWidth, centerY - halfHeight]),
-  ];
-
-  const properties = {
-    ...geoJson.properties,
-    [`${FEATURE_PROPERTY_PREFIX}center`]: newCenter,
-    [`${FEATURE_PROPERTY_PREFIX}angle`]: 0,
-  };
-
-  return {
-    ...geoJson,
-    properties,
-    geometry: {
-      type: 'Polygon',
-      coordinates: [[...corners, corners[0]]],
-    },
-  };
+  return rebuildRectangle({
+    geoJson,
+    center: newCenter,
+    angle: rectangleProperties.angle,
+  });
 };
