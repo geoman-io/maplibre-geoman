@@ -8,23 +8,22 @@ import { MaplibreLayer } from './layer.ts';
 import { MaplibreDomMarker } from './marker.ts';
 import { MaplibrePopup } from './popup.ts';
 import { MaplibreSource } from './source.ts';
-import {
-  type BaseDomMarkerOptions,
-  type BaseEventListener,
-  type BaseFitBoundsOptions,
-  type BaseMapName,
-  type BasePopupOptions,
-  type CursorType,
-  FEATURE_ID_PROPERTY,
-  type FeatureId,
-  type FeatureSourceName,
-  type GeoJsonFeatureData,
-  type GeoJsonImportFeature,
-  type Geoman,
-  type LngLatTuple,
-  type MapInteraction,
-  type ScreenPoint,
-} from '@/main.ts';
+import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
+import type { Geoman } from '@/main.ts';
+import type { FeatureId, FeatureSourceName } from '@/types/features.ts';
+import type { GeoJsonImportFeature } from '@/types/geojson.ts';
+import type {
+  BaseDomMarkerOptions,
+  BaseEventListener,
+  BaseFitBoundsOptions,
+  BaseMapName,
+  BasePopupOptions,
+  CursorType,
+  GeoJsonFeatureData,
+  LngLatTuple,
+  MapInteraction,
+  ScreenPoint,
+} from '@/types/map/index.ts';
 import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';

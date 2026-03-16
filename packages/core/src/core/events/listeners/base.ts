@@ -1,17 +1,13 @@
-import {
-  type ActionType,
-  type ControlOptions,
-  type GenericSystemControl,
-  type Geoman,
-  type GmControlSwitchEvent,
-  type GmDrawModeEvent,
-  type GmEditModeEvent,
-  type GmHelperModeEvent,
-  type GmSystemEvent,
-  isGmModeEvent,
-  type ModeName,
-} from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { GenericSystemControl, ModeName } from '@/types/controls.ts';
+import type { GmControlSwitchEvent } from '@/types/events/control.ts';
+import type { GmDrawModeEvent } from '@/types/events/draw.ts';
+import type { GmEditModeEvent } from '@/types/events/edit.ts';
+import type { GmHelperModeEvent } from '@/types/events/helper.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { ActionType, ControlOptions } from '@/types/options.ts';
 import { isGmControlEvent } from '@/utils/guards/events/index.ts';
+import { isGmModeEvent } from '@/utils/guards/events/mode.ts';
 import log from 'loglevel';
 
 export abstract class BaseEventListener {

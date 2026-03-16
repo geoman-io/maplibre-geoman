@@ -1,25 +1,23 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
-import {
-  type DomMarkerData,
-  type EdgeMarkerData,
-  type EditModeName,
-  type FeatureShape,
-  type GmEditFeatureUpdatedEvent,
-  type GmEditMarkerEvent,
-  type GmEditMarkerMoveEvent,
-  type GmSystemEvent,
-  type HelperModeName,
-  type LngLatTuple,
-  type MapHandlerReturnData,
-  type MarkerData,
-  type PositionData,
-  type ScreenPoint,
-  type SegmentData,
-  type SegmentPosition,
-  type SimplePoint,
-  SOURCES,
-} from '@/main.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import type { MapHandlerReturnData } from '@/types/events/bus.ts';
+import type {
+  GmEditFeatureUpdatedEvent,
+  GmEditMarkerEvent,
+  GmEditMarkerMoveEvent,
+} from '@/types/events/edit.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { FeatureShape } from '@/types/features.ts';
+import type { PositionData, SegmentData, SegmentPosition, SimplePoint } from '@/types/geojson.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type {
+  DomMarkerData,
+  EdgeMarkerData,
+  EditModeName,
+  HelperModeName,
+  MarkerData,
+} from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import type { SharedMarker } from '@/types/interfaces.ts';
 import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';

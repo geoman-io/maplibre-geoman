@@ -1,5 +1,5 @@
 import { BasePopup } from '@/core/map/base/popup.ts';
-import type { BasePopupOptions, LngLatTuple } from '@/main.ts';
+import type { BasePopupOptions, LngLatTuple } from '@/types/map/index.ts';
 import ml from 'maplibre-gl';
 
 export class MaplibrePopup extends BasePopup<ml.Popup> {

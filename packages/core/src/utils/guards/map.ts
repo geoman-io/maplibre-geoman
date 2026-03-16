@@ -1,12 +1,12 @@
-import {
-  type BaseMapEventName,
-  Geoman,
-  type MapInstanceWithGeoman,
-  type MapWithOnceMethod,
-  type PartialLayerStyle,
-  type PointerEventName,
-} from '@/main.ts';
+import { Geoman } from '@/main.ts';
+import type {
+  BaseMapEventName,
+  MapInstanceWithGeoman,
+  MapWithOnceMethod,
+  PointerEventName,
+} from '@/types/map/index.ts';
 import { baseMapEventNames, pointerEvents } from '@/types/map/index.ts';
+import type { PartialLayerStyle } from '@/types/map/layers.ts';
 import type { BaseMapEvent, BaseMapMouseEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import log from 'loglevel';
 

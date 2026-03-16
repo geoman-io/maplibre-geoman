@@ -1,10 +1,7 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import {
-  type EditModeName,
-  type FeatureShape,
-  type FeatureSourceName,
-  isMapPointerEvent,
-} from '@/main.ts';
+import type { FeatureShape, FeatureSourceName } from '@/types/features.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
+import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
 import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';

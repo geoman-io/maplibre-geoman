@@ -1,5 +1,7 @@
 import { FeatureData } from '@/core/features/feature-data.ts';
-import type { FeatureShape, HelperModeName, LngLatTuple, ScreenPoint } from '@/main.ts';
+import type { FeatureShape } from '@/types/features.ts';
+import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { HelperModeName } from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { eachCoordinateWithPath, getEuclideanDistance } from '@/utils/geojson.ts';
 import type { Feature, LineString, MultiLineString } from 'geojson';

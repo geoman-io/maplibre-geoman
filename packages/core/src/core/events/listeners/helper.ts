@@ -1,13 +1,11 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { EventBus } from '@/core/events/bus.ts';
 import { BaseEventListener } from '@/core/events/listeners/base.ts';
-import type {
-  ActionInstanceKey,
-  EventHandlers,
-  Geoman,
-  GmHelperModeEvent,
-  GmSystemEvent,
-} from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { EventHandlers } from '@/types/events/bus.ts';
+import type { GmHelperModeEvent } from '@/types/events/helper.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { ActionInstanceKey } from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import { createHelperInstance } from '@/modes/helpers/index.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';

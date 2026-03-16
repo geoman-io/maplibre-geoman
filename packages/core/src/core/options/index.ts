@@ -1,21 +1,19 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/defaults/index.ts';
 import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
-import {
-  type ActionType,
-  type ControlOptions,
-  DRAW_MODES,
-  type GenericControlsOptions,
-  type Geoman,
-  type GmBaseModeEvent,
-  type GmControlSwitchEvent,
-  type GmOptionsData,
-  isGmModeEvent,
-  type ModeAction,
-  type ModeName,
-  type ModeType,
-} from '@/main.ts';
-import { EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
+import type { Geoman } from '@/main.ts';
+import { DRAW_MODES, EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
+import type { ModeName } from '@/types/controls.ts';
+import type { GmControlSwitchEvent } from '@/types/events/control.ts';
+import type { GmBaseModeEvent, ModeAction } from '@/types/events/mode.ts';
+import type {
+  ActionType,
+  ControlOptions,
+  GenericControlsOptions,
+  GmOptionsData,
+  ModeType,
+} from '@/types/options.ts';
+import { isGmModeEvent } from '@/utils/guards/events/mode.ts';
 import { isGmDrawEvent, isGmEditEvent, isGmHelperEvent } from '@/utils/guards/modes.ts';
 import { includesWithType } from '@/utils/typing.ts';
 import mergeWith from 'lodash-es/mergeWith';

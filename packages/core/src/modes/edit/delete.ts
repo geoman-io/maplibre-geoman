@@ -1,4 +1,6 @@
-import { type EditModeName, type FeatureShape, SHAPE_NAMES } from '@/main.ts';
+import { SHAPE_NAMES } from '@/modes/constants.ts';
+import type { FeatureShape } from '@/types/features.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 

@@ -3,19 +3,17 @@ import { controlsStore } from '@/core/controls/components/controls-store.ts';
 import GmReactiveControls from '@/core/controls/components/gm-controls.svelte';
 import { systemControls } from '@/core/controls/defaults.ts';
 import { BaseControl } from '@/core/map/base/control.ts';
-import {
-  type BaseControlsPosition,
-  type ControlOptions,
-  type EventHandlers,
-  type GenericSystemControl,
-  type GenericSystemControls,
-  type GmBaseModeEvent,
-  isGmModeEvent,
-  type ModeAction,
-  type ModeName,
-  type ModeType,
-  type SystemControls,
-} from '@/main.ts';
+import type {
+  ModeName,
+  SystemControls,
+  GenericSystemControl,
+  GenericSystemControls,
+} from '@/types/controls.ts';
+import type { EventHandlers } from '@/types/events/bus.ts';
+import type { GmBaseModeEvent, ModeAction } from '@/types/events/mode.ts';
+import type { BaseControlsPosition } from '@/types/map/index.ts';
+import type { ControlOptions, ModeType } from '@/types/options.ts';
+import { isGmModeEvent } from '@/utils/guards/events/mode.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import { cloneDeep } from 'lodash-es';
 import log from 'loglevel';

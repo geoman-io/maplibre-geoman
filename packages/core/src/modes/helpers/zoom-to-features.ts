@@ -1,9 +1,10 @@
-import { type HelperModeName, type LngLatTuple, SOURCES } from '@/main.ts';
+import { IS_PRO } from '@/core/constants.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
+import type { HelperModeName } from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import bbox from '@turf/bbox';
 import log from 'loglevel';
-
-import { IS_PRO } from '@/core/constants.ts';
 
 export class ZoomToFeaturesHelper extends BaseHelper {
   mode: HelperModeName = 'zoom_to_features';

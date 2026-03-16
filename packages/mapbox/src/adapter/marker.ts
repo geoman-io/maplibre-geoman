@@ -1,5 +1,5 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { BaseDomMarkerOptions, LngLatTuple } from '@/main.ts';
+import type { BaseDomMarkerOptions, LngLatTuple } from '@/types/map/index.ts';
 import mapboxgl from 'mapbox-gl';
 
 export class MapboxDomMarker extends BaseDomMarker<mapboxgl.Marker> {

@@ -1,15 +1,11 @@
-import {
-  type EditModeName,
-  FeatureData,
-  type FeatureShape,
-  type GeoJsonShapeFeature,
-  type GmEditEvent,
-  type GmEditMarkerMoveEvent,
-  type GmSystemEvent,
-  type LngLatTuple,
-  type ShapeName,
-  SOURCES,
-} from '@/main.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import { FeatureData } from '@/core/features/feature-data.ts';
+import type { GmEditEvent, GmEditMarkerMoveEvent } from '@/types/events/edit.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
+import type { FeatureShape } from '@/types/features.ts';
+import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
+import type { EditModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import {
   geoJsonPointToLngLat,

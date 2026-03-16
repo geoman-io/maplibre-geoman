@@ -1,6 +1,8 @@
 <script lang="ts">
   import ControlMenu from '@/core/controls/components/control-menu.svelte';
-  import type {ControlOptions, GenericSystemControl, Geoman} from '@/main.ts';
+  import type {ControlOptions} from '@/types/options.ts';
+  import type {GenericSystemControl} from '@/types/controls.ts';
+  import type {Geoman} from '@/main.ts';
   import DOMPurify from 'dompurify';
   import log from 'loglevel';
   import {getContext} from 'svelte';

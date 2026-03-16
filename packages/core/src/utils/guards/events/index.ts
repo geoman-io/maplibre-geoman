@@ -1,4 +1,4 @@
-import type { GmSystemEvent } from '@/main.ts';
+import type { GmSystemEvent } from '@/types/events/index.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 
 export const isGmEvent = (payload: unknown): payload is GmSystemEvent => {

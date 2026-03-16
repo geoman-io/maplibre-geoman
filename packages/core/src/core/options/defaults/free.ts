@@ -1,6 +1,6 @@
 import { controlIcons } from '@/core/options/icons.ts';
 import defaultLayerStyles from '@/core/options/layers/style.ts';
-import type { GmOptionsData } from '@/main.ts';
+import type { GmOptionsData } from '@/types/options.ts';
 import defaultMarker from '@/assets/images/markers/default-marker.svg';
 import defaultShapeMarker from '@/assets/images/markers/default-shape-marker.svg';
 import { CONTROL_GROUP_CLASS } from '@mapLib/constants.ts';

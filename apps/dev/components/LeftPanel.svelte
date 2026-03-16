@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type {DrawModeName, EditModeName, Geoman, HelperModeName,} from '@/main.ts';
+  import type {Geoman} from '@/main.ts';
+  import type {DrawModeName, EditModeName, HelperModeName} from '@/types/modes/index.ts';
   import {DRAW_MODES, EDIT_MODES, HELPER_MODES} from '@/modes/constants.ts';
 
   interface Props {

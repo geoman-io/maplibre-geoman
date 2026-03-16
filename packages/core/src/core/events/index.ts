@@ -4,7 +4,8 @@ import { ControlEventListener } from '@/core/events/listeners/controls.ts';
 import { DrawEventListener } from '@/core/events/listeners/draw.ts';
 import { EditEventListener } from '@/core/events/listeners/edit.ts';
 import { HelperEventListener } from '@/core/events/listeners/helper.ts';
-import type { ActionType, Geoman } from '@/main.ts';
+import type { Geoman } from '@/main.ts';
+import type { ActionType } from '@/types/options.ts';
 import log from 'loglevel';
 import type { GmEventName, GmSystemEvent } from '@/types/events';
 

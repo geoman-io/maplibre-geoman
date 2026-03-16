@@ -1,10 +1,7 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
-import {
-  type DrawModeName,
-  type LineEventHandlerArguments,
-  type ShapeName,
-  SOURCES,
-} from '@/main.ts';
+import { SOURCES } from '@/core/features/constants.ts';
+import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
+import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';

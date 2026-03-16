@@ -1,4 +1,7 @@
-import type { GmFeatureBeforeCreateEvent, GmFeatureBeforeUpdateEvent } from '@/main.ts';
+import type {
+  GmFeatureBeforeCreateEvent,
+  GmFeatureBeforeUpdateEvent,
+} from '@/types/events/feature.ts';
 import { isGmEvent } from '@/utils/guards/events/index.ts';
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 

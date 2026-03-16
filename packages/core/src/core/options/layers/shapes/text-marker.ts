@@ -1,4 +1,4 @@
-import type { PartialLayerStyle } from '@/main.ts';
+import type { PartialLayerStyle } from '@/types/map/layers.ts';
 import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export const getTextMarkerStyles = (): Array<PartialLayerStyle> => {

@@ -1,4 +1,4 @@
-import type { EditModeName } from '@/main.ts';
+import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 
 export class DummyEdit extends BaseEdit {
