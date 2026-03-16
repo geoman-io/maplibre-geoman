@@ -78,7 +78,10 @@ export abstract class BaseDrag extends BaseEdit {
     if (!this.bodyDragEnabled || !isMapPointerEvent(event)) {
       return { next: true };
     }
-    const featureData = this.getFeatureByMouseEvent({ event, sourceNames: [SOURCES.main] });
+    const featureData = this.getFeatureByMouseEvent({
+      event,
+      sourceNames: [SOURCES.main],
+    });
 
     if (featureData && this.getUpdatedGeoJsonHandlers[featureData.shape]) {
       if (!this.gm.features.selection.has(featureData.id)) {
@@ -104,7 +107,10 @@ export abstract class BaseDrag extends BaseEdit {
         // This ensures correct internal event ordering: dragstart -> drag -> dragend.
         // alignShapeCenterWithControlMarker calls onMouseMove which can fire drag events,
         // so dragstart must be fired first.
-        await this.fireFeatureEditStartEvent({ feature: fd, forceMode: 'drag' });
+        await this.fireFeatureEditStartEvent({
+          feature: fd,
+          forceMode: 'drag',
+        });
       }
 
       this.gm.features.updateManager.commitTransaction();
@@ -200,38 +206,46 @@ export abstract class BaseDrag extends BaseEdit {
 
   async moveFeature(featureData: FeatureData, lngLatDiff: LngLatDiff) {
     if (!this.flags.actionInProgress) {
-      return;
+      return false;
     }
 
-    const shapeUpdateMethod = this.getUpdatedGeoJsonHandlers[featureData.shape];
-    if (shapeUpdateMethod) {
-      let updatedGeoJson = shapeUpdateMethod(featureData, lngLatDiff);
+    const customDragHandlerFunc = this.gm.options.settings.customDragHandler;
+    let updatedGeoJson: Promise<GeoJsonShapeFeature | null> | GeoJsonShapeFeature | null = null;
+
+    if (customDragHandlerFunc) {
+      updatedGeoJson = customDragHandlerFunc(featureData, lngLatDiff);
+    }
+
+    if (!updatedGeoJson) {
+      const shapeUpdateMethod = this.getUpdatedGeoJsonHandlers[featureData.shape];
+      updatedGeoJson = shapeUpdateMethod?.(featureData, lngLatDiff) ?? null;
       if (updatedGeoJson instanceof Promise) {
         updatedGeoJson = await updatedGeoJson;
       }
-
-      if (!updatedGeoJson) {
-        log.error('BaseDrag.moveFeature: invalid updatedGeoJson', featureData);
-        return;
-      }
-
-      await this.fireBeforeFeatureUpdate({
-        features: [featureData],
-        geoJsonFeatures: [updatedGeoJson],
-        forceMode: 'drag',
-      });
-
-      const isUpdated = await this.updateFeatureGeoJson({
-        featureData,
-        featureGeoJson: updatedGeoJson,
-        forceMode: 'drag',
-      });
-      if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
-        await featureData._updateAllProperties(updatedGeoJson.properties);
-      }
-
-      return isUpdated;
     }
+
+    if (!updatedGeoJson) {
+      log.error('BaseDrag.moveFeature: invalid updatedGeoJson', featureData);
+      return false;
+    }
+
+    await this.fireBeforeFeatureUpdate({
+      features: [featureData],
+      geoJsonFeatures: [updatedGeoJson],
+      forceMode: 'drag',
+    });
+
+    const isUpdated = await this.updateFeatureGeoJson({
+      featureData,
+      featureGeoJson: updatedGeoJson,
+      forceMode: 'drag',
+    });
+
+    if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
+      await featureData._updateAllProperties(updatedGeoJson.properties);
+    }
+
+    return isUpdated;
   }
 
   moveSource(featureData: FeatureData, lngLatDiff: LngLatDiff) {

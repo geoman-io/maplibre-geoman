@@ -9,7 +9,7 @@ import type {
 } from '@/types/events/edit.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
 import type { FeatureShape } from '@/types/features.ts';
-import type { PositionData, SegmentPosition, SimplePoint } from '@/types/geojson.ts';
+import type { PositionData, SegmentData, SegmentPosition, SimplePoint } from '@/types/geojson.ts';
 import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
 import type {
   DomMarkerData,
@@ -30,12 +30,6 @@ import { isGmDrawEvent, isGmEditEvent } from '@/utils/guards/modes.ts';
 import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
 import { cloneDeep, intersection } from 'lodash-es';
 import log from 'loglevel';
-
-type SegmentData = {
-  segment: SegmentPosition;
-  middle: PositionData;
-  edgeMarkerKey: string;
-};
 
 type CreateMarkerParams = {
   type: MarkerData['type'];
@@ -320,17 +314,30 @@ export class ShapeMarkersHelper extends BaseHelper {
       }
 
       await this.addCenterMarker(featureData);
-      const shapeSegments = this.getAllShapeSegments(featureData);
 
-      const endMarkerIndexes = this.getEndMarkerIndexes(featureData);
+      let shapeSegments: SegmentData[] | null = null;
+      let useCustomFunction = true;
+
+      let endMarkerIndexes = this.getEndMarkerIndexes(featureData);
+
+      const customGetSegmentsFunc = this.gm.options.settings.customGetAllShapeSegments;
+
+      if (customGetSegmentsFunc) {
+        shapeSegments = customGetSegmentsFunc(featureData);
+      }
+
+      if (!shapeSegments) {
+        useCustomFunction = false;
+        shapeSegments = this.getAllShapeSegments(featureData);
+      } else {
+        endMarkerIndexes = new Set([shapeSegments.length - 1]);
+      }
 
       for (const [index, segmentData] of shapeSegments.entries()) {
-        // generic vertex marker
-        const isVertexMarkerAllowed = this.isMarkerIndexAllowed(
-          featureData.shape,
-          index,
-          shapeSegments.length,
-        );
+        const isVertexMarkerAllowed = useCustomFunction
+          ? true
+          : // generic vertex marker
+            this.isMarkerIndexAllowed(featureData.shape, index, shapeSegments.length);
 
         if (isVertexMarkerAllowed) {
           const marker = await this.createOrUpdateVertexMarker(
@@ -349,7 +356,7 @@ export class ShapeMarkersHelper extends BaseHelper {
         }
 
         // edge middle marker
-        if (this.isEdgeMarkerAllowed(featureData)) {
+        if (!useCustomFunction && this.isEdgeMarkerAllowed(featureData)) {
           const marker = await this.createOrUpdateEdgeMarker(segmentData, featureData);
           featureData.markers.set(marker.markerKey, marker.markerData);
         }
@@ -536,17 +543,30 @@ export class ShapeMarkersHelper extends BaseHelper {
       this.activeMarker = await this.convertToVertexMarker(this.activeMarker);
     }
 
-    const shapeSegments = this.getAllShapeSegments(featureData);
-    const currentMarkerKeys = new Set(featureData.markers.keys());
+    let shapeSegments: SegmentData[] | null = null;
+    let useCustomFunction = true;
 
-    const endMarkerIndexes = this.getEndMarkerIndexes(featureData);
+    const currentMarkerKeys = new Set(featureData.markers.keys());
+    let endMarkerIndexes = this.getEndMarkerIndexes(featureData);
+
+    const customGetSegmentsFunc = this.gm.options.settings.customGetAllShapeSegments;
+
+    if (customGetSegmentsFunc) {
+      shapeSegments = customGetSegmentsFunc(featureData);
+    }
+
+    if (!shapeSegments) {
+      useCustomFunction = false;
+      shapeSegments = this.getAllShapeSegments(featureData);
+    } else {
+      endMarkerIndexes = new Set([shapeSegments.length - 1]);
+    }
 
     for (const [index, segmentData] of shapeSegments.entries()) {
-      const isVertexMarkerAllowed = this.isMarkerIndexAllowed(
-        featureData.shape,
-        index,
-        shapeSegments.length,
-      );
+      const isVertexMarkerAllowed = useCustomFunction
+        ? true
+        : // generic vertex marker
+          this.isMarkerIndexAllowed(featureData.shape, index, shapeSegments.length);
 
       if (isVertexMarkerAllowed) {
         const marker = await this.createOrUpdateVertexMarker(
@@ -563,7 +583,7 @@ export class ShapeMarkersHelper extends BaseHelper {
         }
       }
 
-      if (this.isEdgeMarkerAllowed(featureData)) {
+      if (!useCustomFunction && this.isEdgeMarkerAllowed(featureData)) {
         const marker = await this.createOrUpdateEdgeMarker(segmentData, featureData);
         currentMarkerKeys.delete(marker.markerKey);
       }
