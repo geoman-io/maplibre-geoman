@@ -1,4 +1,4 @@
-import { SOURCES } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import type { GmEditMarkerEvent, GmEditMarkerMoveEvent } from '@/types/events/edit.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
 import type { FeatureShape } from '@/types/features.ts';
@@ -27,6 +27,10 @@ import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, get } from 'lodash-es';
 import log from 'loglevel';
 import { isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
+import {
+  getRectangleCornerCoordinates,
+  getRectanglePropertiesFromDiagonal,
+} from '@/utils/shapes.ts';
 
 type UpdateShapeHandler = (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
 
@@ -128,7 +132,7 @@ export class EditChange extends BaseDrag {
         geoJsonFeatures: [updatedGeoJson],
       });
 
-      this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
+      await this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
     } else {
       log.error('EditChange.moveVertex: invalid geojson', updatedGeoJson, event);
     }
@@ -287,9 +291,65 @@ export class EditChange extends BaseDrag {
     });
   }
 
-  updateRectangle({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {
+  updateRectangle(event: GmEditMarkerMoveEvent) {
+    const TOTAL_COORDS_COUNT = 4;
+    const geoJson = event.featureData.getGeoJson();
+    const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLatTuple>;
+
+    const properties = getShapeProperties(geoJson, 'rectangle');
+    if (!properties) {
+      log.error('updateRectangle: wrong properties', event.featureData);
+      return null;
+    }
+
+    const startIndex = event.markerData.position.path.at(-1);
+    if (typeof startIndex !== 'number') {
+      log.error('EditChange.updateRectangle: start vertex not found', event.featureData);
+      return null;
+    }
+
+    const oppositeVertexIndex = toMod(startIndex - 2, TOTAL_COORDS_COUNT);
+    const oppositeCoordinate = shapeCoords[oppositeVertexIndex] as LngLatTuple;
+    if (!oppositeCoordinate) {
+      log.error('EditChange.updateRectangle: opposite vertex not found', event.featureData);
+      return null;
+    }
+
+    const {
+      center: newCenter,
+      width: newWidth,
+      height: newHeight,
+    } = getRectanglePropertiesFromDiagonal({
+      draggedCorner: event.lngLatEnd,
+      oppositeCorner: oppositeCoordinate,
+      angle: properties.angle,
+    });
+
+    const corners = getRectangleCornerCoordinates({
+      center: newCenter,
+      width: newWidth,
+      height: newHeight,
+      angle: properties.angle,
+    });
+
+    return {
+      ...geoJson,
+      properties: {
+        ...geoJson.properties,
+        [`${FEATURE_PROPERTY_PREFIX}center`]: newCenter,
+        [`${FEATURE_PROPERTY_PREFIX}width`]: newWidth,
+        [`${FEATURE_PROPERTY_PREFIX}height`]: newHeight,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[...corners, corners[0]]],
+      },
+    } as GeoJsonShapeFeature;
+  }
+
+  updateRectangleDisabled({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {
     const totalCoordsCount = 4;
-    const geoJson = featureData.getGeoJson() as GeoJsonShapeFeature;
+    const geoJson = featureData.getGeoJson();
     const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLatTuple>;
 
     // Find the index of the starting vertex

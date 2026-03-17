@@ -22,6 +22,17 @@ const metersToMercatorDelta = (meters: number, latitude: number): number => {
   return (meters * WEB_MERCATOR_RADIUS) / (earthRadius * cosLatitude);
 };
 
+const mercatorDeltaToMeters = (mercatorDelta: number, latitude: number): number => {
+  const latitudeRad = (latitude * Math.PI) / 180;
+  const cosLatitude = Math.cos(latitudeRad);
+
+  if (Math.abs(cosLatitude) < Number.EPSILON) {
+    return 0;
+  }
+
+  return (mercatorDelta * earthRadius * cosLatitude) / WEB_MERCATOR_RADIUS;
+};
+
 const rotateMercatorOffset = ([x, y]: ScreenPoint, angle: number): ScreenPoint => {
   const angleRadians = (angle * Math.PI) / 180;
   const cosTheta = Math.cos(angleRadians);
@@ -30,7 +41,7 @@ const rotateMercatorOffset = ([x, y]: ScreenPoint, angle: number): ScreenPoint =
   return [x * cosTheta - y * sinTheta, x * sinTheta + y * cosTheta];
 };
 
-const getRectangleCornerCoordinates = ({
+export const getRectangleCornerCoordinates = ({
   center,
   width,
   height,
@@ -56,23 +67,38 @@ const getRectangleCornerCoordinates = ({
   });
 };
 
-const updateRectangleProperties = ({
-  geoJson,
-  center,
+export const getRectanglePropertiesFromDiagonal = ({
+  draggedCorner,
+  oppositeCorner,
   angle,
 }: {
-  geoJson: GeoJsonShapeFeature;
-  center: LngLatTuple;
+  draggedCorner: LngLatTuple;
+  oppositeCorner: LngLatTuple;
   angle: number;
-}) => {
+}): {
+  center: LngLatTuple;
+  width: number;
+  height: number;
+} => {
+  const [draggedX, draggedY] = toMercator(draggedCorner) as ScreenPoint;
+  const [oppositeX, oppositeY] = toMercator(oppositeCorner) as ScreenPoint;
+
+  const centerMercator: ScreenPoint = [(draggedX + oppositeX) / 2, (draggedY + oppositeY) / 2];
+  const center = toWgs84(centerMercator) as LngLatTuple;
+
+  const [localHalfWidth, localHalfHeight] = rotateMercatorOffset(
+    [(draggedX - oppositeX) / 2, (draggedY - oppositeY) / 2],
+    -angle,
+  );
+
   return {
-    ...geoJson.properties,
-    [`${FEATURE_PROPERTY_PREFIX}center`]: center,
-    [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
+    center,
+    width: mercatorDeltaToMeters(Math.abs(localHalfWidth) * 2, center[1]),
+    height: mercatorDeltaToMeters(Math.abs(localHalfHeight) * 2, center[1]),
   };
 };
 
-const rebuildRectangle = ({
+export const rebuildRectangle = ({
   geoJson,
   center,
   angle,
@@ -96,11 +122,11 @@ const rebuildRectangle = ({
 
   return {
     ...geoJson,
-    properties: updateRectangleProperties({
-      geoJson,
-      center,
-      angle: nextAngle,
-    }),
+    properties: {
+      ...geoJson.properties,
+      [`${FEATURE_PROPERTY_PREFIX}center`]: center,
+      [`${FEATURE_PROPERTY_PREFIX}angle`]: nextAngle,
+    },
     geometry: {
       type: 'Polygon',
       coordinates: [[...corners, corners[0]]],
