@@ -312,11 +312,14 @@
     "id": 150
   },
   {
-    "type": "Feature",
     "id": 151,
+    "type": "Feature",
     "properties": {
       "shape": "rectangle",
-      "group": "group-1"
+      "center": [10.5, 53.01158367476117],
+      "width": 200699.08672822543,
+      "height": 219814.0651780994,
+      "angle": 0
     },
     "geometry": {
       "type": "Polygon",

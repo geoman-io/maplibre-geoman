@@ -97,9 +97,7 @@
   {
     "type": "Feature",
     "id": "custom-feature-23",
-    "properties": {
-      "shape": "rectangle"
-    },
+    "properties": {},
     "geometry": {
       "type": "Polygon",
       "coordinates": [
