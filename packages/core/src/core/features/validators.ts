@@ -18,6 +18,10 @@ export const propertyValidators: {
 
   center: (value: unknown): value is LngLatTuple => isLngLat(value),
 
+  width: (value: unknown): value is number => typeof value === 'number',
+
+  height: (value: unknown): value is number => typeof value === 'number',
+
   xSemiAxis: (value: unknown): value is number => typeof value === 'number',
 
   ySemiAxis: (value: unknown): value is number => typeof value === 'number',

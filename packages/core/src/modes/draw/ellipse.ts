@@ -2,8 +2,15 @@ import type { DrawModeName, LngLatTuple, ScreenPoint, ShapeName } from '@/types'
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import { BaseCircle } from './base-circle.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
+import { propertiesValid } from '@/utils/features.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
-import { allCoordinatesEqual, getEllipseParameters, getGeoJsonEllipse } from '@/utils/geojson.ts';
+import {
+  allCoordinatesNotEqual,
+  getEllipseParameters,
+  getGeoJsonEllipse,
+} from '@/utils/geojson.ts';
+import { FeatureData } from '@/core/features/feature-data.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 export class DrawEllipse extends BaseCircle {
   mode: DrawModeName = 'ellipse';
@@ -57,7 +64,7 @@ export class DrawEllipse extends BaseCircle {
       if (this.flags.featureCreateAllowed) {
         this.circleCenterLngLat = lngLat;
         this.circleCenterPoint = this.gm.mapAdapter.project(this.circleCenterLngLat);
-        this.featureData = await this.createFeature();
+        this.featureData = await this.createEmptyFeature();
 
         const markerData = this.getControlMarkerData();
         if (this.featureData && markerData) {
@@ -128,10 +135,12 @@ export class DrawEllipse extends BaseCircle {
         rimLngLat: lngLat,
       });
 
-      await this.featureData.setShapeProperty('center', this.circleCenterLngLat);
-      await this.featureData.setShapeProperty('xSemiAxis', xSemiAxis);
-      await this.featureData.setShapeProperty('ySemiAxis', ySemiAxis);
-      await this.featureData.setShapeProperty('angle', angle);
+      await this.featureData._updateAllProperties({
+        center: this.circleCenterLngLat,
+        xSemiAxis: xSemiAxis,
+        ySemiAxis: ySemiAxis,
+        angle: angle,
+      });
 
       if (this.isFeatureGeoJsonValid()) {
         await this.saveFeature();
@@ -147,7 +156,21 @@ export class DrawEllipse extends BaseCircle {
     }
 
     // for now only checks if all points aren't the same
-    return allCoordinatesEqual(this.featureData.getGeoJson());
+    return (
+      allCoordinatesNotEqual(this.featureData.getGeoJson()) &&
+      propertiesValid(this.featureData.getGeoJson(), this.shape)
+    );
+  }
+
+  async createEmptyFeature(): Promise<FeatureData | null> {
+    if (!this.circleCenterLngLat) {
+      return null;
+    }
+
+    return await this.gm.features.createFeature({
+      shapeGeoJson: this.getEllipseGeoJson(this.circleCenterLngLat, this.circleCenterLngLat),
+      sourceName: SOURCES.temporary,
+    });
   }
 
   getEllipseGeoJson(center: LngLatTuple, xSemiAxisLngLat: LngLatTuple, rimLngLat?: LngLatTuple) {

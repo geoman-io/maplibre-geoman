@@ -8,12 +8,12 @@ import {
   findCoordinateWithPath,
   getBboxFromTwoCoords,
   getCoordinateByPath,
-  getEuclideanSegmentNearestPoint,
   removeVertexFromLine,
   removeVertexFromMultiPolygon,
   removeVertexFromPolygon,
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
+import { getEuclideanSegmentNearestPoint } from '@/utils/planar.ts';
 
 describe('utils/geojson', () => {
   it('builds bbox and rectangle polygon from two corners', () => {

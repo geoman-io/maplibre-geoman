@@ -1,6 +1,6 @@
 import test, { expect, type Page } from '@playwright/test';
 import { waitForGeoman } from '@tests/utils/basic.ts';
-import type { Feature, LineString, Polygon, MultiPolygon, Point } from 'geojson';
+import type { Feature, LineString, MultiPolygon, Point, Polygon } from 'geojson';
 import type { LngLatTuple, PositionData, SegmentPosition } from '@/types';
 
 test.describe('GeoJSON Utility Functions', () => {
@@ -542,7 +542,7 @@ test.describe('GeoJSON Utility Functions', () => {
   test.describe('getEuclideanDistance', () => {
     test('should calculate correct distance between two screen points', async () => {
       const result = await page.evaluate(() => {
-        const { getEuclideanDistance } = window.geomanUtils;
+        const { getEuclideanDistance } = window.planarUtils;
         return getEuclideanDistance([0, 0], [3, 4]);
       });
       expect(result).toBe(5); // 3-4-5 triangle
@@ -550,7 +550,7 @@ test.describe('GeoJSON Utility Functions', () => {
 
     test('should return 0 for same point', async () => {
       const result = await page.evaluate(() => {
-        const { getEuclideanDistance } = window.geomanUtils;
+        const { getEuclideanDistance } = window.planarUtils;
         return getEuclideanDistance([5, 5], [5, 5]);
       });
       expect(result).toBe(0);
@@ -560,7 +560,7 @@ test.describe('GeoJSON Utility Functions', () => {
   test.describe('getEuclideanSegmentNearestPoint', () => {
     test('should find nearest point on horizontal segment', async () => {
       const result = await page.evaluate(() => {
-        const { getEuclideanSegmentNearestPoint } = window.geomanUtils;
+        const { getEuclideanSegmentNearestPoint } = window.planarUtils;
         // Horizontal line from (0,0) to (10,0)
         // Target point at (5, 5) - nearest should be (5, 0)
         return getEuclideanSegmentNearestPoint([0, 0], [10, 0], [5, 5]);
@@ -571,7 +571,7 @@ test.describe('GeoJSON Utility Functions', () => {
 
     test('should clamp to segment start', async () => {
       const result = await page.evaluate(() => {
-        const { getEuclideanSegmentNearestPoint } = window.geomanUtils;
+        const { getEuclideanSegmentNearestPoint } = window.planarUtils;
         // Line from (0,0) to (10,0)
         // Target point at (-5, 0) - nearest should be (0, 0)
         return getEuclideanSegmentNearestPoint([0, 0], [10, 0], [-5, 0]);
@@ -582,7 +582,7 @@ test.describe('GeoJSON Utility Functions', () => {
 
     test('should clamp to segment end', async () => {
       const result = await page.evaluate(() => {
-        const { getEuclideanSegmentNearestPoint } = window.geomanUtils;
+        const { getEuclideanSegmentNearestPoint } = window.planarUtils;
         // Line from (0,0) to (10,0)
         // Target point at (15, 0) - nearest should be (10, 0)
         return getEuclideanSegmentNearestPoint([0, 0], [10, 0], [15, 0]);
@@ -756,8 +756,8 @@ test.describe('GeoJSON Utility Functions', () => {
         },
       };
       const result = await page.evaluate((feature) => {
-        const { allCoordinatesEqual } = window.geomanUtils;
-        return allCoordinatesEqual(feature);
+        const { allCoordinatesNotEqual } = window.geomanUtils;
+        return allCoordinatesNotEqual(feature);
       }, lineFeature);
 
       expect(result).toBe(false);
@@ -776,8 +776,8 @@ test.describe('GeoJSON Utility Functions', () => {
         },
       };
       const result = await page.evaluate((feature) => {
-        const { allCoordinatesEqual } = window.geomanUtils;
-        return allCoordinatesEqual(feature);
+        const { allCoordinatesNotEqual } = window.geomanUtils;
+        return allCoordinatesNotEqual(feature);
       }, lineFeature);
 
       expect(result).toBe(true);

@@ -8,7 +8,7 @@ import type {
   PositionData,
   SegmentPosition,
 } from '@/types/geojson.ts';
-import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
+import type { LngLatTuple } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
@@ -342,10 +342,12 @@ export const getAllGeoJsonCoordinates = (geoJson: GeoJSON): Array<LngLatTuple> =
   return coordinates;
 };
 
-export const allCoordinatesEqual = (geoJson: GeoJSON): boolean => {
+export const allCoordinatesNotEqual = (geoJson: GeoJSON): boolean => {
   const featureLngLats: Array<LngLatTuple> = getAllGeoJsonCoordinates(geoJson);
+  if (!featureLngLats.length) {
+    log.warn('allCoordinatesNotEqual: empty featureLngLats array');
+  }
 
-  // for now only checks if all points aren't the same
   return featureLngLats.some((lngLat) => !isEqual(featureLngLats[0], lngLat));
 };
 
@@ -362,37 +364,6 @@ export const getGeoJsonFirstPoint = (shapeGeoJson: GeoJSON): LngLatTuple | null 
   }
 
   return null;
-};
-
-export const getEuclideanDistance = (point1: ScreenPoint, point2: ScreenPoint): number => {
-  return Math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2);
-};
-
-export const getEuclideanSegmentNearestPoint = (
-  linePoint1: ScreenPoint,
-  linePoint2: ScreenPoint,
-  targetPoint: ScreenPoint,
-): ScreenPoint => {
-  const [x1, y1] = [linePoint1[0], linePoint1[1]];
-  const [x2, y2] = [linePoint2[0], linePoint2[1]];
-  const [px, py] = [targetPoint[0], targetPoint[1]];
-
-  // Calculate vector components
-  const vx = x2 - x1;
-  const vy = y2 - y1;
-  const wx = px - x1;
-  const wy = py - y1;
-
-  // Calculate dot product and projection scalar
-  const c1 = wx * vx + wy * vy;
-  const c2 = vx * vx + vy * vy;
-  let b = c1 / c2;
-
-  // Clamp b between 0 and 1 to ensure the nearest point lies on the segment
-  b = Math.max(0, Math.min(1, b));
-
-  // Calculate nearest point
-  return [x1 + b * vx, y1 + b * vy];
 };
 
 export const removeVertexFromLine = (

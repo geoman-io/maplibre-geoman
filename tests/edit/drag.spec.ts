@@ -1,4 +1,4 @@
-import type { LngLatTuple } from '@/main.ts';
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import test, { expect } from '@playwright/test';
 import centroid from '@turf/centroid';
@@ -18,6 +18,8 @@ import {
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import { isEqual } from 'lodash-es';
+import type { LngLatTuple } from '@/types';
+import { isLngLat } from '@/utils/guards/geojson.ts';
 
 const SCREEN_COORD_TOLERANCE = 4;
 
@@ -46,8 +48,11 @@ test('Drag', async ({ page }) => {
 
   for (const feature of features.filter(isNotGroupedFeature)) {
     let position;
-    if (feature.shape === 'circle') {
-      position = centroid(feature.geoJson).geometry.coordinates as LngLatTuple;
+    const center = feature.geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`];
+
+    if (isLngLat(center)) {
+      console.log('center', center);
+      position = center;
     } else {
       position = getGeoJsonFirstPoint(feature.geoJson);
     }
@@ -75,8 +80,10 @@ test('Drag', async ({ page }) => {
 
     if (updatedFeature) {
       let updatedPosition;
-      if (feature.shape === 'circle') {
-        updatedPosition = centroid(updatedFeature.geoJson).geometry.coordinates as LngLatTuple;
+      const updatedCenter = updatedFeature.geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`];
+
+      if (isLngLat(updatedCenter)) {
+        updatedPosition = updatedCenter;
       } else {
         updatedPosition = getGeoJsonFirstPoint(updatedFeature.geoJson);
       }

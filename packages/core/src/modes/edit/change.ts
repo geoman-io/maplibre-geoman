@@ -1,4 +1,4 @@
-import { SOURCES } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import type { GmEditMarkerEvent, GmEditMarkerMoveEvent } from '@/types/events/edit.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
 import type { FeatureShape } from '@/types/features.ts';
@@ -6,19 +6,16 @@ import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { LngLatTuple } from '@/types/map/index.ts';
 import type { EditModeName, MarkerData } from '@/types/modes/index.ts';
 import { BaseDrag } from '@/modes/edit/base-drag.ts';
-import { getFeatureFirstPoint } from '@/utils/features.ts';
+import { getFeatureFirstPoint, getShapeProperties } from '@/utils/features.ts';
 import {
   ellipseSteps,
-  findCoordinateIndices,
   getGeoJsonCircle,
   getGeoJsonCoordinatesCount,
   getGeoJsonEllipse,
-  getLngLatDiff,
   isLineStringFeature,
   isMultiPolygonFeature,
   isPolygonFeature,
   removeVertexFromGeoJsonFeature,
-  twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
@@ -28,6 +25,10 @@ import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, get } from 'lodash-es';
 import log from 'loglevel';
 import { isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
+import {
+  getRectangleCornerCoordinates,
+  getRectanglePropertiesFromDiagonal,
+} from '@/utils/shapes.ts';
 
 type UpdateShapeHandler = (event: GmEditMarkerMoveEvent) => GeoJsonShapeFeature | null;
 
@@ -87,8 +88,7 @@ export class EditChange extends BaseDrag {
         await this.moveVertex(event);
         return { next: false };
       } else if (event.lngLatEnd) {
-        const lngLatDiff = getLngLatDiff(event.lngLatStart, event.lngLatEnd);
-        this.moveSource(event.featureData, lngLatDiff);
+        this.moveSource(event.featureData, event.lngLatStart, event.lngLatEnd);
         return { next: false };
       }
     }
@@ -130,7 +130,7 @@ export class EditChange extends BaseDrag {
         geoJsonFeatures: [updatedGeoJson],
       });
 
-      this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
+      await this.updateFeatureGeoJson({ featureData, featureGeoJson: updatedGeoJson });
     } else {
       log.error('EditChange.moveVertex: invalid geojson', updatedGeoJson, event);
     }
@@ -229,22 +229,27 @@ export class EditChange extends BaseDrag {
   }
 
   updateCircle({ featureData, lngLatEnd }: GmEditMarkerMoveEvent): GeoJsonShapeFeature | null {
-    const shapeCenter = featureData.getShapeProperty('center');
-
-    if (featureData.shape !== 'circle' || !shapeCenter) {
+    if (featureData.shape !== 'circle') {
       log.error('BaseDrag.moveCircle: invalid shape type / missing center', featureData);
       return null;
     }
 
+    const circleProperties = getShapeProperties(featureData.getGeoJson(), 'circle');
+    if (!circleProperties) {
+      log.error('BaseDrag.moveCircle: wrong properties', featureData.getGeoJson());
+      return null;
+    }
+
     const circlePolygon = getGeoJsonCircle({
-      center: shapeCenter,
-      radius: this.gm.mapAdapter.getDistance(shapeCenter, lngLatEnd),
+      center: circleProperties.center,
+      radius: this.gm.mapAdapter.getDistance(circleProperties.center, lngLatEnd),
     });
 
     return {
       type: 'Feature',
       properties: {
-        shape: 'circle',
+        [`${FEATURE_PROPERTY_PREFIX}shape`]: 'circle',
+        [`${FEATURE_PROPERTY_PREFIX}center`]: circleProperties.center,
       },
       geometry: circlePolygon.geometry,
     };
@@ -257,25 +262,15 @@ export class EditChange extends BaseDrag {
       return null;
     }
 
-    const center = featureData.getShapeProperty('center');
-    let xSemiAxis = featureData.getShapeProperty('xSemiAxis');
-    let ySemiAxis = featureData.getShapeProperty('ySemiAxis');
-    const angle = featureData.getShapeProperty('angle');
-
-    if (
-      !Array.isArray(center) ||
-      typeof xSemiAxis !== 'number' ||
-      typeof ySemiAxis !== 'number' ||
-      typeof angle !== 'number'
-    ) {
-      log.error(
-        'updateEllipse: missing center, xSemiAxis, ySemiAxis or angle in the featureData',
-        featureData,
-      );
+    const ellipseProperties = getShapeProperties(featureData.getGeoJson(), 'ellipse');
+    if (!ellipseProperties) {
+      log.error('updateEllipse: wrong properties', featureData);
       return null;
     }
 
-    const distance = this.gm.mapAdapter.getDistance(center, lngLatEnd);
+    const distance = this.gm.mapAdapter.getDistance(ellipseProperties.center, lngLatEnd);
+    let xSemiAxis = ellipseProperties.xSemiAxis;
+    let ySemiAxis = ellipseProperties.ySemiAxis;
 
     const vertexIdx = markerData.position.path[3] as number;
     const vertexRatio = Math.floor((vertexIdx / ellipseSteps) * 4);
@@ -287,30 +282,67 @@ export class EditChange extends BaseDrag {
       ySemiAxis = distance;
     }
 
-    const ellipsePolygon = getGeoJsonEllipse({
-      center,
+    return getGeoJsonEllipse({
+      center: ellipseProperties.center,
       xSemiAxis,
       ySemiAxis,
-      angle,
+      angle: ellipseProperties.angle,
     });
-
-    return ellipsePolygon;
   }
 
-  updateRectangle({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {
-    const totalCoordsCount = 4;
-    const geoJson = featureData.getGeoJson() as GeoJsonShapeFeature;
+  updateRectangle(event: GmEditMarkerMoveEvent) {
+    const TOTAL_COORDS_COUNT = 4;
+    const geoJson = event.featureData.getGeoJson();
     const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLatTuple>;
 
-    // Find the index of the starting vertex
-    const { absCoordIndex: startIndex } = findCoordinateIndices(geoJson, lngLatStart);
-    if (startIndex === -1) {
-      log.error('EditChange.updateRectangle: start vertex not found', featureData);
+    const properties = getShapeProperties(geoJson, 'rectangle');
+    if (!properties) {
+      log.error('updateRectangle: wrong properties', event.featureData);
       return null;
     }
 
-    const oppositeVertexIndex = toMod(startIndex - 2, totalCoordsCount);
+    const startIndex = event.markerData.position.path.at(-1);
+    if (typeof startIndex !== 'number') {
+      log.error('EditChange.updateRectangle: start vertex not found', event.featureData);
+      return null;
+    }
+
+    const oppositeVertexIndex = toMod(startIndex - 2, TOTAL_COORDS_COUNT);
     const oppositeCoordinate = shapeCoords[oppositeVertexIndex] as LngLatTuple;
-    return twoCoordsToGeoJsonRectangle(lngLatEnd, oppositeCoordinate);
+    if (!oppositeCoordinate) {
+      log.error('EditChange.updateRectangle: opposite vertex not found', event.featureData);
+      return null;
+    }
+
+    const {
+      center: newCenter,
+      width: newWidth,
+      height: newHeight,
+    } = getRectanglePropertiesFromDiagonal({
+      draggedCorner: event.lngLatEnd,
+      oppositeCorner: oppositeCoordinate,
+      angle: properties.angle,
+    });
+
+    const corners = getRectangleCornerCoordinates({
+      center: newCenter,
+      width: newWidth,
+      height: newHeight,
+      angle: properties.angle,
+    });
+
+    return {
+      ...geoJson,
+      properties: {
+        ...geoJson.properties,
+        [`${FEATURE_PROPERTY_PREFIX}center`]: newCenter,
+        [`${FEATURE_PROPERTY_PREFIX}width`]: newWidth,
+        [`${FEATURE_PROPERTY_PREFIX}height`]: newHeight,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[...corners, corners[0]]],
+      },
+    } as GeoJsonShapeFeature;
   }
 }

@@ -1,6 +1,7 @@
 import { Geoman } from '@/main.ts';
 import type { GmOptionsData } from '@/types/options.ts';
 import * as geojsonUtils from '@/utils/geojson.ts';
+import * as planarUtils from '@/utils/planar.ts';
 import log from 'loglevel';
 import ml from 'maplibre-gl';
 import type { PartialDeep } from 'type-fest';
@@ -10,6 +11,7 @@ log.setLevel('debug');
 
 // Expose utilities for testing
 window.geomanUtils = geojsonUtils;
+window.planarUtils = planarUtils;
 
 // Expose Geoman class for testing destroy/reinit
 window.GeomanClass = Geoman;

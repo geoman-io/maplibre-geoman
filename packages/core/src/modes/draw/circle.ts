@@ -2,9 +2,11 @@ import type { LngLatTuple } from '@/types/map/index.ts';
 import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseCircle } from '@/modes/draw/base-circle.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { allCoordinatesEqual, getGeoJsonCircle } from '@/utils/geojson.ts';
+import { propertiesValid } from '@/utils/features.ts';
+import { allCoordinatesNotEqual, getGeoJsonCircle } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapPointerEvent } from '@mapLib/types/events.ts';
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 
 export class DrawCircle extends BaseCircle {
   mode: DrawModeName = 'circle';
@@ -111,7 +113,10 @@ export class DrawCircle extends BaseCircle {
     }
 
     // for now only checks if all points aren't the same
-    return allCoordinatesEqual(this.featureData.getGeoJson());
+    return (
+      allCoordinatesNotEqual(this.featureData.getGeoJson()) &&
+      propertiesValid(this.featureData.getGeoJson(), this.shape)
+    );
   }
 
   getCircleGeoJson(center: LngLatTuple, endLngLat: LngLatTuple) {
@@ -121,7 +126,8 @@ export class DrawCircle extends BaseCircle {
     return {
       ...circleGeoJson,
       properties: {
-        shape: this.shape,
+        [`${FEATURE_PROPERTY_PREFIX}shape`]: this.shape,
+        [`${FEATURE_PROPERTY_PREFIX}center`]: center,
       },
     };
   }

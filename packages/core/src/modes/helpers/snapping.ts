@@ -3,11 +3,12 @@ import type { FeatureShape } from '@/types/features.ts';
 import type { LngLatTuple, ScreenPoint } from '@/types/map/index.ts';
 import type { HelperModeName } from '@/types/modes/index.ts';
 import { BaseHelper } from '@/modes/helpers/base.ts';
-import { eachCoordinateWithPath, getEuclideanDistance } from '@/utils/geojson.ts';
+import { eachCoordinateWithPath } from '@/utils/geojson.ts';
 import type { Feature, LineString, MultiLineString } from 'geojson';
 import { sortBy } from 'lodash-es';
 
 import { SOURCES } from '@/core/features/constants.ts';
+import { getEuclideanDistance } from '@/utils/planar.ts';
 
 type ShapeSnappingHandler = (
   featureData: FeatureData,

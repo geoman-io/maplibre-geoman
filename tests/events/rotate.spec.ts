@@ -35,7 +35,7 @@ const ROTATE_END_SHAPE_MAP: { [key in string]: ShapeName } = {
   ellipse: 'ellipse',
   text_marker: 'text_marker',
   line: 'line',
-  rectangle: 'polygon', // Rectangle gets converted to polygon during rotation
+  rectangle: 'rectangle',
   polygon: 'polygon',
 };
 

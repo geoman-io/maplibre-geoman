@@ -8,14 +8,11 @@ import type { DrawModeName, MarkerData, ShapeName } from '@/types/modes/index.ts
 
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
-import {
-  allCoordinatesEqual,
-  getBboxFromTwoCoords,
-  twoCoordsToGeoJsonRectangle,
-} from '@/utils/geojson.ts';
+import { propertiesValid } from '@/utils/features.ts';
+import { allCoordinatesNotEqual } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
-import type { BBox } from 'geojson';
+import { getRectangleGeoJson } from '@/utils/shapes.ts';
 
 export class DrawRectangle extends BaseDraw {
   mode: DrawModeName = 'rectangle';
@@ -54,14 +51,25 @@ export class DrawRectangle extends BaseDraw {
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
 
     if (this.startLngLat) {
-      const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(this.startLngLat, lngLat));
+      const geoJson = getRectangleGeoJson({
+        startLngLat: this.startLngLat,
+        endLngLat: lngLat,
+        withProperties: true,
+        mapAdapter: this.gm.mapAdapter,
+      });
       await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
         await this.finishShape(lngLat);
       }
     } else {
-      const geoJson = this.getFeatureGeoJson(getBboxFromTwoCoords(lngLat, lngLat));
+      const geoJson = getRectangleGeoJson({
+        startLngLat: lngLat,
+        endLngLat: lngLat,
+        withProperties: false,
+        mapAdapter: this.gm.mapAdapter,
+      });
+
       await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
       if (this.flags.featureCreateAllowed) {
@@ -86,28 +94,42 @@ export class DrawRectangle extends BaseDraw {
     }
 
     const lngLat = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
-    const bounds = getBboxFromTwoCoords(this.startLngLat, lngLat);
 
-    const geoJson = this.getFeatureGeoJson(bounds);
+    const geoJson = getRectangleGeoJson({
+      startLngLat: this.startLngLat,
+      endLngLat: lngLat,
+      withProperties: false,
+      mapAdapter: this.gm.mapAdapter,
+    });
+
     await this.fireBeforeFeatureCreate({ geoJsonFeatures: [geoJson] });
 
     if (this.flags.featureCreateAllowed) {
-      await this.throttledMethods.updateFeaturePosition(bounds);
+      await this.throttledMethods.updateFeaturePosition(this.startLngLat, lngLat);
     }
     return { next: false };
   }
 
   async startShape(lngLat: LngLatTuple) {
     this.startLngLat = lngLat;
-    const bounds = getBboxFromTwoCoords(this.startLngLat, this.startLngLat);
-    this.featureData = await this.createFeature(bounds);
+    const shapeGeoJson = getRectangleGeoJson({
+      startLngLat: this.startLngLat,
+      endLngLat: this.startLngLat,
+      withProperties: false,
+      mapAdapter: this.gm.mapAdapter,
+    });
+
+    this.featureData = await this.gm.features.createFeature({
+      shapeGeoJson,
+      sourceName: SOURCES.temporary,
+    });
     return this.featureData;
   }
 
   async finishShape(lngLat: LngLatTuple) {
     if (this.startLngLat) {
-      const bounds = getBboxFromTwoCoords(this.startLngLat, lngLat);
-      await this.throttledMethods.updateFeaturePosition(bounds);
+      await this.updateFeaturePosition(this.startLngLat, lngLat);
+      this.updateFeatureProperties(this.startLngLat, lngLat);
     }
 
     if (this.featureData) {
@@ -121,48 +143,44 @@ export class DrawRectangle extends BaseDraw {
     await this.fireFinishEvent();
   }
 
-  async createFeature(bounds: BBox) {
-    return this.gm.features.createFeature({
-      shapeGeoJson: this.getFeatureGeoJson(bounds),
-      sourceName: SOURCES.temporary,
-    });
-  }
-
   isFeatureGeoJsonValid(): boolean {
     if (!this.featureData) {
       return false;
     }
 
     // for now only checks if all points aren't the same
-    return allCoordinatesEqual(this.featureData.getGeoJson());
-  }
-
-  getFeatureGeoJson(bounds: BBox): GeoJsonShapeFeature {
-    const rectangleGeoJson = twoCoordsToGeoJsonRectangle(
-      [bounds[0], bounds[1]],
-      [bounds[2], bounds[3]],
+    return (
+      allCoordinatesNotEqual(this.featureData.getGeoJson()) &&
+      propertiesValid(this.featureData.getGeoJson(), this.shape)
     );
-
-    return {
-      ...rectangleGeoJson,
-      properties: {
-        shape: this.shape,
-      },
-    };
   }
 
-  async updateFeaturePosition(bounds: BBox) {
+  async updateFeaturePosition(startLngLat: LngLatTuple, endLngLat: LngLatTuple) {
     if (!this.featureData) {
       return;
     }
 
-    const rectangleData: GeoJsonShapeFeature = twoCoordsToGeoJsonRectangle(
-      [bounds[0], bounds[1]],
-      [bounds[2], bounds[3]],
-    );
-    await this.featureData.updateGeometry(rectangleData.geometry);
+    const geoJson: GeoJsonShapeFeature = getRectangleGeoJson({
+      startLngLat,
+      endLngLat,
+      withProperties: false,
+      mapAdapter: this.gm.mapAdapter,
+    });
+
+    await this.featureData.updateGeometry(geoJson.geometry);
     const markerData = this.getControlMarkerData(['geometry', 'coordinates', 4]);
     await this.fireUpdateEvent(this.featureData, markerData);
+  }
+
+  updateFeatureProperties(startLngLat: LngLatTuple, endLngLat: LngLatTuple) {
+    const geoJson = getRectangleGeoJson({
+      startLngLat,
+      endLngLat,
+      withProperties: true,
+      mapAdapter: this.gm.mapAdapter,
+    });
+
+    this.featureData?._updateAllProperties(geoJson.properties);
   }
 
   getControlMarkerData(path: Array<string | number>): MarkerData | null {

@@ -1,5 +1,6 @@
 import { Geoman, type MapInstanceWithGeoman } from '@/main.ts';
 import type * as geojsonUtils from '@/utils/geojson.ts';
+import type * as planarUtils from '@/utils/planar.ts';
 import type {
   Feature,
   Geometry,
@@ -35,6 +36,7 @@ declare global {
     geoman: Geoman;
     customData: CustomData;
     geomanUtils: typeof geojsonUtils;
+    planarUtils: typeof planarUtils;
     turf?: {
       bbox?: (geoJson: unknown) => [number, number, number, number];
     };

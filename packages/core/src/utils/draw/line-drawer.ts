@@ -2,7 +2,7 @@ import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
-import type { Geoman } from '@/main.ts';
+import { type Geoman, getEuclideanDistance } from '@/main.ts';
 import type { MapHandlerReturnData } from '@/types/events/bus.ts';
 import type { GmDrawLineDrawerEventWithData } from '@/types/events/draw.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
@@ -13,7 +13,7 @@ import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { getEuclideanDistance, getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
+import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';

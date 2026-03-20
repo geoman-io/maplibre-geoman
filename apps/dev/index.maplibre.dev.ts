@@ -24,7 +24,11 @@ const initGeoman = async () => {
       zoom: 5,
       fadeDuration: 50,
     });
-  console.log(`Maplibre version: "${map.version}"`);
+  log.debug(`Maplibre version: "${map.version}"`);
+
+  if (!map.getContainer().querySelector('.maplibregl-ctrl-globe')) {
+    map.addControl(new ml.GlobeControl());
+  }
 
   const geoman = await initGeomanInstance(map, gmOptions);
   return { geoman, map };

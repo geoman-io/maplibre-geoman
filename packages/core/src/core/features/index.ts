@@ -32,7 +32,7 @@ import type { MarkerData, ShapeName } from '@/types/modes/index.ts';
 import { SHAPE_NAMES, SPECIAL_SHAPE_NAMES } from '@/modes/constants.ts';
 import { isDefined } from '@/utils/guards/index.ts';
 import { dedupeById } from '@/utils/collections.ts';
-import { fixGeoJsonFeature, getCustomFeatureId } from '@/utils/features.ts';
+import { fixGeoJsonFeature, getCustomFeatureId, propertiesValid } from '@/utils/features.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { includesWithType, typedKeys, typedValues } from '@/utils/typing.ts';
@@ -136,6 +136,13 @@ export class Features {
             // Create FeatureData for the existing feature
             // Use skipSourceUpdate since the feature already exists in the source
             const shapeGeoJson = feature as GeoJsonShapeFeature;
+            if (!propertiesValid(shapeGeoJson)) {
+              log.warn(
+                'Features.hydrateFromExistingSources: skipping feature with invalid shape properties',
+                shapeGeoJson,
+              );
+              continue;
+            }
             const featureData = new FeatureData({
               gm: this.gm,
               id: featureId,
@@ -359,6 +366,10 @@ export class Features {
       featureId ??
       shapeGeoJson.properties[FEATURE_ID_PROPERTY] ??
       this.getNewFeatureId(shapeGeoJson);
+
+    if (!propertiesValid(shapeGeoJson)) {
+      log.warn('Features.createFeature: invalid shape properties', shapeGeoJson);
+    }
 
     if (this.featureStore.get(id)) {
       log.error(
