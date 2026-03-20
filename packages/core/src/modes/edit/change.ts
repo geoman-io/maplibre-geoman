@@ -9,7 +9,6 @@ import { BaseDrag } from '@/modes/edit/base-drag.ts';
 import { getFeatureFirstPoint, getShapeProperties } from '@/utils/features.ts';
 import {
   ellipseSteps,
-  findCoordinateIndices,
   getGeoJsonCircle,
   getGeoJsonCoordinatesCount,
   getGeoJsonEllipse,
@@ -17,7 +16,6 @@ import {
   isMultiPolygonFeature,
   isPolygonFeature,
   removeVertexFromGeoJsonFeature,
-  twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { isGmEditEvent } from '@/utils/guards/modes.ts';
@@ -250,7 +248,8 @@ export class EditChange extends BaseDrag {
     return {
       type: 'Feature',
       properties: {
-        shape: 'circle',
+        [`${FEATURE_PROPERTY_PREFIX}shape`]: 'circle',
+        [`${FEATURE_PROPERTY_PREFIX}center`]: circleProperties.center,
       },
       geometry: circlePolygon.geometry,
     };
@@ -345,22 +344,5 @@ export class EditChange extends BaseDrag {
         coordinates: [[...corners, corners[0]]],
       },
     } as GeoJsonShapeFeature;
-  }
-
-  updateRectangleDisabled({ featureData, lngLatStart, lngLatEnd }: GmEditMarkerMoveEvent) {
-    const totalCoordsCount = 4;
-    const geoJson = featureData.getGeoJson();
-    const shapeCoords = geoJson.geometry.coordinates[0] as Array<LngLatTuple>;
-
-    // Find the index of the starting vertex
-    const { absCoordIndex: startIndex } = findCoordinateIndices(geoJson, lngLatStart);
-    if (startIndex === -1) {
-      log.error('EditChange.updateRectangle: start vertex not found', featureData);
-      return null;
-    }
-
-    const oppositeVertexIndex = toMod(startIndex - 2, totalCoordsCount);
-    const oppositeCoordinate = shapeCoords[oppositeVertexIndex] as LngLatTuple;
-    return twoCoordsToGeoJsonRectangle(lngLatEnd, oppositeCoordinate);
   }
 }

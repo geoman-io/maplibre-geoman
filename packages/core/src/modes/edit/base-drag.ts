@@ -1,5 +1,5 @@
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
-import { SOURCES } from '@/core/features/constants.ts';
+import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type { MapHandlerReturnData } from '@/types/events/bus.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
@@ -333,7 +333,8 @@ export abstract class BaseDrag extends BaseEdit {
     return {
       type: 'Feature',
       properties: {
-        shape: 'circle',
+        [`${FEATURE_PROPERTY_PREFIX}shape`]: 'circle',
+        [`${FEATURE_PROPERTY_PREFIX}center`]: newCenterCoords,
       },
       geometry: circlePolygon.geometry,
     };
