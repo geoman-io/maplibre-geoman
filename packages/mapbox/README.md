@@ -33,32 +33,32 @@ npm install @geoman-io/mapbox-geoman-free
 ## Usage
 
 ```typescript
-import mapboxgl from "mapbox-gl";
-import { Geoman, type GmOptionsPartial } from "@geoman-io/mapbox-geoman-free";
+import mapboxgl from 'mapbox-gl';
+import { Geoman, type GmOptionsPartial } from '@geoman-io/mapbox-geoman-free';
 
-import "mapbox-gl/dist/mapbox-gl.css";
-import "@geoman-io/mapbox-geoman-free/dist/mapbox-geoman.css";
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@geoman-io/mapbox-geoman-free/dist/mapbox-geoman.css';
 
-mapboxgl.accessToken = "<YOUR_MAPBOX_TOKEN>";
+mapboxgl.accessToken = '<YOUR_MAPBOX_TOKEN>';
 
 const map = new mapboxgl.Map({
-  container: "dev-map",
+  container: 'dev-map',
   style: {
     version: 8,
-    glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
     sources: {
-      "osm-tiles": {
-        type: "raster",
-        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      'osm-tiles': {
+        type: 'raster',
+        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
         tileSize: 256,
-        attribution: "© OpenStreetMap contributors",
+        attribution: '© OpenStreetMap contributors',
       },
     },
     layers: [
       {
-        id: "osm-tiles-layer",
-        type: "raster",
-        source: "osm-tiles",
+        id: 'osm-tiles-layer',
+        type: 'raster',
+        source: 'osm-tiles',
         minzoom: 0,
         maxzoom: 19,
       },
