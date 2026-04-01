@@ -79,7 +79,7 @@
     "dompurify": "^3.3.1",
     "lodash-es": "^4.17.23",
     "loglevel": "^1.9.2",
-    "type-fest": "^5.4.4"
+    "type-fest": "^5.5.0"
   },
   "peerDependencies": {
     "mapbox-gl": ">=3.18.0"

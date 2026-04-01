@@ -92,7 +92,7 @@
     "dompurify": "^3.3.2",
     "lodash-es": "^4.17.23",
     "loglevel": "^1.9.2",
-    "type-fest": "^5.4.4"
+    "type-fest": "^5.5.0"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
