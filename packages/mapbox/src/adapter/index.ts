@@ -111,7 +111,11 @@ export class MapboxAdapter extends BaseMapAdapter<
   }
 
   setCursor(cursor: CursorType) {
-    this.mapInstance.getCanvas().style.cursor = cursor;
+    const cursorTypes: CursorType[] = ['pointer', 'move', 'grab', 'crosshair'];
+    const container = this.mapInstance.getCanvasContainer();
+    cursorTypes.forEach((c) => {
+      container.classList.toggle(`gm-cursor-${c}`, c === cursor);
+    });
   }
 
   disableMapInteractions(interactionTypes: Array<MapInteraction>): void {

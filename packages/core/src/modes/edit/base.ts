@@ -27,7 +27,13 @@ export abstract class BaseEdit extends BaseAction {
   actionType: ActionType = 'edit';
   abstract mode: EditModeName;
   featureData: FeatureData | null = null;
-  cursorExcludedLayerIds: Array<string> = ['rectangle-line', 'polygon-line', 'circle-line'];
+  cursorExcludedLayerIds: Array<string> = [
+    'polygon__line',
+    'ellipse__line',
+    'rectangle__line',
+    'circle__line',
+    'snap_guide__line',
+  ];
   layerEventHandlersData: Array<{
     eventName: PointerEventName;
     layerId: string;
@@ -78,6 +84,9 @@ export abstract class BaseEdit extends BaseAction {
   }
 
   setEventsForLayers(eventName: PointerEventName, callback: () => void) {
+    if (!this.gm.options.settings.useCursorHandlers) {
+      return;
+    }
     const targetLayerIds = this.gm.features.layers
       .map((layer) => layer.id)
       .filter(

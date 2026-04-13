@@ -99,7 +99,11 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   }
 
   setCursor(cursor: CursorType) {
-    this.mapInstance.getCanvas().style.cursor = cursor;
+    const cursorTypes: CursorType[] = ['pointer', 'move', 'grab', 'crosshair'];
+    const container = this.mapInstance.getCanvasContainer();
+    cursorTypes.forEach((c) => {
+      container.classList.toggle(`gm-cursor-${c}`, c === cursor);
+    });
   }
 
   disableMapInteractions(interactionTypes: Array<MapInteraction>): void {
