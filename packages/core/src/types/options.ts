@@ -1,17 +1,19 @@
 import defaultLayerStyles from '@/core/options/layers/style.ts';
 import type { ModeName } from '@/types/controls.ts';
-import type { BaseControlsPosition } from '@/types/map/index.ts';
+import type { BaseControlsPosition, LngLatTuple } from '@/types/map/index.ts';
 import type {
   ActionOptions,
   ActionSettings,
   DrawModeName,
   EditModeName,
   HelperModeName,
+  MarkerData,
 } from '@/types/modes/index.ts';
 import type { PartialDeep } from 'type-fest';
 
 import { ACTION_TYPES, MODE_TYPES } from '@/modes/constants.ts';
-import type { GeoJsonShapeFeature } from './geojson';
+import type { GeoJsonShapeFeature, SegmentData } from './geojson.ts';
+import type { FeatureData } from '@/main.ts';
 
 export type ModeType = (typeof MODE_TYPES)[number];
 export type ActionType = (typeof ACTION_TYPES)[number];
@@ -64,6 +66,12 @@ export type GmOptionsData = {
       default: string;
       control: string;
     };
+    customGetAllShapeSegments?: (featureData: FeatureData) => SegmentData[] | null;
+    customVertexUpdateHandler?: (
+      context: GmCustomVertexHandlerContext,
+    ) => GeoJsonShapeFeature | null;
+    customDragHandler?: (context: GmCustomDragHandlerContext) => GeoJsonShapeFeature | null;
+    customRotateHandler?: (context: GmCustomRotateHandlerContext) => GeoJsonShapeFeature | null;
   };
   layerStyles: typeof defaultLayerStyles;
   controls: {
@@ -75,4 +83,22 @@ export type GmOptionsData = {
 export type GmOptionsPartial = PartialDeep<GmOptionsData>;
 export type GenericControlsOptions = {
   [key in ModeName]?: ControlOptions;
+};
+
+export type GmCustomVertexHandlerContext = {
+  featureData: FeatureData;
+  markerData: MarkerData;
+  lngLatStart: LngLatTuple;
+  lngLatEnd: LngLatTuple;
+};
+export type GmCustomDragHandlerContext = {
+  featureData: FeatureData;
+  startLngLat: LngLatTuple;
+  endLngLat: LngLatTuple;
+};
+export type GmCustomRotateHandlerContext = {
+  featureData: FeatureData;
+  lngLatStart: LngLatTuple;
+  lngLatEnd: LngLatTuple;
+  shapeCentroid: LngLatTuple | undefined;
 };

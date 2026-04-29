@@ -115,8 +115,24 @@ export class EditRotate extends BaseDrag {
         : undefined;
 
     for (const featureData of groupFeatures) {
-      const updatedGeoJson =
-        this.shapeRotateHandlers[featureData.shape]?.(featureData, shapeCentroid, event) || null;
+      const customRotateHandlerFunc = this.gm.options.settings.customRotateHandler;
+
+      let updatedGeoJson: GeoJsonShapeFeature | null = null;
+
+      if (customRotateHandlerFunc) {
+        // if we iterate groupFeature.length > 1 and shapeCentroid is not undefined
+        updatedGeoJson = customRotateHandlerFunc({
+          featureData,
+          lngLatStart: event.lngLatStart,
+          lngLatEnd: event.lngLatEnd,
+          shapeCentroid,
+        });
+      }
+
+      if (!updatedGeoJson) {
+        updatedGeoJson =
+          this.shapeRotateHandlers[featureData.shape]?.(featureData, shapeCentroid, event) || null;
+      }
 
       if (updatedGeoJson) {
         await this.fireBeforeFeatureUpdate({
@@ -213,7 +229,10 @@ export class EditRotate extends BaseDrag {
     }).geometry.coordinates as LngLatTuple;
     const radius = this.gm.mapAdapter.getDistance(circleProperties.center, circleRimLngLat);
 
-    return getGeoJsonCircle({ center: rotatedCenter, radius }) as GeoJsonShapeFeature;
+    return getGeoJsonCircle({
+      center: rotatedCenter,
+      radius,
+    }) as GeoJsonShapeFeature;
   }
 
   rotateEllipse(
@@ -263,7 +282,9 @@ export class EditRotate extends BaseDrag {
 
     const angle = this.calculateRotationAngle(rotationPivot, event.lngLatStart, event.lngLatEnd);
 
-    geoJson.geometry = transformRotate(geoJson, angle, { pivot: rotationPivot }).geometry;
+    geoJson.geometry = transformRotate(geoJson, angle, {
+      pivot: rotationPivot,
+    }).geometry;
 
     return geoJson;
   }
