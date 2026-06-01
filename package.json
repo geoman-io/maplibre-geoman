@@ -96,7 +96,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^25.3.3",
     "cross-env": "^10.1.0",
@@ -115,8 +115,8 @@
     "ts-autofix": "^1.0.0",
     "tsc-alias": "^1.8.16",
     "turbo": "^2.8.13",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14",
     "vite-svg-loader": "^5.1.0",
     "vitest": "^4.0.18"
   },
