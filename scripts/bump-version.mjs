@@ -26,20 +26,6 @@ for (const relativeFile of jsonFiles) {
   fs.writeFileSync(fullPath, `${JSON.stringify(content, null, 2)}\n`);
 }
 
-const lockPath = path.join(rootDir, 'package-lock.json');
-const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
-lock.version = nextVersion;
-
-if (lock.packages?.['']) {
-  lock.packages[''].version = nextVersion;
-}
-
-for (const key of ['packages/core', 'packages/maplibre', 'packages/mapbox']) {
-  if (lock.packages?.[key]) {
-    lock.packages[key].version = nextVersion;
-  }
-}
-
-fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
+// pnpm-lock.yaml does not embed workspace package versions, so no lockfile edit is needed.
 
 console.log(`Updated workspace version to ${nextVersion}`);

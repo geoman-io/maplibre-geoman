@@ -1,0 +1,9 @@
+packages:
+  - apps/dev
+  - packages/core
+  - packages/maplibre
+  - packages/mapbox
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - svelte-preprocess

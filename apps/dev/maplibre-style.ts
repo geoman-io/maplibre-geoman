@@ -2,7 +2,7 @@ import ml from 'maplibre-gl';
 
 const mapStyle: ml.StyleSpecification = {
   version: 8,
-  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+  glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
   sources: {
     'osm-tiles': {
       type: 'raster',

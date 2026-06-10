@@ -40,9 +40,10 @@ if (!hasPeer(mapboxPkg, 'mapbox-gl') || hasPeer(mapboxPkg, 'maplibre-gl')) {
   fail('Mapbox package peerDependencies must include mapbox-gl and exclude maplibre-gl');
 }
 
+const workspaceManifest = fs.readFileSync(path.join(rootDir, 'pnpm-workspace.yaml'), 'utf8');
 for (const workspaceName of ['apps/dev', 'packages/core', 'packages/maplibre', 'packages/mapbox']) {
-  if (!rootPkg.workspaces.includes(workspaceName)) {
-    fail(`Root package workspaces must include "${workspaceName}"`);
+  if (!workspaceManifest.includes(`- ${workspaceName}`)) {
+    fail(`pnpm-workspace.yaml must include "${workspaceName}"`);
   }
 }
 

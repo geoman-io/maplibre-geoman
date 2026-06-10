@@ -14,7 +14,7 @@ permissions:
   security-events: write
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
 
 jobs:
   # Separate job for faster feedback on basic checks
@@ -28,33 +28,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Formatter checks
-        run: npm run formatter
+        run: pnpm run formatter
 
       - name: TypeScript checks
-        run: npm run typecheck:all
+        run: pnpm run typecheck:all
 
       - name: Oxlint checks
-        run: npm run lint:all
+        run: pnpm run lint:all
 
       - name: Workspace validation
-        run: npm run workspace:validate
+        run: pnpm run workspace:validate
 
       - name: Core unit tests
-        run: npm run test:unit
+        run: pnpm run test:unit
 
       - name: Check package.json and lock file sync
         run: |
-          npm ci --dry-run
+          pnpm install --frozen-lockfile
 
   # Build job with caching
   build:
@@ -71,14 +74,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Cache variant dist folder
         id: cache-dist
@@ -91,9 +97,9 @@ jobs:
         if: steps.cache-dist.outputs.cache-hit != 'true'
         run: |
           if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
-            npm run build -w @geoman-io/mapbox-geoman-free
+            pnpm --filter @geoman-io/mapbox-geoman-free run build
           else
-            npm run build -w @geoman-io/maplibre-geoman-free
+            pnpm --filter @geoman-io/maplibre-geoman-free run build
           fi
 
       - name: Verify build artifacts (${{ matrix.variant }})
@@ -130,24 +136,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright tests
         run: |
           if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
-            npm run test:mapbox -- --project=${{ matrix.browser }}
+            pnpm run test:mapbox --project=${{ matrix.browser }}
           else
-            npm run test:maplibre -- --project=${{ matrix.browser }}
+            pnpm run test:maplibre --project=${{ matrix.browser }}
           fi
 
       - name: Upload Playwright Report
@@ -169,17 +178,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
+      - name: Run pnpm audit
+        run: pnpm audit --audit-level=moderate
 
       - name: Scan for secrets
         uses: trufflesecurity/trufflehog@main
