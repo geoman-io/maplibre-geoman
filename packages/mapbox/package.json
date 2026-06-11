@@ -82,6 +82,6 @@
     "type-fest": "^5.6.0"
   },
   "peerDependencies": {
-    "mapbox-gl": ">=3.23.1"
+    "mapbox-gl": ">=3.18.0"
   }
 }

@@ -114,7 +114,7 @@ import "@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css";
 
 const mapStyle: ml.StyleSpecification = {
   version: 8,
-  glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
   sources: {
     "osm-tiles": {
       type: "raster",
@@ -172,7 +172,7 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN ?? "";
 
 const mapStyle: mapboxgl.StyleSpecification = {
   version: 8,
-  glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
   sources: {
     "osm-tiles": {
       type: "raster",
