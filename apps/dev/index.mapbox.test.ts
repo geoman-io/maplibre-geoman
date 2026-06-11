@@ -27,7 +27,7 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 const emptyStyle: mapboxgl.StyleSpecification = {
   version: 8,
-  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+  glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
   sources: {},
   layers: [],
 };

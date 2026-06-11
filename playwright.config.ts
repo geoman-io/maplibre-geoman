@@ -9,7 +9,7 @@ if (!playwrightVariantRaw || !['maplibre', 'mapbox'].includes(playwrightVariantR
 
 const playwrightVariant = playwrightVariantRaw as 'maplibre' | 'mapbox';
 const testServerCommand =
-  playwrightVariant === 'mapbox' ? 'npm run testserver:mapbox' : 'npm run testserver:maplibre';
+  playwrightVariant === 'mapbox' ? 'pnpm run testserver:mapbox' : 'pnpm run testserver:maplibre';
 const testServerPort = playwrightVariant === 'mapbox' ? 4001 : 4000;
 
 /**

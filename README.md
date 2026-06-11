@@ -214,27 +214,27 @@ We welcome contributions from the community! Please read our [CONTRIBUTING.md](C
 ## Local Development
 
 ```shell
-# Install dependencies
-npm ci
+# Install dependencies (this repo uses pnpm)
+pnpm install --frozen-lockfile
 
 # Run dev app with MapLibre adapter
-npm run dev:maplibre
+pnpm run dev:maplibre
 
 # Run dev app with Mapbox adapter
-npm run dev:mapbox
+pnpm run dev:mapbox
 
 # Run checks
-npm run workspace:validate
-npm run lint:all
-npm run typecheck:all
-npm run build:all
+pnpm run workspace:validate
+pnpm run lint:all
+pnpm run typecheck:all
+pnpm run build:all
 
 # Run smoke tests for each variant
-npm run test:maplibre -- --project=chromium --grep="@smoke"
-npm run test:mapbox -- --project=chromium --grep="@smoke"
+pnpm run test:maplibre --project=chromium --grep="@smoke"
+pnpm run test:mapbox --project=chromium --grep="@smoke"
 
 # Run full test suite for both variants
-npm run test:all
+pnpm run test:all
 ```
 
 ## Code of Conduct

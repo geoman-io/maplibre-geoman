@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
-    "package-lock.json",
+    "pnpm-lock.yaml",
     "turbo.json"
   ],
   "tasks": {

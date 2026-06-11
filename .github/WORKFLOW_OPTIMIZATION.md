@@ -15,13 +15,13 @@ This document outlines the optimizations made to the GitHub CI/CD workflows for 
 - **Parallel Execution**: Quick checks, build, test, and security scans run in parallel where possible
 - **Browser Matrix**: Tests run across Chromium, Firefox, and WebKit
 - **Caching**: Aggressive caching of dependencies and build artifacts
-- **Security Scanning**: npm audit and TruffleHog secret scanning
+- **Security Scanning**: pnpm audit and TruffleHog secret scanning
 - **Build Verification**: MapLibre and Mapbox variants are built and verified
 
 **Performance Improvements:**
 
 - ~40% faster feedback through parallel job execution
-- Reduced redundant npm installs through better caching
+- Reduced redundant pnpm installs through better caching
 - Quick feedback on common issues (TypeScript, Oxlint) before expensive operations
 
 ### 2. Enhanced Release Workflow (`release.yml`)

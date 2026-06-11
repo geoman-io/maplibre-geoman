@@ -8,8 +8,8 @@ import type ml from 'maplibre-gl';
 import type mapboxgl from 'mapbox-gl';
 
 declare global {
-  declare const __GEOMAN_VERSION__: 'pro' | 'free' | null;
-  declare const __GEOMAN_BASE_MAP__: 'maplibre' | 'mapbox';
+  const __GEOMAN_VERSION__: 'pro' | 'free' | null;
+  const __GEOMAN_BASE_MAP__: 'maplibre' | 'mapbox';
 
   interface Window {
     geoman: Geoman;
