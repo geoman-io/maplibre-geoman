@@ -29,9 +29,11 @@ export class DrawCircleMarker extends BaseCircle {
     await this.fireBeforeFeatureCreate({ geoJsonFeatures: [this.getFeatureGeoJson(lngLat)] });
 
     if (this.flags.featureCreateAllowed) {
-      this.featureData = await this.createFeature();
+      // the center must be set before createFeature(), which derives the
+      // feature's geojson and center property from it
       this.circleCenterLngLat = lngLat;
       this.circleCenterPoint = this.gm.mapAdapter.project(this.circleCenterLngLat);
+      this.featureData = await this.createFeature();
       await this.updateFeaturePosition(this.circleCenterLngLat);
       await this.saveFeature();
     }

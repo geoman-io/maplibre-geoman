@@ -31,7 +31,7 @@ import type {
   Point,
   Polygon,
 } from 'geojson';
-import { get, isEqual } from 'lodash-es';
+import { cloneDeep, get, isEqual } from 'lodash-es';
 import log from 'loglevel';
 import { lineString } from '@turf/helpers';
 
@@ -70,7 +70,9 @@ export const multiLineStringToFeatureCollection = (
     type: 'FeatureCollection',
     features: geoJson.geometry.coordinates.map((lineCoordinates) => ({
       type: 'Feature',
-      properties: geoJson.properties,
+      // each feature needs its own copy: a shared reference would make a
+      // mutation on one feature leak into its siblings and the source feature
+      properties: cloneDeep(geoJson.properties),
       geometry: {
         type: 'LineString',
         coordinates: lineCoordinates,
@@ -391,11 +393,18 @@ export const removeVertexFromPolygon = (
       shapeGeoJson.geometry.coordinates,
       coordinatesPath,
     ) as Array<LngLatTuple>;
-    const targetCoordIndex = coordinates.findIndex((coord) => isEqual(coord, vertexLngLat));
+    // compare lng/lat only: ring coordinates may carry an altitude value
+    const targetCoordIndex = coordinates.findIndex(
+      (coord) => coord[0] === vertexLngLat[0] && coord[1] === vertexLngLat[1],
+    );
 
     if (coordinates.length <= 4) {
       shapeGeoJson.geometry.coordinates.splice(coordIndices.geometryIndex, 1);
       return true;
+    }
+
+    if (targetCoordIndex === -1) {
+      return false;
     }
 
     coordinates.splice(targetCoordIndex, 1);
@@ -422,7 +431,10 @@ export const removeVertexFromMultiPolygon = (
       shapeGeoJson.geometry.coordinates,
       coordinatesPath,
     ) as Array<LngLatTuple>;
-    const targetCoordIndex = coordinates.findIndex((coord) => isEqual(coord, vertexLngLat));
+    // compare lng/lat only: ring coordinates may carry an altitude value
+    const targetCoordIndex = coordinates.findIndex(
+      (coord) => coord[0] === vertexLngLat[0] && coord[1] === vertexLngLat[1],
+    );
 
     if (coordinates.length <= 4) {
       coordinatesPath.pop();
@@ -436,6 +448,10 @@ export const removeVertexFromMultiPolygon = (
         shapeGeoJson.geometry.coordinates.splice(coordIndices.multiFeatureIndex, 1);
       }
       return true;
+    }
+
+    if (targetCoordIndex === -1) {
+      return false;
     }
 
     coordinates.splice(targetCoordIndex, 1);

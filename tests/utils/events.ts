@@ -15,9 +15,11 @@ export const saveGeomanEventResultToCustomData = async (
 
   await page.evaluate(
     async (context) => {
-      if (!window.customData) {
-        window.customData = { rawEventResults: {} };
-      }
+      // customData may already exist without rawEventResults (the dev app
+      // initializes it with eventResults only); ensure both levels exist,
+      // otherwise captured events would be silently dropped
+      window.customData ??= {};
+      window.customData.rawEventResults ??= {};
 
       window.geoman.mapAdapter.once(
         `${context.gmPrefix}:${context.eventName}` as AnyEventName,
@@ -43,9 +45,11 @@ export const saveGeomanFeatureEventResultToCustomData = async (
 
   await page.evaluate(
     async (context) => {
-      if (!window.customData) {
-        window.customData = { rawEventResults: {} };
-      }
+      // customData may already exist without rawEventResults (the dev app
+      // initializes it with eventResults only); ensure both levels exist,
+      // otherwise captured events would be silently dropped
+      window.customData ??= {};
+      window.customData.rawEventResults ??= {};
 
       const eventName = `${context.gmPrefix}:${context.eventName}` as AnyEventName;
       const listener = (event: FeatureEditFwdEvent) => {

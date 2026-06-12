@@ -46,6 +46,24 @@ describe('utils/number', () => {
     expect(formatArea(-5, { units: 'imperial' })).toBe('-5');
   });
 
+  it('formats distances at the exact bucket boundaries', () => {
+    expect(formatDistance(0, { units: 'metric' })).toContain('cm');
+    expect(formatDistance(1, { units: 'metric' })).toContain('m');
+    expect(formatDistance(10_000, { units: 'metric' })).toContain('km');
+    expect(formatDistance(0.3048, { units: 'imperial' })).toContain('ft');
+    expect(formatDistance(1609.344, { units: 'imperial' })).toContain('mi');
+  });
+
+  it('formats metric areas between 10 000 and 100 000 m² with a unit', () => {
+    const formatted = formatArea(50_000, { units: 'metric' });
+    expect(formatted).toContain('m²');
+    expect(formatted).not.toContain('km²');
+
+    const boundary = formatArea(10_000, { units: 'metric' });
+    expect(boundary).toContain('m²');
+    expect(boundary).not.toContain('km²');
+  });
+
   it('detects imperial unit regions from the browser locale', () => {
     vi.stubGlobal('navigator', { language: 'en-US' });
     expect(isImperialByBrowser()).toBe(true);
