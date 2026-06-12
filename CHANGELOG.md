@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-12
+
+### Added
+
+- Added center/angle metadata support for rectangles and expanded shape geometry helpers for rotated shape editing ([#173](https://github.com/geoman-io/maplibre-geoman/pull/173))
+- Added package-specific README files for the MapLibre and Mapbox npm packages ([#174](https://github.com/geoman-io/maplibre-geoman/pull/174))
+
+### Changed
+
+- Migrated the workspace from npm/package-lock to pnpm with workspace-aware install, build, test, and release tooling ([#194](https://github.com/geoman-io/maplibre-geoman/pull/194))
+- Refreshed dependency and GitHub Actions versions, including TypeScript 6 compatibility updates ([#196](https://github.com/geoman-io/maplibre-geoman/pull/196), [#198](https://github.com/geoman-io/maplibre-geoman/pull/198))
+- Reworked cursor handling for edit interactions to use class-based cursor management
+- Added seven-day cooldowns for Dependabot npm updates and local pnpm dependency resolution/outdated checks
+
+### Fixed
+
+- Updated Mapbox example glyph endpoints to avoid text-symbol failures with newer Mapbox GL versions ([#196](https://github.com/geoman-io/maplibre-geoman/pull/196))
+
 ## [0.7.1] - 2026-03-05
 
 ### Added

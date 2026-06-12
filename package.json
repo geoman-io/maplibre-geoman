@@ -1,7 +1,7 @@
 {
   "name": "@geoman-io/maplibre-geoman-workspace",
   "private": true,
-  "version": "0.7.1",
+  "version": "0.8.0",
   "packageManager": "pnpm@10.30.3",
   "type": "module",
   "description": "Workspace and tooling for Geoman MapLibre/Mapbox packages",
