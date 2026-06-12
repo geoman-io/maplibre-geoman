@@ -31,6 +31,15 @@ describe('core/options/utils', () => {
     ).toThrow('Multiple layers for the same shape are detected.');
   });
 
+  it('replaces array paint values instead of merging them index-wise', () => {
+    const baseLayers = [{ type: 'line', paint: { 'line-dasharray': [2, 1] } }];
+    const sourceLayers = [{ type: 'line', paint: { 'line-dasharray': [4] } }];
+
+    const result = mergeByTypeCustomizer(baseLayers, sourceLayers);
+
+    expect(result?.[0].paint['line-dasharray']).toEqual([4]);
+  });
+
   it('merges existing types and appends new ones', () => {
     const baseLayers = [
       { type: 'line', paint: { 'line-width': 1 } },

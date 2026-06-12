@@ -22,6 +22,12 @@ export const getEuclideanSegmentNearestPoint = (
   // Calculate dot product and projection scalar
   const c1 = wx * vx + wy * vy;
   const c2 = vx * vx + vy * vy;
+
+  // A zero-length segment has no direction; the nearest point is the segment itself
+  if (c2 === 0) {
+    return [x1, y1];
+  }
+
   let b = c1 / c2;
 
   // Clamp b between 0 and 1 to ensure the nearest point lies on the segment

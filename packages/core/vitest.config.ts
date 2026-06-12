@@ -10,6 +10,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@mapLib': path.resolve(__dirname, '../maplibre/src/adapter'),
+      '@tests': path.resolve(__dirname, '../../tests'),
     },
   },
   test: {

@@ -1,6 +1,15 @@
 import { isPartialLayer } from '@/utils/guards/map.ts';
-import { cloneDeep, countBy, keyBy, merge, values } from 'lodash-es';
+import { cloneDeep, countBy, keyBy, mergeWith, values } from 'lodash-es';
 import log from 'loglevel';
+
+// paint/layout values and expressions are arrays; a user-provided array must
+// replace the default instead of being merged with it index-wise
+const replaceArraysCustomizer = (_objValue: unknown, srcValue: unknown) => {
+  if (Array.isArray(srcValue)) {
+    return srcValue;
+  }
+  return undefined;
+};
 
 export const mergeByTypeCustomizer = (objValue: unknown, srcValue: unknown) => {
   if (!Array.isArray(objValue) || !Array.isArray(srcValue)) {
@@ -24,7 +33,7 @@ export const mergeByTypeCustomizer = (objValue: unknown, srcValue: unknown) => {
 
   srcValue.forEach((item) => {
     if (baseMap[item.type]) {
-      merge(baseMap[item.type], item);
+      mergeWith(baseMap[item.type], item, replaceArraysCustomizer);
     } else {
       baseMap[item.type] = cloneDeep(item);
     }

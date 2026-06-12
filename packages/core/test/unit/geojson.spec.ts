@@ -8,12 +8,16 @@ import {
   findCoordinateWithPath,
   getBboxFromTwoCoords,
   getCoordinateByPath,
+  multiLineStringToFeatureCollection,
   removeVertexFromLine,
   removeVertexFromMultiPolygon,
   removeVertexFromPolygon,
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
-import { getEuclideanSegmentNearestPoint } from '@/utils/planar.ts';
+import {
+  calculateEuclideanRotationAngle,
+  getEuclideanSegmentNearestPoint,
+} from '@/utils/planar.ts';
 
 describe('utils/geojson', () => {
   it('builds bbox and rectangle polygon from two corners', () => {
@@ -182,6 +186,107 @@ describe('utils/geojson', () => {
     expect(getEuclideanSegmentNearestPoint([0, 0], [10, 0], [5, 5])).toEqual([5, 0]);
     expect(getEuclideanSegmentNearestPoint([0, 0], [10, 0], [20, 5])).toEqual([10, 0]);
     expect(getEuclideanSegmentNearestPoint([0, 0], [10, 0], [-2, 3])).toEqual([0, 0]);
+  });
+
+  it('returns the segment point for a zero-length segment instead of NaN', () => {
+    expect(getEuclideanSegmentNearestPoint([5, 5], [5, 5], [1, 1])).toEqual([5, 5]);
+  });
+
+  it('calculates euclidean rotation angles including the ±180° wrap', () => {
+    // quarter turn from the positive x-axis to the positive y-axis
+    expect(calculateEuclideanRotationAngle([0, 0], [1, 0], [0, 1])).toBeCloseTo(-90, 6);
+
+    // crossing the ±180° boundary: 170° -> -170° is a 20° step, not 340°
+    const startPoint: [number, number] = [
+      Math.cos((170 * Math.PI) / 180),
+      Math.sin((170 * Math.PI) / 180),
+    ];
+    const endPoint: [number, number] = [
+      Math.cos((-170 * Math.PI) / 180),
+      Math.sin((-170 * Math.PI) / 180),
+    ];
+    expect(calculateEuclideanRotationAngle([0, 0], startPoint, endPoint)).toBeCloseTo(-20, 6);
+  });
+
+  it('gives each feature from a MultiLineString its own properties object', () => {
+    const multiLine = {
+      type: 'Feature',
+      properties: { name: 'source' },
+      geometry: {
+        type: 'MultiLineString',
+        coordinates: [
+          [
+            [0, 0],
+            [1, 1],
+          ],
+          [
+            [2, 2],
+            [3, 3],
+          ],
+        ],
+      },
+    } as const;
+
+    const collection = multiLineStringToFeatureCollection(multiLine as never);
+    expect(collection.features).toHaveLength(2);
+
+    collection.features[0].properties!.name = 'mutated';
+    expect(collection.features[1].properties!.name).toBe('source');
+    expect(multiLine.properties.name).toBe('source');
+  });
+
+  it('removes the targeted vertex when ring coordinates carry altitude values', () => {
+    const polygon = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0, 5],
+            [2, 0, 5],
+            [2, 2, 5],
+            [0, 2, 5],
+            [0, 0, 5],
+          ],
+        ],
+      },
+    } as const;
+
+    expect(removeVertexFromPolygon(polygon as never, [2, 0])).toBe(true);
+    expect(polygon.geometry.coordinates[0]).toEqual([
+      [0, 0, 5],
+      [2, 2, 5],
+      [0, 2, 5],
+      [0, 0, 5],
+    ]);
+
+    const multiPolygon = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [0, 0, 5],
+              [2, 0, 5],
+              [2, 2, 5],
+              [0, 2, 5],
+              [0, 0, 5],
+            ],
+          ],
+        ],
+      },
+    } as const;
+
+    expect(removeVertexFromMultiPolygon(multiPolygon as never, [2, 0])).toBe(true);
+    expect(multiPolygon.geometry.coordinates[0][0]).toEqual([
+      [0, 0, 5],
+      [2, 2, 5],
+      [0, 2, 5],
+      [0, 0, 5],
+    ]);
   });
 
   it('returns coordinate by path and warns for invalid paths', () => {

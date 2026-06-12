@@ -43,9 +43,13 @@ export class EventBus {
 
     // Chain event forwarding to maintain order
     // This ensures dragstart completes before drag events are forwarded
-    this.pendingForward = this.pendingForward.then(() =>
-      this.forwarder.processEvent(eventName, payload),
-    );
+    // A rejection (e.g. a throwing user listener) must not break the chain,
+    // otherwise no further events would ever be forwarded
+    this.pendingForward = this.pendingForward
+      .then(() => this.forwarder.processEvent(eventName, payload))
+      .catch((error) => {
+        log.error(`EventBus: failed to forward event "${eventName}"`, error);
+      });
   }
 
   attachEvents(handlers: EventHandlers) {

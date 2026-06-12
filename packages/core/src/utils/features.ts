@@ -114,8 +114,10 @@ export const moveFeatureData = async (featureData: FeatureData, lngLatDiff: LngL
   const featureGeoJson = getMovedGeoJson(featureData, lngLatDiff);
   const shapeCenter = featureData.getShapeProperty('center');
   if (shapeCenter) {
-    await featureData.setShapeProperty('center', shapeCenter[0] + lngLatDiff.lng);
-    await featureData.setShapeProperty('center', shapeCenter[1] + lngLatDiff.lat);
+    await featureData.setShapeProperty('center', [
+      shapeCenter[0] + lngLatDiff.lng,
+      shapeCenter[1] + lngLatDiff.lat,
+    ]);
   }
   // Set the updated data back to the source
   await featureData.updateGeometry(featureGeoJson.geometry);

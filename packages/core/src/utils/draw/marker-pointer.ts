@@ -58,6 +58,7 @@ export class MarkerPointer {
   pauseSnapping() {
     if (this.oldSnapping !== undefined) {
       log.error('MarkerPointer: snapping is already paused');
+      return;
     }
     this.oldSnapping = this.snapping;
     this.setSnapping(false);

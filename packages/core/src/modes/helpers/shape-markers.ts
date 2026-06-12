@@ -395,12 +395,22 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   isMarkerIndexAllowed(shape: FeatureData['shape'], markerIndex: number, verticesCount: number) {
-    // allows 4 markers for a circle's rim
+    // allows 4 markers for a circle's rim / an ellipse's axes
     const divider = Math.floor(verticesCount / 4);
 
     if (shape === 'circle') {
-      return (markerIndex + divider / 2) % divider === 0;
+      if (verticesCount < 4) {
+        return true;
+      }
+      // four evenly spaced rim markers, offset by 1/8 turn; rounding keeps this
+      // working for rings whose vertex count is not a multiple of 8
+      const quarter = verticesCount / 4;
+      const offset = verticesCount / 8;
+      return [0, 1, 2, 3].some((step) => markerIndex === Math.round(offset + step * quarter));
     } else if (shape === 'ellipse') {
+      if (divider === 0) {
+        return true;
+      }
       return markerIndex % divider === 0;
     } else {
       return true;

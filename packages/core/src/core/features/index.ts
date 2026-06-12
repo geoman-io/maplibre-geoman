@@ -256,6 +256,7 @@ export class Features {
 
     if (featureData) {
       this.featureStore.delete(featureData.id);
+      this.selection.delete(featureData.id);
       await featureData.delete();
       // log.debug(`Feature removed: ${featureData.id}, source: ${featureData.sourceName}`);
     } else {
@@ -268,6 +269,7 @@ export class Features {
       Array.from(this.featureStore.values(), (featureData) => featureData.delete()),
     );
     this.featureStore.clear();
+    this.selection.clear();
   }
 
   getLinkedFeatures(featureData: FeatureData): FeatureData[] {
@@ -590,16 +592,21 @@ export class Features {
               return;
             }
 
-            const id = feature.properties[FEATURE_ID_PROPERTY];
+            if (shapeTypes !== undefined && !shapeTypes.includes(featureData.shape)) {
+              return;
+            }
+
+            // export a detached snapshot: getGmGeoJson() returns the live
+            // FeatureData geojson, which must never be mutated here
+            const exportedFeature = cloneDeep(feature);
+            const id = exportedFeature.properties[FEATURE_ID_PROPERTY];
 
             if (idPropertyName !== FEATURE_ID_PROPERTY) {
-              feature.properties[idPropertyName] = id;
-              delete feature.properties[FEATURE_ID_PROPERTY];
+              exportedFeature.properties[idPropertyName] = id;
+              delete exportedFeature.properties[FEATURE_ID_PROPERTY];
             }
 
-            if (shapeTypes === undefined || shapeTypes.includes(featureData.shape)) {
-              resultFeatureCollection.features.push({ ...feature, id });
-            }
+            resultFeatureCollection.features.push({ ...exportedFeature, id });
           });
       }
     });

@@ -19,7 +19,7 @@ const UNITS = {
   area: {
     metric: [
       { range: [0, 1], unit: 'cm²', factor: 10000 },
-      { range: [1, 10000], unit: 'm²', factor: 1 },
+      { range: [1, 100000], unit: 'm²', factor: 1 },
       { range: [100000, Infinity], unit: 'km²', factor: 0.000001 },
     ],
     imperial: [
