@@ -141,10 +141,10 @@ jobs:
           pnpm run test:unit
 
       - name: Build and package (MapLibre)
-        run: pnpm --filter @geoman-io/maplibre-geoman-free run pack
+        run: pnpm --filter @geoman-io/maplibre-geoman-free run package
 
       - name: Build and package (Mapbox)
-        run: pnpm --filter @geoman-io/mapbox-geoman-free run pack
+        run: pnpm --filter @geoman-io/mapbox-geoman-free run package
 
       - name: API surface checks
         run: pnpm run api:check

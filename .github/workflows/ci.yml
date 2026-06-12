@@ -14,7 +14,7 @@ permissions:
   security-events: write
 
 env:
-  NODE_VERSION: "22"
+  NODE_VERSION: "24"
 
 jobs:
   # Separate job for faster feedback on basic checks
@@ -148,8 +148,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - name: Use runner Chromium
+        run: |
+          for browser in google-chrome-stable google-chrome chromium chromium-browser; do
+            if command -v "$browser" >/dev/null 2>&1; then
+              echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v "$browser")" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          done
+          echo "No system Chromium/Chrome executable found on large-test-runner"
+          exit 1
 
       - name: Run Playwright tests
         run: |
