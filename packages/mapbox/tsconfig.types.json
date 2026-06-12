@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.mapbox.json",
   "compilerOptions": {
     "outDir": "./dist/types",
+    "rootDir": "../..",
     "paths": {
       "@/*": ["packages/core/src/*"],
       "@dev/*": ["apps/dev/*"],

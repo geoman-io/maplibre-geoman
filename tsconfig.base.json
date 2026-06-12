@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "declaration": true,
     "outDir": "./dist/types",
     "target": "ES2022",
