@@ -11,7 +11,6 @@ const playwrightVariant = playwrightVariantRaw as 'maplibre' | 'mapbox';
 const testServerCommand =
   playwrightVariant === 'mapbox' ? 'pnpm run testserver:mapbox' : 'pnpm run testserver:maplibre';
 const testServerPort = playwrightVariant === 'mapbox' ? 4001 : 4000;
-const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 /**
  * Read environment variables from file.
@@ -58,9 +57,9 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        channel: process.env.CI ? 'chrome' : undefined,
         headless: true,
         launchOptions: {
-          ...(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {}),
           args: [
             // Force software WebGL so map rendering works in headless/sandboxed environments.
             '--use-angle=swiftshader',
