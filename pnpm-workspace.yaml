@@ -4,6 +4,8 @@ packages:
   - packages/maplibre
   - packages/mapbox
 
+minimumReleaseAge: 10080
+
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - svelte-preprocess
