@@ -43,7 +43,7 @@
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly && tsc-alias -p tsconfig.types.json && rollup -c rollup.config.dts.js && node ../../scripts/verify-variant-types.mjs mapbox dist/mapbox-geoman.d.ts && rimraf dist/types",
     "ts": "tsc --noEmit -p ../../tsconfig.mapbox.json",
     "lint": "oxlint src",
-    "pack": "pnpm run build && pnpm pack"
+    "package": "pnpm run build && pnpm pack"
   },
   "dependencies": {
     "@turf/area": "^7.3.5",
