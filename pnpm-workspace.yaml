@@ -6,6 +6,9 @@ packages:
 
 minimumReleaseAge: 10080
 
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - svelte-preprocess
+overrides:
+  ajv: 6.14.0
+
+allowBuilds:
+  '@parcel/watcher': true
+  svelte-preprocess: true

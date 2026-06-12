@@ -11,7 +11,7 @@ permissions:
   checks: write
 
 env:
-  NODE_VERSION: "22"
+  NODE_VERSION: "24"
 
 jobs:
   # Skip CI on draft PRs unless specifically requested
