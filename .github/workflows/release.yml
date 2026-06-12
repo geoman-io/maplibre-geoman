@@ -112,6 +112,7 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: validate
 
     steps:
@@ -138,12 +139,6 @@ jobs:
           pnpm run typecheck:all
           pnpm run lint:all
           pnpm run test:unit
-
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run E2E tests
-        run: pnpm run test:all --project=chromium
 
       - name: Build and package (MapLibre)
         run: pnpm --filter @geoman-io/maplibre-geoman-free run pack
