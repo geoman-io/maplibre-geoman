@@ -62,3 +62,28 @@
 .marker-wrapper {
   cursor: pointer;
 }
+
+:is(
+  .maplibregl-canvas-container.maplibregl-interactive,
+  .mapboxgl-canvas-container.mapboxgl-interactive
+).gm-cursor-move {
+  cursor: move;
+}
+:is(
+  .maplibregl-canvas-container.maplibregl-interactive,
+  .mapboxgl-canvas-container.mapboxgl-interactive
+).gm-cursor-pointer {
+  cursor: pointer;
+}
+:is(
+  .maplibregl-canvas-container.maplibregl-interactive,
+  .mapboxgl-canvas-container.mapboxgl-interactive
+).gm-cursor-grab {
+  cursor: grab;
+}
+:is(
+  .maplibregl-canvas-container.maplibregl-interactive,
+  .mapboxgl-canvas-container.mapboxgl-interactive
+).gm-cursor-crosshair {
+  cursor: crosshair;
+}
