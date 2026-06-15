@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- CI and dev e2e jobs now run Playwright against the system Chrome stable preinstalled on GitHub runner images (`channel: 'chrome'` on CI) instead of downloading a Playwright-managed Chromium. Large downloads on hosted runners began stalling mid-transfer on 2026-06-12, hanging the `playwright install` step indefinitely; local runs keep the pinned Playwright-managed browser.
+
 ### Changed
 
 - Upgraded the workspace package manager from pnpm 10 to pnpm 11 (`onlyBuiltDependencies` -> `allowBuilds`, `overrides` moved from `package.json#pnpm` to `pnpm-workspace.yaml`, lockfile re-resolved under the seven-day `minimumReleaseAge` policy)
