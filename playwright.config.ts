@@ -11,7 +11,6 @@ const playwrightVariant = playwrightVariantRaw as 'maplibre' | 'mapbox';
 const testServerCommand =
   playwrightVariant === 'mapbox' ? 'pnpm run testserver:mapbox' : 'pnpm run testserver:maplibre';
 const testServerPort = playwrightVariant === 'mapbox' ? 4001 : 4000;
-const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 /**
  * Read environment variables from file.
@@ -58,9 +57,13 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        // On CI, run against the system-installed Chrome stable (preinstalled on
+        // GitHub runner images) instead of downloading a Playwright-managed
+        // Chromium, which is blocked by unreliable runner egress for large
+        // downloads. Local runs keep the pinned Playwright-managed browser.
+        channel: process.env.CI ? 'chrome' : undefined,
         headless: true,
         launchOptions: {
-          ...(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {}),
           args: [
             // Force software WebGL so map rendering works in headless/sandboxed environments.
             '--use-angle=swiftshader',
