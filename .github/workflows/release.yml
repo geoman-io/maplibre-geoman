@@ -182,11 +182,56 @@ jobs:
             LICENSE
           retention-days: 7
 
+  # Full end-to-end test matrix
+  e2e-test:
+    name: Test Suite
+    runs-on: large-test-runner
+    timeout-minutes: 60
+    needs: [validate]
+
+    strategy:
+      matrix:
+        browser: [chromium]
+        variant: [maplibre, mapbox]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Playwright tests
+        run: |
+          if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
+            pnpm run test:mapbox --project=${{ matrix.browser }}
+          else
+            pnpm run test:maplibre --project=${{ matrix.browser }}
+          fi
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: release-playwright-report-${{ matrix.browser }}-${{ matrix.variant }}
+          path: playwright-report/
+          retention-days: 7
+
   # Create GitHub release
   github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [validate, build-and-test]
+    needs: [validate, build-and-test, e2e-test]
     environment: release
 
     steps:
@@ -228,7 +273,7 @@ jobs:
   npm-publish-maplibre:
     name: Publish MapLibre to NPM
     runs-on: ubuntu-latest
-    needs: [validate, build-and-test]
+    needs: [validate, build-and-test, e2e-test]
     environment: release
     if: needs.validate.outputs.is-prerelease == 'false' || contains(github.event.inputs.prerelease, 'true')
 
@@ -263,7 +308,7 @@ jobs:
   npm-publish-mapbox:
     name: Publish Mapbox to NPM
     runs-on: ubuntu-latest
-    needs: [validate, build-and-test]
+    needs: [validate, build-and-test, e2e-test]
     environment: release
     if: needs.validate.outputs.is-prerelease == 'false' || contains(github.event.inputs.prerelease, 'true')
 
