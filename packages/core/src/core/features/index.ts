@@ -366,7 +366,7 @@ export class Features {
 
     const id =
       featureId ??
-      shapeGeoJson.properties[FEATURE_ID_PROPERTY] ??
+      shapeGeoJson.properties?.[FEATURE_ID_PROPERTY] ??
       this.getNewFeatureId(shapeGeoJson);
 
     if (!propertiesValid(shapeGeoJson)) {
