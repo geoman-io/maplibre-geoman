@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-06-25
+
+### Fixed
+
+- Dragging a polygon or line now preserves its real-world shape and dimensions at any latitude. Previously every vertex was translated by a constant degree offset, which sheared the feature on north/south drags (edge lengths and area drifted, differently in globe vs mercator); it is now rebuilt from anchor-relative geodesic offsets, matching how circles/ellipses/rectangles keep their metric size ([#208](https://github.com/geoman-io/maplibre-geoman/pull/208), fixes [#172](https://github.com/geoman-io/maplibre-geoman/issues/172)).
+- `importGeoJsonFeature` no longer throws `Cannot read properties of undefined` when a feature omits a `properties` field (e.g. a bare `Point`); the feature id now falls back to generation instead of indexing `properties` directly ([#206](https://github.com/geoman-io/maplibre-geoman/pull/206), fixes [#195](https://github.com/geoman-io/maplibre-geoman/issues/195)).
+- Rotating a rectangle keeps it a rectangle — its `center`/`angle`/`width`/`height` stay intact and its dimensions don't drift across repeated rotations — instead of degrading into a plain polygon. Added e2e regression guards covering shape retention and the `gm:rotatestart` event payload ([#209](https://github.com/geoman-io/maplibre-geoman/pull/209), closes [#166](https://github.com/geoman-io/maplibre-geoman/issues/166)).
+
 ## [0.8.3] - 2026-06-15
 
 ### Fixed
