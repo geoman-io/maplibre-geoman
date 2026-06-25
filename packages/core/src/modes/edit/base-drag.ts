@@ -3,13 +3,18 @@ import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
 import type { MapHandlerReturnData } from '@/types/events/bus.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
-import type { FeatureShape } from '@/types/features.ts';
+import type { FeatureId, FeatureShape } from '@/types/features.ts';
 import type { GeoJsonShapeFeature, SimplePoint } from '@/types/geojson.ts';
 import type { LngLatTuple } from '@/types/map/index.ts';
 import type { EditModeName } from '@/types/modes/index.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { convertToThrottled } from '@/utils/behavior.ts';
-import { getFeatureFirstPoint, getMovedGeoJson, getShapeProperties } from '@/utils/features.ts';
+import {
+  getFeatureFirstPoint,
+  getMovedGeoJson,
+  getShapeProperties,
+  getTranslatedGeoJson,
+} from '@/utils/features.ts';
 import {
   getGeoJsonCircle,
   getGeoJsonEllipse,
@@ -19,7 +24,7 @@ import {
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
 import type { Feature, Polygon } from 'geojson';
-import { isEqual } from 'lodash-es';
+import { cloneDeep, isEqual } from 'lodash-es';
 import log from 'loglevel';
 import { moveRectangle } from '@/utils/shapes.ts';
 
@@ -34,6 +39,16 @@ export abstract class BaseDrag extends BaseEdit {
   initialPoint: SimplePoint | null = null;
   previousLngLat: LngLatTuple | null = null;
   linkedFeatures: Array<FeatureData> = [];
+
+  /**
+   * Drag-start state for the geodesic (polygon/line) translation path. The anchor
+   * is the pointer position when the drag began; the snapshot map holds each
+   * dragged feature's pristine geometry. On every pointer tick we translate the
+   * snapshot by the *total* anchor→cursor vector rather than mutating the live
+   * geometry incrementally, which avoids cumulative reprojection drift (#172).
+   */
+  dragAnchorLngLat: LngLatTuple | null = null;
+  pristineGeoJsons: Map<FeatureId, GeoJsonShapeFeature> = new Map();
 
   /**
    * When true, clicking and dragging the feature body directly (not a marker)
@@ -71,9 +86,9 @@ export abstract class BaseDrag extends BaseEdit {
     circle: this.moveCircle.bind(this),
     circle_marker: this.moveSource.bind(this),
     text_marker: this.moveSource.bind(this),
-    line: this.moveSource.bind(this),
+    line: this.moveGeodesic.bind(this),
     rectangle: this.moveRectangle.bind(this),
-    polygon: this.moveSource.bind(this),
+    polygon: this.moveGeodesic.bind(this),
   };
 
   async onMouseDown(event: BaseMapEvent) {
@@ -96,6 +111,17 @@ export abstract class BaseDrag extends BaseEdit {
       this.initialPoint = event.point;
       this.featureData = featureData;
       this.linkedFeatures = linkedFeatures;
+
+      // Snapshot pristine geometry for the geodesic path. The anchor is captured
+      // lazily on the first pointer move so it shares the exact source (marker
+      // pointer vs raw cursor) used for the per-tick target position.
+      this.dragAnchorLngLat = null;
+      this.pristineGeoJsons = new Map(
+        [this.featureData, ...this.linkedFeatures].map((fd) => [
+          fd.id,
+          cloneDeep(fd.getGeoJson()) as GeoJsonShapeFeature,
+        ]),
+      );
 
       this.gm.features.updateManager.beginTransaction('transactional-update');
 
@@ -153,6 +179,8 @@ export abstract class BaseDrag extends BaseEdit {
     this.previousLngLat = null;
     this.featureData = null;
     this.linkedFeatures = [];
+    this.dragAnchorLngLat = null;
+    this.pristineGeoJsons = new Map();
     return { next: true };
   }
 
@@ -166,6 +194,12 @@ export abstract class BaseDrag extends BaseEdit {
       // see "relatedModes" in options
       const lngLatEnd = this.gm.markerPointer.marker?.getLngLat() || event.lngLat.toArray();
       const lngLatStart = this.previousLngLat ?? lngLatEnd;
+
+      // Anchor the geodesic translation at the first observed pointer position so
+      // the total drag vector is measured from where the geometry actually started.
+      if (!this.dragAnchorLngLat) {
+        this.dragAnchorLngLat = lngLatEnd;
+      }
 
       this.gm.features.updateManager.beginTransaction('transactional-update', SOURCES.temporary);
 
@@ -237,6 +271,31 @@ export abstract class BaseDrag extends BaseEdit {
 
   moveSource(featureData: FeatureData, startLngLat: LngLatTuple, endLngLat: LngLatTuple) {
     return getMovedGeoJson(featureData, getLngLatDiff(startLngLat, endLngLat));
+  }
+
+  /**
+   * Dimension-preserving translation for polygons and lines: keeps edge lengths and
+   * area intact at any latitude by rebuilding the geometry from anchor-relative
+   * geodesic offsets, matching how circles/ellipses/rectangles are reconstructed
+   * from metric properties (#172). Translates the pristine drag-start snapshot by
+   * the total anchor→cursor vector to avoid cumulative drift.
+   */
+  moveGeodesic(
+    featureData: FeatureData,
+    startLngLat: LngLatTuple,
+    endLngLat: LngLatTuple,
+  ): GeoJsonShapeFeature {
+    const pristineGeoJson = this.pristineGeoJsons.get(featureData.id);
+    const anchorLngLat = this.dragAnchorLngLat;
+
+    if (!pristineGeoJson || !anchorLngLat) {
+      // No snapshot/anchor (e.g. invoked outside a pointer drag) — fall back to the
+      // legacy incremental degree-offset translation rather than dropping the move.
+      log.warn('BaseDrag.moveGeodesic: missing drag snapshot, using incremental move', featureData);
+      return this.moveSource(featureData, startLngLat, endLngLat);
+    }
+
+    return getTranslatedGeoJson(pristineGeoJson, anchorLngLat, endLngLat);
   }
 
   moveRectangle(

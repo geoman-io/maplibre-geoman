@@ -10,8 +10,10 @@ import {
   getAllGeoJsonCoordinates,
   getGeoJsonFirstPoint,
 } from '@/utils/geojson.ts';
+import bearing from '@turf/bearing';
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
 import buffer from '@turf/buffer';
+import destination from '@turf/destination';
 import distance from '@turf/distance';
 import lineIntersect from '@turf/line-intersect';
 import rewind from '@turf/rewind';
@@ -108,6 +110,55 @@ export const getMovedGeoJson = (featureData: FeatureData, lngLatDiff: LngLatDiff
   const featureGeoJson = cloneDeep(featureData.getGeoJson() as GeoJsonShapeFeature);
   moveGeoJson(featureGeoJson, lngLatDiff);
   return featureGeoJson;
+};
+
+// Below this many meters of drag we treat the move as a no-op and return the
+// snapshot untouched (avoids needless re-projection of every vertex).
+const TRANSLATE_EPSILON_METERS = 1e-6;
+
+/**
+ * Translate a whole feature so it keeps its real-world shape and dimensions — the
+ * same metric philosophy circles/ellipses already use (radius in meters). This is
+ * the polygon/line analog of reconstructing a circle from its center + radius:
+ * each vertex is stored as a geodesic (distance, bearing) offset from the drag
+ * anchor, then rebuilt around the new anchor position.
+ *
+ * Why not a constant degree offset (`moveGeoJson`)? A degree offset is a rigid
+ * rotation of the sphere for pure east/west drags, but for any north/south
+ * component it shears the shape — horizontal edges land at a latitude where their
+ * degree-span is a different number of meters, so edge lengths and area drift
+ * (~3% over ~100 km near 60°N). Reconstructing from anchor-relative geodesic
+ * offsets preserves edges and area to within rounding at any latitude, and was
+ * empirically the only translation that does (a Web-Mercator offset is worse, and
+ * Turf's `transformTranslate` is no better than the degree offset). See issue #172.
+ *
+ * IMPORTANT: always pass the *pristine* (drag-start) geometry and the *total*
+ * anchor→target vector. Recomputing offsets from an already-moved geometry every
+ * pointer tick accumulates drift over a long drag; rebuilding the snapshot from the
+ * absolute anchor→target vector does not.
+ */
+export const getTranslatedGeoJson = (
+  pristineGeoJson: GeoJsonShapeFeature,
+  anchorLngLat: LngLatTuple,
+  targetLngLat: LngLatTuple,
+): GeoJsonShapeFeature => {
+  const cloned = cloneDeep(pristineGeoJson);
+  if (distance(anchorLngLat, targetLngLat, { units: 'meters' }) < TRANSLATE_EPSILON_METERS) {
+    return cloned;
+  }
+
+  eachCoordinateWithPath(cloned, (position) => {
+    const vertex = position.coordinate;
+    const offsetDistance = distance(anchorLngLat, vertex, { units: 'meters' });
+    const offsetBearing = bearing(anchorLngLat, vertex);
+    const [movedLng, movedLat] = destination(targetLngLat, offsetDistance, offsetBearing, {
+      units: 'meters',
+    }).geometry.coordinates;
+    position.coordinate[0] = movedLng;
+    position.coordinate[1] = movedLat;
+  });
+
+  return cloned;
 };
 
 export const moveFeatureData = async (featureData: FeatureData, lngLatDiff: LngLatDiff) => {
