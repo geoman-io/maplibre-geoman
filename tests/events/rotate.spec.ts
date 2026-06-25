@@ -14,8 +14,11 @@ import {
 import { getFeatureMarkersData, getRenderedFeaturesData } from '@tests/utils/features.ts';
 import { setupGeomanTest } from '@tests/utils/test-helpers.ts';
 
-// Shapes that are acceptable at rotatestart event
-// Note: Rectangle may or may not be converted to polygon at rotatestart depending on timing
+// Shapes that are acceptable at the rotatestart event. Every shape keeps its
+// intrinsic type at rotatestart — including rectangles, which since #173 are
+// rotated by updating their center/angle/width/height props and rebuilding rather
+// than being converted to a polygon (#166). The rotatestart payload must therefore
+// never momentarily report 'polygon' for a rectangle.
 const ROTATE_START_SHAPE_MAP: { [key in string]: ShapeName[] } = {
   marker: ['marker'],
   circle: ['circle'],
@@ -23,7 +26,7 @@ const ROTATE_START_SHAPE_MAP: { [key in string]: ShapeName[] } = {
   ellipse: ['ellipse'],
   text_marker: ['text_marker'],
   line: ['line'],
-  rectangle: ['rectangle', 'polygon'], // Rectangle may be converted to polygon at rotatestart
+  rectangle: ['rectangle'],
   polygon: ['polygon'],
 };
 

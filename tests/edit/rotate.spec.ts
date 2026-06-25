@@ -19,6 +19,7 @@ import {
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import type { LngLatTuple } from '@/main.ts';
+import { FEATURE_PROPERTY_PREFIX } from '@/core/features/constants.ts';
 import { getGeoJsonFirstPoint } from '@/utils/geojson.ts';
 import centroid from '@turf/centroid';
 import bearing from '@turf/bearing';
@@ -240,5 +241,100 @@ test('Do not move Marker, CircleMarker, TextMarker via body drag', async ({ page
       );
     }
   }
+  await page.evaluate(async () => await window.geoman.options.disableMode('edit', 'rotate'));
+});
+
+// Regression guard for #166 ("Rectangle converted into polygon after rotation").
+// Rotating a rectangle must keep it a rectangle (intrinsic shape + center/angle/
+// width/height props), not degrade into a plain polygon, and repeated rotations
+// must not accumulate dimension errors (width/height are canonical metric props,
+// rebuilt-from rather than recomputed-from geometry).
+test('#166: rectangle keeps its type, angle, and dimensions through rotation', async ({ page }) => {
+  const shapeKey = `${FEATURE_PROPERTY_PREFIX}shape`;
+  const angleKey = `${FEATURE_PROPERTY_PREFIX}angle`;
+  const widthKey = `${FEATURE_PROPERTY_PREFIX}width`;
+  const heightKey = `${FEATURE_PROPERTY_PREFIX}height`;
+
+  await enableMode(page, 'edit', 'rotate');
+
+  const features = await getRenderedFeaturesData({ page, temporary: false });
+  const rectangle = features.find((f) => f.shape === 'rectangle');
+  expect(rectangle, 'a rectangle fixture should exist').toBeTruthy();
+  if (!rectangle) return;
+
+  const startAngle = (rectangle.geoJson.properties ?? {})[angleKey];
+
+  const firstVertex = await getFirstDraggableVertex(page, rectangle);
+  expect(firstVertex, 'rectangle should expose a draggable vertex').not.toBeNull();
+  if (!firstVertex) return;
+
+  const target: LngLatTuple = [firstVertex.point[0] + 40, firstVertex.point[1] - 30];
+  await dragAndDrop(page, firstVertex.point, target as unknown as ScreenCoordinates);
+  await waitForFeatureGeoJsonUpdate({
+    feature: rectangle,
+    originalGeoJson: rectangle.geoJson,
+    page,
+  });
+  await waitForMapIdle(page);
+
+  const rotated = await waitForRenderedFeatureData({
+    page,
+    featureId: rectangle.id,
+    temporary: false,
+  });
+  expect(rotated).not.toBeNull();
+  if (!rotated) return;
+
+  const props = rotated.geoJson.properties ?? {};
+  const ring = (rotated.geoJson.geometry as { coordinates?: number[][][] }).coordinates?.[0] ?? [];
+
+  // The crux of #166: still a rectangle, not a degraded polygon.
+  expect(rotated.shape, 'shape must remain "rectangle" after rotation').toBe('rectangle');
+  expect(props[shapeKey], '__gm_shape must remain "rectangle"').toBe('rectangle');
+  // angle is stored and was changed by the rotation.
+  expect(typeof props[angleKey], 'angle must be a stored number').toBe('number');
+  expect(props[angleKey]).not.toBe(startAngle);
+  // width/height (meters) survive as intrinsic properties.
+  expect(typeof props[widthKey]).toBe('number');
+  expect(typeof props[heightKey]).toBe('number');
+  // still a closed 4-corner ring.
+  expect(ring.length).toBe(5);
+
+  // Repeated rotations must not drift the dimensions (no accumulated error).
+  const widthAfterFirst = props[widthKey] as number;
+  const heightAfterFirst = props[heightKey] as number;
+  for (let i = 0; i < 4; i++) {
+    const current = (await getRenderedFeaturesData({ page, temporary: false })).find(
+      (f) => f.id === rectangle.id,
+    );
+    if (!current) break;
+    const vertex = await getFirstDraggableVertex(page, current);
+    if (!vertex) break;
+    await dragAndDrop(page, vertex.point, [
+      vertex.point[0] + 35,
+      vertex.point[1] - 25,
+    ] as unknown as ScreenCoordinates);
+    // A small rotation can round to a near-identical geometry, so don't gate on a
+    // geojson diff here (it would flakily time out) — just let the map settle.
+    await waitForMapIdle(page);
+    await page.waitForTimeout(80);
+  }
+
+  const finalData = await waitForRenderedFeatureData({
+    page,
+    featureId: rectangle.id,
+    temporary: false,
+  });
+  const finalProps = finalData?.geoJson.properties ?? {};
+  expect(finalData?.shape, 'shape stays "rectangle" across many rotations').toBe('rectangle');
+  expect(finalProps[widthKey], 'width must not drift across rotations').toBeCloseTo(
+    widthAfterFirst,
+    6,
+  );
+  expect(finalProps[heightKey], 'height must not drift across rotations').toBeCloseTo(
+    heightAfterFirst,
+    6,
+  );
+
   await page.evaluate(async () => await window.geoman.options.disableMode('edit', 'rotate'));
 });
