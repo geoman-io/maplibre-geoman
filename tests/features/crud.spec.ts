@@ -35,6 +35,29 @@ test.describe('Feature Management - CRUD Operations', () => {
       expect(features[0].shape).toBe('marker');
     });
 
+    test('should import a GeoJSON feature without a properties field', async () => {
+      // regression: importGeoJsonFeature must not require `properties` (issue #195)
+      const featureWithoutProperties = {
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [3, 52] as LngLatTuple,
+        },
+      };
+
+      const result = await page.evaluate(async (feature) => {
+        return window.geoman.features.importGeoJsonFeature(
+          feature as unknown as GeoJsonImportFeature,
+        );
+      }, featureWithoutProperties);
+
+      expect(result, 'Should return a feature data object').not.toBeNull();
+
+      const features = await getRenderedFeaturesData({ page, temporary: false });
+      expect(features.length).toBe(1);
+      expect(features[0].shape).toBe('marker');
+    });
+
     test('should import multiple GeoJSON features', async () => {
       const featureCollection = {
         type: 'FeatureCollection' as const,
