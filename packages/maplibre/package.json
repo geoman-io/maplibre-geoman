@@ -82,6 +82,6 @@
     "type-fest": "^5.7.0"
   },
   "peerDependencies": {
-    "maplibre-gl": ">=5.19.0"
+    "maplibre-gl": ">=5.22.0"
   }
 }
