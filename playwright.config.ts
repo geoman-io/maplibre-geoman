@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { testServerHost, testServerPort, testServerUrl } from './tests/server-config.ts';
 
 const playwrightVariantRaw = process.env.PLAYWRIGHT_VARIANT;
 if (!playwrightVariantRaw || !['maplibre', 'mapbox'].includes(playwrightVariantRaw)) {
@@ -8,9 +9,16 @@ if (!playwrightVariantRaw || !['maplibre', 'mapbox'].includes(playwrightVariantR
 }
 
 const playwrightVariant = playwrightVariantRaw as 'maplibre' | 'mapbox';
+const variantPackage =
+  playwrightVariant === 'mapbox' ? 'mapbox-geoman-free' : 'maplibre-geoman-free';
+
+// Port/host/url come from tests/server-config.ts (shared with the globalSetup
+// health check). Launch the variant's Vite test server on that port.
+// `--strictPort` makes Vite fail loudly if the port is already taken instead of
+// drifting to another port (which would no longer match `testServerUrl`).
 const testServerCommand =
-  playwrightVariant === 'mapbox' ? 'pnpm run testserver:mapbox' : 'pnpm run testserver:maplibre';
-const testServerPort = playwrightVariant === 'mapbox' ? 4001 : 4000;
+  `pnpm --filter @geoman-io/${variantPackage} exec vite ../.. --config vite.config.ts ` +
+  `--host ${testServerHost} --port ${testServerPort} --strictPort --mode test`;
 
 /**
  * Read environment variables from file.
@@ -24,6 +32,9 @@ const testServerPort = playwrightVariant === 'mapbox' ? 4001 : 4000;
  */
 export default defineConfig({
   testDir: './tests',
+  /* Verify the test server is actually the Geoman dev app before running (guards
+   * against a foreign process being reused on the port). */
+  globalSetup: './tests/global-setup.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Timeout for a test - increased for CI */
@@ -42,7 +53,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: `http://127.0.0.1:${testServerPort}/`,
+    baseURL: testServerUrl,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     /* Navigation timeout - increased for CI */
@@ -94,10 +105,13 @@ export default defineConfig({
     // },
   ],
 
-  /* Run the local dev server before starting the tests */
+  /* Run the local dev server before starting the tests. Locally an existing
+   * server on the port is reused for speed; globalSetup then verifies it is
+   * actually the Geoman app, so a foreign server fails fast with a clear error
+   * instead of every test failing with "Geoman failed to initialize". */
   webServer: {
     command: testServerCommand,
-    url: `http://127.0.0.1:${testServerPort}/`,
+    url: testServerUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
