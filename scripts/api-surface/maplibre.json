@@ -25,6 +25,8 @@
   "reexport-type:ControlStyles",
   "reexport-type:CoordinateIndices",
   "reexport-type:CursorType",
+  "reexport-type:CustomControl",
+  "reexport-type:CustomControlClickContext",
   "reexport-type:DomMarkerData",
   "reexport-type:DrawModeName",
   "reexport-type:EdgeMarkerData",

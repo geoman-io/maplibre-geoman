@@ -6,6 +6,37 @@ export interface ControlSettings {
   enabledBy?: Array<ModeName>;
 }
 
+/** Context passed to a custom control's click handler. */
+export interface CustomControlClickContext {
+  gm: import('@/main.ts').Geoman;
+  control: CustomControl;
+  event: MouseEvent;
+}
+
+/**
+ * A host-defined control-bar button that runs an arbitrary handler on click
+ * instead of toggling a built-in mode. Provide these via the `customControls`
+ * option or at run time through `gm.control.addCustomControl()`.
+ */
+export interface CustomControl {
+  /**
+   * unique id; used for the button's DOM id (`id_custom_<id>`), class
+   * (`custom-<id>`) and for removal. Use a valid CSS identifier (no spaces or
+   * special characters) so the generated id/class and selectors stay well-formed.
+   */
+  id: string;
+  /** tooltip text; its first two chars are the text fallback when no icon is set */
+  title?: string;
+  /** raw SVG markup for the icon (sanitized with DOMPurify before render) */
+  icon?: string | null;
+  /** invoked when the button is clicked */
+  onClick: (context: CustomControlClickContext) => void | Promise<void>;
+  /** sort order within the custom-control group (lower comes first) */
+  order?: number;
+  /** controlled active/pressed state for toggle-style buttons */
+  active?: boolean;
+}
+
 export interface SystemControl<AT extends ActionType, Mode> {
   readonly type: AT;
   readonly targetMode: Mode;

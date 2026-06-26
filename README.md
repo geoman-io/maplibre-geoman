@@ -29,6 +29,9 @@
 Visit [geoman.io/docs/maplibre](https://www.geoman.io/docs/maplibre) to get started.
 For contributor-focused internals, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
+Adding your own buttons to the control bar is documented in
+[docs/custom-controls.md](docs/custom-controls.md).
+
 ## Issues
 
 If you have support questions or want to report issues, please [create an issue](https://github.com/geoman-io/maplibre-geoman/issues) in this repository. Use this repository for issues related to both the free and pro versions of Maplibre-Geoman.
@@ -206,6 +209,39 @@ const gmOptions: GmOptionsPartial = {
 const geoman = new Geoman(map, gmOptions);
 await geoman.waitForGeomanLoaded();
 ```
+
+### Custom controls
+
+Add your own buttons to the control bar with a custom icon, tooltip and click
+handler. Each runs its own `onClick` instead of toggling a built-in mode — handy
+for toggling a map layer, exporting data, or any host-specific action.
+
+```ts
+const geoman = new Geoman(map, {
+  customControls: [
+    {
+      id: 'toggle-parcels', // unique; also used for the button id/class and removal
+      title: 'Toggle parcels layer', // tooltip (first 2 chars are the text fallback)
+      icon: '<svg viewBox="0 0 20 20">...</svg>', // optional SVG, sanitized before render
+      order: 10, // optional sort order within the custom group
+      onClick: ({ gm, control, event }) => {
+        const visible = map.getLayoutProperty('parcels', 'visibility') !== 'none';
+        map.setLayoutProperty('parcels', 'visibility', visible ? 'none' : 'visible');
+      },
+    },
+  ],
+});
+```
+
+You can also add or remove controls at run time:
+
+```ts
+geoman.control.addCustomControl({ id: 'export', title: 'Export', onClick: () => save() });
+geoman.control.removeCustomControl('export');
+```
+
+See [docs/custom-controls.md](docs/custom-controls.md) for the full reference and
+a live example in the dev app (`apps/dev/common.ts`).
 
 ## Contributing
 
