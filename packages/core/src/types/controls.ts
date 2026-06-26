@@ -19,7 +19,11 @@ export interface CustomControlClickContext {
  * option or at run time through `gm.control.addCustomControl()`.
  */
 export interface CustomControl {
-  /** unique id; used for the button's id/class and for removal */
+  /**
+   * unique id; used for the button's DOM id (`id_custom_<id>`), class
+   * (`custom-<id>`) and for removal. Use a valid CSS identifier (no spaces or
+   * special characters) so the generated id/class and selectors stay well-formed.
+   */
   id: string;
   /** tooltip text; its first two chars are the text fallback when no icon is set */
   title?: string;

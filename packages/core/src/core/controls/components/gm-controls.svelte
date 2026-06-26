@@ -52,10 +52,15 @@
       .map(({ key, options }) => [key, options] as [string, ControlOptions]);
   };
 
-  // Sort by `order` (undefined sinks to the end); a stable sort keeps insertion
-  // order for ties. Copy first so the store array is not mutated in place.
+  // Sort by `order` (undefined sinks to the end); ties return 0 so the stable
+  // native sort keeps insertion order. Copy first so the store array is not
+  // mutated in place.
   const sortCustomControls = (controls: Array<CustomControl>): Array<CustomControl> =>
-    [...controls].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
+    [...controls].sort((a, b) => {
+      const orderA = a.order ?? Infinity;
+      const orderB = b.order ?? Infinity;
+      return orderA === orderB ? 0 : orderA - orderB;
+    });
 </script>
 
 <div class="gm-reactive-controls">

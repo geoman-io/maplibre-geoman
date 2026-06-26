@@ -122,10 +122,13 @@ export default class GMControl extends BaseControl {
   addCustomControl(control: CustomControl) {
     const current = this.gm.options.customControls;
     const index = current.findIndex((existing) => existing.id === control.id);
-    this.gm.options.customControls =
-      index === -1
-        ? [...current, control]
-        : current.map((existing) => (existing.id === control.id ? control : existing));
+    if (index === -1) {
+      this.gm.options.customControls = [...current, control];
+    } else {
+      const next = [...current];
+      next[index] = control;
+      this.gm.options.customControls = next;
+    }
     this.updateReactivePanel();
   }
 

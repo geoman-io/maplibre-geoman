@@ -111,4 +111,56 @@ test.describe('Custom controls', () => {
     await expect(page.locator('#id_custom_dup')).toHaveCount(1);
     await expect(page.locator('#id_custom_dup')).toHaveAttribute('title', 'New');
   });
+
+  test('renders controls passed declaratively at init and keeps the handler through the options merge', async () => {
+    // Reinit Geoman with `customControls` in the init options. This exercises the
+    // declarative path: the handler must survive the options deep-merge (it is
+    // held by reference outside the merge) for the click below to register.
+    await page.evaluate(async () => {
+      await window.geoman.destroy({ removeSources: true });
+      window.customData = { rawEventResults: { clicks: 0 } };
+      const geoman = new window.GeomanClass(window.mapInstance, {
+        customControls: [
+          {
+            id: 'init-decl',
+            title: 'Declared',
+            icon: '<svg viewBox="0 0 10 10"><rect width="10" height="10" /></svg>',
+            onClick: () => {
+              const data = window.customData.rawEventResults as { clicks: number };
+              data.clicks += 1;
+            },
+          },
+        ],
+      });
+      window.geoman = geoman;
+    });
+
+    await waitForGeoman(page);
+
+    const button = page.locator('#id_custom_init-decl');
+    await expect(button).toBeVisible();
+    await expect(button).toHaveAttribute('title', 'Declared');
+    // icon renders -> the declarative control reached the component intact
+    await expect(page.locator('#id_custom_init-decl svg')).toBeVisible();
+
+    // clicking proves the onClick function was not stripped by the deep-merge
+    await button.click();
+    const clicks = await page.evaluate(
+      () => (window.customData.rawEventResults as { clicks: number }).clicks,
+    );
+    expect(clicks).toBe(1);
+  });
+
+  test('keeps insertion order for controls without an explicit order', async () => {
+    await page.evaluate(() => {
+      window.geoman.control.addCustomControl({ id: 'alpha', title: 'A', onClick: () => {} });
+      window.geoman.control.addCustomControl({ id: 'beta', title: 'B', onClick: () => {} });
+      window.geoman.control.addCustomControl({ id: 'gamma', title: 'C', onClick: () => {} });
+    });
+
+    const ids = await page
+      .locator('.group-custom button')
+      .evaluateAll((els) => els.map((el) => el.id));
+    expect(ids).toEqual(['id_custom_alpha', 'id_custom_beta', 'id_custom_gamma']);
+  });
 });
