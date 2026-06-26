@@ -3,7 +3,7 @@ import { getDefaultOptions, trackDefaultUiEnabledState } from '@/core/options/de
 import { mergeByTypeCustomizer } from '@/core/options/utils.ts';
 import type { Geoman } from '@/main.ts';
 import { DRAW_MODES, EDIT_MODES, HELPER_MODES } from '@/modes/constants.ts';
-import type { ModeName } from '@/types/controls.ts';
+import type { CustomControl, ModeName } from '@/types/controls.ts';
 import type { GmControlSwitchEvent } from '@/types/events/control.ts';
 import type { GmBaseModeEvent, ModeAction } from '@/types/events/mode.ts';
 import type {
@@ -26,6 +26,9 @@ export class GmOptions {
   settings: GmOptionsData['settings'];
   controls: GmOptionsData['controls'];
   layerStyles: GmOptionsData['layerStyles'];
+  // kept by reference (outside the merge) so the host's `onClick` functions
+  // and array identity survive the deep-merge/array-merge customizer
+  customControls: Array<CustomControl>;
 
   constructor(gm: Geoman, inputOptions: PartialDeep<GmOptionsData>) {
     this.gm = gm;
@@ -33,10 +36,15 @@ export class GmOptions {
     this.settings = options.settings;
     this.controls = options.controls;
     this.layerStyles = options.layerStyles;
+    this.customControls = (inputOptions.customControls as Array<CustomControl>) ?? [];
   }
 
   getMergedOptions(options: PartialDeep<GmOptionsData> = {}): GmOptionsData {
     const defaultOptions = getDefaultOptions();
+    // `customControls` is held separately (see field above); keep it out of the
+    // deep merge so its handler functions are not stripped and the
+    // array-merge customizer does not warn on it
+    const { customControls: _customControls, ...mergeableOptions } = options;
 
     if (typeof options.settings?.controlsUiEnabledByDefault === 'boolean') {
       defaultOptions.settings.controlsUiEnabledByDefault =
@@ -45,7 +53,7 @@ export class GmOptions {
 
     trackDefaultUiEnabledState(defaultOptions);
 
-    return mergeWith(defaultOptions, options, mergeByTypeCustomizer);
+    return mergeWith(defaultOptions, mergeableOptions, mergeByTypeCustomizer);
   }
 
   async enableMode(modeType: ModeType, modeName: ModeName) {

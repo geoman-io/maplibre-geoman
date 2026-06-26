@@ -1,5 +1,5 @@
 import defaultLayerStyles from '@/core/options/layers/style.ts';
-import type { ModeName } from '@/types/controls.ts';
+import type { CustomControl, ModeName } from '@/types/controls.ts';
 import type { BaseControlsPosition } from '@/types/map/index.ts';
 import type {
   ActionOptions,
@@ -72,6 +72,13 @@ export type GmOptionsData = {
     edit: { [key in EditModeName]?: ControlOptions };
     helper: { [key in HelperModeName]?: ControlOptions };
   };
+  /**
+   * Host-defined control-bar buttons rendered as an extra group below the
+   * built-in controls. Each runs its own `onClick` handler instead of toggling
+   * a mode. Can also be managed at run time via
+   * `gm.control.addCustomControl()` / `removeCustomControl()`.
+   */
+  customControls?: Array<CustomControl>;
 };
 export type GmOptionsPartial = PartialDeep<GmOptionsData>;
 export type GenericControlsOptions = {

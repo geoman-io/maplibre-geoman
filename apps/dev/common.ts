@@ -1,5 +1,6 @@
 import { layerStyles } from './styles/layer-styles.ts';
 import { Geoman, IS_PRO } from '@/main.ts';
+import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import type { AnyMapInstance, MapInstanceWithGeoman } from '@/types/map/index.ts';
 import type { GmOptionsData } from '@/types/options.ts';
 import log from 'loglevel';
@@ -39,6 +40,29 @@ export function createGmOptions(): PartialDeep<GmOptionsData> {
         },
       },
     },
+    // Demo: host-defined control-bar buttons (issue #205). Each runs its own
+    // onClick handler instead of toggling a built-in mode. A control can also be
+    // added/removed at run time via geoman.control.addCustomControl() — see the
+    // toggle demo in setupDevEnvironment(). Docs: README "Custom controls".
+    customControls: [
+      {
+        id: 'zoom-to-features',
+        title: 'Zoom to features',
+        order: 10,
+        icon: `
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none"
+               stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <circle cx="9" cy="9" r="5.5" />
+            <line x1="13.5" y1="13.5" x2="18" y2="18" />
+          </svg>`,
+        onClick: ({ gm }) => {
+          const geoJson = gm.features.getAll();
+          if (geoJson.features.length) {
+            gm.mapAdapter.fitBounds(getGeoJsonBounds(geoJson), { padding: 40 });
+          }
+        },
+      },
+    ],
   };
 }
 
@@ -197,7 +221,29 @@ export function setupDevEnvironment(geoman: Geoman, map: DevMapInstance): void {
   window.customData.map = map as unknown as MapInstanceWithGeoman;
 
   mountPanels(geoman, map);
+  addDemoToggleControl(geoman);
 
   log.debug(`Geoman version: "${IS_PRO ? 'pro' : 'free'}"`);
   log.debug('Dev panels mounted');
+}
+
+// Demo of the runtime custom-control API (issue #205): a toggle button that
+// re-adds itself with a flipped `active` (pressed) state on each click. Adding a
+// control with an existing id replaces the previous one in place.
+function addDemoToggleControl(geoman: Geoman): void {
+  let active = false;
+  const render = () => {
+    geoman.control.addCustomControl({
+      id: 'demo-toggle',
+      title: active ? 'Demo toggle (on)' : 'Demo toggle (off)',
+      order: 20,
+      active,
+      onClick: () => {
+        active = !active;
+        log.info(`Custom control "demo-toggle" is now ${active ? 'on' : 'off'}`);
+        render();
+      },
+    });
+  };
+  render();
 }

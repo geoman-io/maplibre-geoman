@@ -4,6 +4,7 @@ import GmReactiveControls from '@/core/controls/components/gm-controls.svelte';
 import { systemControls } from '@/core/controls/defaults.ts';
 import { BaseControl } from '@/core/map/base/control.ts';
 import type {
+  CustomControl,
   ModeName,
   SystemControls,
   GenericSystemControl,
@@ -107,9 +108,33 @@ export default class GMControl extends BaseControl {
   updateReactivePanel() {
     controlsStore.update(() => ({
       controls: this.controls,
+      customControls: this.gm.options.customControls,
       options: this.gm.options.controls,
       settings: this.gm.options.settings,
     }));
+  }
+
+  /**
+   * Add (or replace, by id) a host-defined control-bar button at run time.
+   * Replacing keeps the control's existing position. Re-renders the control
+   * panel so the change appears immediately.
+   */
+  addCustomControl(control: CustomControl) {
+    const current = this.gm.options.customControls;
+    const index = current.findIndex((existing) => existing.id === control.id);
+    this.gm.options.customControls =
+      index === -1
+        ? [...current, control]
+        : current.map((existing) => (existing.id === control.id ? control : existing));
+    this.updateReactivePanel();
+  }
+
+  /** Remove a previously added custom control by id. */
+  removeCustomControl(id: string) {
+    this.gm.options.customControls = this.gm.options.customControls.filter(
+      (existing) => existing.id !== id,
+    );
+    this.updateReactivePanel();
   }
 
   createHtmlContainer() {

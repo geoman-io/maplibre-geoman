@@ -2,9 +2,10 @@
   import caretDown from '@/assets/images/controls2/caret-down.svg';
   import caretUp from '@/assets/images/controls2/caret-up.svg';
   import ActionControl from '@/core/controls/components/action-control.svelte';
+  import CustomControlButton from '@/core/controls/components/custom-control.svelte';
   import { controlsStore } from '@/core/controls/components/controls-store.ts';
   import type { ControlOptions, ModeType } from '@/types/options.ts';
-  import type { GenericSystemControls, ModeName } from '@/types/controls.ts';
+  import type { CustomControl, GenericSystemControls, ModeName } from '@/types/controls.ts';
   import DOMPurify from 'dompurify';
 
   // const gm: Geoman = getContext('gm');
@@ -50,6 +51,11 @@
       })
       .map(({ key, options }) => [key, options] as [string, ControlOptions]);
   };
+
+  // Sort by `order` (undefined sinks to the end); a stable sort keeps insertion
+  // order for ties. Copy first so the store array is not mutated in place.
+  const sortCustomControls = (controls: Array<CustomControl>): Array<CustomControl> =>
+    [...controls].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
 </script>
 
 <div class="gm-reactive-controls">
@@ -78,6 +84,13 @@
           </div>
         {/if}
       {/each}
+      {#if $controlsStore.customControls.length}
+        <div class={`${controlsStyles.controlGroupClass} group-custom`}>
+          {#each sortCustomControls($controlsStore.customControls) as control (control.id)}
+            <CustomControlButton control={control} />
+          {/each}
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
