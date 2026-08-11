@@ -120,9 +120,7 @@ export class SourceUpdateManager {
       }
 
       if (this.updateStorage[sourceName].diff) {
-        // Track the update promise so callers can wait for MapLibre to commit the data
-        // MapLibre's updateData with waitForCompletion=true returns a Promise that
-        // resolves when the data is committed to the source
+        // Track the update promise so callers can wait for MapLibre to commit the data.
         const updatePromise = source.updateData(this.updateStorage[sourceName].diff);
         this.addPendingPromise(sourceName, updatePromise).then();
         this.updateStorage[sourceName].diff = null;

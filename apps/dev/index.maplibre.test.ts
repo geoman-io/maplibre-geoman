@@ -3,11 +3,13 @@ import type { GmOptionsData } from '@/types/options.ts';
 import * as geojsonUtils from '@/utils/geojson.ts';
 import * as planarUtils from '@/utils/planar.ts';
 import log from 'loglevel';
-import ml from 'maplibre-gl';
+import * as ml from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { PartialDeep } from 'type-fest';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 log.setLevel('debug');
+ml.setWorkerUrl(workerUrl);
 
 // Expose utilities for testing
 window.geomanUtils = geojsonUtils;

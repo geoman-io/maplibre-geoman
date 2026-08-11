@@ -33,11 +33,16 @@ npm install @geoman-io/maplibre-geoman-free
 ## Usage
 
 ```typescript
-import ml from 'maplibre-gl';
+import * as ml from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { Geoman, type GmOptionsPartial } from '@geoman-io/maplibre-geoman-free';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css';
+
+// Required by MapLibre GL JS v6 when using Vite.
+// See the MapLibre documentation for other bundlers.
+ml.setWorkerUrl(workerUrl);
 
 const map = new ml.Map({
   container: 'dev-map',

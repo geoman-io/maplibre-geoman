@@ -109,11 +109,16 @@ Don't have a license key yet? [Purchase one here](https://geoman.io/pricing).
 ### Maplibre and Geoman initialization
 
 ```typescript
-import ml from "maplibre-gl";
+import * as ml from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { Geoman, type GmOptionsPartial } from "@geoman-io/maplibre-geoman-free";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css";
+
+// Required by MapLibre GL JS v6 when using Vite.
+// See the MapLibre documentation for other bundlers.
+ml.setWorkerUrl(workerUrl);
 
 const mapStyle: ml.StyleSpecification = {
   version: 8,

@@ -1,8 +1,9 @@
-import ml, {
-  type CircleLayerSpecification,
-  type FillLayerSpecification,
-  type LineLayerSpecification,
-  type SymbolLayerSpecification,
+import * as ml from 'maplibre-gl';
+import type {
+  CircleLayerSpecification,
+  FillLayerSpecification,
+  LineLayerSpecification,
+  SymbolLayerSpecification,
 } from 'maplibre-gl';
 
 // NOTE: Don't use maplibre types directly outside of "packages/maplibre/src/adapter" directory
