@@ -4,15 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [0.9.0] - 2026-08-11
-
-### Added
-
-- Added support for MapLibre GL JS v6.
-
 ### Changed
 
-- MapLibre GL JS v6 is now required by `@geoman-io/maplibre-geoman-free`.
+- Upgraded `@geoman-io/maplibre-geoman-free` to MapLibre GL JS v6 and now require `maplibre-gl >=6 <7`.
 
 ## [0.8.4] - 2026-06-25
 
