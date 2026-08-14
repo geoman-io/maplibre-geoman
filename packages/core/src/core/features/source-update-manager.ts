@@ -151,14 +151,21 @@ export class SourceUpdateManager {
   }
 
   /**
-   * Wait for any pending MapLibre source updates to complete.
-   * This ensures data is committed before events are fired.
+   * Wait for any pending source updates to complete, so the data is committed before
+   * events are fired.
    *
-   * IMPORTANT: MapLibre's _updateWorkerData() has a guard that returns early if already
-   * updating (`if (this._isUpdatingWorker) return`). This means updateData() can return
-   * a promise that resolves before the data is actually committed to serialize().
-   * To handle this, we loop until both storage and pending promises are empty, with
-   * a microtask yield between iterations to allow MapLibre's recursive updates to run.
+   * Awaiting the in-flight promises alone is not enough, because the work this waits on is
+   * mostly geoman's own: a merged diff may still be sitting in `updateStorage` waiting for the
+   * throttled `updateSourceActual` to flush it, and `updateSourceActual` re-schedules itself
+   * while the source is not yet `loaded`. Each of those can enqueue a *new* promise after the
+   * current ones settle, so we loop until storage, pending promises and `source.loaded` have
+   * all settled together.
+   *
+   * Note: this used to also compensate for MapLibre GL JS v5, whose `_updateWorkerData()`
+   * returned early (`if (this._isUpdatingWorker) return`) and so resolved before the data was
+   * committed. v6 returns the in-flight `_updatePromise` instead, and awaits the recursive
+   * drain in its `finally` block, so `updateData()` now resolves only once all pending worker
+   * data is committed. The loop is kept for the geoman-side reasons above.
    */
   async waitForPendingUpdates(sourceName: FeatureSourceName): Promise<void> {
     const source = this.gm.features.sources[sourceName];
@@ -169,10 +176,8 @@ export class SourceUpdateManager {
 
     const startTime = Date.now();
 
-    // Loop until all pending work is complete.
-    // This handles the case where MapLibre's _updateWorkerData returns early due to
-    // _isUpdatingWorker being true, and the actual data gets processed via the
-    // recursive call in the finally block.
+    // Loop until all pending work is complete: settling the current promises can flush more
+    // storage, and flushing storage enqueues more promises.
     while (
       this.updateStorage[sourceName].diff ||
       this.pendingUpdatePromises[sourceName].size ||

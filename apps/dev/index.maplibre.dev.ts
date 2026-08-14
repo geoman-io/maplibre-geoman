@@ -10,9 +10,7 @@ import {
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as ml from 'maplibre-gl';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-
-ml.setWorkerUrl(workerUrl);
+import './maplibre-worker.ts';
 
 const gmOptions = createGmOptions();
 

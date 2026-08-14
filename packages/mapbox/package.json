@@ -1,6 +1,6 @@
 {
   "name": "@geoman-io/mapbox-geoman-free",
-  "version": "0.9.0",
+  "version": "0.8.4",
   "private": false,
   "description": "A Mapbox Plugin For Drawing and Editing Geometry Layers",
   "homepage": "https://geoman.io",
@@ -76,7 +76,7 @@
     "@turf/union": "^7.3.5",
     "@turf/unkink-polygon": "^7.3.5",
     "@types/geojson": "^7946.0.16",
-    "dompurify": "^3.4.11",
+    "dompurify": "^3.4.13",
     "lodash-es": "^4.18.1",
     "loglevel": "^1.9.2",
     "type-fest": "^5.7.0"

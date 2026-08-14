@@ -30,6 +30,28 @@
 npm install @geoman-io/maplibre-geoman-free
 ```
 
+## Requirements
+
+This package requires **MapLibre GL JS v6** (`maplibre-gl >=6.0.0 <7.0.0`) and is **ESM-only**,
+following MapLibre v6 itself. There is no UMD build and no `require` entry point.
+
+MapLibre v6 no longer resolves its own web worker once the library is bundled, so **your app must
+point it at one before creating a map** — this is a MapLibre requirement, not a Geoman one, and a
+map created without it fails at runtime. How you get the URL depends on your bundler; see
+[MapLibre's bundler guide](https://maplibre.org/maplibre-gl-js/docs/guides/bundlers/).
+
+```typescript
+// Vite
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+ml.setWorkerUrl(workerUrl);
+
+// Webpack 5 / Rspack (or any bundler supporting `new URL(..., import.meta.url)`)
+ml.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).href);
+
+// No bundler — serve the file yourself and pass its path
+ml.setWorkerUrl('/vendor/maplibre-gl-worker.mjs');
+```
+
 ## Usage
 
 ```typescript
@@ -40,8 +62,7 @@ import { Geoman, type GmOptionsPartial } from '@geoman-io/maplibre-geoman-free';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css';
 
-// Required by MapLibre GL JS v6 when using Vite.
-// See the MapLibre documentation for other bundlers.
+// See "Requirements" above — must run before the first `new ml.Map()`.
 ml.setWorkerUrl(workerUrl);
 
 const map = new ml.Map({

@@ -8,7 +8,6 @@ import type { ShapeName } from '@/types/modes/index.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
 import * as ml from 'maplibre-gl';
-import type { GeoJSONSourceDiff } from 'maplibre-gl';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -106,8 +105,8 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
    * @internal
    * Convert a hashed GeoJSONSourceDiff back to the array-based representation
    */
-  private static hashedToDiff(hashed: GeoJSONSourceDiffHashed): GeoJSONSourceDiff {
-    const diff: GeoJSONSourceDiff = {};
+  private static hashedToDiff(hashed: GeoJSONSourceDiffHashed): ml.GeoJSONSourceDiff {
+    const diff: ml.GeoJSONSourceDiff = {};
 
     if (hashed.removeAll) {
       diff.removeAll = hashed.removeAll;

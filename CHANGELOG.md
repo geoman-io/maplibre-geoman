@@ -6,7 +6,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Upgraded `@geoman-io/maplibre-geoman-free` to MapLibre GL JS v6 and now require `maplibre-gl >=6 <7`.
+- **BREAKING** — `@geoman-io/maplibre-geoman-free` now targets MapLibre GL JS v6. The peer
+  dependency is `maplibre-gl >=6.0.0 <7.0.0`; MapLibre v5 is no longer supported
+  ([#222](https://github.com/geoman-io/maplibre-geoman/pull/222)). To migrate:
+  - **You must now set the worker URL yourself.** MapLibre v6 no longer resolves its own worker
+    once the library is bundled, so a map created without this fails at runtime. Call
+    `setWorkerUrl()` once, before constructing your first `Map` — see the README for a Vite
+    example and [MapLibre's bundler docs](https://maplibre.org/maplibre-gl-js/docs/guides/bundlers/)
+    for other bundlers.
+  - **The package is now ESM-only**, because MapLibre v6 itself is. The UMD bundle
+    (`dist/maplibre-geoman.umd.js`) and the `require` entry point are gone — they could no longer
+    resolve `maplibre-gl`, which ships neither a UMD build nor a `require` export. Import the
+    package with `import` (any modern bundler), or load the ESM build directly. The Mapbox
+    package is unaffected and still ships UMD.
+  - MapLibre's `import ml from 'maplibre-gl'` default import is gone; use
+    `import * as ml from 'maplibre-gl'`.
+
+### Fixed
+
+- `@geoman-io/mapbox-geoman-free`: source updates now resolve only once Mapbox has actually
+  committed the data. `setData()` in Mapbox GL JS is fire-and-forget, so awaiting a source
+  update (and therefore `waitForCompletion`) was silently a no-op and callers could read stale
+  data; the adapter now waits for the map to report the source as loaded again.
+- Updated dependencies to clear outstanding security advisories, including `dompurify`
+  (GHSA-55q2-fjhq-7xh7, a runtime dependency of both published packages).
 
 ## [0.8.4] - 2026-06-25
 
