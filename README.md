@@ -106,14 +106,41 @@ Don't have a license key yet? [Purchase one here](https://geoman.io/pricing).
 </html>
 ```
 
+### MapLibre requirements
+
+`@geoman-io/maplibre-geoman-free` requires **MapLibre GL JS v6** (`maplibre-gl >=6.0.0 <7.0.0`)
+and is **ESM-only**, following MapLibre v6 itself. There is no UMD build and no `require` entry
+point. (`@geoman-io/mapbox-geoman-free` is unaffected and still ships both.)
+
+MapLibre v6 no longer resolves its own web worker once the library is bundled, so **your app must
+point it at one before creating a map** — this is a MapLibre requirement, not a Geoman one, and a
+map created without it fails at runtime. How you get the URL depends on your bundler; see
+[MapLibre's bundler guide](https://maplibre.org/maplibre-gl-js/docs/guides/bundlers/).
+
+```typescript
+// Vite
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+ml.setWorkerUrl(workerUrl);
+
+// Webpack 5 / Rspack (or any bundler supporting `new URL(..., import.meta.url)`)
+ml.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
+
+// No bundler — serve the file yourself and pass its path
+ml.setWorkerUrl("/vendor/maplibre-gl-worker.mjs");
+```
+
 ### Maplibre and Geoman initialization
 
 ```typescript
-import ml from "maplibre-gl";
+import * as ml from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { Geoman, type GmOptionsPartial } from "@geoman-io/maplibre-geoman-free";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css";
+
+// See "MapLibre requirements" above — must run before the first `new ml.Map()`.
+ml.setWorkerUrl(workerUrl);
 
 const mapStyle: ml.StyleSpecification = {
   version: 8,

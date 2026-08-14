@@ -27,8 +27,8 @@ import type {
 import type { MaplibreAnyLayer } from '@mapLib/types/layers.ts';
 import type { GeoJSON } from 'geojson';
 import { isEqual, uniqWith } from 'lodash-es';
-import ml from 'maplibre-gl';
-import { isMaplibreSupportedPointerEventName } from './guards.ts';
+import * as ml from 'maplibre-gl';
+import { asMaplibreEventName, isMaplibreSupportedPointerEventName } from './guards.ts';
 
 export { MaplibreAdapter as MapAdapter };
 
@@ -278,7 +278,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
       this.mapInstance.on(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.on(type, arg2);
+      this.mapInstance.on(asMaplibreEventName(type), arg2);
     } else {
       throw new Error("Invalid arguments passed to 'on' method");
     }
@@ -292,7 +292,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
       this.mapInstance.once(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.once(type, arg2);
+      this.mapInstance.once(asMaplibreEventName(type), arg2);
     } else {
       throw new Error("Invalid arguments passed to 'once' method.");
     }
@@ -304,7 +304,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
       this.mapInstance.off(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.off(type, arg2);
+      this.mapInstance.off(asMaplibreEventName(type), arg2);
     } else {
       throw new Error("Invalid arguments passed to 'off' method");
     }

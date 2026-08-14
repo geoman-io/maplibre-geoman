@@ -104,9 +104,15 @@ jobs:
 
       - name: Verify build artifacts (${{ matrix.variant }})
         run: |
-          test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.es.js
-          test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.umd.js
-          test -f packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman.d.ts
+          dist="packages/${{ matrix.variant }}/dist/${{ matrix.variant }}-geoman"
+          test -f "$dist.es.js"
+          test -f "$dist.d.ts"
+          # maplibre-gl v6 is ESM-only, so the maplibre package ships no UMD bundle.
+          if [[ "${{ matrix.variant }}" == "mapbox" ]]; then
+            test -f "$dist.umd.js"
+          else
+            test ! -f "$dist.umd.js"
+          fi
 
       - name: API surface check (${{ matrix.variant }})
         run: node scripts/check-api-surface.mjs --variant ${{ matrix.variant }}

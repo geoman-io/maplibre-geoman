@@ -7,7 +7,7 @@ import type { GeoJSONSourceDiffHashed, MapInstanceWithGeoman } from '@/types/map
 import type { ShapeName } from '@/types/modes/index.ts';
 import type { GeoJSON } from 'geojson';
 import log from 'loglevel';
-import ml, { type GeoJSONSourceDiff } from 'maplibre-gl';
+import * as ml from 'maplibre-gl';
 
 export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
   gm: Geoman;
@@ -89,7 +89,7 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     if (!this.isInstanceAvailable()) {
       throw new Error('Source instance is not available');
     }
-    await this.sourceInstance.setData(geoJson, true);
+    await this.sourceInstance.setData(geoJson);
   }
 
   async updateData(hashedDiff: GeoJSONSourceDiffHashed) {
@@ -98,15 +98,15 @@ export class MaplibreSource extends BaseSource<ml.GeoJSONSource> {
     }
     const mlDiff = MaplibreSource.hashedToDiff(hashedDiff);
 
-    await this.sourceInstance.updateData(mlDiff, true);
+    await this.sourceInstance.updateData(mlDiff);
   }
 
   /**
    * @internal
    * Convert a hashed GeoJSONSourceDiff back to the array-based representation
    */
-  private static hashedToDiff(hashed: GeoJSONSourceDiffHashed): GeoJSONSourceDiff {
-    const diff: GeoJSONSourceDiff = {};
+  private static hashedToDiff(hashed: GeoJSONSourceDiffHashed): ml.GeoJSONSourceDiff {
+    const diff: ml.GeoJSONSourceDiff = {};
 
     if (hashed.removeAll) {
       diff.removeAll = hashed.removeAll;

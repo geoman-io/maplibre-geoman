@@ -5,9 +5,14 @@ import { SHAPE_NAMES } from '@/modes/constants.ts';
 import type { GeoJsonShapeFeatureCollection } from '@/types/geojson.ts';
 import type { GeoJSONSourceDiffHashed, MapInstanceWithGeoman } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
+import { withPromiseTimeoutRace } from '@/utils/behavior.ts';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import log from 'loglevel';
-import type { GeoJSONSource as MapboxGeoJSONSource, Map as MapboxMap } from 'mapbox-gl';
+import type {
+  GeoJSONSource as MapboxGeoJSONSource,
+  Map as MapboxMap,
+  MapSourceDataEvent,
+} from 'mapbox-gl';
 
 export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
   gm: Geoman;
@@ -90,7 +95,8 @@ export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
     if (!this.isInstanceAvailable()) {
       throw new Error('Source instance is not available');
     }
-    this.sourceInstance.setData(geoJson);
+    const source = this.sourceInstance;
+    await this.commitData(() => source.setData(geoJson));
   }
 
   async updateData(hashedDiff: GeoJSONSourceDiffHashed) {
@@ -103,7 +109,65 @@ export class MapboxSource extends BaseSource<MapboxGeoJSONSource> {
     // and call setData() with the full updated collection.
     const currentData = this.getGeoJson();
     const updated = MapboxSource.applyDiff(currentData, hashedDiff);
-    this.sourceInstance.setData(updated);
+    const source = this.sourceInstance;
+    await this.commitData(() => source.setData(updated));
+  }
+
+  /**
+   * @internal
+   * Apply data to the source and resolve once Mapbox has actually committed it.
+   *
+   * Mapbox GL JS's `setData()` is synchronous and fire-and-forget: it returns the source
+   * immediately, before the worker has parsed the data and the tiles have been rebuilt.
+   * `BaseSource` declares `setData`/`updateData` as `Promise<void>` and `SourceUpdateManager`
+   * awaits them to know when data is committed (see `waitForPendingUpdates`), so without this
+   * the wait is a no-op on Mapbox and callers can read stale data. MapLibre gets the same
+   * guarantee for free from `GeoJSONSource.updateData()`.
+   *
+   * The listener is registered before the data is applied so the commit event cannot be missed.
+   * Like MapLibre's own update promise, this resolves rather than rejects on failure — a source
+   * that stops reporting is logged and the caller continues instead of hanging.
+   *
+   * Note: Mapbox emits a burst of `sourcedata` events per update and does not populate
+   * `sourceDataType` for GeoJSON sources, so `isSourceLoaded()` is the only usable signal —
+   * filtering on `sourceDataType === 'content'` matches nothing and hangs. Resolving marginally
+   * early is safe: `SourceUpdateManager.waitForPendingUpdates` also loops on `source.loaded`.
+   */
+  private async commitData(applyData: () => void): Promise<void> {
+    const sourceId = this.id;
+    let removeListener = () => {};
+
+    const committed = new Promise<void>((resolve) => {
+      const onSourceData = (event: MapSourceDataEvent) => {
+        if (event.sourceId !== sourceId || !this.mapInstance.isSourceLoaded(sourceId)) {
+          return;
+        }
+        removeListener();
+        resolve();
+      };
+
+      removeListener = () => {
+        this.mapInstance.off('sourcedata', onSourceData);
+      };
+      this.mapInstance.on('sourcedata', onSourceData);
+    });
+
+    try {
+      applyData();
+    } catch (error) {
+      removeListener();
+      throw error;
+    }
+
+    try {
+      await withPromiseTimeoutRace({
+        promise: committed,
+        errorMessage: `Source data commit for "${sourceId}"`,
+        onTimeout: removeListener,
+      });
+    } catch (error) {
+      log.error('MapboxSource.commitData: source did not report a commit', error);
+    }
   }
 
   /**

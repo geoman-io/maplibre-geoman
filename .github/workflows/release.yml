@@ -152,7 +152,8 @@ jobs:
       - name: Verify packaged artifacts (isolated variants)
         run: |
           test -f packages/maplibre/dist/maplibre-geoman.es.js
-          test -f packages/maplibre/dist/maplibre-geoman.umd.js
+          # maplibre-gl v6 is ESM-only, so the maplibre package ships no UMD bundle.
+          test ! -f packages/maplibre/dist/maplibre-geoman.umd.js
           test -f packages/maplibre/dist/maplibre-geoman.d.ts
           test ! -f packages/maplibre/dist/mapbox-geoman.es.js
           test ! -f packages/maplibre/dist/mapbox-geoman.umd.js
@@ -265,7 +266,6 @@ jobs:
             packages/mapbox/dist/mapbox-geoman.css
             packages/mapbox/dist/mapbox-geoman.d.ts
             packages/maplibre/dist/maplibre-geoman.es.js
-            packages/maplibre/dist/maplibre-geoman.umd.js
             packages/maplibre/dist/maplibre-geoman.css
             packages/maplibre/dist/maplibre-geoman.d.ts
 

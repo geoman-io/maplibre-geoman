@@ -9,7 +9,8 @@ import {
 } from './common.ts';
 import log from 'loglevel';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import ml from 'maplibre-gl';
+import * as ml from 'maplibre-gl';
+import './maplibre-worker.ts';
 
 const gmOptions = createGmOptions();
 

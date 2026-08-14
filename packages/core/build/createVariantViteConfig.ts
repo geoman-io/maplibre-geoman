@@ -6,6 +6,15 @@ import svgLoader from 'vite-svg-loader';
 export type BaseMapVariant = 'maplibre' | 'mapbox';
 export type GeomanVersion = 'pro' | 'free';
 
+/**
+ * Bundle formats published per variant.
+ * Keep in sync with `variantBundleFormats` in `scripts/verify-variant-bundle.mjs`.
+ */
+export const variantBuildFormats: Record<BaseMapVariant, Array<'es' | 'umd'>> = {
+  maplibre: ['es'],
+  mapbox: ['es', 'umd'],
+};
+
 type CreateVariantViteConfigOptions = {
   variant: BaseMapVariant;
   projectRoot: string;
@@ -52,6 +61,10 @@ export const createVariantViteConfig = ({
       lib: {
         entry: path.resolve(projectRoot, libEntry),
         name: 'Geoman',
+        // maplibre-gl v6 is ESM-only: it ships no UMD bundle and no `require` export, so a UMD
+        // build of this package could never resolve its own peer dependency (it would look for
+        // a `maplibregl` script-tag global that no longer exists). mapbox-gl still ships both.
+        formats: [...variantBuildFormats[variant]],
         fileName: (format) => `${variant}-geoman.${format}.js`,
       },
       rollupOptions: {

@@ -14,17 +14,35 @@ if (!variant || !['maplibre', 'mapbox'].includes(variant)) {
 const expected = variant === 'maplibre' ? 'maplibre-gl' : 'mapbox-gl';
 const forbidden = variant === 'maplibre' ? 'mapbox-gl' : 'maplibre-gl';
 
-const esBundlePath = path.join(distDir, `${variant}-geoman.es.js`);
-const umdBundlePath = path.join(distDir, `${variant}-geoman.umd.js`);
+// Bundle formats published per variant. maplibre-gl v6 is ESM-only, so the maplibre package
+// ships no UMD build. Keep in sync with `variantBuildFormats` in
+// packages/core/build/createVariantViteConfig.ts.
+const variantBundleFormats = {
+  maplibre: ['es'],
+  mapbox: ['es', 'umd'],
+};
 
-for (const file of [esBundlePath, umdBundlePath]) {
+const bundlePaths = variantBundleFormats[variant].map((format) =>
+  path.join(distDir, `${variant}-geoman.${format}.js`),
+);
+
+for (const file of bundlePaths) {
   if (!fs.existsSync(file)) {
     console.error(`Missing bundle file: ${file}`);
     process.exit(1);
   }
 }
 
-const checks = [esBundlePath, umdBundlePath].flatMap((file) => {
+const unexpected = variantBundleFormats[variant].includes('umd')
+  ? []
+  : [path.join(distDir, `${variant}-geoman.umd.js`)].filter((file) => fs.existsSync(file));
+
+for (const file of unexpected) {
+  console.error(`Unexpected bundle file for ${variant}: ${file}`);
+  process.exit(1);
+}
+
+const checks = bundlePaths.flatMap((file) => {
   const content = fs.readFileSync(file, 'utf8');
   return [
     {

@@ -4,7 +4,7 @@
 import type { Geoman } from '@/main.ts';
 import type * as geojsonUtils from '@/utils/geojson.ts';
 import type * as planarUtils from '@/utils/planar.ts';
-import type ml from 'maplibre-gl';
+import type * as ml from 'maplibre-gl';
 import type mapboxgl from 'mapbox-gl';
 
 declare global {

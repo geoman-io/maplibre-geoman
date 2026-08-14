@@ -21,14 +21,13 @@
     "dist"
   ],
   "type": "module",
-  "main": "dist/maplibre-geoman.umd.js",
+  "main": "dist/maplibre-geoman.es.js",
   "module": "dist/maplibre-geoman.es.js",
   "types": "dist/maplibre-geoman.d.ts",
   "exports": {
     ".": {
       "types": "./dist/maplibre-geoman.d.ts",
-      "import": "./dist/maplibre-geoman.es.js",
-      "require": "./dist/maplibre-geoman.umd.js"
+      "import": "./dist/maplibre-geoman.es.js"
     },
     "./dist/maplibre-geoman.css": "./dist/maplibre-geoman.css"
   },
@@ -76,12 +75,12 @@
     "@turf/union": "^7.3.5",
     "@turf/unkink-polygon": "^7.3.5",
     "@types/geojson": "^7946.0.16",
-    "dompurify": "^3.4.11",
+    "dompurify": "^3.4.13",
     "lodash-es": "^4.18.1",
     "loglevel": "^1.9.2",
     "type-fest": "^5.7.0"
   },
   "peerDependencies": {
-    "maplibre-gl": ">=5.22.0"
+    "maplibre-gl": ">=6.0.0 <7.0.0"
   }
 }

@@ -1,6 +1,6 @@
 import { BaseDomMarker } from '@/core/map/base/marker.ts';
 import type { BaseDomMarkerOptions, LngLatTuple } from '@/types/map/index.ts';
-import ml from 'maplibre-gl';
+import * as ml from 'maplibre-gl';
 
 export class MaplibreDomMarker extends BaseDomMarker<ml.Marker> {
   markerInstance: ml.Marker | null;
