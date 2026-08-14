@@ -4,11 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-08-14
+
 ### Changed
 
 - **BREAKING** — `@geoman-io/maplibre-geoman-free` now targets MapLibre GL JS v6. The peer
   dependency is `maplibre-gl >=6.0.0 <7.0.0`; MapLibre v5 is no longer supported
-  ([#222](https://github.com/geoman-io/maplibre-geoman/pull/222)). To migrate:
+  ([#222](https://github.com/geoman-io/maplibre-geoman/pull/222),
+  [#223](https://github.com/geoman-io/maplibre-geoman/pull/223),
+  closes [#219](https://github.com/geoman-io/maplibre-geoman/issues/219)). To migrate:
   - **You must now set the worker URL yourself.** MapLibre v6 no longer resolves its own worker
     once the library is bundled, so a map created without this fails at runtime. Call
     `setWorkerUrl()` once, before constructing your first `Map` — see the README for a Vite
@@ -27,9 +31,11 @@ All notable changes to this project will be documented in this file.
 - `@geoman-io/mapbox-geoman-free`: source updates now resolve only once Mapbox has actually
   committed the data. `setData()` in Mapbox GL JS is fire-and-forget, so awaiting a source
   update (and therefore `waitForCompletion`) was silently a no-op and callers could read stale
-  data; the adapter now waits for the map to report the source as loaded again.
+  data; the adapter now waits for the map to report the source as loaded again
+  ([#223](https://github.com/geoman-io/maplibre-geoman/pull/223)).
 - Updated dependencies to clear outstanding security advisories, including `dompurify`
-  (GHSA-55q2-fjhq-7xh7, a runtime dependency of both published packages).
+  (GHSA-55q2-fjhq-7xh7, a runtime dependency of both published packages)
+  ([#223](https://github.com/geoman-io/maplibre-geoman/pull/223)).
 
 ## [0.8.4] - 2026-06-25
 
