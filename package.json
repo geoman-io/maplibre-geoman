@@ -113,7 +113,7 @@
     "oxlint": "^1.77.0",
     "playwright": "1.62.1",
     "rimraf": "^6.1.3",
-    "rollup": "^4.62.0",
+    "rollup": "^4.62.4",
     "rollup-plugin-dts": "^6.4.1",
     "sass": "^1.101.0",
     "shx": "^0.4.0",
