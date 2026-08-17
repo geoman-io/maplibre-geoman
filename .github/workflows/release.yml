@@ -23,7 +23,7 @@ permissions:
 env:
   MAPLIBRE_FILE_NAME_PREFIX: geoman-io-maplibre-geoman-free
   MAPBOX_FILE_NAME_PREFIX: geoman-io-mapbox-geoman-free
-  NODE_VERSION: "24"
+  NODE_VERSION: "26"
 
 jobs:
   # Validate release
