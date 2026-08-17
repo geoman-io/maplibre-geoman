@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - Updated dependencies to their latest versions. The only change that reaches the published
   packages is `@turf/*` 7.3.5 → 7.4.0 and `type-fest` 5.7.0 → 5.8.0; everything else is
   tooling. Peer dependency ranges are unchanged.
+- Build toolchain moved to TypeScript 7 and Node 26. This is internal only — the published
+  bundles, type declarations and public API are unchanged, and the packages declare no
+  `engines` constraint, so consumers on older toolchains are unaffected.
 
 ## [0.9.0] - 2026-08-14
 

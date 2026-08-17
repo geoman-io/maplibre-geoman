@@ -11,4 +11,4 @@ overrides:
 
 allowBuilds:
   '@parcel/watcher': true
-  svelte-preprocess: true
+  svelte-preprocess: set this to true or false
