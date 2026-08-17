@@ -72,7 +72,15 @@ export default defineConfig({
         // GitHub runner images) instead of downloading a Playwright-managed
         // Chromium, which is blocked by unreliable runner egress for large
         // downloads. Local runs keep the pinned Playwright-managed browser.
-        channel: process.env.CI ? 'chrome' : undefined,
+        //
+        // Locally this must be the full Chromium build, not Playwright's default
+        // `chromium-headless-shell`. The shell does not drive a full render loop, so
+        // MapLibre never finishes loading tiles: sources stay `isSourceLoaded() === false`
+        // and `map.loaded()` never becomes true, which hangs every `waitForMapIdle` until
+        // it times out. This only started biting with Playwright 1.62, which made the
+        // headless shell the default for the `chromium` project. CI is unaffected because
+        // it pins `chrome`, which is why this passed CI while failing locally.
+        channel: process.env.CI ? 'chrome' : 'chromium',
         headless: true,
         launchOptions: {
           args: [
