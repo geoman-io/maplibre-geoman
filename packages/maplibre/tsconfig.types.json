@@ -4,10 +4,10 @@
     "outDir": "./dist/types",
     "rootDir": "../..",
     "paths": {
-      "@/*": ["packages/core/src/*"],
-      "@dev/*": ["apps/dev/*"],
-      "@tests/*": ["tests/*"],
-      "@mapLib/*": ["packages/maplibre/src/adapter/*"]
+      "@/*": ["../../packages/core/src/*"],
+      "@dev/*": ["../../apps/dev/*"],
+      "@tests/*": ["../../tests/*"],
+      "@mapLib/*": ["../../packages/maplibre/src/adapter/*"]
     }
   },
   "include": ["../../packages/core/src", "../../vite-env.d.ts"],

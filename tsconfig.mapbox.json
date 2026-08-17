@@ -3,16 +3,16 @@
   "compilerOptions": {
     "paths": {
       "@/*": [
-        "packages/core/src/*"
+        "./packages/core/src/*"
       ],
       "@dev/*": [
-        "apps/dev/*"
+        "./apps/dev/*"
       ],
       "@tests/*": [
-        "tests/*"
+        "./tests/*"
       ],
       "@mapLib/*": [
-        "packages/mapbox/src/adapter/*"
+        "./packages/mapbox/src/adapter/*"
       ]
     }
   },

@@ -1,5 +1,5 @@
 import test, { expect } from '@playwright/test';
-import { loadGeoJsonFeatures } from 'tests/utils/features.ts';
+import { loadGeoJsonFeatures } from '@tests/utils/features.ts';
 import { enableMode, waitForGeoman } from '@tests/utils/basic.ts';
 import { loadGeoJson } from '@tests/utils/fixtures.ts';
 

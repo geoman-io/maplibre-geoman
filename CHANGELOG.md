@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Updated dependencies to their latest versions. The only change that reaches the published
+  packages is `@turf/*` 7.3.5 → 7.4.0 and `type-fest` 5.7.0 → 5.8.0; everything else is
+  tooling. Peer dependency ranges are unchanged.
+
 ## [0.9.0] - 2026-08-14
 
 ### Changed
