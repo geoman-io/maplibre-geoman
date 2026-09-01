@@ -109,7 +109,7 @@
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
     "mapbox-gl": "^3.28.1",
-    "maplibre-gl": "^6.2.0",
+    "maplibre-gl": "^6.6.0",
     "oxfmt": "^0.62.0",
     "oxlint": "^1.77.0",
     "playwright": "1.62.1",
