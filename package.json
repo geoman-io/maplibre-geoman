@@ -118,7 +118,7 @@
     "rollup-plugin-dts": "^6.5.1",
     "sass": "^1.102.0",
     "shx": "^0.4.0",
-    "svelte": "^5.56.8",
+    "svelte": "^5.56.10",
     "ts-autofix": "^1.0.0",
     "tsc-alias": "^1.9.1",
     "turbo": "^2.10.9",
