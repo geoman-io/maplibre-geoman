@@ -26,6 +26,11 @@ export class DrawMarker extends BaseDraw {
     await this.fireMarkerPointerFinishEvent();
   }
 
+  getFinishGeoJson() {
+    const coordinates = this.gm.markerPointer.marker?.getLngLat();
+    return coordinates ? this.getFeatureGeoJson(coordinates) : null;
+  }
+
   async onMouseClick(event: BaseMapEvent) {
     this.gm.features.clearSelection();
     if (isMapPointerEvent(event)) {

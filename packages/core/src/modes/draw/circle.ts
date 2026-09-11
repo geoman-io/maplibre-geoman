@@ -107,6 +107,10 @@ export class DrawCircle extends BaseCircle {
     }
   }
 
+  getFinishGeoJson() {
+    return this.featureData?.getGeoJson() ?? null;
+  }
+
   isFeatureGeoJsonValid(): boolean {
     if (!this.featureData) {
       return false;

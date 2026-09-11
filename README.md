@@ -270,6 +270,12 @@ geoman.control.removeCustomControl('export');
 See [docs/custom-controls.md](docs/custom-controls.md) for the full reference and
 a live example in the dev app (`apps/dev/common.ts`).
 
+### Programmatic drawing
+
+Create a marker, circle, or rectangle from form values with `gm.draw.create(input)`,
+or commit the current preview with `gm.draw.finish(input?)`. See
+[the API guide](docs/programmatic-drawing.md) for examples, validation, and events.
+
 ## Contributing
 
 We welcome contributions from the community! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started, report issues, and submit pull requests.
