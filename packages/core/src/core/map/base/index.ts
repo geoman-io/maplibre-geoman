@@ -75,6 +75,10 @@ export abstract class BaseMapAdapter<
 
   abstract removeImage(id: string): void;
 
+  getImageData(_id: string): { imageData: ImageData; pixelRatio: number } | null {
+    return null;
+  }
+
   abstract getBounds(): [LngLatTuple, LngLatTuple];
 
   abstract fitBounds(bounds: [LngLatTuple, LngLatTuple], options?: BaseFitBoundsOptions): void;

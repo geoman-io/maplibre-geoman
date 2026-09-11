@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Marker draw previews now use registered raster images named by a literal
+  `layerStyles.marker.gm_temporary` `icon-image`, respecting image dimensions,
+  pixel ratio, `icon-size`, `icon-anchor`, and `icon-opacity` on MapLibre and Mapbox
+  ([#122](https://github.com/geoman-io/maplibre-geoman/issues/122)). Register the image
+  before enabling marker draw mode. Missing images and non-literal image expressions
+  retain the default SVG fallback; the built-in marker remains unchanged.
+
 ## [0.9.2] - 2026-09-11
 
 ### Changed
