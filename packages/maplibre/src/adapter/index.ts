@@ -89,6 +89,19 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     }
   }
 
+  getImageData(id: string) {
+    const image = this.mapInstance.getImage(id);
+    if (!image?.data) return null;
+    return {
+      imageData: new ImageData(
+        new Uint8ClampedArray(image.data.data),
+        image.data.width,
+        image.data.height,
+      ),
+      pixelRatio: image.pixelRatio,
+    };
+  }
+
   getBounds(): [LngLatTuple, LngLatTuple] {
     const mapBounds = this.mapInstance.getBounds();
     return mapBounds.toArray() as [LngLatTuple, LngLatTuple];

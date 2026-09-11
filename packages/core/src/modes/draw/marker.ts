@@ -1,7 +1,7 @@
 import { SOURCES } from '@/core/features/constants.ts';
 import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { FeatureSourceName } from '@/types/features.ts';
-import type { LngLatTuple } from '@/types/map/index.ts';
+import type { AnchorPosition, LngLatTuple } from '@/types/map/index.ts';
 import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
@@ -92,6 +92,35 @@ export class DrawMarker extends BaseDraw {
         ? (symbolLayer.layout['icon-size'] as number)
         : undefined;
 
+    const iconImage = symbolLayer?.layout?.['icon-image'];
+    const iconAnchor = symbolLayer?.layout?.['icon-anchor'];
+    const anchor = typeof iconAnchor === 'string' ? (iconAnchor as AnchorPosition) : 'bottom';
+    const image =
+      typeof iconImage === 'string' && iconImage !== 'default-marker'
+        ? this.gm.mapAdapter.getImageData(iconImage)
+        : null;
+
+    if (image) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (context) {
+        const { imageData, pixelRatio } = image;
+        const scale = (typeof iconSize === 'number' ? iconSize : 1) / pixelRatio;
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        context.putImageData(imageData, 0, 0);
+        canvas.style.width = `${imageData.width * scale}px`;
+        canvas.style.height = `${imageData.height * scale}px`;
+        canvas.style.pointerEvents = 'none';
+        if (typeof iconOpacity === 'number') canvas.style.opacity = String(iconOpacity);
+        const element = document.createElement('div');
+        element.classList.add('marker-wrapper');
+        element.style.lineHeight = '0';
+        element.appendChild(canvas);
+        return this.gm.mapAdapter.createDomMarker({ draggable: false, anchor, element }, [0, 0]);
+      }
+    }
+
     // Calculate pixel size based on icon-size (base size is 36px at icon-size: 0.18)
     const baseSize = 36;
     const defaultIconSize = 0.18;
@@ -109,7 +138,7 @@ export class DrawMarker extends BaseDraw {
     return this.gm.mapAdapter.createDomMarker(
       {
         draggable: false,
-        anchor: 'bottom',
+        anchor,
         element: iconElement,
       },
       [0, 0],
