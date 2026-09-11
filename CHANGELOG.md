@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-09-11
+
+### Changed
+
+- Updated the development and test baseline from MapLibre GL JS 6.2.0 to 6.7.0. The published peer dependency remains `maplibre-gl >=6.0.0 <7.0.0`; public API and compatibility requirements are unchanged.
+
+
 ## [0.9.1] - 2026-08-17
 
 ### Changed
