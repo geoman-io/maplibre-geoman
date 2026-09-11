@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Updated the development and test baseline from MapLibre GL JS 6.2.0 to 6.7.0. The published peer dependency remains `maplibre-gl >=6.0.0 <7.0.0`; public API and compatibility requirements are unchanged.
+- Updated Vitest to 4.1.11 and vite-svg-loader to 5.1.3 to resolve current security advisories; `pnpm audit --audit-level=moderate` now reports no known vulnerabilities.
 
 
 ## [0.9.1] - 2026-08-17

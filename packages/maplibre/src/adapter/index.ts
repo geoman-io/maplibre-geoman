@@ -269,16 +269,16 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   }
 
   fire(type: string, data?: unknown) {
-    this.mapInstance.fire(type, data);
+    this.mapInstance.fire(asMaplibreEventName(type), data as object | undefined);
   }
 
   on(type: string, listener: BaseEventListener): void;
   on(type: string, layerId: string, listener: BaseEventListener): void;
   on(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
-      this.mapInstance.on(type, arg2, listener);
+      this.mapInstance.on(type, arg2, listener as ml.Listener<ml.MapLayerEventType[typeof type]>);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.on(asMaplibreEventName(type), arg2);
+      this.mapInstance.on(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
       throw new Error("Invalid arguments passed to 'on' method");
     }
@@ -290,9 +290,9 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     // note: it's possible to have promise returned from maplibre-gl
     // (it's not implemented for this adapter)
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
-      this.mapInstance.once(type, arg2, listener);
+      this.mapInstance.once(type, arg2, listener as ml.Listener<ml.MapLayerEventType[typeof type]>);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.once(asMaplibreEventName(type), arg2);
+      this.mapInstance.once(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
       throw new Error("Invalid arguments passed to 'once' method.");
     }
@@ -302,9 +302,9 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   off(type: string, layerId: string, listener: BaseEventListener): void;
   off(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
-      this.mapInstance.off(type, arg2, listener);
+      this.mapInstance.off(type, arg2, listener as ml.Listener<ml.MapLayerEventType[typeof type]>);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.off(asMaplibreEventName(type), arg2);
+      this.mapInstance.off(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
       throw new Error("Invalid arguments passed to 'off' method");
     }
