@@ -108,7 +108,7 @@
     "@typescript/typescript6": "^6.0.2",
     "cross-env": "^10.1.0",
     "husky": "^9.1.7",
-    "mapbox-gl": "^3.28.1",
+    "mapbox-gl": "^3.30.0",
     "maplibre-gl": "^6.7.0",
     "oxfmt": "^0.62.0",
     "oxlint": "^1.77.0",
