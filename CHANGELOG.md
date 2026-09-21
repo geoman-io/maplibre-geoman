@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `gm.draw.create(input)` and `gm.draw.finish(input?)` for marker, circle, and rectangle creation and completion. See `docs/programmatic-drawing.md`.
+
 ### Fixed
+
+- Preserve explicitly supplied circle centers during feature creation.
 
 - Marker draw previews now use registered raster images named by a literal
   `layerStyles.marker.gm_temporary` `icon-image`, respecting image dimensions,
