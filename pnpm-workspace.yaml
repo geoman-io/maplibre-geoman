@@ -7,6 +7,8 @@ packages:
 minimumReleaseAge: 10080
 
 minimumReleaseAgeExclude:
+  # maplibre-gl 6.11.0 is newer than the 7-day minimumReleaseAge window.
+  - maplibre-gl@6.11.0
   - turbo@2.11.2
   - '@turbo/darwin-64@2.11.2'
   - '@turbo/darwin-arm64@2.11.2'

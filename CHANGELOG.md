@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 
 - Moved the local Node.js and pnpm toolchain to `mise.toml`, upgraded pnpm to 12.5.1,
   and upgraded Turborepo to 2.11.2.
+- Bumped the MapLibre GL development and test dependency to 6.11.0. The published peer
+  range (`maplibre-gl >=6.0.0 <7.0.0`) already covers it, so consumers are unaffected;
+  the packages, bundles and type declarations are unchanged.
 
 ## [0.9.1] - 2026-08-17
 
