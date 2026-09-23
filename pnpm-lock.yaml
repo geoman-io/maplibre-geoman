@@ -140,8 +140,8 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
       mapbox-gl:
-        specifier: ^3.28.1
-        version: 3.28.1
+        specifier: ^3.30.0
+        version: 3.30.0
       maplibre-gl:
         specifier: ^6.11.0
         version: 6.11.0
@@ -301,7 +301,7 @@ importers:
         version: 1.9.2
       mapbox-gl:
         specifier: '>=3.23.0'
-        version: 3.28.1
+        version: 3.30.0
       type-fest:
         specifier: ^5.8.0
         version: 5.8.0
@@ -1928,8 +1928,8 @@ packages:
   magic-string@1.1.0:
     resolution: {integrity: sha512-kS3VHe0nEPST2saQV4Rbkchcd3UBRkVTQHo1D3h/ZTwFDhai/mfKkmtPAtD129EOI7K3HlHIsFOt0WrI2/oU9g==}
 
-  mapbox-gl@3.28.1:
-    resolution: {integrity: sha512-f8bCHFzZ51bKig7rnD7e08aoFLOV3MNFZduspZ4lgOgiaNVp9sw4NSWcgo3IWTyekYKKXjiICD2BP2o4DiYfxw==}
+  mapbox-gl@3.30.0:
+    resolution: {integrity: sha512-26m0CSBszLkvbdVWf2oIZ3SjqCuResxJKEbupwwSyNwbwJAcgnMhDy2Yl5cSgtUxeamUJ1UeXRqpBmGEUVaAeQ==}
 
   maplibre-gl@6.11.0:
     resolution: {integrity: sha512-BWf1V0eKEK7NpIyjVSFrTWjF2CE9zhVvS0JLvyAS19lR0HnHtvPFRS5M9QVJeLcoMT1WyCU0Sm9vj53BBxtWYg==}
@@ -3872,7 +3872,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  mapbox-gl@3.28.1: {}
+  mapbox-gl@3.30.0: {}
 
   maplibre-gl@6.11.0:
     dependencies:
