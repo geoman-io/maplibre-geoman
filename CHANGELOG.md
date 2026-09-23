@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-23
+
 ### Changed
 
 - Moved the local Node.js and pnpm toolchain to `mise.toml`, upgraded pnpm to 12.5.1,
