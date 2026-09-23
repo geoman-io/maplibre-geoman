@@ -1,3 +1,4 @@
+import type { EventHandlers } from '@/types/events/bus.ts';
 import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import { FeatureData } from '@/core/features/feature-data.ts';
@@ -17,20 +18,34 @@ export abstract class BaseDraw extends BaseAction {
   shape: ShapeName | null = null;
   featureData: FeatureData | null = null;
 
-  async saveFeature() {
-    // todo: check is it possible to avoid recreating a feature
-    // todo: check ellipse to fit all the rest shapes
+  /** @internal Both interactive saves and the public API use this creation path. */
+  async commitFeature(shapeGeoJson: GeoJsonShapeFeature) {
+    return this.gm.features.createFeature({ sourceName: SOURCES.main, shapeGeoJson });
+  }
 
-    if (this.featureData) {
-      const featureGeoJson = this.featureData.getGeoJson();
-      await this.removeTmpFeature();
-      await this.gm.features.createFeature({
-        sourceName: SOURCES.main,
-        shapeGeoJson: featureGeoJson,
-      });
-    } else {
+  async saveFeature() {
+    if (!this.featureData) {
       log.error('BaseDraw.saveFeature: no featureData to save');
+      return null;
     }
+    const geoJson = this.featureData.getGeoJson();
+    await this.removeTmpFeature();
+    return this.commitFeature(geoJson);
+  }
+
+  /** @internal A complete candidate for API finish; unsupported modes opt out. */
+  getFinishGeoJson(): GeoJsonShapeFeature | null {
+    return null;
+  }
+
+  async startAction() {
+    this.eventHandlers = Object.fromEntries(
+      Object.entries(this.eventHandlers).map(([name, handler]) => [
+        name,
+        (event: never) => this.gm.draw.runInteraction(() => handler!(event)),
+      ]),
+    ) as EventHandlers;
+    await super.startAction();
   }
 
   async removeTmpFeature() {

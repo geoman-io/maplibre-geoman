@@ -1,6 +1,7 @@
 /* A MapLibre Plugin For Drawing and Editing Geometry Layers
  * Copyright (C) Geoman.io - All Rights Reserved
  */
+import { GmDrawApi } from '@/core/draw-api.ts';
 import defaultMarker from '@/assets/images/markers/default-marker.png';
 import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import GmControl from '@/core/controls/index.ts';
@@ -49,6 +50,7 @@ export class Geoman {
   mapAdapterInstance: BaseMapAdapter<AnyMapInstance> | null = null;
   globalLngLatBounds: [LngLatTuple, LngLatTuple] = this.getGlobalLngLatBounds();
   features: Features;
+  draw: GmDrawApi;
   loaded: boolean = false;
   destroyed: boolean = false;
 
@@ -70,6 +72,7 @@ export class Geoman {
     this.options = this.initCoreOptions(options);
     this.events = this.initCoreEvents();
     this.features = this.initCoreFeatures();
+    this.draw = new GmDrawApi(this);
     this.control = this.initCoreControls();
     this.markerPointer = this.initMarkerPointer();
 
@@ -722,3 +725,6 @@ export { EDIT_MODES } from '@/modes/constants.ts';
 export { isGmModeEvent } from '@/utils/guards/events/mode.ts';
 export { getEuclideanSegmentNearestPoint } from '@/utils/planar.ts';
 export { getEuclideanDistance } from '@/utils/planar.ts';
+
+export { GmDrawApi } from '@/core/draw-api.ts';
+export type { DrawInput, DrawResult, DrawRejectionReason } from '@/types/draw-api.ts';

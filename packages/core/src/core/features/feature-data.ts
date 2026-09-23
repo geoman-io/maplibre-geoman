@@ -63,7 +63,7 @@ export class FeatureData {
       };
       // For circles, ensure center property is set (but don't queue an update
       // since the feature already exists in the source)
-      if (this.shape === 'circle') {
+      if (this.shape === 'circle' && !this.getShapeProperty('center')) {
         const shapeCentroid = geoJsonPointToLngLat(centroid(this._geoJson));
         this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
       }
@@ -178,7 +178,7 @@ export class FeatureData {
     // before adding to source. We must not call setShapeProperty here because
     // it would queue an update diff before the add diff, causing MapLibre
     // to receive an update for a non-existent feature.
-    if (this.shape === 'circle') {
+    if (this.shape === 'circle' && !this.getShapeProperty('center')) {
       const shapeCentroid = geoJsonPointToLngLat(centroid(this._geoJson));
       this._geoJson.properties[`${FEATURE_PROPERTY_PREFIX}center`] = shapeCentroid;
     }

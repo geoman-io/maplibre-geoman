@@ -89,6 +89,19 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     }
   }
 
+  getImageData(id: string) {
+    const image = this.mapInstance.getImage(id);
+    if (!image?.data) return null;
+    return {
+      imageData: new ImageData(
+        new Uint8ClampedArray(image.data.data),
+        image.data.width,
+        image.data.height,
+      ),
+      pixelRatio: image.pixelRatio,
+    };
+  }
+
   getBounds(): [LngLatTuple, LngLatTuple] {
     const mapBounds = this.mapInstance.getBounds();
     return mapBounds.toArray() as [LngLatTuple, LngLatTuple];
@@ -269,8 +282,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   }
 
   fire(type: string, data?: unknown) {
-    // Geoman also emits custom event names outside MapLibre's built-in event map.
-    (this.mapInstance as ml.Evented).fire(type, data as object | undefined);
+    this.mapInstance.fire(asMaplibreEventName(type), data as object | undefined);
   }
 
   // Keep listener identity across on/once/off; Geoman supplies the custom payload types.
@@ -278,7 +290,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   on(type: string, layerId: string, listener: BaseEventListener): void;
   on(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
-      this.mapInstance.on(type, arg2, listener);
+      this.mapInstance.on(type, arg2, listener as ml.Listener<ml.MapLayerEventType[typeof type]>);
     } else if (typeof arg2 === 'function') {
       this.mapInstance.on(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
@@ -292,7 +304,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     // note: it's possible to have promise returned from maplibre-gl
     // (it's not implemented for this adapter)
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
-      this.mapInstance.once(type, arg2, listener);
+      this.mapInstance.once(type, arg2, listener as ml.Listener<ml.MapLayerEventType[typeof type]>);
     } else if (typeof arg2 === 'function') {
       this.mapInstance.once(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
@@ -304,7 +316,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   off(type: string, layerId: string, listener: BaseEventListener): void;
   off(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
-      this.mapInstance.off(type, arg2, listener);
+      this.mapInstance.off(type, arg2, listener as ml.Listener<ml.MapLayerEventType[typeof type]>);
     } else if (typeof arg2 === 'function') {
       this.mapInstance.off(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {

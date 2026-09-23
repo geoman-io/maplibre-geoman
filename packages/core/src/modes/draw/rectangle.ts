@@ -126,6 +126,18 @@ export class DrawRectangle extends BaseDraw {
     return this.featureData;
   }
 
+  getFinishGeoJson() {
+    const endLngLat = this.gm.markerPointer.marker?.getLngLat();
+    return this.startLngLat && endLngLat
+      ? getRectangleGeoJson({
+          startLngLat: this.startLngLat,
+          endLngLat,
+          withProperties: true,
+          mapAdapter: this.gm.mapAdapter,
+        })
+      : null;
+  }
+
   async finishShape(lngLat: LngLatTuple) {
     if (this.startLngLat) {
       await this.updateFeaturePosition(this.startLngLat, lngLat);

@@ -6,21 +6,40 @@ All notable changes to this project will be documented in this file.
 
 ## [0.10.0] - 2026-09-23
 
+### Added
+
+- `gm.draw.create(input)` and `gm.draw.finish(input?)` for marker, circle, and rectangle creation and completion. See `docs/programmatic-drawing.md`.
+
 ### Changed
 
 - Moved the local Node.js and pnpm toolchain to `mise.toml`, upgraded pnpm to 12.5.1,
   and upgraded Turborepo to 2.11.2.
-- Bumped the MapLibre GL development and test dependency to 6.11.0. The published peer
-  range (`maplibre-gl >=6.0.0 <7.0.0`) already covers it, so consumers are unaffected;
-  the packages, bundles and type declarations are unchanged.
+- Bumped the MapLibre GL development and test dependency to 6.11.0, superseding the
+  6.7.0 baseline from 0.9.2. The published peer range (`maplibre-gl >=6.0.0 <7.0.0`)
+  already covers it, so consumers are unaffected; the packages, bundles and type
+  declarations are unchanged.
 - Pinned the transitive `svgo` dev dependency to `>=3.3.5` to clear published
   advisories (dev tooling only).
 
 ### Fixed
 
+- Preserve explicitly supplied circle centers during feature creation.
+- Marker draw previews now use registered raster images named by a literal
+  `layerStyles.marker.gm_temporary` `icon-image`, respecting image dimensions,
+  pixel ratio, `icon-size`, `icon-anchor`, and `icon-opacity` on MapLibre and Mapbox
+  ([#122](https://github.com/geoman-io/maplibre-geoman/issues/122)). Register the image
+  before enabling marker draw mode. Missing images and non-literal image expressions
+  retain the default SVG fallback; the built-in marker remains unchanged.
 - Fixed TypeScript compilation of the MapLibre adapter against maplibre-gl 6.11's
   stricter event typings (`MapEventType` / `Listener`). Runtime behavior and the
   public API are unchanged.
+
+## [0.9.2] - 2026-09-11
+
+### Changed
+
+- Updated the development and test baseline from MapLibre GL JS 6.2.0 to 6.7.0. The published peer dependency remains `maplibre-gl >=6.0.0 <7.0.0`; public API and compatibility requirements are unchanged.
+- Updated Vitest to 4.1.11 and vite-svg-loader to 5.1.3 to resolve current security advisories; `pnpm audit --audit-level=moderate` now reports no known vulnerabilities.
 
 ## [0.9.1] - 2026-08-17
 
