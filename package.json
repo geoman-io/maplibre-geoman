@@ -113,7 +113,7 @@
     "shx": "^0.4.0",
     "svelte": "^5.56.8",
     "ts-autofix": "^1.0.0",
-    "tsc-alias": "^1.9.1",
+    "tsc-alias": "^1.9.5",
     "turbo": "^2.11.2",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
