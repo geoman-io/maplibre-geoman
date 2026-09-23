@@ -21,7 +21,8 @@ pmOnFail: ignore
 
 overrides:
   ajv: 6.14.0
+  # GHSA-w27v-7q3p-w38r / GHSA-4vpr-x523-8j87 (via vite-svg-loader)
+  svgo: ^3.3.5
 
 allowBuilds:
   '@parcel/watcher': true
-  svelte-preprocess: set this to true or false

@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - Bumped the MapLibre GL development and test dependency to 6.11.0. The published peer
   range (`maplibre-gl >=6.0.0 <7.0.0`) already covers it, so consumers are unaffected;
   the packages, bundles and type declarations are unchanged.
+- Pinned the transitive `svgo` dev dependency to `>=3.3.5` to clear published
+  advisories (dev tooling only).
 
 ## [0.9.1] - 2026-08-17
 

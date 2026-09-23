@@ -6,6 +6,7 @@ settings:
 
 overrides:
   ajv: 6.14.0
+  svgo: ^3.3.5
 
 importers:
 
@@ -408,7 +409,7 @@ importers:
         version: 1.9.2
       maplibre-gl:
         specifier: '>=6.0.0 <7.0.0'
-        version: 6.2.0
+        version: 6.11.0
       type-fest:
         specifier: ^5.8.0
         version: 5.8.0
@@ -478,16 +479,9 @@ packages:
   '@maplibre/geojson-vt@6.1.1':
     resolution: {integrity: sha512-FVMOcmSP/yqol45t7StApEyTL5/vmqBCuFhH9n+fFuINenhaX+YgHHIt1yJ86S8kln3uJLcMvmEU2cfn6E2eCQ==}
 
-  '@maplibre/maplibre-gl-style-spec@26.2.1':
-    resolution: {integrity: sha512-QFKCXkOeSzOr8jF75jm6kySOg+dUvOehPhRi68gcOYPHb7U5JloUq0dJW0Y5/fZV8ygfT0Vp2RWodvq+fyxFWA==}
-    hasBin: true
-
   '@maplibre/maplibre-gl-style-spec@26.4.4':
     resolution: {integrity: sha512-hG4RZR4PBd/+6A3ODdZ3AnQRF106ZQk1y3bhwDg8bH/A4Oz2tnRUJVVWs9BZa6gXZ1d3UKe89C+Mm+olGBELvA==}
     hasBin: true
-
-  '@maplibre/mlt@1.1.12':
-    resolution: {integrity: sha512-ZeK5w2TTeHOajcLaEQs1KZXw2V9wIKo1PmThlxlsHoXsQsYlBqLJzPOd6tJHRtGTChUY3DPPmjXRArYVvAbmZw==}
 
   '@maplibre/mlt@1.3.0':
     resolution: {integrity: sha512-7M2O7ABM80Oi8XPkfkrjKB8mOBIxGoVgkA52Mu4RMWoBvvMdagQ522+WxVYujZsMpqIr3BpzrTbXrm4k8lCzCQ==}
@@ -1941,10 +1935,6 @@ packages:
     resolution: {integrity: sha512-BWf1V0eKEK7NpIyjVSFrTWjF2CE9zhVvS0JLvyAS19lR0HnHtvPFRS5M9QVJeLcoMT1WyCU0Sm9vj53BBxtWYg==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
 
-  maplibre-gl@6.2.0:
-    resolution: {integrity: sha512-PaNYtxWmYgIdDHshXsnU3Pho+H9IPme9H6dTjZbFWNazi+Q5QgKgIlu2GiSGVtOZ77/Fz3n5/1/kGM6ETzu0Lg==}
-    engines: {node: '>=16.14.0', npm: '>=8.1.0'}
-
   mdn-data@2.0.28:
     resolution: {integrity: sha512-aylIc7Z9y4yzHYAJNuESG3hfhC+0Ibp/MAMiaOZgNv4pmEdFyfZhhhny4MNiAfWdBQ1RQ2mfDWmM1x8SvGyp8g==}
 
@@ -2282,8 +2272,8 @@ packages:
     resolution: {integrity: sha512-PY8LOw7xP6c8IOiVqdo0sbbZVYhXRSfklOQLAUyGBKqjTX0wx/z4l/9J+PmBpmlLnxzEb1NqltxQ5/wZme/Cmg==}
     engines: {node: '>=18'}
 
-  svgo@3.3.4:
-    resolution: {integrity: sha512-GsNRis4e8jxn2Y9ENz/8lbJ93CstG8svtMnuRaHbiF2LTJ5tK0/q3t/URPq9Zc7zVWBJnNnJMIp6bevK7bSmNg==}
+  svgo@3.3.5:
+    resolution: {integrity: sha512-8SQMzdrvWaD8deUmrnYB+ASyxBVgWUOilg+A75nE/76WdLpj6LopCwiAVvkzkcqy/9b7t2Mg7faFLjg0ZRcZ3w==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -2549,15 +2539,6 @@ snapshots:
     dependencies:
       kdbush: 4.1.0
 
-  '@maplibre/maplibre-gl-style-spec@26.2.1':
-    dependencies:
-      '@mapbox/jsonlint-lines-primitives': 2.0.3
-      '@mapbox/unitbezier': 1.0.0
-      json-stringify-pretty-compact: 4.0.0
-      minimist: 1.2.8
-      quickselect: 3.0.0
-      tinyqueue: 3.0.0
-
   '@maplibre/maplibre-gl-style-spec@26.4.4':
     dependencies:
       '@mapbox/jsonlint-lines-primitives': 2.0.3
@@ -2566,10 +2547,6 @@ snapshots:
       minimist: 1.2.8
       quickselect: 3.0.0
       tinyqueue: 3.0.0
-
-  '@maplibre/mlt@1.1.12':
-    dependencies:
-      '@mapbox/point-geometry': 1.1.0
 
   '@maplibre/mlt@1.3.0':
     dependencies:
@@ -3918,26 +3895,6 @@ snapshots:
       quickselect: 3.0.0
       tinyqueue: 3.0.0
 
-  maplibre-gl@6.2.0:
-    dependencies:
-      '@mapbox/point-geometry': 1.1.0
-      '@mapbox/tiny-sdf': 2.2.0
-      '@mapbox/unitbezier': 1.0.0
-      '@mapbox/vector-tile': 3.0.0
-      '@maplibre/geojson-vt': 6.1.1
-      '@maplibre/maplibre-gl-style-spec': 26.2.1
-      '@maplibre/mlt': 1.1.12
-      '@maplibre/vt-pbf': 4.3.2
-      '@types/geojson': 7946.0.16
-      earcut: 3.2.3
-      gl-matrix: 3.4.4
-      kdbush: 4.1.0
-      murmurhash-js: 1.0.0
-      pbf: 5.1.2
-      potpack: 2.1.0
-      quickselect: 3.0.0
-      tinyqueue: 3.0.0
-
   mdn-data@2.0.28: {}
 
   mdn-data@2.0.30: {}
@@ -4303,7 +4260,7 @@ snapshots:
     transitivePeerDependencies:
       - '@typescript-eslint/types'
 
-  svgo@3.3.4:
+  svgo@3.3.5:
     dependencies:
       commander: 7.2.0
       css-select: 5.2.2
@@ -4400,7 +4357,7 @@ snapshots:
   vite-svg-loader@5.1.1(supports-color@7.2.0)(vue@3.5.35(typescript@7.0.2)):
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
-      svgo: 3.3.4
+      svgo: 3.3.5
       vue: 3.5.35(typescript@7.0.2)
     transitivePeerDependencies:
       - supports-color
