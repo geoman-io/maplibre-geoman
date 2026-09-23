@@ -120,7 +120,7 @@ importers:
         version: 1.62.1
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.3.0
-        version: 7.3.0(svelte@5.56.8)(vite@8.2.1(@types/node@26.2.0)(sass@1.102.0))
+        version: 7.3.0(svelte@5.57.0)(vite@8.2.1(@types/node@26.2.0)(sass@1.102.0))
       '@types/geojson':
         specifier: ^7946.0.16
         version: 7946.0.16
@@ -147,7 +147,7 @@ importers:
         version: 6.11.0
       oxfmt:
         specifier: ^0.62.0
-        version: 0.62.0(svelte@5.56.8)
+        version: 0.62.0(svelte@5.57.0)
       oxlint:
         specifier: ^1.77.0
         version: 1.77.0
@@ -170,8 +170,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       svelte:
-        specifier: ^5.56.8
-        version: 5.56.8
+        specifier: ^5.57.0
+        version: 5.57.0
       ts-autofix:
         specifier: ^1.0.0
         version: 1.0.0
@@ -2268,8 +2268,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  svelte@5.56.8:
-    resolution: {integrity: sha512-PY8LOw7xP6c8IOiVqdo0sbbZVYhXRSfklOQLAUyGBKqjTX0wx/z4l/9J+PmBpmlLnxzEb1NqltxQ5/wZme/Cmg==}
+  svelte@5.57.0:
+    resolution: {integrity: sha512-NdbDn7fl4be1ViUG0oq/lvG6OZy3oENolV2ONjiqqsfVoeAfzaQAKUcEX3MrQod/Bebv1PgwET9rfXhgn9s4Kg==}
     engines: {node: '>=18'}
 
   svgo@3.3.5:
@@ -2875,12 +2875,12 @@ snapshots:
     dependencies:
       acorn: 8.18.0
 
-  '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8)(vite@8.2.1(@types/node@26.2.0)(sass@1.102.0))':
+  '@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.1(@types/node@26.2.0)(sass@1.102.0))':
     dependencies:
       deepmerge: 4.3.1
       magic-string: 1.1.0
       obug: 2.1.4
-      svelte: 5.56.8
+      svelte: 5.57.0
       vite: 8.2.1(@types/node@26.2.0)(sass@1.102.0)
       vitefu: 1.1.3(vite@8.2.1(@types/node@26.2.0)(sass@1.102.0))
 
@@ -3310,7 +3310,8 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
-  '@types/trusted-types@2.0.7': {}
+  '@types/trusted-types@2.0.7':
+    optional: true
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
@@ -3943,7 +3944,7 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  oxfmt@0.62.0(svelte@5.56.8):
+  oxfmt@0.62.0(svelte@5.57.0):
     dependencies:
       tinypool: 2.1.0
     optionalDependencies:
@@ -3966,7 +3967,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.62.0
       '@oxfmt/binding-win32-ia32-msvc': 0.62.0
       '@oxfmt/binding-win32-x64-msvc': 0.62.0
-      svelte: 5.56.8
+      svelte: 5.57.0
 
   oxlint@1.77.0:
     optionalDependencies:
@@ -4239,13 +4240,12 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte@5.56.8:
+  svelte@5.57.0:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
       '@sveltejs/acorn-typescript': 1.0.12(acorn@8.18.0)
       '@types/estree': 1.0.9
-      '@types/trusted-types': 2.0.7
       acorn: 8.18.0
       aria-query: 5.3.1
       axobject-query: 4.1.0
