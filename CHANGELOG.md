@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Moved the local Node.js and pnpm toolchain to `mise.toml`, upgraded pnpm to 12.5.1,
+  and upgraded Turborepo to 2.11.2.
+
 ## [0.9.1] - 2026-08-17
 
 ### Changed

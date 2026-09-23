@@ -6,6 +6,17 @@ packages:
 
 minimumReleaseAge: 10080
 
+minimumReleaseAgeExclude:
+  - turbo@2.11.2
+  - '@turbo/darwin-64@2.11.2'
+  - '@turbo/darwin-arm64@2.11.2'
+  - '@turbo/linux-64@2.11.2'
+  - '@turbo/linux-arm64@2.11.2'
+  - '@turbo/windows-64@2.11.2'
+  - '@turbo/windows-arm64@2.11.2'
+
+pmOnFail: ignore
+
 overrides:
   ajv: 6.14.0
 

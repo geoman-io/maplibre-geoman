@@ -277,6 +277,9 @@ We welcome contributions from the community! Please read our [CONTRIBUTING.md](C
 ## Local Development
 
 ```shell
+# Install the Node.js and pnpm versions declared in mise.toml
+mise install
+
 # Install dependencies (this repo uses pnpm)
 pnpm install --frozen-lockfile
 
