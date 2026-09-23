@@ -16,6 +16,12 @@ All notable changes to this project will be documented in this file.
 - Pinned the transitive `svgo` dev dependency to `>=3.3.5` to clear published
   advisories (dev tooling only).
 
+### Fixed
+
+- Fixed TypeScript compilation of the MapLibre adapter against maplibre-gl 6.11's
+  stricter event typings (`MapEventType` / `Listener`). Runtime behavior and the
+  public API are unchanged.
+
 ## [0.9.1] - 2026-08-17
 
 ### Changed

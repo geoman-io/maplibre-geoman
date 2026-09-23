@@ -269,16 +269,18 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
   }
 
   fire(type: string, data?: unknown) {
-    this.mapInstance.fire(type, data);
+    // Geoman also emits custom event names outside MapLibre's built-in event map.
+    (this.mapInstance as ml.Evented).fire(type, data as object | undefined);
   }
 
+  // Keep listener identity across on/once/off; Geoman supplies the custom payload types.
   on(type: string, listener: BaseEventListener): void;
   on(type: string, layerId: string, listener: BaseEventListener): void;
   on(type: string, arg2: string | BaseEventListener, listener?: BaseEventListener): void {
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
       this.mapInstance.on(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.on(asMaplibreEventName(type), arg2);
+      this.mapInstance.on(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
       throw new Error("Invalid arguments passed to 'on' method");
     }
@@ -292,7 +294,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
       this.mapInstance.once(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.once(asMaplibreEventName(type), arg2);
+      this.mapInstance.once(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
       throw new Error("Invalid arguments passed to 'once' method.");
     }
@@ -304,7 +306,7 @@ export class MaplibreAdapter extends BaseMapAdapter<ml.Map, ml.GeoJSONSource, Ma
     if (typeof arg2 === 'string' && listener && isMaplibreSupportedPointerEventName(type)) {
       this.mapInstance.off(type, arg2, listener);
     } else if (typeof arg2 === 'function') {
-      this.mapInstance.off(asMaplibreEventName(type), arg2);
+      this.mapInstance.off(asMaplibreEventName(type), arg2 as ml.Listener);
     } else {
       throw new Error("Invalid arguments passed to 'off' method");
     }
