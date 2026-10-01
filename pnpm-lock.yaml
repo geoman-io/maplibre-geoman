@@ -112,8 +112,8 @@ importers:
         specifier: ^1.9.2
         version: 1.9.2
       type-fest:
-        specifier: ^5.8.0
-        version: 5.8.0
+        specifier: ^5.10.0
+        version: 5.10.0
     devDependencies:
       '@playwright/test':
         specifier: 1.62.1
@@ -303,8 +303,8 @@ importers:
         specifier: '>=3.23.0'
         version: 3.28.1
       type-fest:
-        specifier: ^5.8.0
-        version: 5.8.0
+        specifier: ^5.10.0
+        version: 5.10.0
 
   packages/maplibre:
     dependencies:
@@ -411,8 +411,8 @@ importers:
         specifier: '>=6.0.0 <7.0.0'
         version: 6.11.0
       type-fest:
-        specifier: ^5.8.0
-        version: 5.8.0
+        specifier: ^5.10.0
+        version: 5.10.0
 
 packages:
 
@@ -2326,8 +2326,8 @@ packages:
     resolution: {integrity: sha512-s0GhnWXlAAN+wb2GRMQxnZgFweRWTAceRWW/4Lk9iHj7QuLZMjDxQQqu+Xoh7Nckuy8UiSim520w6yqP2+ertw==}
     hasBin: true
 
-  type-fest@5.8.0:
-    resolution: {integrity: sha512-YGYEVz3Fm5iy/AybuA0oyNFq7H4CgQNfRp/qfe8nurE1kuCeNm3/vfm9X4Mtl+qLyaKJUh5xrFZwogr41SMjYA==}
+  type-fest@5.10.0:
+    resolution: {integrity: sha512-NoSdpq/WEiAg5sjmBkmV/hfxv6HJH4NqPNrqjtSO5CwRmpsDfaf4begxW34KdJykH/l1yHtwBWQkCRdoXO8mPA==}
     engines: {node: '>=20'}
 
   typescript@4.9.5:
@@ -4321,7 +4321,7 @@ snapshots:
       '@turbo/windows-64': 2.11.2
       '@turbo/windows-arm64': 2.11.2
 
-  type-fest@5.8.0:
+  type-fest@5.10.0:
     dependencies:
       tagged-tag: 1.0.0
 
