@@ -38,6 +38,11 @@ const checks =
         },
       ];
 
+checks.push({
+  ok: !/\bfrom\s+['"](?:@\/|@mapLib\/|@dev\/|@tests\/)/.test(content),
+  message: 'Unresolved declaration path aliases',
+});
+
 const failed = checks.filter((check) => !check.ok);
 if (failed.length > 0) {
   for (const check of failed) {
