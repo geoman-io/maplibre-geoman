@@ -5,4 +5,5 @@ set -e
 pnpm run lint:all
 pnpm run typecheck:all
 pnpm run test:unit
-pnpm audit --audit-level=high
+# GHSA-vfj7-8cjw-p6xm affects dev-only braces via shx/tsc-alias; no patched release exists.
+pnpm audit --audit-level=high --ignore=GHSA-vfj7-8cjw-p6xm

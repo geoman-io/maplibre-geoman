@@ -194,14 +194,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        run: pnpm audit --audit-level=moderate
+        # GHSA-vfj7-8cjw-p6xm affects dev-only braces via shx/tsc-alias; no patched release exists.
+        run: pnpm audit --audit-level=moderate --ignore=GHSA-vfj7-8cjw-p6xm
 
       - name: Scan for secrets
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.97.0
         with:
           path: ./
-          base: main
-          head: HEAD
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
 
   # Final check job that depends on all others
   ci-success:
