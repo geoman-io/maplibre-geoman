@@ -94,7 +94,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
-    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@types/geojson": "^7946.0.16",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^26.6.1",
