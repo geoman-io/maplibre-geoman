@@ -198,7 +198,7 @@ jobs:
         run: pnpm audit --audit-level=moderate --ignore=GHSA-vfj7-8cjw-p6xm
 
       - name: Scan for secrets
-        uses: trufflesecurity/trufflehog@v3.97.0
+        uses: trufflesecurity/trufflehog@v3.97.9
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha || github.event.before }}
