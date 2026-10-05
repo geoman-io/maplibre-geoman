@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-10-05
+
+### Fixed
+
+- Restore declaration bundling after the `tsc-alias` 1.9.5 update by resolving
+  emitted path aliases for both MapLibre and Mapbox packages.
+
+### Changed
+
+- Updated DOMPurify to 3.4.16, `type-fest` to 5.10.0, and development
+  dependencies. Public peer ranges and API declarations are unchanged.
+- Updated the transitive `brace-expansion` dependency to 5.0.12 to address
+  published advisories. The unpatched, development-only `braces` advisory is
+  tracked as a specific audit exception.
+
 ## [0.10.0] - 2026-09-23
 
 ### Added
