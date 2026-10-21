@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-10-21
+
+### Changed
+
+- Updated DOMPurify to 3.4.17. Public peer ranges and API declarations are unchanged.
+- Updated development dependencies, including `vitest` 5.0.4, `maplibre-gl` 6.14.0,
+  `mapbox-gl` 3.33.0, `vite` 8.3.4, `turbo` 2.11.8, `oxlint` 1.88.0, `oxfmt` 0.73.0,
+  and `svelte` 5.57.2. `@playwright/test` and `playwright` stay at 1.63.0.
+
 ## [0.10.1] - 2026-10-05
 
 ### Fixed
