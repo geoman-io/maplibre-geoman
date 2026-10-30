@@ -1,10 +1,10 @@
-import { GM_PREFIX, GM_SYSTEM_PREFIX } from '@/core/constants.ts';
+import { GM_SYSTEM_PREFIX } from '@/core/constants.ts';
 import { SOURCES } from '@/core/features/constants.ts';
 import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
-import type { AnyEventName } from '@/types/map/index.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
+import { fireDrawRejected } from '@/utils/draw/draw-rejected.ts';
 import { preparePolygonFinish, type PolygonFinishRejection } from '@/utils/polygon-finish.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
@@ -56,9 +56,15 @@ export class DrawPolygon extends BaseDraw {
       },
     };
 
+    const draft = this.lineDrawer.featureData;
     // The closed ring is checked here so the first vertex, the last vertex and
     // Enter (Pro) all go through the same before-create veto (#257).
     await this.fireBeforeFeatureCreate({ geoJsonFeatures: [shapeGeoJson] });
+    const stillDrawing =
+      this.gm.getActiveDrawModes().includes(this.mode) && this.lineDrawer.featureData === draft;
+    if (!stillDrawing) {
+      return;
+    }
     if (!this.flags.featureCreateAllowed) {
       await this.firePolygonRejected('creation_rejected');
       return;
@@ -72,15 +78,10 @@ export class DrawPolygon extends BaseDraw {
   }
 
   async firePolygonRejected(reason: PolygonFinishRejection | 'creation_rejected') {
-    const payload = {
-      name: `${GM_PREFIX}:draw:rejected` as const,
-      actionType: 'draw' as const,
+    await fireDrawRejected(this.gm, {
       mode: this.mode,
-      action: 'rejected' as const,
-      reason,
       shape: this.shape,
-    };
-    this.gm.mapAdapter.fire(`${GM_PREFIX}:draw:rejected` as AnyEventName, payload);
-    this.gm.events.bus.forwarder.globalEventsListener?.(payload as never);
+      reason,
+    });
   }
 }

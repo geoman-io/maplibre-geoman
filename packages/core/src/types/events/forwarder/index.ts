@@ -9,7 +9,8 @@ import type {
   GmSystemEvent,
   GmSystemPrefix,
 } from '@/types/events/index.ts';
-import type { HelperModeName } from '@/types/modes/index.ts';
+import type { AnyMapInstance } from '@/types/map/index.ts';
+import type { DrawModeName, HelperModeName, ShapeName } from '@/types/modes/index.ts';
 
 export type GmFwdEventNameWithPrefix = `${GmPrefix}:${GmFwdEventName}`;
 export type GmFwdSystemEventNameWithPrefix = `${GmSystemPrefix}:${GmEventNameWithoutPrefix}`;
@@ -23,17 +24,29 @@ export type GmFwdEventName =
   | `global${HelperModeName}modetoggled`
   | 'create'
   | 'remove'
+  | 'draw:rejected'
   | 'selection'
   | FwdEditModeName
   | `${FwdEditModeName}start`
   | `${FwdEditModeName}end`
   | GmControlLoadEvent['action'];
 
+export interface DrawRejectedFwdEvent {
+  name: `${GmPrefix}:draw:rejected`;
+  actionType: 'draw';
+  action: 'rejected';
+  mode: DrawModeName;
+  shape: ShapeName | null;
+  reason: string;
+  map: AnyMapInstance;
+}
+
 export type GmEvent =
   | SystemFwdEvent
   | GlobalModeToggledFwdEvent
   | FeatureFwdEvent
-  | FeatureEditFwdEvent;
+  | FeatureEditFwdEvent
+  | DrawRejectedFwdEvent;
 
 export type * from '@/types/events/forwarder/edit.ts';
 export type * from '@/types/events/forwarder/features.ts';

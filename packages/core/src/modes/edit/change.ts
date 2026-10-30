@@ -164,8 +164,10 @@ export class EditChange extends BaseDrag {
       if (!allowed) {
         return;
       }
-      // Notify while the feature is still in the store so gm:remove is observable (#256).
+      // Deliver gm:remove while the feature is still in the store. fire() only
+      // queues the public forward; flushing waits for that delivery before delete.
       await this.fireFeatureRemovedEvent(featureData);
+      await this.gm.events.flushForwarding();
       await this.gm.features.delete(featureData);
       return;
     }

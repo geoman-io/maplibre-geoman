@@ -35,4 +35,8 @@ export default class GmEvents {
     // check events.bus.attachEvents() in required classes
     await this.bus.fireEvent(eventName, payload);
   }
+
+  async flushForwarding(): Promise<void> {
+    await this.bus.flushForwarding();
+  }
 }
