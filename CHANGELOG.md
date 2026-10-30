@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.4] - 2026-10-30
+
+### Fixed
+
+- Type-check caching now tracks shared source, application, test, and TypeScript configuration inputs.
+
+### Changed
+
+- Added regression coverage for asynchronous draw cancellation, polygon vetoes, and preserving circle/ellipse geometry and center metadata after a refused drag.
+
 ## [0.10.3] - 2026-10-30
 
 ### Added
