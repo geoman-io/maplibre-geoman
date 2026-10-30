@@ -23,6 +23,14 @@
       ]
     },
     "ts": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/core/src/**",
+        "$TURBO_ROOT$/apps/**",
+        "$TURBO_ROOT$/tests/**",
+        "$TURBO_ROOT$/*.ts",
+        "$TURBO_ROOT$/tsconfig*.json"
+      ],
       "dependsOn": [
         "^ts"
       ],
