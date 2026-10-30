@@ -30,6 +30,7 @@
   "reexport-type:DomMarkerData",
   "reexport-type:DrawInput",
   "reexport-type:DrawModeName",
+  "reexport-type:DrawRejectedFwdEvent",
   "reexport-type:DrawRejectionReason",
   "reexport-type:DrawResult",
   "reexport-type:EdgeMarkerData",

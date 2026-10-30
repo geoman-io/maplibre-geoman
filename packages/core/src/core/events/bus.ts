@@ -52,6 +52,11 @@ export class EventBus {
       });
   }
 
+  /** Wait until queued public forwards (gm:remove and the like) have been delivered. */
+  async flushForwarding(): Promise<void> {
+    await this.pendingForward;
+  }
+
   attachEvents(handlers: EventHandlers) {
     typedKeys(handlers).forEach((eventName) => {
       const handler = handlers[eventName];

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- A slow `beforeChange` can no longer create a polygon after drawing was cancelled, and a refused first-vertex close fires `gm:draw:rejected`.
+- A refused drag no longer writes circle or ellipse center metadata, and `gm:remove` from a vertex deletion is delivered while the feature is still in the store.
+- Clicking the only vertex of a line in progress no longer creates a zero-length line.
+- `gm:draw:rejected` is a typed public event.
+
 ### Added
 
 - `settings.beforeChange` can refuse a create, update, or vertex removal before it is written. Vertex removal of a degenerate shape now emits `gm:remove` while the feature is still in the store ([#256](https://github.com/geoman-io/maplibre-geoman/issues/256)).

@@ -261,7 +261,10 @@ export abstract class BaseDrag extends BaseEdit {
         featureGeoJson: updatedGeoJson,
         forceMode: 'drag',
       });
-      if (!isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
+      // A refused update must not write the candidate properties either. Circles
+      // and ellipses carry their center there; writing it after a veto moved the
+      // metadata while the geometry stayed put.
+      if (isUpdated && !isEqual(featureData.getGeoJson().properties, updatedGeoJson.properties)) {
         await featureData._updateAllProperties(updatedGeoJson.properties);
       }
 
@@ -382,7 +385,6 @@ export abstract class BaseDrag extends BaseEdit {
       circleProperties.center[0] + lngLatDiff.lng,
       circleProperties.center[1] + lngLatDiff.lat,
     ];
-    await featureData.setShapeProperty('center', newCenterCoords);
 
     const circlePolygon = getGeoJsonCircle({
       center: newCenterCoords,

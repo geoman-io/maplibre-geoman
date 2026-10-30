@@ -13,6 +13,7 @@ import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';
+import { fireDrawRejected } from '@/utils/draw/draw-rejected.ts';
 import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
@@ -216,9 +217,16 @@ export class LineDrawer extends BaseDraw {
    * the temporary feature unless the finish handler ends the shape.
    */
   async finishOnMarker(lngLat: LngLatTuple, clickedMarkerInfo: MarkerInfo, closesOnFirst: boolean) {
+    const markerCount = this.featureData?.markers.size ?? 0;
     let coordinates = this.getShapeCoordinates({ withControlMarker: false });
 
-    if (closesOnFirst) {
+    // Only a polygon close with an existing segment should append the traced
+    // section and the closing vertex. A lone vertex click must not become [A, A],
+    // which used to finish a zero-length line.
+    const appendClose =
+      closesOnFirst && markerCount > 1 && this.drawOptions.targetShape === 'polygon';
+
+    if (appendClose) {
       const addedLngLats = this.getAddedLngLats(lngLat, clickedMarkerInfo);
       const candidate = coordinates.concat(addedLngLats);
       const featureGeoJson = this.getFeatureGeoJsonWithType({
@@ -226,6 +234,11 @@ export class LineDrawer extends BaseDraw {
         coordinates: candidate,
       });
       if (!(await this.isFeatureAllowed(featureGeoJson))) {
+        await fireDrawRejected(this.gm, {
+          mode: 'polygon',
+          shape: 'polygon',
+          reason: 'creation_rejected',
+        });
         return;
       }
       coordinates = candidate;
