@@ -20,6 +20,7 @@ import { getScreenCoordinatesByLngLat } from '@tests/utils/shapes.ts';
 import { isEqual } from 'lodash-es';
 import type { LngLatTuple } from '@/types';
 import { isLngLat } from '@/utils/guards/geojson.ts';
+import type { EditDrag } from '@/modes/edit/drag.ts';
 
 const SCREEN_COORD_TOLERANCE = 4;
 
@@ -39,6 +40,39 @@ test.beforeEach(async ({ page }) => {
 
 const isNotGroupedFeature = (feature: FeatureCustomData) =>
   typeof feature.geoJson.properties.__gm_group === 'undefined';
+
+test('a refused circle or ellipse drag preserves geometry and center metadata', async ({
+  page,
+}) => {
+  await enableMode(page, 'edit', 'drag');
+  const results = await page.evaluate(async () => {
+    const gm = window.geoman;
+    const drag = gm.actionInstances.edit__drag as EditDrag;
+    let calls = 0;
+    gm.options.settings.beforeChange = () => {
+      calls += 1;
+      return false;
+    };
+    const results = [];
+    for (const shape of ['circle', 'ellipse']) {
+      const feature = Array.from(gm.features.featureStore.values()).find(
+        (item) => item.shape === shape,
+      );
+      if (!feature) continue;
+      const before = JSON.stringify(feature.getGeoJson());
+      drag.flags.actionInProgress = true;
+      const updated = await drag.moveFeature(feature, [0, 0], [1, 1]);
+      drag.flags.actionInProgress = false;
+      results.push({ shape, updated, unchanged: JSON.stringify(feature.getGeoJson()) === before });
+    }
+    return { results, calls };
+  });
+  expect(results.calls).toBe(2);
+  expect(results.results).toEqual([
+    { shape: 'circle', updated: false, unchanged: true },
+    { shape: 'ellipse', updated: false, unchanged: true },
+  ]);
+});
 
 test('Drag', async ({ page }) => {
   const dX = -20;
