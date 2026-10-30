@@ -126,6 +126,26 @@ describe('core/features/source-update-manager', () => {
     });
   });
 
+  it('drops a pending remove only for ids added in the incoming diff', () => {
+    const { manager } = createManager();
+    const prev = {
+      remove: new Set(['old', 'readded']),
+      add: new Map([['kept', createFeature('kept')]]),
+    };
+    const next = {
+      add: new Map([
+        ['readded', createFeature('readded')],
+        ['fresh', createFeature('fresh')],
+      ]),
+    };
+
+    manager.mergeGeoJsonDiff(prev, next);
+
+    expect(prev.remove.has('old')).toBe(true);
+    expect(prev.remove.has('readded')).toBe(false);
+    expect(Array.from(prev.add.keys()).sort()).toEqual(['fresh', 'kept', 'readded']);
+  });
+
   it('clears prior add/update/remove when next diff sets removeAll', () => {
     const { manager } = createManager();
     const prev = {

@@ -272,8 +272,14 @@ export class SourceUpdateManager {
       prev.update?.set(key, value);
     });
 
-    if (prev.remove?.size && prev.add?.size) {
-      for (const id of prev.add.keys()) {
+    // prev.add and prev.remove are already disjoint: resolveMergeConflicts drops
+    // ids listed in next.remove from prev.add, and this cleanup ran on the
+    // previous merge. The only ids that can now sit in both are the ones that
+    // just arrived in next.add, so scan that (usually tiny) set instead of every
+    // feature accumulated so far. Scanning prev.add made each merge O(pending
+    // adds) and froze edits of large polygons (#254).
+    if (prev.remove?.size && next.add?.size) {
+      for (const id of next.add.keys()) {
         prev.remove.delete(id);
       }
     }

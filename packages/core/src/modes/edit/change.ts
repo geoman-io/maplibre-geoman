@@ -1,3 +1,4 @@
+import { allowBeforeChange } from '@/core/before-change.ts';
 import { FEATURE_PROPERTY_PREFIX, SOURCES } from '@/core/features/constants.ts';
 import type { GmEditMarkerEvent, GmEditMarkerMoveEvent } from '@/types/events/edit.ts';
 import type { GmSystemEvent } from '@/types/events/index.ts';
@@ -146,34 +147,43 @@ export class EditChange extends BaseDrag {
       return;
     }
 
-    let featureUpdated = false;
     type CutFeature = Feature<LineString | Polygon | MultiPolygon>;
-    const geoJson = featureData.getGeoJson() as CutFeature;
+    const live = featureData.getGeoJson() as CutFeature;
     const marker = event.markerData.instance;
 
-    if (isLineStringFeature(geoJson)) {
-      if (getGeoJsonCoordinatesCount(geoJson) <= 2) {
-        await this.gm.features.delete(featureData);
+    const minCoordinates = isLineStringFeature(live) ? 2 : 3;
+    if (
+      (isLineStringFeature(live) || isPolygonFeature(live) || isMultiPolygonFeature(live)) &&
+      getGeoJsonCoordinatesCount(live) <= minCoordinates
+    ) {
+      const allowed = await allowBeforeChange(this.gm, {
+        operation: 'remove',
+        featureId: featureData.id,
+        geometry: null,
+      });
+      if (!allowed) {
         return;
       }
-    } else if (isMultiPolygonFeature(geoJson)) {
-      if (getGeoJsonCoordinatesCount(geoJson) <= 3) {
-        await this.gm.features.delete(featureData);
-        return;
-      }
-    } else if (isPolygonFeature(geoJson)) {
-      if (getGeoJsonCoordinatesCount(geoJson) <= 3) {
-        await this.gm.features.delete(featureData);
-        return;
-      }
+      // Notify while the feature is still in the store so gm:remove is observable (#256).
+      await this.fireFeatureRemovedEvent(featureData);
+      await this.gm.features.delete(featureData);
+      return;
     }
 
+    const geoJson = cloneDeep(live);
     const markerPosition = getFeatureFirstPoint(marker);
-    if (markerPosition) {
-      featureUpdated = removeVertexFromGeoJsonFeature(geoJson, markerPosition);
-    }
+    const featureUpdated = markerPosition
+      ? removeVertexFromGeoJsonFeature(geoJson, markerPosition)
+      : false;
 
     if (featureUpdated) {
+      await this.fireBeforeFeatureUpdate({
+        features: [featureData],
+        geoJsonFeatures: [geoJson as GeoJsonShapeFeature],
+      });
+      if (!this.flags.featureUpdateAllowed) {
+        return;
+      }
       await featureData.convertToPolygon(); // if possible
       await featureData.updateGeometry(geoJson.geometry);
       await this.fireFeatureUpdatedEvent({
@@ -192,14 +202,21 @@ export class EditChange extends BaseDrag {
     }
 
     type InsertFeature = Feature<LineString | Polygon | MultiPolygon>;
-    const geoJson = event.featureData.getGeoJson() as InsertFeature;
+    const geoJson = cloneDeep(event.featureData.getGeoJson()) as InsertFeature;
 
-    const coordinatesPath = event.markerData.segment.end.path;
+    const coordinatesPath = [...event.markerData.segment.end.path];
     const insertIndex = coordinatesPath.pop();
     const coordinates = get(geoJson, coordinatesPath) as Array<LngLatTuple>;
 
     if (typeof insertIndex === 'number') {
       coordinates.splice(insertIndex, 0, [...event.markerData.position.coordinate]);
+      await this.fireBeforeFeatureUpdate({
+        features: [event.featureData],
+        geoJsonFeatures: [geoJson as GeoJsonShapeFeature],
+      });
+      if (!this.flags.featureUpdateAllowed) {
+        return;
+      }
       await event.featureData.updateGeometry(geoJson.geometry);
       await event.featureData.convertToPolygon(); // if possible
       await this.fireFeatureUpdatedEvent({

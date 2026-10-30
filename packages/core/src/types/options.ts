@@ -9,6 +9,7 @@ import type {
   HelperModeName,
 } from '@/types/modes/index.ts';
 import type { PartialDeep } from 'type-fest';
+import type { Geometry } from 'geojson';
 
 import { ACTION_TYPES, MODE_TYPES } from '@/modes/constants.ts';
 import type { GeoJsonShapeFeature } from './geojson';
@@ -61,6 +62,37 @@ export type GmOptionsData = {
      * @default 18
      */
     snapDistance: number;
+    /**
+     * What to do when a drawn polygon ring crosses itself.
+     * `split` (default) unkinks it into a MultiPolygon, as previous releases did.
+     * `reject` refuses the ring, fires `gm:draw:rejected`, and leaves drawing open.
+     *
+     * @default 'split'
+     */
+    polygonSelfIntersection?: 'split' | 'reject';
+    /**
+     * When a finished polygon has a single part, store it as a Polygon instead of
+     * a one-part MultiPolygon. Default `false` keeps the historical MultiPolygon
+     * so existing callers are unchanged.
+     *
+     * @default false
+     */
+    polygonAsPolygon?: boolean;
+    /**
+     * Veto a create, update, or removal before it is written. Covers mouse,
+     * keyboard, and API paths that go through the before-create / before-update
+     * checks, vertex insertion and removal, and (in Pro) `deleteAndNotify` /
+     * `edit.setGeometry`. Return `false` to refuse the change. A throw is also
+     * treated as a refusal.
+     *
+     * `featureId` is null when a create has not yet produced a feature.
+     * `geometry` is the candidate geometry, or null for a removal.
+     */
+    beforeChange?: (context: {
+      operation: 'create' | 'update' | 'remove';
+      featureId: string | number | null;
+      geometry: Geometry | null;
+    }) => boolean | Promise<boolean>;
     markerIcons: {
       default: string;
       control: string;

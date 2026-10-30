@@ -16,6 +16,18 @@ describe('core/options/utils', () => {
     expect(mergeByTypeCustomizer([], {})).toBeUndefined();
   });
 
+  it('replaces non-layer arrays instead of merging them index by index', () => {
+    expect(mergeByTypeCustomizer(['Escape', 'Enter'], [])).toEqual([]);
+    expect(mergeByTypeCustomizer(['Backspace'], ['F20'])).toEqual(['F20']);
+    expect(mergeByTypeCustomizer(['mod+y'], ['F20'])).toEqual(['F20']);
+  });
+
+  it('keeps layer defaults when the user passes an empty layer list', () => {
+    const baseLayers = [{ type: 'line', paint: { 'line-width': 1 } }];
+    const result = mergeByTypeCustomizer(baseLayers, []);
+    expect(result).toEqual(baseLayers);
+  });
+
   it('returns undefined and warns when source layers are invalid', () => {
     const warnSpy = vi.spyOn(log, 'warn').mockImplementation(() => undefined);
 

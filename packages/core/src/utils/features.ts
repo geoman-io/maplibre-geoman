@@ -223,7 +223,12 @@ export const getFeatureFirstPoint = (featureData: FeatureData): LngLatTuple | nu
 
 export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportFeature | null => {
   if (isLineBasedGeoJsonFeature(feature)) {
-    const resultFeature = rewind(feature, { mutate: false });
+    // Rewind applies the RFC 7946 right-hand rule to polygon rings. `@turf/rewind`
+    // also reverses some LineStrings based on where they sit, which drops a
+    // meaningful direction. Only polygons have a winding (#260).
+    const isPolygon =
+      feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
+    const resultFeature = isPolygon ? rewind(feature, { mutate: false }) : feature;
     if (resultFeature.type === 'Feature' && isLineBasedGeoJsonFeature(resultFeature)) {
       const fixedFeature: GeoJsonImportFeature = {
         ...resultFeature,

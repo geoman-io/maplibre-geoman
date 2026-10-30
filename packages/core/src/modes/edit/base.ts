@@ -15,6 +15,7 @@ import type { GeoJsonShapeFeature } from '@/types/geojson.ts';
 import type { PointerEventName } from '@/types/map/index.ts';
 import type { DrawModeName, EditModeName, MarkerData } from '@/types/modes/index.ts';
 import type { ActionType } from '@/types/options.ts';
+import { allowBeforeChange } from '@/core/before-change.ts';
 import { BaseAction } from '@/modes/base-action.ts';
 import { isGmDrawLineDrawerEvent } from '@/utils/guards/events/draw.ts';
 import { includesWithType } from '@/utils/typing.ts';
@@ -160,6 +161,15 @@ export abstract class BaseEdit extends BaseAction {
       geoJsonFeatures,
     };
     await this.gm.events.fire(`${GM_SYSTEM_PREFIX}:${this.actionType}`, payload);
+
+    const allowed = await allowBeforeChange(this.gm, {
+      operation: 'update',
+      featureId: features[0]?.id ?? null,
+      geometry: geoJsonFeatures[0]?.geometry ?? null,
+    });
+    if (!allowed) {
+      this.flags.featureUpdateAllowed = false;
+    }
   }
 
   async fireFeatureUpdatedEvent({

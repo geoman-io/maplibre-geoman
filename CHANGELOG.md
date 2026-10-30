@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `settings.beforeChange` can refuse a create, update, or vertex removal before it is written. Vertex removal of a degenerate shape now emits `gm:remove` while the feature is still in the store ([#256](https://github.com/geoman-io/maplibre-geoman/issues/256)).
+- `settings.polygonSelfIntersection` (`'split'` | `'reject'`, default `'split'`) and `settings.polygonAsPolygon` (default `false`). A refused polygon draw fires `gm:draw:rejected` and leaves the drawing open ([#257](https://github.com/geoman-io/maplibre-geoman/issues/257)).
+
+### Fixed
+
+- `mergeGeoJsonDiff` no longer scans every pending add when a remove is queued, so editing a large polygon no longer freezes the map ([#254](https://github.com/geoman-io/maplibre-geoman/issues/254)).
+- User-supplied option arrays, including empty ones, replace the default instead of being merged like layer styles. Keyboard bindings can be cleared with `[]` ([#255](https://github.com/geoman-io/maplibre-geoman/issues/255)).
+- Closing a polygon no longer creates it when the closing click was refused, and a zero-area ring is refused instead of saved. The section added by the closing click is included in the finished ring ([#257](https://github.com/geoman-io/maplibre-geoman/issues/257), [#259](https://github.com/geoman-io/maplibre-geoman/issues/259)).
+- `importGeoJson` no longer reverses LineString and MultiLineString coordinates. Polygon rings are still rewound to the RFC 7946 right-hand rule ([#260](https://github.com/geoman-io/maplibre-geoman/issues/260)).
+- The text-marker textarea is opaque, with a background, text color, and stacking order, so typed text stays visible ([#253](https://github.com/geoman-io/maplibre-geoman/issues/253)).
+
 ## [0.10.2] - 2026-10-21
 
 ### Changed
