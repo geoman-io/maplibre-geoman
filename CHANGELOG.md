@@ -4,12 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Fixed
-
-- A slow `beforeChange` can no longer create a polygon after drawing was cancelled, and a refused first-vertex close fires `gm:draw:rejected`.
-- A refused drag no longer writes circle or ellipse center metadata, and `gm:remove` from a vertex deletion is delivered while the feature is still in the store.
-- Clicking the only vertex of a line in progress no longer creates a zero-length line.
-- `gm:draw:rejected` is a typed public event.
+## [0.10.3] - 2026-10-30
 
 ### Added
 
@@ -18,6 +13,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- A slow `beforeChange` can no longer create a polygon after drawing was cancelled, and a refused first-vertex close fires `gm:draw:rejected`.
+- A refused drag no longer writes circle or ellipse center metadata, and `gm:remove` from a vertex deletion is delivered while the feature is still in the store.
+- Clicking the only vertex of a line in progress no longer creates a zero-length line.
+- `gm:draw:rejected` is a typed public event.
 - `mergeGeoJsonDiff` no longer scans every pending add when a remove is queued, so editing a large polygon no longer freezes the map ([#254](https://github.com/geoman-io/maplibre-geoman/issues/254)).
 - User-supplied option arrays, including empty ones, replace the default instead of being merged like layer styles. Keyboard bindings can be cleared with `[]` ([#255](https://github.com/geoman-io/maplibre-geoman/issues/255)).
 - Closing a polygon no longer creates it when the closing click was refused, and a zero-area ring is refused instead of saved. The section added by the closing click is included in the finished ring ([#257](https://github.com/geoman-io/maplibre-geoman/issues/257), [#259](https://github.com/geoman-io/maplibre-geoman/issues/259)).
