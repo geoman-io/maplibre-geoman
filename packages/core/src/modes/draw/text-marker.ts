@@ -86,7 +86,18 @@ export class DrawTextMarker extends BaseDraw {
     this.textarea.style.position = 'absolute';
     this.textarea.style.left = `${point[0]}px`;
     this.textarea.style.top = `${point[1]}px`;
-    this.textarea.style.opacity = '0.7';
+    this.textarea.style.zIndex = '5';
+    this.textarea.style.minWidth = '140px';
+    this.textarea.style.minHeight = '36px';
+    this.textarea.style.padding = '4px 6px';
+    this.textarea.style.margin = '0';
+    this.textarea.style.font = '14px/1.3 sans-serif';
+    this.textarea.style.color = '#1a1a1a';
+    this.textarea.style.background = '#ffffff';
+    this.textarea.style.border = '1px solid #278cda';
+    this.textarea.style.borderRadius = '2px';
+    this.textarea.style.opacity = '1';
+    this.textarea.style.resize = 'both';
     this.gm.mapAdapter.getContainer().appendChild(this.textarea);
     this.textarea.focus();
   }

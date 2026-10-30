@@ -11,9 +11,18 @@ const replaceArraysCustomizer = (_objValue: unknown, srcValue: unknown) => {
   return undefined;
 };
 
+const isLayerList = (value: unknown[]): boolean => value.length > 0 && value.every(isPartialLayer);
+
 export const mergeByTypeCustomizer = (objValue: unknown, srcValue: unknown) => {
   if (!Array.isArray(objValue) || !Array.isArray(srcValue)) {
     return undefined;
+  }
+
+  // The layer-style merge (by `type`) must not run for other arrays, such as
+  // keyboard bindings. An empty array used to keep the last default item, and a
+  // non-empty one was merged index by index (#255). Replace those outright.
+  if (!isLayerList(objValue) && !isLayerList(srcValue)) {
+    return cloneDeep(srcValue);
   }
 
   if (srcValue.some((item) => !isPartialLayer(item))) {

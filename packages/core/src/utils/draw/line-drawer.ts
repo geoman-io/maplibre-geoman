@@ -185,26 +185,66 @@ export class LineDrawer extends BaseDraw {
     }
 
     const totalMarkersCount = this.featureData.markers.size;
-    const eventData = this.getMarkerClickEventData(clickedMarkerInfo.index);
+    const closesOnFirst = clickedMarkerInfo.index === 0;
+    const closesOnLast =
+      clickedMarkerInfo.index > 0 && clickedMarkerInfo.index === totalMarkersCount - 1;
 
-    if (clickedMarkerInfo.index < totalMarkersCount - 1) {
-      // a point should be added all cases except the last marker clicked (including -1 index)
-      await this.addPoint(lngLat, clickedMarkerInfo);
-    }
-
-    if (clickedMarkerInfo.index === -1) {
+    // A closing click must not commit its vertex (or a traced section) until the
+    // finish handler accepts the ring. Building the event before addPoint also
+    // dropped the section traced by that click (#257, #259).
+    if (closesOnFirst || closesOnLast) {
+      await this.finishOnMarker(lngLat, clickedMarkerInfo, closesOnFirst);
       return;
     }
 
-    if (clickedMarkerInfo.index === 0) {
-      this.drawerEventHandlers.firstMarkerClick?.(eventData);
-    } else if (clickedMarkerInfo.index > 0 && clickedMarkerInfo.index === totalMarkersCount - 1) {
-      this.drawerEventHandlers.lastMarkerClick?.(eventData);
+    if (clickedMarkerInfo.index < totalMarkersCount - 1) {
+      const accepted = await this.addPoint(lngLat, clickedMarkerInfo);
+      if (!accepted) {
+        return;
+      }
     }
 
     if (clickedMarkerInfo.index >= 0) {
-      this.drawerEventHandlers.nMarkerClick?.(eventData);
+      const eventData = this.getMarkerClickEventData(clickedMarkerInfo.index);
+      await this.drawerEventHandlers.nMarkerClick?.(eventData);
     }
+  }
+
+  /**
+   * Close the in-progress shape on the first or last vertex. The prospective
+   * coordinates include any auto-traced section, but they are not written onto
+   * the temporary feature unless the finish handler ends the shape.
+   */
+  async finishOnMarker(lngLat: LngLatTuple, clickedMarkerInfo: MarkerInfo, closesOnFirst: boolean) {
+    let coordinates = this.getShapeCoordinates({ withControlMarker: false });
+
+    if (closesOnFirst) {
+      const addedLngLats = this.getAddedLngLats(lngLat, clickedMarkerInfo);
+      const candidate = coordinates.concat(addedLngLats);
+      const featureGeoJson = this.getFeatureGeoJsonWithType({
+        withControlMarker: false,
+        coordinates: candidate,
+      });
+      if (!(await this.isFeatureAllowed(featureGeoJson))) {
+        return;
+      }
+      coordinates = candidate;
+    }
+
+    const geoJson = this.getFeatureGeoJson({ withControlMarker: false, coordinates });
+    const eventData: LineEventHandlerArguments = {
+      markerIndex: clickedMarkerInfo.index,
+      shapeCoordinates: coordinates,
+      geoJson,
+      bounds: getGeoJsonBounds(geoJson),
+    };
+
+    if (closesOnFirst) {
+      await this.drawerEventHandlers.firstMarkerClick?.(eventData);
+    } else {
+      await this.drawerEventHandlers.lastMarkerClick?.(eventData);
+    }
+    await this.drawerEventHandlers.nMarkerClick?.(eventData);
   }
 
   getMarkerClickEventData(markerIndex: number): LineEventHandlerArguments {
@@ -360,11 +400,11 @@ export class LineDrawer extends BaseDraw {
     return { index: closestIndex, path: closestPath };
   }
 
-  async addPoint(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo) {
+  async addPoint(newLngLat: LngLatTuple, existingMarkerInfo: MarkerInfo): Promise<boolean> {
     const featureData = this.featureData;
     if (!featureData) {
       log.error('LineDrawer.addPoint: no featureData');
-      return;
+      return false;
     }
 
     const addedLngLats = this.getAddedLngLats(newLngLat, existingMarkerInfo);
@@ -373,14 +413,17 @@ export class LineDrawer extends BaseDraw {
       coordinates: this.shapeLngLats.concat(addedLngLats),
     });
 
-    if (await this.isFeatureAllowed(featureGeoJson)) {
-      for (const lngLat of addedLngLats) {
-        this.shapeLngLats.push(lngLat);
-        const markerData = this.addMarker(lngLat, featureData);
-        await this.fireUpdateEvent(featureData, markerData);
-      }
-      await this.updateFeatureSource();
+    if (!(await this.isFeatureAllowed(featureGeoJson))) {
+      return false;
     }
+
+    for (const lngLat of addedLngLats) {
+      this.shapeLngLats.push(lngLat);
+      const markerData = this.addMarker(lngLat, featureData);
+      await this.fireUpdateEvent(featureData, markerData);
+    }
+    await this.updateFeatureSource();
+    return true;
   }
 
   async isFeatureAllowed(featureGeoJson: GeoJsonShapeFeature) {
