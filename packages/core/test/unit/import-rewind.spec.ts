@@ -16,6 +16,30 @@ vi.mock('@tests/types.ts', () => ({
 import { fixGeoJsonFeature } from '@/utils/features.ts';
 
 describe('fixGeoJsonFeature winding', () => {
+  it('rejects a polygon that turf rewind cannot parse', () => {
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Polygon', coordinates: [] },
+      }),
+    ).toBeNull();
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Polygon', coordinates: [null] },
+      } as never),
+    ).toBeNull();
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: null,
+      } as never),
+    ).toBeNull();
+  });
+
   it('rejects a feature with a non-finite coordinate', () => {
     expect(
       fixGeoJsonFeature({

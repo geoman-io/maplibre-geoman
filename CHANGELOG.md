@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Importing GeoJSON with a `NaN` or `Infinity` coordinate is rejected instead of being stored as a feature.
+- A malformed polygon (empty ring, null hole, or null geometry) no longer throws inside `@turf/rewind` and aborts the rest of the import. That feature is counted as failed.
 
 ## [0.10.4] - 2026-10-30
 

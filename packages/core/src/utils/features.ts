@@ -230,7 +230,10 @@ const hasNonFiniteCoordinate = (value: unknown): boolean => {
 };
 
 export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportFeature | null => {
-  if (hasNonFiniteCoordinate(feature.geometry?.coordinates)) {
+  if (!feature?.geometry) {
+    return null;
+  }
+  if (hasNonFiniteCoordinate(feature.geometry.coordinates)) {
     return null;
   }
 
@@ -240,7 +243,16 @@ export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportF
     // meaningful direction. Only polygons have a winding (#260).
     const isPolygon =
       feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
-    const resultFeature = isPolygon ? rewind(feature, { mutate: false }) : feature;
+    let resultFeature = feature;
+    if (isPolygon) {
+      try {
+        // Empty rings, null holes, and other malformed coordinates throw inside
+        // turf and would abort the whole import batch.
+        resultFeature = rewind(feature, { mutate: false }) as typeof feature;
+      } catch {
+        return null;
+      }
+    }
     if (resultFeature.type === 'Feature' && isLineBasedGeoJsonFeature(resultFeature)) {
       const fixedFeature: GeoJsonImportFeature = {
         ...resultFeature,
