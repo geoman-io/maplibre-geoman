@@ -41,6 +41,11 @@ export const preparePolygonFinish = (
   if (open.length < 3) {
     return { ok: false, reason: 'too_few_vertices' };
   }
+  // NaN/Infinity vertices make spherical area non-finite, and `Infinity > 0`
+  // would otherwise accept the ring.
+  if (open.some((position) => !Number.isFinite(position[0]) || !Number.isFinite(position[1]))) {
+    return { ok: false, reason: 'invalid' };
+  }
 
   // Exactly collinear clicks have a non-zero spherical area residue (#266).
   if (isDegenerateRing(open)) {
@@ -58,7 +63,12 @@ export const preparePolygonFinish = (
     const unkinked = unkinkPolygon(polygon);
     // A bowtie can have zero net area and still split into positive-area parts.
     // Only refuse a ring when unkinking leaves nothing with area (#257).
-    if (!unkinked.features.some((feature) => area(feature) > 0)) {
+    if (
+      !unkinked.features.some((feature) => {
+        const featureArea = area(feature);
+        return Number.isFinite(featureArea) && featureArea > 0;
+      })
+    ) {
       return { ok: false, reason: 'zero_area' };
     }
     if (options.selfIntersection === 'reject' && unkinked.features.length > 1) {

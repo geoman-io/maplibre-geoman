@@ -45,6 +45,30 @@ describe('preparePolygonFinish', () => {
     ).toEqual({ ok: false, reason: 'zero_area' });
   });
 
+  it('refuses a ring with a non-finite vertex', () => {
+    expect(
+      preparePolygonFinish(
+        [
+          [0, 0],
+          [1, 0],
+          [1, Number.NaN],
+        ],
+        { selfIntersection: 'split', asPolygon: true },
+      ),
+    ).toEqual({ ok: false, reason: 'invalid' });
+
+    expect(
+      preparePolygonFinish(
+        [
+          [0, 0],
+          [1, 0],
+          [0, Number.POSITIVE_INFINITY],
+        ],
+        { selfIntersection: 'reject', asPolygon: false },
+      ),
+    ).toEqual({ ok: false, reason: 'invalid' });
+  });
+
   it('keeps a thin triangle that is not collinear', () => {
     const thin = preparePolygonFinish(
       [
