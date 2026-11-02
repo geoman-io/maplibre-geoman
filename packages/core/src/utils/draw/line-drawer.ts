@@ -14,6 +14,7 @@ import { BaseDraw } from '@/modes/draw/base.ts';
 
 import { convertToThrottled } from '@/utils/behavior.ts';
 import { fireDrawRejected } from '@/utils/draw/draw-rejected.ts';
+import { fireDrawUpdate } from '@/utils/draw/draw-update.ts';
 import { getGeoJsonBounds, lngLatToGeoJsonPoint } from '@/utils/geojson.ts';
 import { isGmHelperEvent } from '@/utils/guards/events/helper.ts';
 import { isAutoTraceHelper, isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
@@ -26,6 +27,11 @@ import log from 'loglevel';
 type LineDrawerOptions = {
   snappingMarkers: 'first' | 'last' | 'all' | 'none';
   targetShape: Extract<ShapeName, 'line' | 'polygon'>;
+  /**
+   * Polygon finish checks `beforeChange` once, on the prepared geometry.
+   * Without this, the closing click is also checked as a draft vertex (#268).
+   */
+  deferCloseCheck?: boolean;
 };
 
 type MarkerInfo = {
@@ -229,17 +235,21 @@ export class LineDrawer extends BaseDraw {
     if (appendClose) {
       const addedLngLats = this.getAddedLngLats(lngLat, clickedMarkerInfo);
       const candidate = coordinates.concat(addedLngLats);
-      const featureGeoJson = this.getFeatureGeoJsonWithType({
-        withControlMarker: false,
-        coordinates: candidate,
-      });
-      if (!(await this.isFeatureAllowed(featureGeoJson))) {
-        await fireDrawRejected(this.gm, {
-          mode: 'polygon',
-          shape: 'polygon',
-          reason: 'creation_rejected',
+      // Polygon finish performs the single beforeChange on the prepared ring.
+      // Other close handlers still veto the closing section here.
+      if (!this.drawOptions.deferCloseCheck) {
+        const featureGeoJson = this.getFeatureGeoJsonWithType({
+          withControlMarker: false,
+          coordinates: candidate,
         });
-        return;
+        if (!(await this.isFeatureAllowed(featureGeoJson))) {
+          await fireDrawRejected(this.gm, {
+            mode: 'polygon',
+            shape: 'polygon',
+            reason: 'creation_rejected',
+          });
+          return;
+        }
       }
       coordinates = candidate;
     }
@@ -303,6 +313,7 @@ export class LineDrawer extends BaseDraw {
 
       this.setSnapping();
       await this.fireStartEvent(this.featureData, markerData);
+      await this.notifyDraft();
     }
     this.gm.mapAdapter.disableMapInteractions(['doubleClickZoom']);
   }
@@ -436,7 +447,49 @@ export class LineDrawer extends BaseDraw {
       await this.fireUpdateEvent(featureData, markerData);
     }
     await this.updateFeatureSource();
+    await this.notifyDraft();
     return true;
+  }
+
+  /**
+   * Step back one vertex of the in-progress shape without cancelling it.
+   * Removing the only remaining vertex ends the shape. Returns false when
+   * nothing is being drawn.
+   */
+  async removeLastVertex(): Promise<boolean> {
+    const featureData = this.featureData;
+    if (!featureData || !this.shapeLngLats.length) {
+      return false;
+    }
+
+    const lastMarkerKey = Array.from(featureData.markers.keys()).at(-1);
+    if (lastMarkerKey !== undefined) {
+      const markerData = featureData.markers.get(lastMarkerKey);
+      if (markerData?.type === 'dom') {
+        markerData.instance.remove();
+      }
+      featureData.markers.delete(lastMarkerKey);
+    }
+
+    if (this.shapeLngLats.length === 1) {
+      await this.endShape();
+      await this.notifyDraft();
+      return true;
+    }
+
+    this.shapeLngLats.pop();
+    await this.updateFeatureSource();
+    this.setSnapping();
+    this.updateSnapGuides();
+    await this.notifyDraft();
+    return true;
+  }
+
+  private async notifyDraft() {
+    await fireDrawUpdate(this.gm, {
+      shape: this.drawOptions.targetShape,
+      coordinates: this.shapeLngLats.map((coordinate) => [coordinate[0], coordinate[1]]),
+    });
   }
 
   async isFeatureAllowed(featureGeoJson: GeoJsonShapeFeature) {

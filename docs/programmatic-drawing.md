@@ -28,8 +28,11 @@ if (result.ok) {
 await gm.draw.create({ shape: 'marker', coordinates: [0, 0] });
 await gm.draw.create({ shape: 'circle', center: [12, 55], radiusMeters: 500 });
 await gm.draw.create({
-  shape: 'rectangle', center: [12, 55],
-  widthMeters: 100, heightMeters: 100, angleDegrees: 0,
+  shape: 'rectangle',
+  center: [12, 55],
+  widthMeters: 100,
+  heightMeters: 100,
+  angleDegrees: 0,
 });
 ```
 
@@ -55,7 +58,9 @@ const result = await gm.draw.finish();
 
 // Or supply a complete matching input to replace the preview (even if incomplete):
 const exact = await gm.draw.finish({
-  shape: 'circle', center: [12.5, 55.7], radiusMeters: 500,
+  shape: 'circle',
+  center: [12.5, 55.7],
+  radiusMeters: 500,
 });
 ```
 
@@ -76,6 +81,26 @@ result, clear existing features, or zoom the map. Finish or cancel an active dra
 before using `create()`. To update an existing feature, use the feature/edit API;
 repeated `create()` calls intentionally create separate features.
 
+## Following a line or polygon draft
+
+`gm.draw.getDraft()` returns the placed vertices of the in-progress line or polygon,
+or `null` when nothing is being drawn. It does not include the cursor preview.
+`gm.draw.removeLastVertex()` removes the last placed vertex, the same action as
+Backspace, and returns `false` when there is nothing to remove.
+
+`gm:drawupdate` fires after a vertex is added or removed. It is a notification:
+`{ shape, coordinates }`. It does not fire while the cursor is only moving, and it
+is not a veto. Closing a polygon calls `settings.beforeChange` once, with the
+geometry that would be created. A refused close leaves the draft open.
+
+```ts
+gm.map.on('gm:drawupdate', (event) => {
+  const draft = gm.draw.getDraft();
+  console.log(event.shape, draft?.coordinates.length);
+});
+await gm.draw.removeLastVertex();
+```
+
 ## Events and validation
 
 Creation uses the same internal commit path as interactive drawing. `gm:create`
@@ -90,17 +115,17 @@ Import APIs remain intended for loading existing data and have different event s
 Success is `{ ok: true, feature: FeatureData }`. Expected rejections are
 `{ ok: false, reason }`:
 
-| Reason | Meaning |
-| --- | --- |
-| `not_loaded` / `destroyed` | Geoman is not ready, or has been destroyed. |
-| `busy` | Another draw API operation or pointer handler is in flight. Retry after it settles. |
-| `active_draw` | `create()` was called while a draw mode was active. |
-| `no_active_draw` | `finish()` has no active drawing, or it changed during validation. |
-| `unsupported_shape` | This initial API supports marker, circle, and rectangle only. |
-| `shape_mismatch` | The supplied shape differs from the active draw mode. |
-| `invalid_input` | Invalid coordinates, dimensions, properties, or generated geometry. |
-| `incomplete_draft` | The current preview cannot be committed. |
-| `creation_rejected` | Creation was rejected by validation or the target source. |
+| Reason                     | Meaning                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `not_loaded` / `destroyed` | Geoman is not ready, or has been destroyed.                                         |
+| `busy`                     | Another draw API operation or pointer handler is in flight. Retry after it settles. |
+| `active_draw`              | `create()` was called while a draw mode was active.                                 |
+| `no_active_draw`           | `finish()` has no active drawing, or it changed during validation.                  |
+| `unsupported_shape`        | This initial API supports marker, circle, and rectangle only.                       |
+| `shape_mismatch`           | The supplied shape differs from the active draw mode.                               |
+| `invalid_input`            | Invalid coordinates, dimensions, properties, or generated geometry.                 |
+| `incomplete_draft`         | The current preview cannot be committed.                                            |
+| `creation_rejected`        | Creation was rejected by validation or the target source.                           |
 
 Overlapping calls do not queue or create duplicates: a concurrent call returns
 `busy`. Sequential `finish()` calls cannot save the same preview twice. Unexpected

@@ -12,7 +12,11 @@ import type { BaseMapEvent } from '@mapLib/types/events.ts';
 export class DrawPolygon extends BaseDraw {
   mode: DrawModeName = 'polygon';
   shape: ShapeName = 'polygon';
-  lineDrawer = new LineDrawer(this.gm, { snappingMarkers: 'first', targetShape: 'polygon' });
+  lineDrawer = new LineDrawer(this.gm, {
+    snappingMarkers: 'first',
+    targetShape: 'polygon',
+    deferCloseCheck: true,
+  });
   eventHandlers = {
     [`${GM_SYSTEM_PREFIX}:draw`]: this.forwardLineDrawerEvent.bind(this),
     mousemove: this.onMouseMove.bind(this),

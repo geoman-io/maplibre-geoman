@@ -1,7 +1,7 @@
 import { FEATURE_ID_PROPERTY } from '@/core/features/constants.ts';
 import type { Geoman } from '@/main.ts';
 import { BaseDraw } from '@/modes/draw/base.ts';
-import type { DrawInput, DrawResult } from '@/types/draw-api.ts';
+import type { DrawDraft, DrawInput, DrawResult } from '@/types/draw-api.ts';
 import type { EventHandlers, MapHandlerReturnData } from '@/types/events/bus.ts';
 import type { DrawModeName, ShapeName } from '@/types/modes/index.ts';
 import { buildDrawFeature, isCompleteDrawFeature } from '@/utils/draw-input.ts';
@@ -48,6 +48,63 @@ export class GmDrawApi {
   /** Commit the current preview, or replace it with a complete matching input, then disable drawing. */
   finish(input?: DrawInput): Promise<DrawResult> {
     return this.commit(input, true);
+  }
+
+  /**
+   * Placed vertices of the in-progress line or polygon, or null when nothing is
+   * being drawn. Does not include the cursor preview (#268).
+   */
+  getDraft(): DrawDraft | null {
+    const drawer = this.activeLineDrawer();
+    if (!drawer?.featureData || drawer.shapeLngLats.length === 0) return null;
+    return {
+      shape: drawer.drawOptions.targetShape,
+      coordinates: drawer.shapeLngLats.map((coordinate) => [coordinate[0], coordinate[1]]),
+    };
+  }
+
+  /**
+   * Remove the last placed vertex, the same action as the keyboard binding.
+   * Returns false when no line or polygon is in progress.
+   */
+  removeLastVertex(): Promise<boolean> {
+    const drawer = this.activeLineDrawer();
+    if (!drawer?.featureData) return Promise.resolve(false);
+    return drawer.removeLastVertex();
+  }
+
+  private activeLineDrawer(): {
+    featureData: unknown;
+    shapeLngLats: Array<[number, number]>;
+    drawOptions: { targetShape: ShapeName };
+    removeLastVertex: () => Promise<boolean>;
+  } | null {
+    for (const instance of Object.values(this.gm.actionInstances)) {
+      if (!instance || !('lineDrawer' in instance)) continue;
+      const drawer = instance.lineDrawer;
+      if (
+        drawer &&
+        typeof drawer === 'object' &&
+        'featureData' in drawer &&
+        drawer.featureData &&
+        'shapeLngLats' in drawer &&
+        Array.isArray(drawer.shapeLngLats) &&
+        'drawOptions' in drawer &&
+        drawer.drawOptions &&
+        typeof drawer.drawOptions === 'object' &&
+        'targetShape' in drawer.drawOptions &&
+        'removeLastVertex' in drawer &&
+        typeof drawer.removeLastVertex === 'function'
+      ) {
+        return drawer as {
+          featureData: unknown;
+          shapeLngLats: Array<[number, number]>;
+          drawOptions: { targetShape: ShapeName };
+          removeLastVertex: () => Promise<boolean>;
+        };
+      }
+    }
+    return null;
   }
 
   private async commit(input: DrawInput | undefined, finishing: boolean): Promise<DrawResult> {

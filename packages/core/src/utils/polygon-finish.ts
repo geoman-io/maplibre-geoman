@@ -3,6 +3,7 @@ import turfClone from '@turf/clone';
 import combine from '@turf/combine';
 import unkinkPolygon from '@turf/unkink-polygon';
 import type { Feature, MultiPolygon, Polygon, Position } from 'geojson';
+import { isDegenerateRing } from '@/utils/ring-degeneracy.ts';
 
 export type PolygonSelfIntersection = 'split' | 'reject';
 
@@ -39,6 +40,11 @@ export const preparePolygonFinish = (
   const open = withoutClosingVertex(coordinates);
   if (open.length < 3) {
     return { ok: false, reason: 'too_few_vertices' };
+  }
+
+  // Exactly collinear clicks have a non-zero spherical area residue (#266).
+  if (isDegenerateRing(open)) {
+    return { ok: false, reason: 'zero_area' };
   }
 
   const ring = [...open, open[0]];

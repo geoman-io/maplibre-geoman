@@ -31,6 +31,30 @@ describe('preparePolygonFinish', () => {
         { selfIntersection: 'split', asPolygon: false },
       ),
     ).toEqual({ ok: false, reason: 'zero_area' });
+
+    // Identical latitudes, but spherical area is a non-zero residue (#266).
+    expect(
+      preparePolygonFinish(
+        [
+          [-0.00858306884865101, 0.004291534420332255],
+          [-0.00429153442507868, 0.004291534420332255],
+          [-7.673861546209082e-13, 0.004291534420332255],
+        ],
+        { selfIntersection: 'reject', asPolygon: true },
+      ),
+    ).toEqual({ ok: false, reason: 'zero_area' });
+  });
+
+  it('keeps a thin triangle that is not collinear', () => {
+    const thin = preparePolygonFinish(
+      [
+        [0, 0],
+        [0.01, 0],
+        [0.005, 0.000001],
+      ],
+      { selfIntersection: 'reject', asPolygon: true },
+    );
+    expect(thin.ok).toBe(true);
   });
 
   it('splits a crossing ring by default and can reject it', () => {
