@@ -59,6 +59,7 @@ export class ShapeMarkersHelper extends BaseHelper {
   edgeMarkersAllowed: boolean = false;
   private unbindPointerRelease: (() => void) | null = null;
   private dragToken = 0;
+  private parkedMarkers: Array<FeatureData> = [];
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
   eventHandlers = {
@@ -114,6 +115,7 @@ export class ShapeMarkersHelper extends BaseHelper {
 
   async onEndAction() {
     this.releasePointerBinding();
+    await this.restoreParkedMarkers();
     this.gm.markerPointer.disable();
 
     this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
@@ -207,9 +209,12 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.dragToken += 1;
     const token = this.dragToken;
     this.releasePointerBinding();
+    const canvas = this.gm.mapAdapter.getContainer().querySelector('canvas');
     this.unbindPointerRelease = bindWindowPointerRelease(() => {
-      void this.finishMarkerDrag(token, null);
-    });
+      void this.finishMarkerDrag(token, null).catch((error) => {
+        log.error('ShapeMarkersHelper.finishMarkerDrag', error);
+      });
+    }, canvas);
   }
 
   private releasePointerBinding() {
@@ -244,6 +249,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.snappingHelper?.clearExcludedFeatures();
     this.previousPosition = null;
     this.gm.mapAdapter.setDragPan(true);
+    await this.restoreParkedMarkers();
 
     await this.sendMarkerEvent(
       'marker_released',
@@ -573,7 +579,9 @@ export class ShapeMarkersHelper extends BaseHelper {
       return;
     }
 
-    if (await this.updateDraggedVertexMarkers(featureData)) return;
+    // Rotate and whole-shape drags also move a vertex marker, but every vertex
+    // changes. Only a change-mode vertex edit may take the incremental path.
+    if (event.mode === 'change' && (await this.updateDraggedVertexMarkers(featureData))) return;
 
     if (this.activeMarker?.type === 'edge') {
       this.activeMarker = await this.convertToVertexMarker(this.activeMarker);
@@ -777,6 +785,18 @@ export class ShapeMarkersHelper extends BaseHelper {
   private async parkMarker(marker: MarkerData) {
     if (marker.type === 'dom' || marker.instance.source.id === SOURCES.temporary) return;
     await marker.instance.changeSource({ sourceName: SOURCES.temporary, includeMarkers: false });
+    this.parkedMarkers.push(marker.instance);
+  }
+
+  /** Put parked markers back in internal, including pin-shared markers the edit mode does not restore. */
+  private async restoreParkedMarkers() {
+    const parked = this.parkedMarkers;
+    this.parkedMarkers = [];
+    for (const marker of parked) {
+      if (marker.source.id === SOURCES.temporary) {
+        await marker.changeSource({ sourceName: SOURCES.internal, includeMarkers: false });
+      }
+    }
   }
 
   async sendMarkerEvent(

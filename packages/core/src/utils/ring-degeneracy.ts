@@ -1,9 +1,12 @@
 import type { MultiPolygon, Polygon, Position } from 'geojson';
 
 /**
- * Exact 2D orientation of `c` relative to the directed line `a -> b`.
+ * Exact 2D orientation of the triangle `(a, b, c)`.
  * `0` means the three positions are collinear in exact arithmetic, so a thin
  * valid triangle is not rejected by a tolerance (#266).
+ *
+ * The sign is the opposite of Shewchuk's `orient2d(a, b, c)` because the float
+ * filter uses `(a - c) × (b - c)`. Callers only test `=== 0`.
  */
 export const orientation = (
   ax: number,

@@ -481,11 +481,15 @@ export class LineDrawer extends BaseDraw {
     await this.updateFeatureSource();
     this.setSnapping();
     this.updateSnapGuides();
+    const remaining = Array.from(featureData.markers.values()).at(-1);
+    if (remaining) await this.fireUpdateEvent(featureData, remaining);
     await this.notifyDraft();
     return true;
   }
 
   private async notifyDraft() {
+    // Edit modes such as cut reuse this drawer. The public event is for drawing.
+    if (!this.gm.getActiveDrawModes().length) return;
     await fireDrawUpdate(this.gm, {
       shape: this.drawOptions.targetShape,
       coordinates: this.shapeLngLats.map((coordinate) => [coordinate[0], coordinate[1]]),

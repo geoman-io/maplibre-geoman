@@ -64,10 +64,12 @@ export class GmDrawApi {
   }
 
   /**
-   * Remove the last placed vertex, the same action as the keyboard binding.
-   * Returns false when no line or polygon is in progress.
+   * Remove the last placed vertex of the active line or polygon draw.
+   * Returns false when no line or polygon is in progress, or a pointer
+   * handler is already in flight.
    */
   removeLastVertex(): Promise<boolean> {
+    if (this.pending || this.interactions > 0) return Promise.resolve(false);
     const drawer = this.activeLineDrawer();
     if (!drawer?.featureData) return Promise.resolve(false);
     return drawer.removeLastVertex();
@@ -79,8 +81,10 @@ export class GmDrawApi {
     drawOptions: { targetShape: ShapeName };
     removeLastVertex: () => Promise<boolean>;
   } | null {
-    for (const instance of Object.values(this.gm.actionInstances)) {
-      if (!instance || !('lineDrawer' in instance)) continue;
+    for (const [key, instance] of Object.entries(this.gm.actionInstances)) {
+      // Cut and other edit modes also own a line drawer. The public draft API
+      // follows drawing only.
+      if (!key.startsWith('draw__') || !instance || !('lineDrawer' in instance)) continue;
       const drawer = instance.lineDrawer;
       if (
         drawer &&

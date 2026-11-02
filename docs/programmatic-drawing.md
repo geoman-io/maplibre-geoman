@@ -85,8 +85,9 @@ repeated `create()` calls intentionally create separate features.
 
 `gm.draw.getDraft()` returns the placed vertices of the in-progress line or polygon,
 or `null` when nothing is being drawn. It does not include the cursor preview.
-`gm.draw.removeLastVertex()` removes the last placed vertex, the same action as
-Backspace, and returns `false` when there is nothing to remove.
+`gm.draw.removeLastVertex()` removes the last placed vertex of the active line
+or polygon draw, and returns `false` when there is nothing to remove or a
+pointer handler is already in flight. It does not affect edit modes such as cut.
 
 `gm:drawupdate` fires after a vertex is added or removed. It is a notification:
 `{ shape, coordinates }`. It does not fire while the cursor is only moving, and it
