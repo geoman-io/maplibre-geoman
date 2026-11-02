@@ -26,6 +26,7 @@ import type { Feature, LineString, MultiPolygon, Polygon } from 'geojson';
 import { cloneDeep, get } from 'lodash-es';
 import log from 'loglevel';
 import { isSnapGuidesHelper } from '@/utils/guards/interfaces.ts';
+import { vertexDragKeepsMarkerSources } from '@/utils/vertex-segments.ts';
 import {
   getRectangleCornerCoordinates,
   getRectanglePropertiesFromDiagonal,
@@ -101,7 +102,13 @@ export class EditChange extends BaseDrag {
       await this.insertVertex(event);
     } else if (event.action === 'marker_captured') {
       this.setCursorToPointer();
-      await event.featureData.changeSource({ sourceName: SOURCES.temporary });
+      await event.featureData.changeSource({
+        sourceName: SOURCES.temporary,
+        includeMarkers: !vertexDragKeepsMarkerSources(
+          event.markerData?.type,
+          event.featureData.shape,
+        ),
+      });
       this.flags.actionInProgress = true;
       await this.fireFeatureEditStartEvent({ feature: event.featureData });
     } else if (event.action === 'marker_released') {

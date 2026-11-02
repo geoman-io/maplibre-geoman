@@ -4,9 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.5] - 2026-11-02
+
+### Added
+
+- `gm.draw.getDraft()` and `gm.draw.removeLastVertex()` expose the in-progress line or polygon, and `gm:drawupdate` fires after a vertex is added or removed. Closing a polygon calls `settings.beforeChange` once, with the geometry that would be created ([#268](https://github.com/geoman-io/maplibre-geoman/issues/268)).
+
 ### Fixed
 
 - Importing GeoJSON with a `NaN` or `Infinity` coordinate is rejected instead of being stored as a feature.
+- Releasing a vertex drag over an application toolbar or a Geoman control ends the edit, enables map panning again, and returns the feature to the main source ([#269](https://github.com/geoman-io/maplibre-geoman/issues/269)).
+- Three exactly collinear clicks no longer create a polygon. The check uses exact orientation, so a thin valid triangle is still accepted. Clicks that only line up on screen, and are not collinear in longitude/latitude, are unchanged ([#266](https://github.com/geoman-io/maplibre-geoman/issues/266)).
+- Dragging one vertex of a large polygon updates that vertex and its two midpoints instead of every marker, and leaves the markers that do not move out of the temporary source ([#265](https://github.com/geoman-io/maplibre-geoman/issues/265)).
+- Polygon finish rejects rings that contain a non-finite longitude or latitude instead of creating a feature whose area is `NaN` or `Infinity`.
 
 ## [0.10.4] - 2026-10-30
 

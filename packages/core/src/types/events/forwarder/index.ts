@@ -25,6 +25,7 @@ export type GmFwdEventName =
   | 'create'
   | 'remove'
   | 'draw:rejected'
+  | 'drawupdate'
   | 'selection'
   | FwdEditModeName
   | `${FwdEditModeName}start`
@@ -41,12 +42,23 @@ export interface DrawRejectedFwdEvent {
   map: AnyMapInstance;
 }
 
+/** Fired after a draft vertex is added or removed. Notification only (#268). */
+export interface DrawUpdateFwdEvent {
+  name: `${GmPrefix}:drawupdate`;
+  actionType: 'draw';
+  action: 'update';
+  shape: ShapeName;
+  coordinates: Array<[number, number]>;
+  map: AnyMapInstance;
+}
+
 export type GmEvent =
   | SystemFwdEvent
   | GlobalModeToggledFwdEvent
   | FeatureFwdEvent
   | FeatureEditFwdEvent
-  | DrawRejectedFwdEvent;
+  | DrawRejectedFwdEvent
+  | DrawUpdateFwdEvent;
 
 export type * from '@/types/events/forwarder/edit.ts';
 export type * from '@/types/events/forwarder/features.ts';

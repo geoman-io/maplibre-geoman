@@ -44,7 +44,9 @@ for (const firstVertex of [true, false]) {
   });
 }
 
-for (const gate of ['closing-vertex', 'finished-polygon'] as const) {
+// Closing no longer calls beforeChange with the unprepared ring. The remaining
+// gate is the prepared geometry in polygonFinished (#268).
+for (const gate of ['finished-polygon'] as const) {
   test(`cancelling and restarting during the ${gate} hook cannot finish the old polygon`, async ({
     page,
   }) => {

@@ -1,5 +1,6 @@
 import type { FeatureData } from '@/core/features/feature-data.ts';
 import type { LngLatTuple } from '@/types/map/index.ts';
+import type { ShapeName } from '@/types/modes/index.ts';
 
 /** Coordinates are [longitude, latitude]; dimensions are ground metres. */
 export type DrawInput = (
@@ -30,3 +31,9 @@ export type DrawRejectionReason =
 export type DrawResult =
   | { ok: true; feature: FeatureData }
   | { ok: false; reason: DrawRejectionReason };
+
+/** Placed vertices of an in-progress line or polygon, not the cursor preview. */
+export type DrawDraft = {
+  shape: ShapeName;
+  coordinates: Array<LngLatTuple>;
+};
