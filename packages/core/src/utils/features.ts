@@ -221,7 +221,19 @@ export const getFeatureFirstPoint = (featureData: FeatureData): LngLatTuple | nu
   return getGeoJsonFirstPoint(shapeGeoJson);
 };
 
+const hasNonFiniteCoordinate = (value: unknown): boolean => {
+  if (!Array.isArray(value)) return false;
+  if (typeof value[0] === 'number') {
+    return !Number.isFinite(value[0]) || !Number.isFinite(value[1]);
+  }
+  return value.some((item) => hasNonFiniteCoordinate(item));
+};
+
 export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportFeature | null => {
+  if (hasNonFiniteCoordinate(feature.geometry?.coordinates)) {
+    return null;
+  }
+
   if (isLineBasedGeoJsonFeature(feature)) {
     // Rewind applies the RFC 7946 right-hand rule to polygon rings. `@turf/rewind`
     // also reverses some LineStrings based on where they sit, which drops a

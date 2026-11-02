@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Importing GeoJSON with a `NaN` or `Infinity` coordinate is rejected instead of being stored as a feature.
+
 ## [0.10.4] - 2026-10-30
 
 ### Fixed

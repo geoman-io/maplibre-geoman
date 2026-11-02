@@ -16,6 +16,34 @@ vi.mock('@tests/types.ts', () => ({
 import { fixGeoJsonFeature } from '@/utils/features.ts';
 
 describe('fixGeoJsonFeature winding', () => {
+  it('rejects a feature with a non-finite coordinate', () => {
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 0],
+              [1, Number.NaN],
+              [0, 0],
+            ],
+          ],
+        },
+      }),
+    ).toBeNull();
+
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [Number.POSITIVE_INFINITY, 1] },
+      }),
+    ).toBeNull();
+  });
+
   it('keeps LineString coordinate order', () => {
     const feature = {
       type: 'Feature' as const,
