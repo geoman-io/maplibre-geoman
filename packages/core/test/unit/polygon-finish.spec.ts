@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { preparePolygonFinish } from '@/utils/polygon-finish.ts';
+import { canFormPolygonRing, preparePolygonFinish } from '@/utils/polygon-finish.ts';
 
 const square = [
   [0, 0],
@@ -7,6 +7,27 @@ const square = [
   [1, 1],
   [0, 1],
 ] as Array<[number, number]>;
+
+describe('canFormPolygonRing', () => {
+  it('rejects the rings lineToPolygon throws on', () => {
+    expect(canFormPolygonRing(undefined)).toBe(false);
+    expect(canFormPolygonRing([[0, 0]])).toBe(false);
+    expect(
+      canFormPolygonRing([
+        [0, 0],
+        [1, 1],
+        [0, 0],
+      ]),
+    ).toBe(false);
+    expect(
+      canFormPolygonRing([
+        [0, 0],
+        [1, 0],
+        [1, 1],
+      ]),
+    ).toBe(true);
+  });
+});
 
 describe('preparePolygonFinish', () => {
   it('refuses a two-vertex close and a zero-area ring', () => {

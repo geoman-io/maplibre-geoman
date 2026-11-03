@@ -52,6 +52,22 @@ export const getRectangleCornerCoordinates = ({
   height: number;
   angle: number;
 }): Array<LngLatTuple> => {
+  // A stored `NaN` width/angle (the property check treats `NaN` as a number)
+  // makes `toWgs84` throw "unknown GeoJSON type" and aborts rotate/drag.
+  if (
+    !Number.isFinite(center[0]) ||
+    !Number.isFinite(center[1]) ||
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    !Number.isFinite(angle)
+  ) {
+    const fallback: LngLatTuple = [
+      Number.isFinite(center[0]) ? center[0] : 0,
+      Number.isFinite(center[1]) ? center[1] : 0,
+    ];
+    return [fallback, fallback, fallback, fallback];
+  }
+
   const [centerX, centerY] = toMercator(center) as ScreenPoint;
   const halfWidth = metersToMercatorDelta(width / 2, center[1]);
   const halfHeight = metersToMercatorDelta(height / 2, center[1]);

@@ -31,6 +31,9 @@ describe('core/features/propertyValidators', () => {
     expect(propertyValidators.xSemiAxis('20')).toBe(false);
     expect(propertyValidators.ySemiAxis(null)).toBe(false);
     expect(propertyValidators.angle('45')).toBe(false);
+    expect(propertyValidators.xSemiAxis(Number.NaN)).toBe(false);
+    expect(propertyValidators.angle(Number.POSITIVE_INFINITY)).toBe(false);
+    expect(propertyValidators.width(Number.NaN)).toBe(false);
   });
 
   it('validates text values', () => {

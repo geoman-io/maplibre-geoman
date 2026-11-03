@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Dragging an ellipse axis handle onto the center no longer throws inside `@turf/ellipse` and aborts the edit. A zero or non-finite x-axis is floored to 1 meter, matching drawing.
+- Guessing imperial units from the browser locale no longer throws when `navigator.language` is empty or uses an underscore (`en_US`). Measurements call this on pointer move.
+- Rotating or dragging a rectangle whose width, height, or angle is `NaN` no longer throws inside `@turf/projection`. Non-finite shape numbers are rejected, and corner calculation returns a finite fallback ring.
+- Closing a cut with one or two vertices no longer throws inside `@turf/line-to-polygon` and drops the in-progress shape. The draft stays open until the ring has three vertices.
+- Importing a GeoJSON feature with no geometry, an empty polygon, or an empty multipolygon part no longer throws inside `@turf/rewind` and aborts the rest of the import. The feature is rejected.
+- Auto-trace, cut, and union no longer throw when a polygon has an empty ring. `@turf/polygon-to-line` and `@turf/boolean-intersects` throw on `coordinates: [[]]`, which an import can still store.
+- Union, difference, and cut no longer throw when a polygon has an empty hole. The ring is dropped before the clip, so overlapping shells still merge.
 - Cutting a multi-line no longer throws when one part has fewer than two positions. `@turf/helpers` `lineString` throws on that part, and cut built one for every part with no catch.
 
 ## [0.10.5] - 2026-11-02
