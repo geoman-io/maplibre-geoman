@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Dragging an ellipse axis handle onto the center no longer throws inside `@turf/ellipse` and aborts the edit. A zero or non-finite x-axis is floored to 1 meter, matching drawing.
 - Guessing imperial units from the browser locale no longer throws when `navigator.language` is empty or uses an underscore (`en_US`). Measurements call this on pointer move.
+- Rotating or dragging a rectangle whose width, height, or angle is `NaN` no longer throws inside `@turf/projection`. Non-finite shape numbers are rejected, and corner calculation returns a finite fallback ring.
 
 ## [0.10.5] - 2026-11-02
 
