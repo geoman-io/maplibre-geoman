@@ -24,6 +24,14 @@ export const withoutClosingVertex = (coordinates: Array<Position>): Array<Positi
 };
 
 /**
+ * `@turf/line-to-polygon` throws unless the line can become a ring of 4 or more
+ * positions. A click on the first vertex of a 1- or 2-point cut is `[A]` or
+ * `[A, B, A]`, and that throw used to abort the edit after the draft was dropped.
+ */
+export const canFormPolygonRing = (coordinates: Array<Position> | undefined): boolean =>
+  Array.isArray(coordinates) && withoutClosingVertex(coordinates).length >= 3;
+
+/**
  * Turn the vertices of a finished polygon draw into the feature that should be
  * created, or a reason to refuse it and leave the drawing open.
  *

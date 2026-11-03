@@ -12,6 +12,9 @@ import type { LngLatTuple } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
+import booleanIntersects from '@turf/boolean-intersects';
+import difference from '@turf/difference';
+import union from '@turf/union';
 import turfCircle from '@turf/circle';
 import turfEllipse from '@/turf/ellipse.ts';
 import turfBearing from '@turf/bearing';
@@ -33,10 +36,107 @@ import type {
 } from 'geojson';
 import { cloneDeep, get, isEqual } from 'lodash-es';
 import log from 'loglevel';
-import { lineString } from '@turf/helpers';
+import { featureCollection, lineString } from '@turf/helpers';
+
+const isUsableRing = (ring: unknown): ring is Array<LngLatTuple> =>
+  Array.isArray(ring) && ring.length >= 4;
+
+/**
+ * Leaflet and some imports keep an empty hole (`[]`). `@turf/boolean-intersects`,
+ * `@turf/union` and `@turf/difference` then throw, which aborts cut, split and union.
+ * A ring shorter than 4 positions cannot be a polygon ring, so drop it and keep the shell.
+ */
+export const withoutDegeneratePolygonRings = <T extends Feature>(feature: T): T => {
+  const geometry = feature?.geometry;
+  if (!geometry) return feature;
+
+  if (geometry.type === 'Polygon') {
+    const coordinates = geometry.coordinates.filter(isUsableRing);
+    if (coordinates.length === 0) return feature;
+    return { ...feature, geometry: { type: 'Polygon', coordinates } as T['geometry'] };
+  }
+
+  if (geometry.type === 'MultiPolygon') {
+    const coordinates = geometry.coordinates
+      .map((part) => part.filter(isUsableRing))
+      .filter((part) => part.length > 0);
+    if (coordinates.length === 0) return feature;
+    return { ...feature, geometry: { type: 'MultiPolygon', coordinates } as T['geometry'] };
+  }
+
+  return feature;
+};
+
+export const polygonsIntersect = (left: Feature, right: Feature): boolean => {
+  try {
+    return booleanIntersects(
+      withoutDegeneratePolygonRings(left),
+      withoutDegeneratePolygonRings(right),
+    );
+  } catch {
+    return false;
+  }
+};
+
+export const polygonUnion = (
+  features: Array<Feature<Polygon | MultiPolygon>>,
+): Feature<Polygon | MultiPolygon> | null => {
+  try {
+    return union(featureCollection(features.map(withoutDegeneratePolygonRings))) ?? null;
+  } catch {
+    return null;
+  }
+};
+
+export const polygonDifferenceAll = (
+  features: Array<Feature<Polygon | MultiPolygon>>,
+): Feature<Polygon | MultiPolygon> | null => {
+  if (features.length === 0) return null;
+  if (features.length === 1) return withoutDegeneratePolygonRings(features[0]);
+  try {
+    const result = difference(featureCollection(features.map(withoutDegeneratePolygonRings)));
+    return result?.type === 'Feature' ? result : null;
+  } catch {
+    return null;
+  }
+};
+
+export const polygonDifference = (
+  subject: Feature<Polygon | MultiPolygon>,
+  cutter: Feature<Polygon | MultiPolygon>,
+): Feature<Polygon | MultiPolygon> | null => polygonDifferenceAll([subject, cutter]);
+
+/**
+ * `@turf/boolean-intersects` throws on an empty ring (`coordinates: [[]]`).
+ * Cut, union eligibility, lasso, and geofencing call this while a degenerate
+ * imported polygon can still be on the map, so a throw must not abort the mode.
+ */
+export const featuresIntersect = (a: Feature, b: Feature): boolean => {
+  try {
+    return booleanIntersects(a, b);
+  } catch {
+    return false;
+  }
+};
 
 export const isEqualPosition = (position1: LngLatTuple, position2: LngLatTuple): boolean => {
   return position1[0] === position2[0] && position1[1] === position2[1];
+};
+
+/**
+ * `@turf/helpers` `lineString` throws when a part has fewer than two positions.
+ * Cut builds one of these for every part of a MultiLineString, so a stored empty
+ * or one-point part aborts the whole cut.
+ */
+export const toLineStringFeature = (
+  coordinates: LineString['coordinates'],
+): Feature<LineString> | null => {
+  if (coordinates.length < 2) return null;
+  try {
+    return lineString(coordinates);
+  } catch {
+    return null;
+  }
 };
 
 export const isLineStringFeature = (
@@ -507,8 +607,6 @@ export const convertToLineStringFeatureCollection = (
     if (isLineStringFeature(feature)) {
       targetFeatureCollection.features.push(feature);
     } else if (isPolygonFeature(feature)) {
-      // An imported polygon can have no coordinates. `@turf/polygon-to-line` then
-      // throws, and auto-trace converts every stored feature with no catch.
       try {
         const lineFeature = singlePolygonToLine(feature);
         if (isLineStringFeature(lineFeature)) {
@@ -520,25 +618,26 @@ export const convertToLineStringFeatureCollection = (
           });
         }
       } catch {
-        // no boundary to trace
+        // An empty polygon, an empty ring, or a one-point ring is not a line.
+        // Auto-trace converts every stored polygon, so one degenerate feature
+        // must not abort the trace.
       }
     } else if (isMultiPolygonFeature(feature)) {
-      let featureCollection;
       try {
-        featureCollection = multiPolygonToLine(feature);
+        const featureCollection = multiPolygonToLine(feature);
+        featureCollection.features.forEach((lineFeature) => {
+          if (isLineStringFeature(lineFeature)) {
+            targetFeatureCollection.features.push(lineFeature);
+          } else if (isMultiLineStringFeature(lineFeature)) {
+            const line = multiLineStringToFeatureCollection(lineFeature);
+            line.features.forEach((item) => {
+              targetFeatureCollection.features.push(item);
+            });
+          }
+        });
       } catch {
-        return;
+        // Same as the polygon branch: a short part is skipped, not thrown.
       }
-      featureCollection.features.forEach((lineFeature) => {
-        if (isLineStringFeature(lineFeature)) {
-          targetFeatureCollection.features.push(lineFeature);
-        } else if (isMultiLineStringFeature(lineFeature)) {
-          const line = multiLineStringToFeatureCollection(lineFeature);
-          line.features.forEach((item) => {
-            targetFeatureCollection.features.push(item);
-          });
-        }
-      });
     } else {
       log.warn('AutoTraceHelper.getFeaturesGeoJsonAsLines: Feature is not supported', feature);
     }
@@ -652,21 +751,27 @@ export const getGeoJsonEllipse = ({
     units: 'meters',
   } as const;
 
-  if (ySemiAxis === undefined || ySemiAxis === 0) {
-    const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
+  // Dragging an axis handle onto the center yields 0, and an imported axis can
+  // be NaN. `@turf/ellipse` treats a falsy axis as missing and throws, which
+  // aborts the edit. Drawing already floors a zero x-axis to 1 meter.
+  const axisX = Number.isFinite(xSemiAxis) && xSemiAxis > 0 ? xSemiAxis : 1;
+  const axisY = ySemiAxis !== undefined && Number.isFinite(ySemiAxis) ? ySemiAxis : 0;
+
+  if (axisY === 0) {
+    const ellipseGeoJson = turfEllipse(center, axisX, 1, options);
     return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
       __gm_shape: 'line',
     });
   }
 
-  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis, {
+  const ellipseGeoJson = turfEllipse(center, axisX, axisY, {
     ...options,
     properties: {
       ...properties,
       [`${FEATURE_PROPERTY_PREFIX}shape`]: 'ellipse',
       [`${FEATURE_PROPERTY_PREFIX}center`]: center,
-      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: xSemiAxis,
-      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: ySemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: axisX,
+      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: axisY,
       [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
     },
   });
