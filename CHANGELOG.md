@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Guessing imperial units from the browser locale no longer throws when `navigator.language` is empty or uses an underscore (`en_US`). Measurements call this on pointer move.
 - Rotating or dragging a rectangle whose width, height, or angle is `NaN` no longer throws inside `@turf/projection`. Non-finite shape numbers are rejected, and corner calculation returns a finite fallback ring.
 - Closing a cut with one or two vertices no longer throws inside `@turf/line-to-polygon` and drops the in-progress shape. The draft stays open until the ring has three vertices.
+- Importing a GeoJSON feature with no geometry, an empty polygon, or an empty multipolygon part no longer throws inside `@turf/rewind` and aborts the rest of the import. The feature is rejected.
 
 ## [0.10.5] - 2026-11-02
 
