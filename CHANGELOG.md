@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Rotating or dragging a rectangle whose width, height, or angle is `NaN` no longer throws inside `@turf/projection`. Non-finite shape numbers are rejected, and corner calculation returns a finite fallback ring.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added
