@@ -21,6 +21,8 @@ import type {
 import { BaseHelper } from '@/modes/helpers/base.ts';
 import type { SharedMarker } from '@/types/interfaces.ts';
 import { convertToDebounced, convertToThrottled } from '@/utils/behavior.ts';
+import { bindWindowPointerRelease } from '@/utils/pointer-release.ts';
+import { segmentsTouchingVertex, vertexDragKeepsMarkerSources } from '@/utils/vertex-segments.ts';
 import { findInCollection } from '@/utils/collections.ts';
 import { getFeatureFirstPoint, propertiesValid } from '@/utils/features.ts';
 import { eachSegmentWithPath, findCoordinateWithPath, isEqualPosition } from '@/utils/geojson.ts';
@@ -55,6 +57,9 @@ export class ShapeMarkersHelper extends BaseHelper {
   sharedMarkers: Array<SharedMarker> = [];
   allowedShapes: Array<FeatureShape> = ['circle', 'line', 'rectangle', 'polygon', 'ellipse'];
   edgeMarkersAllowed: boolean = false;
+  private unbindPointerRelease: (() => void) | null = null;
+  private dragToken = 0;
+  private parkedMarkers: Array<FeatureData> = [];
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
   eventHandlers = {
@@ -109,6 +114,8 @@ export class ShapeMarkersHelper extends BaseHelper {
   }
 
   async onEndAction() {
+    this.releasePointerBinding();
+    await this.restoreParkedMarkers();
     this.gm.markerPointer.disable();
 
     this.gm.features.updateManager.beginTransaction('transactional-set', SOURCES.internal);
@@ -156,6 +163,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.initialPoint = event.point;
     this.previousPosition = getFeatureFirstPoint(this.activeMarker.instance);
     this.gm.mapAdapter.setDragPan(false);
+    this.bindPointerRelease();
 
     if (this.activeMarker.type === 'edge') {
       await this.sendMarkerEvent('edge_marker_click', this.activeFeatureData, this.activeMarker);
@@ -180,17 +188,48 @@ export class ShapeMarkersHelper extends BaseHelper {
       this.activeMarker,
       this.linkedFeatures,
     );
+    if (vertexDragKeepsMarkerSources(this.activeMarker?.type, this.activeFeatureData?.shape)) {
+      await this.parkDraggedMarkers();
+    }
     return { next: false };
   }
 
   async onMouseUp(event: BaseMapEvent) {
-    if (!this.activeFeatureData || !isMapPointerEvent(event, { warning: true })) {
+    if (!this.activeFeatureData || !this.activeMarker) {
       return { next: true };
     }
+    if (!isMapPointerEvent(event, { warning: true })) {
+      return { next: true };
+    }
+    await this.finishMarkerDrag(this.dragToken, event.point);
+    return { next: false };
+  }
 
-    if (!this.activeMarker) {
-      return { next: true };
-    }
+  private bindPointerRelease() {
+    this.dragToken += 1;
+    const token = this.dragToken;
+    this.releasePointerBinding();
+    const canvas = this.gm.mapAdapter.getContainer().querySelector('canvas');
+    this.unbindPointerRelease = bindWindowPointerRelease(() => {
+      void this.finishMarkerDrag(token, null).catch((error) => {
+        log.error('ShapeMarkersHelper.finishMarkerDrag', error);
+      });
+    }, canvas);
+  }
+
+  private releasePointerBinding() {
+    this.unbindPointerRelease?.();
+    this.unbindPointerRelease = null;
+  }
+
+  /**
+   * End a vertex drag even when mouseup lands on a toolbar or control (#269).
+   * A release over the map also reaches the map handler; the token makes that a no-op.
+   */
+  private async finishMarkerDrag(token: number, point: { x: number; y: number } | null) {
+    if (token !== this.dragToken || !this.activeFeatureData || !this.activeMarker) return;
+    this.dragToken += 1;
+    this.releasePointerBinding();
 
     const eventData = {
       featureData: this.activeFeatureData,
@@ -198,8 +237,8 @@ export class ShapeMarkersHelper extends BaseHelper {
       linkedFeatures: this.linkedFeatures,
     };
 
-    if (this.initialPoint && this.initialPoint.dist(event.point) < 1) {
-      this.gm.features.setSelection([this.activeFeatureData.id], true);
+    if (point && this.initialPoint && this.initialPoint.dist(point) < 1) {
+      this.gm.features.setSelection([eventData.featureData.id], true);
     }
 
     this.initialPoint = null;
@@ -210,20 +249,14 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.snappingHelper?.clearExcludedFeatures();
     this.previousPosition = null;
     this.gm.mapAdapter.setDragPan(true);
+    await this.restoreParkedMarkers();
 
-    if (eventData.featureData && eventData.markerData) {
-      await this.sendMarkerEvent(
-        'marker_released',
-        eventData.featureData,
-        eventData.markerData,
-        eventData.linkedFeatures,
-      );
-      return { next: false };
-    } else {
-      log.debug('ShapeMarkersHelper.onMouseUp: no active marker or featureData', eventData);
-    }
-
-    return { next: true };
+    await this.sendMarkerEvent(
+      'marker_released',
+      eventData.featureData,
+      eventData.markerData,
+      eventData.linkedFeatures,
+    );
   }
 
   onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
@@ -546,6 +579,10 @@ export class ShapeMarkersHelper extends BaseHelper {
       return;
     }
 
+    // Rotate and whole-shape drags also move a vertex marker, but every vertex
+    // changes. Only a change-mode vertex edit may take the incremental path.
+    if (event.mode === 'change' && (await this.updateDraggedVertexMarkers(featureData))) return;
+
     if (this.activeMarker?.type === 'edge') {
       this.activeMarker = await this.convertToVertexMarker(this.activeMarker);
     }
@@ -667,6 +704,98 @@ export class ShapeMarkersHelper extends BaseHelper {
         coordinates: shapeCenter,
       });
       markerData.position.coordinate = shapeCenter;
+    }
+  }
+
+  /**
+   * During a single-vertex drag, update only that vertex and its two midpoints.
+   * A full walk rebuilds every marker and is what makes large polygons lag (#265).
+   */
+  private async updateDraggedVertexMarkers(featureData: FeatureData): Promise<boolean> {
+    const marker = this.draggedVertex(featureData);
+    if (!marker || marker.type !== 'vertex') return false;
+    if (!vertexDragKeepsMarkerSources(marker.type, featureData.shape)) return false;
+
+    const touching = segmentsTouchingVertex(
+      featureData.getGeoJson().geometry,
+      marker.position.path,
+    );
+    if (!touching?.length) return false;
+
+    const markerKey = marker.position.path.join('.');
+    if (!featureData.markers.has(markerKey)) return false;
+    if (this.isEdgeMarkerAllowed(featureData)) {
+      for (const item of touching) {
+        if (!featureData.markers.has(this.getEdgeMarkerKey(item.index))) return false;
+      }
+    }
+
+    const updated = touching
+      .flatMap((item) => [item.segment.start, item.segment.end])
+      .find((position) => position.path.join('.') === markerKey);
+    if (!updated) return false;
+
+    await this.createOrUpdateVertexMarker(updated, featureData);
+    if (this.isEdgeMarkerAllowed(featureData)) {
+      for (const item of touching) {
+        await this.createOrUpdateEdgeMarker(
+          {
+            segment: item.segment,
+            middle: this.getSegmentMiddlePosition(item.segment),
+            edgeMarkerKey: this.getEdgeMarkerKey(item.index),
+          },
+          featureData,
+        );
+      }
+    }
+    return true;
+  }
+
+  private draggedVertex(featureData: FeatureData): MarkerData | null {
+    if (this.activeFeatureData === featureData && this.activeMarker?.type === 'vertex') {
+      return this.activeMarker;
+    }
+    const shared = this.sharedMarkers.find((item) => item.featureData === featureData);
+    return shared?.markerData.type === 'vertex' ? shared.markerData : null;
+  }
+
+  /** Keep the moving markers in the small temporary source; leave the rest in internal. */
+  private async parkDraggedMarkers() {
+    const targets = new Map<FeatureData, MarkerData>();
+    if (this.activeMarker && this.activeFeatureData && this.activeMarker.type === 'vertex') {
+      targets.set(this.activeFeatureData, this.activeMarker);
+    }
+    for (const shared of this.sharedMarkers) {
+      if (shared.markerData.type === 'vertex') targets.set(shared.featureData, shared.markerData);
+    }
+
+    for (const [featureData, marker] of targets) {
+      await this.parkMarker(marker);
+      const touching = segmentsTouchingVertex(
+        featureData.getGeoJson().geometry,
+        marker.position.path,
+      );
+      for (const item of touching ?? []) {
+        const edge = featureData.markers.get(this.getEdgeMarkerKey(item.index));
+        if (edge) await this.parkMarker(edge);
+      }
+    }
+  }
+
+  private async parkMarker(marker: MarkerData) {
+    if (marker.type === 'dom' || marker.instance.source.id === SOURCES.temporary) return;
+    await marker.instance.changeSource({ sourceName: SOURCES.temporary, includeMarkers: false });
+    this.parkedMarkers.push(marker.instance);
+  }
+
+  /** Put parked markers back in internal, including pin-shared markers the edit mode does not restore. */
+  private async restoreParkedMarkers() {
+    const parked = this.parkedMarkers;
+    this.parkedMarkers = [];
+    for (const marker of parked) {
+      if (marker.source.id === SOURCES.temporary) {
+        await marker.changeSource({ sourceName: SOURCES.internal, includeMarkers: false });
+      }
     }
   }
 

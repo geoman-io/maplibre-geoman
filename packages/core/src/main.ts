@@ -727,4 +727,4 @@ export { getEuclideanSegmentNearestPoint } from '@/utils/planar.ts';
 export { getEuclideanDistance } from '@/utils/planar.ts';
 
 export { GmDrawApi } from '@/core/draw-api.ts';
-export type { DrawInput, DrawResult, DrawRejectionReason } from '@/types/draw-api.ts';
+export type { DrawDraft, DrawInput, DrawResult, DrawRejectionReason } from '@/types/draw-api.ts';

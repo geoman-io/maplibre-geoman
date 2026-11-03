@@ -103,6 +103,24 @@ describe('fixGeoJsonFeature winding', () => {
       },
     };
 
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Polygon', coordinates: [] },
+      }),
+    ).toBeNull();
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'MultiPolygon', coordinates: [[]] },
+      }),
+    ).toBeNull();
+    expect(
+      fixGeoJsonFeature({ type: 'Feature', properties: {}, geometry: null as never }),
+    ).toBeNull();
+
     expect(fixGeoJsonFeature(feature)?.geometry.coordinates).toEqual([
       [
         [0, 0],

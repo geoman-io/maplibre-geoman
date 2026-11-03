@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { preparePolygonFinish } from '@/utils/polygon-finish.ts';
+import { canFormPolygonRing, preparePolygonFinish } from '@/utils/polygon-finish.ts';
 
 const square = [
   [0, 0],
@@ -7,6 +7,27 @@ const square = [
   [1, 1],
   [0, 1],
 ] as Array<[number, number]>;
+
+describe('canFormPolygonRing', () => {
+  it('rejects the rings lineToPolygon throws on', () => {
+    expect(canFormPolygonRing(undefined)).toBe(false);
+    expect(canFormPolygonRing([[0, 0]])).toBe(false);
+    expect(
+      canFormPolygonRing([
+        [0, 0],
+        [1, 1],
+        [0, 0],
+      ]),
+    ).toBe(false);
+    expect(
+      canFormPolygonRing([
+        [0, 0],
+        [1, 0],
+        [1, 1],
+      ]),
+    ).toBe(true);
+  });
+});
 
 describe('preparePolygonFinish', () => {
   it('refuses a two-vertex close and a zero-area ring', () => {
@@ -31,6 +52,54 @@ describe('preparePolygonFinish', () => {
         { selfIntersection: 'split', asPolygon: false },
       ),
     ).toEqual({ ok: false, reason: 'zero_area' });
+
+    // Identical latitudes, but spherical area is a non-zero residue (#266).
+    expect(
+      preparePolygonFinish(
+        [
+          [-0.00858306884865101, 0.004291534420332255],
+          [-0.00429153442507868, 0.004291534420332255],
+          [-7.673861546209082e-13, 0.004291534420332255],
+        ],
+        { selfIntersection: 'reject', asPolygon: true },
+      ),
+    ).toEqual({ ok: false, reason: 'zero_area' });
+  });
+
+  it('refuses a ring with a non-finite vertex', () => {
+    expect(
+      preparePolygonFinish(
+        [
+          [0, 0],
+          [1, 0],
+          [1, Number.NaN],
+        ],
+        { selfIntersection: 'split', asPolygon: true },
+      ),
+    ).toEqual({ ok: false, reason: 'invalid' });
+
+    expect(
+      preparePolygonFinish(
+        [
+          [0, 0],
+          [1, 0],
+          [0, Number.POSITIVE_INFINITY],
+        ],
+        { selfIntersection: 'reject', asPolygon: false },
+      ),
+    ).toEqual({ ok: false, reason: 'invalid' });
+  });
+
+  it('keeps a thin triangle that is not collinear', () => {
+    const thin = preparePolygonFinish(
+      [
+        [0, 0],
+        [0.01, 0],
+        [0.005, 0.000001],
+      ],
+      { selfIntersection: 'reject', asPolygon: true },
+    );
+    expect(thin.ok).toBe(true);
   });
 
   it('splits a crossing ring by default and can reject it', () => {

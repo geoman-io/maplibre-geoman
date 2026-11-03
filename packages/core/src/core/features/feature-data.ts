@@ -423,7 +423,14 @@ export class FeatureData {
     return toPolygonAllowedShapes.includes(this.shape);
   }
 
-  async changeSource({ sourceName }: { sourceName: FeatureSourceName }) {
+  async changeSource({
+    sourceName,
+    includeMarkers = true,
+  }: {
+    sourceName: FeatureSourceName;
+    /** False keeps vertex markers out of a large temporary update (#265). */
+    includeMarkers?: boolean;
+  }) {
     if (this.source.id === sourceName) {
       log.error(
         `FeatureData.changeSource: feature "${this.id}" already has the source "${sourceName}"`,
@@ -447,12 +454,19 @@ export class FeatureData {
     this.source = source;
     await this.addGeoJson(shapeGeoJson);
 
-    if (this.markers.size) {
+    if (includeMarkers && this.markers.size) {
+      const markerTarget = sourceName === SOURCES.temporary ? SOURCES.temporary : SOURCES.internal;
       await Promise.all(
         Array.from(this.markers.values(), (markerData) => {
-          if (markerData.instance instanceof FeatureData) {
+          // Skip a marker already at the target. A vertex drag leaves most
+          // markers in internal, and moving them again logs a spurious error.
+          if (
+            markerData.instance instanceof FeatureData &&
+            markerData.instance.source.id !== markerTarget
+          ) {
             return markerData.instance.changeSource({
-              sourceName: sourceName === SOURCES.temporary ? SOURCES.temporary : SOURCES.internal,
+              sourceName: markerTarget,
+              includeMarkers: false,
             });
           }
         }),

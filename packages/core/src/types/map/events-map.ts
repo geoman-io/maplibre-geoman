@@ -12,6 +12,7 @@ import type {
   GlobalHelperToggledFwdEvent,
   GmControlEvent,
   GmControlLoadEvent,
+  DrawUpdateFwdEvent,
   GmDrawEvent,
   GmEditEvent,
   GmEvent,
@@ -34,6 +35,7 @@ export type EventsMap = Record<`${typeof GM_SYSTEM_PREFIX}:draw`, GmDrawEvent> &
   Record<`${typeof GM_PREFIX}:global${FwdEditModeName}modetoggled`, GlobalEditToggledFwdEvent> &
   Record<`${typeof GM_PREFIX}:global${HelperModeName}modetoggled`, GlobalHelperToggledFwdEvent> &
   Record<`${typeof GM_PREFIX}:create`, FeatureCreatedFwdEvent> &
+  Record<`${typeof GM_PREFIX}:drawupdate`, DrawUpdateFwdEvent> &
   Record<`${typeof GM_PREFIX}:remove`, FeatureRemovedFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}`, FeatureUpdatedFwdEvent> &
   Record<`${typeof GM_PREFIX}:${FwdEditModeName}start`, FeatureEditStartFwdEvent> &
