@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Guessing imperial units from the browser locale no longer throws when `navigator.language` is empty or uses an underscore (`en_US`). Measurements call this on pointer move.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added
