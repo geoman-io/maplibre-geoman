@@ -71,4 +71,15 @@ describe('utils/number', () => {
     vi.stubGlobal('navigator', { language: 'fr-FR' });
     expect(isImperialByBrowser()).toBe(false);
   });
+
+  it('does not throw when the browser locale is empty or uses an underscore', () => {
+    vi.stubGlobal('navigator', { language: '' });
+    expect(isImperialByBrowser()).toBe(false);
+
+    vi.stubGlobal('navigator', { language: 'en_US' });
+    expect(isImperialByBrowser()).toBe(true);
+
+    vi.stubGlobal('navigator', { language: '***' });
+    expect(isImperialByBrowser()).toBe(false);
+  });
 });

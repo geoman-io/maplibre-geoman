@@ -44,6 +44,24 @@ describe('utils/geojson getEllipseParameters', () => {
 });
 
 describe('utils/geojson getGeoJsonEllipse', () => {
+  it('does not throw when an axis handle is dragged onto the center', () => {
+    expect(() =>
+      getGeoJsonEllipse({ center: CENTER, xSemiAxis: 0, ySemiAxis: 500, angle: 15 }),
+    ).not.toThrow();
+    const collapsed = getGeoJsonEllipse({
+      center: CENTER,
+      xSemiAxis: 0,
+      ySemiAxis: 500,
+      angle: 15,
+    });
+    expect(collapsed.geometry.type).toBe('Polygon');
+    expect(collapsed.properties).toMatchObject({ __gm_xSemiAxis: 1, __gm_ySemiAxis: 500 });
+
+    expect(() =>
+      getGeoJsonEllipse({ center: CENTER, xSemiAxis: Number.NaN, ySemiAxis: Number.NaN, angle: 0 }),
+    ).not.toThrow();
+  });
+
   it('returns a degenerate LineString when ySemiAxis is zero', () => {
     const result = getGeoJsonEllipse({ center: CENTER, xSemiAxis: 1000, ySemiAxis: 0, angle: 0 });
 

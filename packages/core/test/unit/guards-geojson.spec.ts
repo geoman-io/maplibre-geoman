@@ -8,5 +8,6 @@ describe('utils/guards/geojson', () => {
     expect(isLngLat([12.5, 55.7, 8])).toBe(false);
     expect(isLngLat(['12.5', 55.7])).toBe(false);
     expect(isLngLat(null)).toBe(false);
+    expect(isLngLat([Number.NaN, 1])).toBe(false);
   });
 });
