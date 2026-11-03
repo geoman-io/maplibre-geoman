@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Dragging an ellipse axis handle onto the center no longer throws inside `@turf/ellipse` and aborts the edit. A zero or non-finite x-axis is floored to 1 meter, matching drawing.
 - Guessing imperial units from the browser locale no longer throws when `navigator.language` is empty or uses an underscore (`en_US`). Measurements call this on pointer move.
 
 ## [0.10.5] - 2026-11-02
