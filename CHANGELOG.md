@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Auto-trace no longer throws when a stored polygon has no coordinates. `@turf/polygon-to-line` throws on that geometry, and tracing converts every feature with no catch.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added

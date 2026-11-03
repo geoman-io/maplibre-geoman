@@ -12,6 +12,7 @@ import {
   removeVertexFromLine,
   removeVertexFromMultiPolygon,
   removeVertexFromPolygon,
+  convertToLineStringFeatureCollection,
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
 import {
@@ -306,5 +307,36 @@ describe('utils/geojson', () => {
     expect(getCoordinateByPath(line, ['geometry', 'coordinates', 1])).toEqual([1, 0]);
     expect(getCoordinateByPath(line, ['geometry', 'coordinates', 999])).toBeNull();
     expect(warnSpy).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when tracing a polygon that has no coordinates', () => {
+    const collection = {
+      type: 'FeatureCollection' as const,
+      features: [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: { type: 'Polygon' as const, coordinates: [] },
+        },
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [
+              [
+                [0, 0],
+                [1, 0],
+                [1, 1],
+                [0, 0],
+              ],
+            ],
+          },
+        },
+      ],
+    };
+
+    expect(() => convertToLineStringFeatureCollection(collection as never)).not.toThrow();
+    expect(convertToLineStringFeatureCollection(collection as never).features).toHaveLength(1);
   });
 });

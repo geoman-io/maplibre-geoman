@@ -507,17 +507,28 @@ export const convertToLineStringFeatureCollection = (
     if (isLineStringFeature(feature)) {
       targetFeatureCollection.features.push(feature);
     } else if (isPolygonFeature(feature)) {
-      const lineFeature = singlePolygonToLine(feature);
-      if (isLineStringFeature(lineFeature)) {
-        targetFeatureCollection.features.push(lineFeature);
-      } else if (isMultiLineStringFeature(lineFeature)) {
-        const line = multiLineStringToFeatureCollection(lineFeature);
-        line.features.forEach((item) => {
-          targetFeatureCollection.features.push(item);
-        });
+      // An imported polygon can have no coordinates. `@turf/polygon-to-line` then
+      // throws, and auto-trace converts every stored feature with no catch.
+      try {
+        const lineFeature = singlePolygonToLine(feature);
+        if (isLineStringFeature(lineFeature)) {
+          targetFeatureCollection.features.push(lineFeature);
+        } else if (isMultiLineStringFeature(lineFeature)) {
+          const line = multiLineStringToFeatureCollection(lineFeature);
+          line.features.forEach((item) => {
+            targetFeatureCollection.features.push(item);
+          });
+        }
+      } catch {
+        // no boundary to trace
       }
     } else if (isMultiPolygonFeature(feature)) {
-      const featureCollection = multiPolygonToLine(feature);
+      let featureCollection;
+      try {
+        featureCollection = multiPolygonToLine(feature);
+      } catch {
+        return;
+      }
       featureCollection.features.forEach((lineFeature) => {
         if (isLineStringFeature(lineFeature)) {
           targetFeatureCollection.features.push(lineFeature);
