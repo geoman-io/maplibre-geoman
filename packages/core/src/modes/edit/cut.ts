@@ -7,6 +7,7 @@ import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';
+import { canFormPolygonRing } from '@/utils/polygon-finish.ts';
 import { getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
@@ -57,8 +58,19 @@ export class EditCut extends BaseEdit {
   }
 
   async cutPolygonFinished(event: LineEventHandlerArguments) {
+    // Clicking the first vertex of a 1- or 2-point cut still fires this handler.
+    // `lineToPolygon` throws on that ring, and ending the shape first would drop
+    // the draft and then reject the promise.
+    if (!canFormPolygonRing(event.shapeCoordinates)) {
+      return;
+    }
+    let geoJsonPolygon: PolygonFeature;
+    try {
+      geoJsonPolygon = lineToPolygon(event.geoJson);
+    } catch {
+      return;
+    }
     await this.lineDrawer.endShape();
-    const geoJsonPolygon = lineToPolygon(event.geoJson);
     const bBoxfeatures = this.getBBoxFeaturesByPolygon(geoJsonPolygon);
     await this.cutFeaturesByPolygon(bBoxfeatures, geoJsonPolygon);
   }
