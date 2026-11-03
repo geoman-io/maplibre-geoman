@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Importing a GeoJSON feature with no geometry, an empty polygon, or an empty multipolygon part no longer throws inside `@turf/rewind` and aborts the rest of the import. The feature is rejected.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added
