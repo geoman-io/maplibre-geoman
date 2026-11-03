@@ -5,7 +5,7 @@ import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { isNonEmptyArray } from '@/utils/guards/index.ts';
 import type { BaseMapEvent, BaseMapPointerEvent } from '@mapLib/types/events.ts';
-import booleanIntersects from '@turf/boolean-intersects';
+import { featuresIntersect } from '@/utils/geojson.ts';
 import difference from '@turf/difference';
 import union from '@turf/union';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
@@ -100,7 +100,7 @@ export abstract class BaseGroupEdit extends BaseEdit {
 
     const newFeatureGeoJson = featureData.getGeoJson();
     return this.features.every((feature) =>
-      booleanIntersects(feature.getGeoJson(), newFeatureGeoJson),
+      featuresIntersect(feature.getGeoJson(), newFeatureGeoJson),
     );
   }
 
