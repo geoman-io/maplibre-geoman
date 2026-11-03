@@ -63,11 +63,11 @@ export type LineBasedFeature = (typeof lineBasedFeatures)[number];
 export const isPointBasedGeoJsonFeature = (
   feature: Feature,
 ): feature is Feature<Point | MultiPoint> => {
-  return pointBasedGeometryType.includes(feature.geometry.type);
+  return pointBasedGeometryType.includes(feature?.geometry?.type);
 };
 
 export const isLineBasedGeoJsonFeature = (
   feature: Feature,
 ): feature is Feature<LineString | MultiLineString | Polygon | MultiPolygon> => {
-  return lineBasedGeometryType.includes(feature.geometry.type);
+  return lineBasedGeometryType.includes(feature?.geometry?.type);
 };

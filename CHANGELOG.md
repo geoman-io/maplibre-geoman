@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Union, difference, and cut no longer throw when a polygon has an empty hole. The ring is dropped before the clip, so overlapping shells still merge.
 - Cutting a multi-line no longer throws when one part has fewer than two positions. `@turf/helpers` `lineString` throws on that part, and cut built one for every part with no catch.
 - Auto-trace no longer throws when a stored polygon has no coordinates. `@turf/polygon-to-line` throws on that geometry, and tracing converts every feature with no catch.
+- A malformed polygon (empty ring, null hole, or null geometry) no longer throws inside `@turf/rewind` and aborts the rest of the import. That feature is counted as failed.
 
 ## [0.10.5] - 2026-11-02
 

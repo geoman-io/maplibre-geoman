@@ -231,8 +231,9 @@ const hasNonFiniteCoordinate = (value: unknown): boolean => {
 
 export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportFeature | null => {
   // A missing geometry makes the type guard throw, and `@turf/rewind` throws on
-  // an empty polygon (`coordinates: []`) or an empty multipolygon part. Import
-  // calls this once per feature with no catch, so that throw aborts the batch.
+  // an empty polygon (`coordinates: []`), an empty multipolygon part, or a
+  // malformed ring. Import calls this once per feature with no catch, so that
+  // throw aborts the batch.
   if (!feature?.geometry || typeof feature.geometry.type !== 'string') {
     return null;
   }
@@ -249,6 +250,8 @@ export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportF
     let resultFeature: GeoJsonImportFeature = feature;
     if (isPolygon) {
       try {
+        // Empty rings, null holes, and other malformed coordinates throw inside
+        // turf and would abort the whole import batch.
         resultFeature = rewind(feature, { mutate: false }) as GeoJsonImportFeature;
       } catch {
         return null;
