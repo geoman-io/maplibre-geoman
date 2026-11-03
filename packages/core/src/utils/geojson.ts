@@ -123,6 +123,22 @@ export const isEqualPosition = (position1: LngLatTuple, position2: LngLatTuple):
   return position1[0] === position2[0] && position1[1] === position2[1];
 };
 
+/**
+ * `@turf/helpers` `lineString` throws when a part has fewer than two positions.
+ * Cut builds one of these for every part of a MultiLineString, so a stored empty
+ * or one-point part aborts the whole cut.
+ */
+export const toLineStringFeature = (
+  coordinates: LineString['coordinates'],
+): Feature<LineString> | null => {
+  if (coordinates.length < 2) return null;
+  try {
+    return lineString(coordinates);
+  } catch {
+    return null;
+  }
+};
+
 export const isLineStringFeature = (
   geoJson: Feature | FeatureCollection,
 ): geoJson is Feature<LineString> => {

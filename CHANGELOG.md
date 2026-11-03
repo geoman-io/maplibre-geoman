@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Importing a GeoJSON feature with no geometry, an empty polygon, or an empty multipolygon part no longer throws inside `@turf/rewind` and aborts the rest of the import. The feature is rejected.
 - Auto-trace, cut, and union no longer throw when a polygon has an empty ring. `@turf/polygon-to-line` and `@turf/boolean-intersects` throw on `coordinates: [[]]`, which an import can still store.
 - Union, difference, and cut no longer throw when a polygon has an empty hole. The ring is dropped before the clip, so overlapping shells still merge.
+- Cutting a multi-line no longer throws when one part has fewer than two positions. `@turf/helpers` `lineString` throws on that part, and cut built one for every part with no catch.
 
 ## [0.10.5] - 2026-11-02
 

@@ -8,10 +8,14 @@ import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';
 import { canFormPolygonRing } from '@/utils/polygon-finish.ts';
-import { getGeoJsonBounds, polygonDifference, polygonsIntersect } from '@/utils/geojson.ts';
+import {
+  getGeoJsonBounds,
+  polygonDifference,
+  polygonsIntersect,
+  toLineStringFeature,
+} from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
-import { lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
 import type {
@@ -123,11 +127,16 @@ export class EditCut extends BaseEdit {
 
     if (shapeGeoJson.geometry.type === 'MultiLineString') {
       shapeGeoJson.geometry.coordinates.forEach((lineCoordinates) => {
-        if (isGeoJsonFeatureInPolygon(lineString(lineCoordinates), cutGeoJson)) {
+        const line = toLineStringFeature(lineCoordinates);
+        if (!line) {
+          coordinates.push(lineCoordinates);
+          return;
+        }
+        if (isGeoJsonFeatureInPolygon(line, cutGeoJson)) {
           return;
         }
 
-        const resultGeoJson = lineSplit(lineString(lineCoordinates), cutGeoJson);
+        const resultGeoJson = lineSplit(line, cutGeoJson);
 
         if (resultGeoJson.features.length === 0) {
           coordinates.push(lineCoordinates);
