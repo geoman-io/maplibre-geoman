@@ -14,6 +14,9 @@ import {
   removeVertexFromPolygon,
   convertToLineStringFeatureCollection,
   featuresIntersect,
+  polygonDifference,
+  polygonUnion,
+  polygonsIntersect,
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
 import {
@@ -338,5 +341,45 @@ describe('utils/geojson', () => {
     ).not.toThrow();
     expect(featuresIntersect(emptyRing, square)).toBe(false);
     expect(featuresIntersect(square, square)).toBe(true);
+  });
+
+  it('unions and cuts a polygon that has an empty hole', () => {
+    const withHole = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [
+          [
+            [0, 0],
+            [8, 0],
+            [8, 8],
+            [0, 8],
+            [0, 0],
+          ],
+          [],
+        ],
+      },
+    };
+    const overlap = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [
+          [
+            [6, 6],
+            [12, 6],
+            [12, 12],
+            [6, 12],
+            [6, 6],
+          ],
+        ],
+      },
+    };
+
+    expect(polygonsIntersect(withHole, overlap)).toBe(true);
+    expect(polygonUnion([withHole, overlap])?.geometry.type).toBe('Polygon');
+    expect(polygonDifference(withHole, overlap)?.geometry.type).toBe('Polygon');
   });
 });

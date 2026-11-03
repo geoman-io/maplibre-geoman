@@ -13,6 +13,8 @@ import type { ShapeName } from '@/types/modes/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
 import booleanIntersects from '@turf/boolean-intersects';
+import difference from '@turf/difference';
+import union from '@turf/union';
 import turfCircle from '@turf/circle';
 import turfEllipse from '@/turf/ellipse.ts';
 import turfBearing from '@turf/bearing';
@@ -34,7 +36,75 @@ import type {
 } from 'geojson';
 import { cloneDeep, get, isEqual } from 'lodash-es';
 import log from 'loglevel';
-import { lineString } from '@turf/helpers';
+import { featureCollection, lineString } from '@turf/helpers';
+
+const isUsableRing = (ring: unknown): ring is Array<LngLatTuple> =>
+  Array.isArray(ring) && ring.length >= 4;
+
+/**
+ * Leaflet and some imports keep an empty hole (`[]`). `@turf/boolean-intersects`,
+ * `@turf/union` and `@turf/difference` then throw, which aborts cut, split and union.
+ * A ring shorter than 4 positions cannot be a polygon ring, so drop it and keep the shell.
+ */
+export const withoutDegeneratePolygonRings = <T extends Feature>(feature: T): T => {
+  const geometry = feature?.geometry;
+  if (!geometry) return feature;
+
+  if (geometry.type === 'Polygon') {
+    const coordinates = geometry.coordinates.filter(isUsableRing);
+    if (coordinates.length === 0) return feature;
+    return { ...feature, geometry: { type: 'Polygon', coordinates } as T['geometry'] };
+  }
+
+  if (geometry.type === 'MultiPolygon') {
+    const coordinates = geometry.coordinates
+      .map((part) => part.filter(isUsableRing))
+      .filter((part) => part.length > 0);
+    if (coordinates.length === 0) return feature;
+    return { ...feature, geometry: { type: 'MultiPolygon', coordinates } as T['geometry'] };
+  }
+
+  return feature;
+};
+
+export const polygonsIntersect = (left: Feature, right: Feature): boolean => {
+  try {
+    return booleanIntersects(
+      withoutDegeneratePolygonRings(left),
+      withoutDegeneratePolygonRings(right),
+    );
+  } catch {
+    return false;
+  }
+};
+
+export const polygonUnion = (
+  features: Array<Feature<Polygon | MultiPolygon>>,
+): Feature<Polygon | MultiPolygon> | null => {
+  try {
+    return union(featureCollection(features.map(withoutDegeneratePolygonRings))) ?? null;
+  } catch {
+    return null;
+  }
+};
+
+export const polygonDifferenceAll = (
+  features: Array<Feature<Polygon | MultiPolygon>>,
+): Feature<Polygon | MultiPolygon> | null => {
+  if (features.length === 0) return null;
+  if (features.length === 1) return withoutDegeneratePolygonRings(features[0]);
+  try {
+    const result = difference(featureCollection(features.map(withoutDegeneratePolygonRings)));
+    return result?.type === 'Feature' ? result : null;
+  } catch {
+    return null;
+  }
+};
+
+export const polygonDifference = (
+  subject: Feature<Polygon | MultiPolygon>,
+  cutter: Feature<Polygon | MultiPolygon>,
+): Feature<Polygon | MultiPolygon> | null => polygonDifferenceAll([subject, cutter]);
 
 /**
  * `@turf/boolean-intersects` throws on an empty ring (`coordinates: [[]]`).
