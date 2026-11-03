@@ -82,6 +82,25 @@ describe('utils/shapes rectangle math', () => {
     expect(ring[0]).toEqual(ring[4]);
   });
 
+  it('does not throw when rebuilding a rectangle whose width is NaN', () => {
+    expect(() =>
+      getRectangleCornerCoordinates({
+        center: [10, 20],
+        width: Number.NaN,
+        height: 500,
+        angle: 0,
+      }),
+    ).not.toThrow();
+    const corners = getRectangleCornerCoordinates({
+      center: [10, 20],
+      width: Number.NaN,
+      height: 500,
+      angle: 0,
+    });
+    expect(corners).toHaveLength(4);
+    expect(corners.every((corner) => corner.every(Number.isFinite))).toBe(true);
+  });
+
   it('returns the input unchanged when rectangle properties are missing', () => {
     const geoJson = {
       type: 'Feature',

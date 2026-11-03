@@ -106,6 +106,19 @@ export const polygonDifference = (
   cutter: Feature<Polygon | MultiPolygon>,
 ): Feature<Polygon | MultiPolygon> | null => polygonDifferenceAll([subject, cutter]);
 
+/**
+ * `@turf/boolean-intersects` throws on an empty ring (`coordinates: [[]]`).
+ * Cut, union eligibility, lasso, and geofencing call this while a degenerate
+ * imported polygon can still be on the map, so a throw must not abort the mode.
+ */
+export const featuresIntersect = (a: Feature, b: Feature): boolean => {
+  try {
+    return booleanIntersects(a, b);
+  } catch {
+    return false;
+  }
+};
+
 export const isEqualPosition = (position1: LngLatTuple, position2: LngLatTuple): boolean => {
   return position1[0] === position2[0] && position1[1] === position2[1];
 };
@@ -578,18 +591,8 @@ export const convertToLineStringFeatureCollection = (
     if (isLineStringFeature(feature)) {
       targetFeatureCollection.features.push(feature);
     } else if (isPolygonFeature(feature)) {
-      const lineFeature = singlePolygonToLine(feature);
-      if (isLineStringFeature(lineFeature)) {
-        targetFeatureCollection.features.push(lineFeature);
-      } else if (isMultiLineStringFeature(lineFeature)) {
-        const line = multiLineStringToFeatureCollection(lineFeature);
-        line.features.forEach((item) => {
-          targetFeatureCollection.features.push(item);
-        });
-      }
-    } else if (isMultiPolygonFeature(feature)) {
-      const featureCollection = multiPolygonToLine(feature);
-      featureCollection.features.forEach((lineFeature) => {
+      try {
+        const lineFeature = singlePolygonToLine(feature);
         if (isLineStringFeature(lineFeature)) {
           targetFeatureCollection.features.push(lineFeature);
         } else if (isMultiLineStringFeature(lineFeature)) {
@@ -598,7 +601,26 @@ export const convertToLineStringFeatureCollection = (
             targetFeatureCollection.features.push(item);
           });
         }
-      });
+      } catch {
+        // An empty or one-point ring is not a line. Auto-trace asks for every
+        // polygon on the map, so one degenerate ring must not abort the trace.
+      }
+    } else if (isMultiPolygonFeature(feature)) {
+      try {
+        const featureCollection = multiPolygonToLine(feature);
+        featureCollection.features.forEach((lineFeature) => {
+          if (isLineStringFeature(lineFeature)) {
+            targetFeatureCollection.features.push(lineFeature);
+          } else if (isMultiLineStringFeature(lineFeature)) {
+            const line = multiLineStringToFeatureCollection(lineFeature);
+            line.features.forEach((item) => {
+              targetFeatureCollection.features.push(item);
+            });
+          }
+        });
+      } catch {
+        // Same as the polygon branch: a short part is skipped, not thrown.
+      }
     } else {
       log.warn('AutoTraceHelper.getFeaturesGeoJsonAsLines: Feature is not supported', feature);
     }
@@ -712,21 +734,27 @@ export const getGeoJsonEllipse = ({
     units: 'meters',
   } as const;
 
-  if (ySemiAxis === undefined || ySemiAxis === 0) {
-    const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
+  // Dragging an axis handle onto the center yields 0, and an imported axis can
+  // be NaN. `@turf/ellipse` treats a falsy axis as missing and throws, which
+  // aborts the edit. Drawing already floors a zero x-axis to 1 meter.
+  const axisX = Number.isFinite(xSemiAxis) && xSemiAxis > 0 ? xSemiAxis : 1;
+  const axisY = ySemiAxis !== undefined && Number.isFinite(ySemiAxis) ? ySemiAxis : 0;
+
+  if (axisY === 0) {
+    const ellipseGeoJson = turfEllipse(center, axisX, 1, options);
     return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
       __gm_shape: 'line',
     });
   }
 
-  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis, {
+  const ellipseGeoJson = turfEllipse(center, axisX, axisY, {
     ...options,
     properties: {
       ...properties,
       [`${FEATURE_PROPERTY_PREFIX}shape`]: 'ellipse',
       [`${FEATURE_PROPERTY_PREFIX}center`]: center,
-      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: xSemiAxis,
-      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: ySemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: axisX,
+      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: axisY,
       [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
     },
   });

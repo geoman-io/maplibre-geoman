@@ -18,15 +18,17 @@ export const propertyValidators: {
 
   center: (value: unknown): value is LngLatTuple => isLngLat(value),
 
-  width: (value: unknown): value is number => typeof value === 'number',
+  width: (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value),
 
-  height: (value: unknown): value is number => typeof value === 'number',
+  height: (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value),
 
-  xSemiAxis: (value: unknown): value is number => typeof value === 'number',
+  xSemiAxis: (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value),
 
-  ySemiAxis: (value: unknown): value is number => typeof value === 'number',
+  ySemiAxis: (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value),
 
-  angle: (value: unknown): value is number => typeof value === 'number',
+  angle: (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value),
 
   text: (value: unknown): value is string => typeof value === 'string',
 
