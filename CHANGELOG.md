@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Closing a cut with one or two vertices no longer throws inside `@turf/line-to-polygon` and drops the in-progress shape. The draft stays open until the ring has three vertices.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added
