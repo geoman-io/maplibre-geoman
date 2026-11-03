@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Union, difference, and cut no longer throw when a polygon has an empty hole. The ring is dropped before the clip, so overlapping shells still merge.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added

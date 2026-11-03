@@ -7,12 +7,10 @@ import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';
-import { getGeoJsonBounds } from '@/utils/geojson.ts';
+import { getGeoJsonBounds, polygonDifference, polygonsIntersect } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
-import booleanIntersects from '@turf/boolean-intersects';
-import turfDifference from '@turf/difference';
-import { featureCollection, lineString } from '@turf/helpers';
+import { lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
 import lineToPolygon from '@turf/line-to-polygon';
 import type {
@@ -83,7 +81,7 @@ export class EditCut extends BaseEdit {
         continue;
       }
 
-      if (!booleanIntersects(featureData.getGeoJson(), cutGeoJson)) {
+      if (!polygonsIntersect(featureData.getGeoJson(), cutGeoJson)) {
         continue;
       }
 
@@ -183,8 +181,7 @@ export class EditCut extends BaseEdit {
     shapeGeoJson: PolygonFeature,
     geoJson: PolygonFeature,
   ): Feature<Polygon | MultiPolygon> | null {
-    const collection = featureCollection([shapeGeoJson, geoJson]);
-    const geoJsonDiff = turfDifference(collection);
+    const geoJsonDiff = polygonDifference(shapeGeoJson, geoJson);
 
     if (!geoJsonDiff) {
       return null;
