@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Auto-trace, cut, and union no longer throw when a polygon has an empty ring. `@turf/polygon-to-line` and `@turf/boolean-intersects` throw on `coordinates: [[]]`, which an import can still store.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added

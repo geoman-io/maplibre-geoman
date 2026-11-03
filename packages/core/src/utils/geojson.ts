@@ -12,6 +12,7 @@ import type { LngLatTuple } from '@/types/map/index.ts';
 import type { ShapeName } from '@/types/modes/index.ts';
 import { typedKeys } from '@/utils/typing.ts';
 import bbox from '@turf/bbox';
+import booleanIntersects from '@turf/boolean-intersects';
 import turfCircle from '@turf/circle';
 import turfEllipse from '@/turf/ellipse.ts';
 import turfBearing from '@turf/bearing';
@@ -34,6 +35,19 @@ import type {
 import { cloneDeep, get, isEqual } from 'lodash-es';
 import log from 'loglevel';
 import { lineString } from '@turf/helpers';
+
+/**
+ * `@turf/boolean-intersects` throws on an empty ring (`coordinates: [[]]`).
+ * Cut, union eligibility, lasso, and geofencing call this while a degenerate
+ * imported polygon can still be on the map, so a throw must not abort the mode.
+ */
+export const featuresIntersect = (a: Feature, b: Feature): boolean => {
+  try {
+    return booleanIntersects(a, b);
+  } catch {
+    return false;
+  }
+};
 
 export const isEqualPosition = (position1: LngLatTuple, position2: LngLatTuple): boolean => {
   return position1[0] === position2[0] && position1[1] === position2[1];
@@ -507,18 +521,8 @@ export const convertToLineStringFeatureCollection = (
     if (isLineStringFeature(feature)) {
       targetFeatureCollection.features.push(feature);
     } else if (isPolygonFeature(feature)) {
-      const lineFeature = singlePolygonToLine(feature);
-      if (isLineStringFeature(lineFeature)) {
-        targetFeatureCollection.features.push(lineFeature);
-      } else if (isMultiLineStringFeature(lineFeature)) {
-        const line = multiLineStringToFeatureCollection(lineFeature);
-        line.features.forEach((item) => {
-          targetFeatureCollection.features.push(item);
-        });
-      }
-    } else if (isMultiPolygonFeature(feature)) {
-      const featureCollection = multiPolygonToLine(feature);
-      featureCollection.features.forEach((lineFeature) => {
+      try {
+        const lineFeature = singlePolygonToLine(feature);
         if (isLineStringFeature(lineFeature)) {
           targetFeatureCollection.features.push(lineFeature);
         } else if (isMultiLineStringFeature(lineFeature)) {
@@ -527,7 +531,26 @@ export const convertToLineStringFeatureCollection = (
             targetFeatureCollection.features.push(item);
           });
         }
-      });
+      } catch {
+        // An empty or one-point ring is not a line. Auto-trace asks for every
+        // polygon on the map, so one degenerate ring must not abort the trace.
+      }
+    } else if (isMultiPolygonFeature(feature)) {
+      try {
+        const featureCollection = multiPolygonToLine(feature);
+        featureCollection.features.forEach((lineFeature) => {
+          if (isLineStringFeature(lineFeature)) {
+            targetFeatureCollection.features.push(lineFeature);
+          } else if (isMultiLineStringFeature(lineFeature)) {
+            const line = multiLineStringToFeatureCollection(lineFeature);
+            line.features.forEach((item) => {
+              targetFeatureCollection.features.push(item);
+            });
+          }
+        });
+      } catch {
+        // Same as the polygon branch: a short part is skipped, not thrown.
+      }
     } else {
       log.warn('AutoTraceHelper.getFeaturesGeoJsonAsLines: Feature is not supported', feature);
     }

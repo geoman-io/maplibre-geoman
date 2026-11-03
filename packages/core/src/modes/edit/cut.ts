@@ -7,10 +7,9 @@ import type { LineEventHandlerArguments } from '@/types/modes/line-drawer.ts';
 import { BaseEdit } from '@/modes/edit/base.ts';
 import { LineDrawer } from '@/utils/draw/line-drawer.ts';
 import { getBufferedOuterPolygon, isGeoJsonFeatureInPolygon } from '@/utils/features.ts';
-import { getGeoJsonBounds } from '@/utils/geojson.ts';
+import { featuresIntersect, getGeoJsonBounds } from '@/utils/geojson.ts';
 import { isMapPointerEvent } from '@/utils/guards/map.ts';
 import type { BaseMapEvent } from '@mapLib/types/events.ts';
-import booleanIntersects from '@turf/boolean-intersects';
 import turfDifference from '@turf/difference';
 import { featureCollection, lineString } from '@turf/helpers';
 import lineSplit from '@turf/line-split';
@@ -83,7 +82,7 @@ export class EditCut extends BaseEdit {
         continue;
       }
 
-      if (!booleanIntersects(featureData.getGeoJson(), cutGeoJson)) {
+      if (!featuresIntersect(featureData.getGeoJson(), cutGeoJson)) {
         continue;
       }
 
