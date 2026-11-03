@@ -618,8 +618,9 @@ export const convertToLineStringFeatureCollection = (
           });
         }
       } catch {
-        // An empty or one-point ring is not a line. Auto-trace asks for every
-        // polygon on the map, so one degenerate ring must not abort the trace.
+        // An empty polygon, an empty ring, or a one-point ring is not a line.
+        // Auto-trace converts every stored polygon, so one degenerate feature
+        // must not abort the trace.
       }
     } else if (isMultiPolygonFeature(feature)) {
       try {
