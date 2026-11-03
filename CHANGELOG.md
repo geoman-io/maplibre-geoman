@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Cutting a multi-line no longer throws when one part has fewer than two positions. `@turf/helpers` `lineString` throws on that part, and cut built one for every part with no catch.
+
 ## [0.10.5] - 2026-11-02
 
 ### Added

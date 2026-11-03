@@ -12,6 +12,7 @@ import {
   removeVertexFromLine,
   removeVertexFromMultiPolygon,
   removeVertexFromPolygon,
+  toLineStringFeature,
   twoCoordsToGeoJsonRectangle,
 } from '@/utils/geojson.ts';
 import {
@@ -306,5 +307,19 @@ describe('utils/geojson', () => {
     expect(getCoordinateByPath(line, ['geometry', 'coordinates', 1])).toEqual([1, 0]);
     expect(getCoordinateByPath(line, ['geometry', 'coordinates', 999])).toBeNull();
     expect(warnSpy).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when a line part has fewer than two positions', () => {
+    expect(toLineStringFeature([])).toBeNull();
+    expect(toLineStringFeature([[0, 0]])).toBeNull();
+    expect(
+      toLineStringFeature([
+        [0, 0],
+        [1, 1],
+      ])?.geometry.coordinates,
+    ).toEqual([
+      [0, 0],
+      [1, 1],
+    ]);
   });
 });
