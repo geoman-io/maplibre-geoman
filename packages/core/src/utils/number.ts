@@ -34,8 +34,16 @@ const UNITS = {
 const IMPERIAL_REGIONS = new Set(['US', 'LR', 'MM', 'GB', 'UK', 'IE']);
 
 export const isImperialByBrowser = () => {
-  const loc = new Intl.Locale(navigator.language);
-  return IMPERIAL_REGIONS.has(loc.region || '--');
+  // `navigator.language` is the empty string when the locale is unknown, and
+  // some webviews report `en_US`. `Intl.Locale` throws on both, which would
+  // abort measurement rendering on every pointer move.
+  const language = navigator.language?.trim().replaceAll('_', '-');
+  if (!language) return false;
+  try {
+    return IMPERIAL_REGIONS.has(new Intl.Locale(language).region || '--');
+  } catch {
+    return false;
+  }
 };
 
 export type NumberFormatOptions = {

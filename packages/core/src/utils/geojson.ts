@@ -641,21 +641,27 @@ export const getGeoJsonEllipse = ({
     units: 'meters',
   } as const;
 
-  if (ySemiAxis === undefined || ySemiAxis === 0) {
-    const ellipseGeoJson = turfEllipse(center, xSemiAxis, 1, options);
+  // Dragging an axis handle onto the center yields 0, and an imported axis can
+  // be NaN. `@turf/ellipse` treats a falsy axis as missing and throws, which
+  // aborts the edit. Drawing already floors a zero x-axis to 1 meter.
+  const axisX = Number.isFinite(xSemiAxis) && xSemiAxis > 0 ? xSemiAxis : 1;
+  const axisY = ySemiAxis !== undefined && Number.isFinite(ySemiAxis) ? ySemiAxis : 0;
+
+  if (axisY === 0) {
+    const ellipseGeoJson = turfEllipse(center, axisX, 1, options);
     return lineString(ellipseGeoJson.geometry.coordinates[0].slice(0, 41), {
       __gm_shape: 'line',
     });
   }
 
-  const ellipseGeoJson = turfEllipse(center, xSemiAxis, ySemiAxis, {
+  const ellipseGeoJson = turfEllipse(center, axisX, axisY, {
     ...options,
     properties: {
       ...properties,
       [`${FEATURE_PROPERTY_PREFIX}shape`]: 'ellipse',
       [`${FEATURE_PROPERTY_PREFIX}center`]: center,
-      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: xSemiAxis,
-      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: ySemiAxis,
+      [`${FEATURE_PROPERTY_PREFIX}xSemiAxis`]: axisX,
+      [`${FEATURE_PROPERTY_PREFIX}ySemiAxis`]: axisY,
       [`${FEATURE_PROPERTY_PREFIX}angle`]: angle,
     },
   });
