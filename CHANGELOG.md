@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.6] - 2026-11-03
+
 ### Fixed
 
 - Dragging an ellipse axis handle onto the center no longer throws inside `@turf/ellipse` and aborts the edit. A zero or non-finite x-axis is floored to 1 meter, matching drawing.
