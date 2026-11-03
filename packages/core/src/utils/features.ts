@@ -246,7 +246,7 @@ export const fixGeoJsonFeature = (feature: GeoJsonImportFeature): GeoJsonImportF
     // meaningful direction. Only polygons have a winding (#260).
     const isPolygon =
       feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
-    let resultFeature = feature;
+    let resultFeature: GeoJsonImportFeature = feature;
     if (isPolygon) {
       try {
         resultFeature = rewind(feature, { mutate: false }) as GeoJsonImportFeature;
