@@ -120,6 +120,20 @@ describe('fixGeoJsonFeature winding', () => {
     expect(
       fixGeoJsonFeature({ type: 'Feature', properties: {}, geometry: null as never }),
     ).toBeNull();
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [null, 1] as never },
+      }),
+    ).toBeNull();
+    expect(
+      fixGeoJsonFeature({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: [[0, 0], null, [1, 1]] as never },
+      }),
+    ).toBeNull();
 
     expect(fixGeoJsonFeature(feature)?.geometry.coordinates).toEqual([
       [

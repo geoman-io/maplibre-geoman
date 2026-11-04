@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Removing a vertex from a triangular shell no longer promotes a hole into the outer ring. Import rejects a `null` coordinate in a point or line. Auto-trace keeps the valid parts of a MultiPolygon when one part is too short to convert.
+
 ## [0.10.7] - 2026-11-04
 
 ### Fixed

@@ -163,6 +163,32 @@ describe('utils/geojson', () => {
         ],
       },
     } as const;
+    const holedTriangle = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [
+          [
+            [0, 0],
+            [3, 0],
+            [0, 3],
+            [0, 0],
+          ],
+          [
+            [0.2, 0.2],
+            [0.4, 0.2],
+            [0.2, 0.4],
+            [0.2, 0.2],
+          ],
+        ],
+      },
+    };
+    expect(removeVertexFromPolygon(holedTriangle as never, [3, 0])).toBe(false);
+    expect(holedTriangle.geometry.coordinates).toHaveLength(2);
+    expect(removeVertexFromPolygon(holedTriangle as never, [0.4, 0.2])).toBe(true);
+    expect(holedTriangle.geometry.coordinates).toHaveLength(1);
+
     expect(removeVertexFromPolygon(polygon as never, [0, 0])).toBe(true);
     expect(polygon.geometry.coordinates[0][0]).toEqual([2, 0]);
     expect(polygon.geometry.coordinates[0].at(-1)).toEqual([2, 0]);
@@ -343,6 +369,34 @@ describe('utils/geojson', () => {
 
     expect(() => convertToLineStringFeatureCollection(collection as never)).not.toThrow();
     expect(convertToLineStringFeatureCollection(collection as never).features).toHaveLength(1);
+
+    const mixedMulti = {
+      type: 'FeatureCollection' as const,
+      features: [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'MultiPolygon' as const,
+            coordinates: [
+              [
+                [
+                  [0, 0],
+                  [1, 0],
+                  [1, 1],
+                  [0, 0],
+                ],
+              ],
+              [[[0, 0]]],
+            ],
+          },
+        },
+      ],
+    };
+    expect(() => convertToLineStringFeatureCollection(mixedMulti as never)).not.toThrow();
+    expect(
+      convertToLineStringFeatureCollection(mixedMulti as never).features.length,
+    ).toBeGreaterThan(0);
   });
 
   it('does not throw when a line part has fewer than two positions', () => {

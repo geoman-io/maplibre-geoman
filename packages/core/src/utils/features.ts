@@ -221,10 +221,19 @@ export const getFeatureFirstPoint = (featureData: FeatureData): LngLatTuple | nu
   return getGeoJsonFirstPoint(shapeGeoJson);
 };
 
+const isPositionSlot = (value: unknown[]): boolean => !Array.isArray(value[0]);
+
 const hasNonFiniteCoordinate = (value: unknown): boolean => {
+  if (value == null) return true;
   if (!Array.isArray(value)) return false;
-  if (typeof value[0] === 'number') {
-    return !Number.isFinite(value[0]) || !Number.isFinite(value[1]);
+  if (value.length === 0) return false;
+  if (isPositionSlot(value)) {
+    return (
+      typeof value[0] !== 'number' ||
+      typeof value[1] !== 'number' ||
+      !Number.isFinite(value[0]) ||
+      !Number.isFinite(value[1])
+    );
   }
   return value.some((item) => hasNonFiniteCoordinate(item));
 };
