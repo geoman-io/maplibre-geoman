@@ -137,3 +137,132 @@ export const vertexDragKeepsMarkerSources = (
   markerType: string | undefined,
   shape: string | undefined,
 ): boolean => markerType === 'vertex' && (shape === 'line' || shape === 'polygon');
+
+/**
+ * Above this many positions, a vertex drag must not clone or re-upload the whole
+ * feature on every pointer move (#282).
+ */
+export const LARGE_VERTEX_DRAG_COORDINATES = 512;
+
+const replaceNested = (root: unknown, path: Array<string | number>, value: unknown): unknown => {
+  if (path.length === 0) return value;
+  const [head, ...rest] = path;
+  if (Array.isArray(root) && typeof head === 'number') {
+    const next = root.slice();
+    next[head] = replaceNested(root[head], rest, value);
+    return next;
+  }
+  if (root && typeof root === 'object' && (typeof head === 'string' || typeof head === 'number')) {
+    const record = root as Record<string, unknown>;
+    return { ...record, [head]: replaceNested(record[head], rest, value) };
+  }
+  return root;
+};
+
+/**
+ * A new feature with one vertex moved. Only the arrays on the path to that
+ * vertex are copied; every other ring is shared. The closing coordinate of a
+ * polygon ring moves with vertex 0.
+ */
+export const withMovedVertex = <T extends { geometry: Geometry }>(
+  feature: T,
+  path: Array<string | number>,
+  lngLat: LngLatTuple,
+  shape: string,
+): T => {
+  const coordPath = [...path];
+  const coordIndex = coordPath.pop();
+  if (typeof coordIndex !== 'number') return feature;
+  const ring = coordPath.reduce<unknown>((current, key) => {
+    if (current == null || typeof current !== 'object') return undefined;
+    return (current as Record<string | number, unknown>)[key];
+  }, feature);
+  if (!Array.isArray(ring)) return feature;
+
+  const next = [lngLat[0], lngLat[1]] as LngLatTuple;
+  const nextRing = ring.slice();
+  nextRing[coordIndex] = next;
+  if (coordIndex === 0 && shape === 'polygon' && nextRing.length > 1) {
+    nextRing[nextRing.length - 1] = [next[0], next[1]];
+  }
+  return replaceNested(feature, coordPath, nextRing) as T;
+};
+
+const vertexIndexFromPath = (path: Array<string | number>): number | null => {
+  const local = path[0] === 'geometry' ? path.slice(1) : path;
+  if (local[0] !== 'coordinates' || local.length < 2) return null;
+  const vertexIndex = local[local.length - 1];
+  return typeof vertexIndex === 'number' ? vertexIndex : null;
+};
+
+/**
+ * Ring with the dragged vertex removed, so the stale corner is not rendered
+ * while a rubber-band line shows the pointer. Null when the ring would become
+ * too short to stay a line or polygon.
+ */
+export const geometryHidingVertex = (
+  geometry: Geometry,
+  path: Array<string | number>,
+): Geometry | null => {
+  if (
+    geometry.type !== 'LineString' &&
+    geometry.type !== 'MultiLineString' &&
+    geometry.type !== 'Polygon' &&
+    geometry.type !== 'MultiPolygon'
+  ) {
+    return null;
+  }
+  const vertexIndex = vertexIndexFromPath(path);
+  if (vertexIndex == null) return null;
+  const local = path[0] === 'geometry' ? path.slice(1) : path;
+  const ringIndexes = local.slice(1, -1) as Array<number>;
+  const ring = ringAt(geometry, ringIndexes);
+  if (!ring) return null;
+
+  const closed = geometry.type === 'Polygon' || geometry.type === 'MultiPolygon';
+  const localVertex = closed && vertexIndex === ring.length - 1 ? 0 : vertexIndex;
+  const unique = closed ? ring.slice(0, -1) : ring.slice();
+  if (localVertex < 0 || localVertex >= unique.length) return null;
+  if (closed && unique.length <= 3) return null;
+  if (!closed && unique.length <= 2) return null;
+
+  unique.splice(localVertex, 1);
+  const nextRing = closed ? [...unique, [unique[0][0], unique[0][1]]] : unique;
+  const coordPath = path.slice(0, -1);
+  const replaced = replaceNested({ geometry }, coordPath, nextRing) as { geometry: Geometry };
+  return replaced.geometry;
+};
+
+/** The two edges from the dragged vertex's neighbors to the pointer. */
+export const rubberBandCoordinates = (
+  geometry: Geometry,
+  path: Array<string | number>,
+  lngLat: LngLatTuple,
+): Array<LngLatTuple> | null => {
+  if (
+    geometry.type !== 'LineString' &&
+    geometry.type !== 'MultiLineString' &&
+    geometry.type !== 'Polygon' &&
+    geometry.type !== 'MultiPolygon'
+  ) {
+    return null;
+  }
+  const vertexIndex = vertexIndexFromPath(path);
+  if (vertexIndex == null) return null;
+  const local = path[0] === 'geometry' ? path.slice(1) : path;
+  const ring = ringAt(geometry, local.slice(1, -1) as Array<number>);
+  if (!ring) return null;
+
+  const closed = geometry.type === 'Polygon' || geometry.type === 'MultiPolygon';
+  const localVertex = closed && vertexIndex === ring.length - 1 ? 0 : vertexIndex;
+  const lastUnique = closed ? ring.length - 2 : ring.length - 1;
+  if (localVertex < 0 || localVertex > lastUnique) return null;
+
+  const prevIndex = localVertex === 0 ? (closed ? lastUnique : -1) : localVertex - 1;
+  const nextIndex = localVertex === lastUnique ? (closed ? 0 : -1) : localVertex + 1;
+  const coordinates: Array<LngLatTuple> = [];
+  if (prevIndex >= 0) coordinates.push([ring[prevIndex][0], ring[prevIndex][1]]);
+  coordinates.push([lngLat[0], lngLat[1]]);
+  if (nextIndex >= 0) coordinates.push([ring[nextIndex][0], ring[nextIndex][1]]);
+  return coordinates.length >= 2 ? coordinates : null;
+};
