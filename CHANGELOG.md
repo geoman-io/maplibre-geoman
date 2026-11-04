@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.7] - 2026-11-04
+
 ### Fixed
 
 - Dragging a vertex of a large line or polygon no longer copies and re-uploads the whole geometry on every pointer move. The outline stays on the main source with that vertex hidden, and only the two adjacent edges are updated until the drag ends ([#282](https://github.com/geoman-io/maplibre-geoman/issues/282)).
