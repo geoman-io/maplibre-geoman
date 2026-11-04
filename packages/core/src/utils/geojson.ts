@@ -21,7 +21,7 @@ import turfBearing from '@turf/bearing';
 
 import { distance as turfDistance } from '@turf/distance';
 import { coordEach as turfCoordEach } from '@turf/meta';
-import { multiPolygonToLine, singlePolygonToLine } from '@turf/polygon-to-line';
+import { singlePolygonToLine } from '@turf/polygon-to-line';
 import type {
   BBox,
   Feature,
@@ -498,7 +498,13 @@ export const removeVertexFromPolygon = (
       (coord) => coord[0] === vertexLngLat[0] && coord[1] === vertexLngLat[1],
     );
 
+    if (!Array.isArray(coordinates)) return false;
+    // A triangular shell plus a hole is more than 3 vertices, so cutVertex does
+    // not delete the feature. Splicing that shell would promote the hole.
     if (coordinates.length <= 4) {
+      if (coordIndices.geometryIndex === 0 && shapeGeoJson.geometry.coordinates.length > 1) {
+        return false;
+      }
       shapeGeoJson.geometry.coordinates.splice(coordIndices.geometryIndex, 1);
       return true;
     }
@@ -536,7 +542,10 @@ export const removeVertexFromMultiPolygon = (
       (coord) => coord[0] === vertexLngLat[0] && coord[1] === vertexLngLat[1],
     );
 
+    if (!Array.isArray(coordinates)) return false;
     if (coordinates.length <= 4) {
+      const part = shapeGeoJson.geometry.coordinates[coordIndices.multiFeatureIndex];
+      if (coordIndices.geometryIndex === 0 && part.length > 1) return false;
       coordinatesPath.pop();
       const coordinatesContainer = get(
         shapeGeoJson.geometry.coordinates,
@@ -623,21 +632,26 @@ export const convertToLineStringFeatureCollection = (
         // must not abort the trace.
       }
     } else if (isMultiPolygonFeature(feature)) {
-      try {
-        const featureCollection = multiPolygonToLine(feature);
-        featureCollection.features.forEach((lineFeature) => {
+      // A short part makes polygon-to-line throw for the whole MultiPolygon.
+      // Convert each part alone so a valid sibling is still traced.
+      feature.geometry.coordinates.forEach((part) => {
+        const partFeature = {
+          ...feature,
+          geometry: { type: 'Polygon' as const, coordinates: part },
+        };
+        try {
+          const lineFeature = singlePolygonToLine(partFeature);
           if (isLineStringFeature(lineFeature)) {
             targetFeatureCollection.features.push(lineFeature);
           } else if (isMultiLineStringFeature(lineFeature)) {
-            const line = multiLineStringToFeatureCollection(lineFeature);
-            line.features.forEach((item) => {
+            multiLineStringToFeatureCollection(lineFeature).features.forEach((item) => {
               targetFeatureCollection.features.push(item);
             });
           }
-        });
-      } catch {
-        // Same as the polygon branch: a short part is skipped, not thrown.
-      }
+        } catch {
+          // skip this part
+        }
+      });
     } else {
       log.warn('AutoTraceHelper.getFeaturesGeoJsonAsLines: Feature is not supported', feature);
     }
