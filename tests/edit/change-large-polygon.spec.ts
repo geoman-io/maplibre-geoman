@@ -1,6 +1,7 @@
 import test, { expect } from '@playwright/test';
 import { getFeatureMarkersData, loadGeoJsonFeatures } from '@tests/utils/features.ts';
 import { dragAndDrop, enableMode, waitForGeoman } from '@tests/utils/basic.ts';
+import { SOURCES } from '@/core/features/constants.ts';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -26,6 +27,30 @@ test('Change: a large line endpoint and its midpoint follow the committed drag',
     ],
   });
   await enableMode(page, 'edit', 'change');
+  const endpoint = (
+    await getFeatureMarkersData({
+      page,
+      featureId: 'large-line',
+      temporary: false,
+      allowedTypes: ['vertex'],
+    })
+  ).find((marker) => marker.path?.join('.') === 'geometry.coordinates.600');
+  expect(endpoint?.id).toBeDefined();
+  // Wait for the actual hit-test layer, not just the in-memory marker store.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        ({ id, source }) =>
+          window.geoman.mapAdapter
+            .queryGeoJsonFeatures({
+              queryCoordinates: undefined,
+              sourceNames: [source],
+            })
+            .some((feature) => feature.id === id),
+        { id: endpoint?.id, source: SOURCES.internal },
+      ),
+    )
+    .toBe(true);
   await dragAndDrop(page, [700, 300], [720, 280]);
   await expect
     .poll(async () => {
