@@ -249,6 +249,14 @@ export class EditChange extends BaseDrag {
     if (band.guide) {
       await this.gm.features.delete(band.guide);
     }
+    if (band.accepted) {
+      // Per-move rubber-band updates bypass updateFeatureGeoJson. Notify once
+      // after committing so vertex/edge handles follow the final geometry (#285).
+      await this.fireFeatureUpdatedEvent({
+        sourceFeatures: [featureData],
+        targetFeatures: [featureData],
+      });
+    }
   }
 
   private async abortRubberBand() {
