@@ -7,6 +7,49 @@ test.beforeEach(async ({ page }) => {
   await waitForGeoman(page);
 });
 
+test('Change: a large line endpoint and its midpoint follow the committed drag', async ({
+  page,
+}) => {
+  const coordinates = await page.evaluate(() => {
+    const at = (x: number, y: number) => window.geoman.mapAdapter.unproject([x, y]);
+    return [...Array.from({ length: 600 }, (_, k) => at(300 + (400 * k) / 599, 500)), at(700, 300)];
+  });
+  await loadGeoJsonFeatures({
+    page,
+    geoJsonFeatures: [
+      {
+        id: 'large-line',
+        type: 'Feature',
+        properties: { shape: 'line' },
+        geometry: { type: 'LineString', coordinates },
+      },
+    ],
+  });
+  await enableMode(page, 'edit', 'change');
+  await dragAndDrop(page, [700, 300], [720, 280]);
+  await expect
+    .poll(async () => {
+      const markers = await getFeatureMarkersData({
+        page,
+        featureId: 'large-line',
+        temporary: false,
+      });
+      const endpoint = markers.find(
+        (marker) => marker.path?.join('.') === 'geometry.coordinates.600',
+      );
+      const midpoint = markers.find(
+        (marker) => marker.type === 'edge' && Math.abs(marker.point[1] - 390) < 5,
+      );
+      return endpoint && midpoint
+        ? Math.max(
+            Math.hypot(endpoint.point[0] - 720, endpoint.point[1] - 280),
+            Math.hypot(midpoint.point[0] - 710, midpoint.point[1] - 390),
+          )
+        : Infinity;
+    })
+    .toBeLessThanOrEqual(2);
+});
+
 // The threshold counts distinct positions, excluding the ring's closing coordinate.
 for (const bottomVertices of [100, 509, 510, 600]) {
   test(`Change: committed handles follow the vertex (${bottomVertices + 3} positions)`, async ({
