@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.8] - 2026-11-06
+
 ### Fixed
 
 - Committing a vertex drag on a large line or polygon updates the vertex and adjacent edge handles, so the moved vertex can be grabbed again ([#285](https://github.com/geoman-io/maplibre-geoman/issues/285)).
