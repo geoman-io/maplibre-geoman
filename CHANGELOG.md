@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Releasing a vertex drag on a large line or polygon after the map was panned or zoomed updates only the dragged vertex and its two adjacent edge handles again, instead of every edge handle ([#289](https://github.com/geoman-io/maplibre-geoman/issues/289)).
+
 ## [0.10.8] - 2026-11-06
 
 ### Fixed
