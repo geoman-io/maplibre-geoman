@@ -60,6 +60,9 @@ export class ShapeMarkersHelper extends BaseHelper {
   private unbindPointerRelease: (() => void) | null = null;
   private dragToken = 0;
   private parkedMarkers: Array<FeatureData> = [];
+  // The vertex just released, kept while marker_released is handled so the
+  // committing feature_updated takes the incremental path (#289).
+  private releasedVertex: { featureData: FeatureData; markerData: MarkerData } | null = null;
   edgeMarkerAllowedShapes: Array<FeatureShape> = ['line', 'rectangle', 'polygon'];
   shapeMarkerAllowedModes: Array<EditModeName> = ['drag', 'change', 'cut', 'split'];
   eventHandlers = {
@@ -142,6 +145,7 @@ export class ShapeMarkersHelper extends BaseHelper {
     }
 
     const featureMarkerData = this.getFeatureMarkerByMouseEvent(event);
+    this.releasedVertex = null;
     this.activeMarker = featureMarkerData || null;
     this.activeFeatureData = featureMarkerData?.instance.parent || null;
 
@@ -251,12 +255,22 @@ export class ShapeMarkersHelper extends BaseHelper {
     this.gm.mapAdapter.setDragPan(true);
     await this.restoreParkedMarkers();
 
-    await this.sendMarkerEvent(
-      'marker_released',
-      eventData.featureData,
-      eventData.markerData,
-      eventData.linkedFeatures,
-    );
+    const released =
+      eventData.markerData.type === 'vertex'
+        ? { featureData: eventData.featureData, markerData: eventData.markerData }
+        : null;
+    this.releasedVertex = released;
+    try {
+      await this.sendMarkerEvent(
+        'marker_released',
+        eventData.featureData,
+        eventData.markerData,
+        eventData.linkedFeatures,
+      );
+    } finally {
+      // A capture or another release during the await owns the field now.
+      if (this.releasedVertex === released) this.releasedVertex = null;
+    }
   }
 
   onMouseMove(event: BaseMapEvent): MapHandlerReturnData {
@@ -754,6 +768,9 @@ export class ShapeMarkersHelper extends BaseHelper {
   private draggedVertex(featureData: FeatureData): MarkerData | null {
     if (this.activeFeatureData === featureData && this.activeMarker?.type === 'vertex') {
       return this.activeMarker;
+    }
+    if (this.releasedVertex?.featureData === featureData) {
+      return this.releasedVertex.markerData;
     }
     const shared = this.sharedMarkers.find((item) => item.featureData === featureData);
     return shared?.markerData.type === 'vertex' ? shared.markerData : null;
