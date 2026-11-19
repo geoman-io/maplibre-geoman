@@ -86,8 +86,13 @@ export const propertiesValid = (
 };
 
 export const moveGeoJson = (geoJson: GeoJsonShapeFeature, lngLatDiff: LngLatDiff) => {
+  const movedCoordinates = new WeakSet<Position>();
   eachCoordinateWithPath(geoJson, (position) => {
     const lngLat = position.coordinate;
+    // A ring may reuse its first position array as its closing position.
+    // Preserve the in-place API while translating each object only once.
+    if (movedCoordinates.has(lngLat)) return;
+    movedCoordinates.add(lngLat);
     lngLat[0] += lngLatDiff.lng;
     lngLat[1] += lngLatDiff.lat;
   });
@@ -147,8 +152,12 @@ export const getTranslatedGeoJson = (
     return cloned;
   }
 
+  const movedCoordinates = new WeakSet<Position>();
   eachCoordinateWithPath(cloned, (position) => {
     const vertex = position.coordinate;
+    // cloneDeep preserves aliases, so a shared position must be rebuilt once.
+    if (movedCoordinates.has(vertex)) return;
+    movedCoordinates.add(vertex);
     const offsetDistance = distance(anchorLngLat, vertex, { units: 'meters' });
     const offsetBearing = bearing(anchorLngLat, vertex);
     const [movedLng, movedLat] = destination(targetLngLat, offsetDistance, offsetBearing, {
