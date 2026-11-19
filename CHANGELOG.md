@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.10.10] - 2026-11-19
+
+### Fixed
+
+- Moving a polygon, hole, multipolygon, or line with shared coordinate arrays no longer transforms the same position twice. Closed rings keep their shape when their first and closing positions reference the same array, including repeated drags and 3D coordinates.
+
 ## [0.10.9] - 2026-11-17
 
 ### Fixed
